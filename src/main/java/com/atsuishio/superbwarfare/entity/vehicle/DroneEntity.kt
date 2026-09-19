@@ -765,8 +765,9 @@ open class DroneEntity(type: EntityType<out DroneEntity>, world: Level) : GeoVeh
             return 0f
         }
 
-        // Controller/monitor state must not attenuate the engine for nearby listeners.
-        return abs(power) * 3f
+        // Power tops out at 0.2; VehicleSoundInstance multiplies by a fade of 3.
+        // Keep the final gain within 0..1 so Minecraft does not clip engine changes.
+        return abs(power) * (5f / 3f)
     }
 
     override fun move(movementType: MoverType, movement: Vec3) {
@@ -1035,4 +1036,3 @@ open class DroneEntity(type: EntityType<out DroneEntity>, world: Level) : GeoVeh
         }
     }
 }
-
