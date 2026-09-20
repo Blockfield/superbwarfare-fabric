@@ -41,6 +41,7 @@ import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingHu
 import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingKnockBackEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.living.MobEffectEvent.Applicable
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket
 import net.minecraft.resources.ResourceLocation
@@ -544,25 +545,17 @@ object LivingEventHandler {
         }
 
         if (MiscConfig.SEND_KILL_FEEDBACK.get()) {
-            if (isHeadshotDamage(source) || (CompatHolder.hasTacz && TaczHeadshotCompat.isHeadshot(source))) {
-                sendPacketToAll(
-                    LivingGunKillMessage(
-                        attacker.id,
-                        entity.id,
-                        true,
-                        damageTypeResourceKey
-                    )
+            sendPacketToAll(
+                LivingGunKillMessage(
+                    attacker.id,
+                    entity.id,
+                    isHeadshotDamage(source) || (CompatHolder.hasTacz && TaczHeadshotCompat.isHeadshot(source)),
+                    damageTypeResourceKey,
+                    attacker.uuid,
+                    entity.uuid,
+                    BuiltInRegistries.ITEM.getKey(attacker.mainHandItem.item)
                 )
-            } else {
-                sendPacketToAll(
-                    LivingGunKillMessage(
-                        attacker.id,
-                        entity.id,
-                        false,
-                        damageTypeResourceKey
-                    )
-                )
-            }
+            )
         }
     }
 

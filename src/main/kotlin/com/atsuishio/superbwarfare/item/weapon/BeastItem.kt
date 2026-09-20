@@ -13,6 +13,7 @@ import com.atsuishio.superbwarfare.network.message.receive.LivingGunKillMessage
 import com.atsuishio.superbwarfare.tools.TraceTool
 import com.atsuishio.superbwarfare.tools.sendPacket
 import com.atsuishio.superbwarfare.tools.sendPacketToAll
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Holder
 import net.minecraft.core.particles.ParticleTypes
@@ -148,7 +149,10 @@ open class BeastItem : SwordItem(
                             attacker.id,
                             target.id,
                             false,
-                            ModDamageTypes.BEAST
+                            ModDamageTypes.BEAST,
+                            attacker.uuid,
+                            target.uuid,
+                            BuiltInRegistries.ITEM.getKey(attacker.mainHandItem.item)
                         )
                     )
                 }

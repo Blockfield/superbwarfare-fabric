@@ -96,7 +96,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
             }
         }
 
-        if (record.tick >= 80) {
+        if (record.tick >= KillMessageHandler.HOLD_TICKS) {
             if (arr.size > 1 && record.tick - arr[1]!!.tick < (if (record.fastRemove) 2 else 20)) {
                 arr[1]!!.fastRemove = true
                 record.fastRemove = true
@@ -154,9 +154,9 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
         }
 
         // 4s后开始消失
-        if (record.tick >= 80) {
+        if (record.tick >= KillMessageHandler.HOLD_TICKS) {
             val animationTickCount = if (record.fastRemove) 2 else 20
-            val rate = ((record.tick + partialTick - 80) / animationTickCount).toDouble().pow(5.0).toFloat()
+            val rate = ((record.tick + partialTick - KillMessageHandler.HOLD_TICKS) / animationTickCount).toDouble().pow(5.0).toFloat()
             guiGraphics.pose().translate(rate * 100 * (if (left) -1 else 1), 0f, 0f)
             guiGraphics.setColor(1f, 1f, 1f, 1 - rate)
             baseTop += 10 * (1 - rate) * (if (bottom) -1 else 1)
