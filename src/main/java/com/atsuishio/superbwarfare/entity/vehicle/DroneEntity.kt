@@ -766,8 +766,8 @@ open class DroneEntity(type: EntityType<out DroneEntity>, world: Level) : GeoVeh
         }
 
         // Power tops out at 0.2; VehicleSoundInstance multiplies by a fade of 3.
-        // Keep the final gain within 0..1 so Minecraft does not clip engine changes.
-        return abs(power) * (5f / 3f)
+        // A final gain of 1 clips and was too loud in matches; full throttle lands at 0.5.
+        return abs(power) * (5f / 6f)
     }
 
     override fun move(movementType: MoverType, movement: Vec3) {

@@ -1,5 +1,8 @@
 package com.atsuishio.superbwarfare.event
 
+import com.atsuishio.superbwarfare.network.message.receive.ResetCameraTypeMessage
+import com.atsuishio.superbwarfare.item.misc.MonitorItem
+import com.atsuishio.superbwarfare.control.DroneControlAccess
 import com.atsuishio.superbwarfare.api.event.ExplosionEvent
 import com.atsuishio.superbwarfare.api.event.ExplosionKnockbackEvent
 import com.atsuishio.superbwarfare.api.event.PreKillEvent.Indicator
@@ -137,10 +140,25 @@ object LivingEventHandler {
     private fun onEntityDeath(event: LivingDeathEvent) {
         if (event.entity == null) return
 
+        stopDroneViewOnDeath(event.entity)
         killIndication(event)
         handleGunPerksWhenDeath(event)
         handlePlayerKillEntity(event)
         giveKillExpToWeapon(event)
+    }
+
+    // Blockfield: a dead operator kept Using=true and the monitor's third-person camera into the respawn.
+    private fun stopDroneViewOnDeath(entity: LivingEntity) {
+        val player = entity as? ServerPlayer ?: return
+        val stack = player.mainHandItem
+        if (!stack.`is`(ModItems.MONITOR.get())) return
+        val tag = NBTTool.getTag(stack)
+        if (!tag.getBoolean(MonitorItem.USING)) return
+        tag.putBoolean(MonitorItem.USING, false)
+        NBTTool.saveTag(stack, tag)
+        EntityFindUtil.findDrone(player.level(), tag.getString(MonitorItem.LINKED_DRONE))
+            ?.let { if (DroneControlAccess.owns(player, it)) DroneControlAccess.resetInput(it) }
+        player.sendPacket(ResetCameraTypeMessage)
     }
 
     private fun handleVehicleHurt(event: LivingHurtEvent) {
