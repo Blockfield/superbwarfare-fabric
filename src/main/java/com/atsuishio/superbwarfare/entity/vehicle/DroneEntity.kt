@@ -221,6 +221,10 @@ open class DroneEntity(type: EntityType<out DroneEntity>, world: Level) : GeoVeh
         return -1
     }
 
+    // Blockfield: vanilla derives the render distance from the hitbox, 0.6x0.2 gives ~30 blocks --
+    // the drone was heard but never seen. Tracking range already bounds how far it can exist client-side.
+    override fun shouldRenderAtSqrDistance(pDistance: Double) = true
+
     override fun baseTick() {
         pitchO = this.bodyPitch
         setBodyXRot(this.bodyPitch * 0.9f)
