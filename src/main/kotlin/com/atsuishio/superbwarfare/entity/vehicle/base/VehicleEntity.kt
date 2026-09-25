@@ -3361,6 +3361,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     protected var rotationTransform = HashMap<String, Function<Float, Quaterniond>>()
 
     init {
+        // Client position sync runs only in baseTick (handleClientSync). Entity Culling's tick culling
+        // skips that tick for entities out of the camera, so a vehicle or drone behind an observer
+        // froze on his screen; it never culls noCulling entities. Also drops frustum culling for rendering.
+        this.noCulling = true
         registerTransforms()
         initOBB()
 
