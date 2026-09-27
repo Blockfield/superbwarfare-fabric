@@ -24,12 +24,11 @@ level_events, client_events, transfer) and SimpleBedrockModel-Fabric
 ## Build
 
 Requires JDK 21 (e.g. `mise use java@temurin-21`). No private repositories or tokens are needed;
-the two non-Maven inputs are committed under `libs/` with checksums.
+the two non-Maven inputs are downloaded from pinned URLs and checked by sha256 (see `libs/README.md`).
 
 ```sh
 git clone https://github.com/netherg-io/superbwarfare-fabric.git
 cd superbwarfare-fabric
-(cd libs && sha256sum -c SHA256SUMS)
 ./gradlew build --no-daemon
 ```
 
