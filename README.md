@@ -4,7 +4,7 @@
 
 Unofficial port of [Superb Warfare](https://github.com/Mercurows/SuperbWarfare) (NeoForge 1.21.1,
 by Atsuishio, Roki27, Light_Quanta and contributors) to **Fabric 1.21.1**, maintained by
-[netherg-io](https://github.com/netherg-io) for the Blockfield server modpack.
+[Blockfield](https://github.com/Blockfield) for the Blockfield server modpack.
 Not affiliated with or endorsed by the upstream authors.
 
 Upstream READMEs: [中文](./README-zh.md) | [English](./README-en.md) (they describe the original
@@ -27,13 +27,13 @@ Requires JDK 21 (e.g. `mise use java@temurin-21`). No private repositories or to
 the two non-Maven inputs are downloaded from pinned URLs and checked by sha256 (see `libs/README.md`).
 
 ```sh
-git clone https://github.com/netherg-io/superbwarfare-fabric.git
+git clone https://github.com/Blockfield/superbwarfare-fabric.git
 cd superbwarfare-fabric
 ./gradlew build --no-daemon
 ```
 
 The mod jar is written to `build/libs/superbwarfare-<version>-mc1.21.1.jar`. Release jars are
-attached to [GitHub Releases](https://github.com/netherg-io/superbwarfare-fabric/releases) and
+attached to [GitHub Releases](https://github.com/Blockfield/superbwarfare-fabric/releases) and
 named after the release tag.
 
 ## License
@@ -46,4 +46,4 @@ The upstream README states that models, textures and other art assets are *all r
 by the Superb Warfare team; they are included here exactly as published in the upstream public
 repository and remain the property of their authors.
 
-Port changes are © netherg-io and contributors, under the same license.
+Port changes are © Blockfield and contributors, under the same license.

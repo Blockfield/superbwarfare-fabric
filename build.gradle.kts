@@ -80,7 +80,7 @@ fun pinnedJar(url: String, sha256: String): File {
 }
 
 val simpleBedrockModelJar = pinnedJar(
-    "https://github.com/netherg-io/simplebedrockmodel-fabric/releases/download/bf4/simplebedrockmodel-fabric-2.5.1+mc1.21.1-bf4.jar",
+    "https://github.com/Blockfield/simplebedrockmodel-fabric/releases/download/bf4/simplebedrockmodel-fabric-2.5.1+mc1.21.1-bf4.jar",
     "d32a0232a63bbc73561bd2d6aa18837911bcdeffa166d7bb6c4f524d4f5c80c6",
 )
 val rhinoJar = pinnedJar(
