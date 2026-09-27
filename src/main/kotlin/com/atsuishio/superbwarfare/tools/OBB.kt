@@ -828,8 +828,8 @@ data class OBB(
             val extents = doubleArrayOf(obb.extents.x, obb.extents.y, obb.extents.z)
 
             for (i in 0..2) {
-                var distance = dist.dot(axes[i])
-                distance = Math.clamp(distance, -extents[i], extents[i])
+                // Not Math.clamp: that is org.joml.Math here, whose argument order is (min, max, value).
+                val distance = dist.dot(axes[i]).coerceIn(-extents[i], extents[i])
                 nearP.x += distance * axes[i].x
                 nearP.y += distance * axes[i].y
                 nearP.z += distance * axes[i].z

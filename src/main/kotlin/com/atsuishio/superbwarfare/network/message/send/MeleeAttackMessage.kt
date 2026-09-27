@@ -2,6 +2,8 @@ package com.atsuishio.superbwarfare.network.message.send
 
 import com.atsuishio.superbwarfare.data.gun.GunData
 import com.atsuishio.superbwarfare.data.gun.GunProp
+import com.atsuishio.superbwarfare.entity.OBBEntity
+import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.gun.GunItem
@@ -10,6 +12,7 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import com.atsuishio.superbwarfare.perk.Perk
 import com.atsuishio.superbwarfare.serialization.kserializer.SerializedUUID
 import com.atsuishio.superbwarfare.tools.EntityFindUtil
+import com.atsuishio.superbwarfare.tools.OBB
 import com.atsuishio.superbwarfare.tools.sendPacketTo
 import io.github.fabricators_of_create.porting_lib.entity.events.player.AttackEntityEvent
 import kotlinx.serialization.Serializable
@@ -25,6 +28,8 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.Vec3
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -34,18 +39,19 @@ data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacket
         val player = sender()
         if (player.isSpectator || !player.isAlive) return
 
-        // The client picks the targets; the server only accepts a gun melee on entities within
-        // that gun's reach (+1 block of lag slack, as vanilla attacks).
+        // The client picks the targets with a ray of entityInteractionRange + MELEE_RANGE against the
+        // hitbox (TraceTool.findMeleeEntity); the server accepts the same reach to the same hitbox.
         // ponytail: no server melee cooldown; hurt() invulnerability (10 ticks) keeps a spamming
         // client close to the legit MeleeDuration cadence (15-20 ticks). Add one if melee damage grows.
         val stack = player.mainHandItem
         if (stack.item !is GunItem) return
         val data = GunData.from(stack)
-        val reach = data.get(GunProp.MELEE_RANGE) + 1.0
+        val reach = player.entityInteractionRange() + data.get(GunProp.MELEE_RANGE) + REACH_SLACK
+        val eye = player.eyePosition
 
         val entities = uuidList.distinct()
             .mapNotNull { EntityFindUtil.findEntity(player.level(), it.toString()) }
-            .filter { it !== player && player.canInteractWithEntity(it, reach) }
+            .filter { it !== player && !it.isRemoved && hitboxDistanceSqr(eye, it) <= reach * reach }
 
         for (type in Perk.Type.entries) {
             val instances = data.perk.getInstances(type)
@@ -56,6 +62,35 @@ data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacket
             attack(player, entities)
         }
         player.swing(InteractionHand.MAIN_HAND)
+    }
+
+    companion object {
+        /**
+         * Leeway over the client's own reach. The client sends its position before this packet in the same
+         * tick, so a legit hit on a standing target arrives at <= reach; the slack covers the eye height of a
+         * pose (sneak -0.35, prone) that the server applies a tick later.
+         * ponytail: a fast-moving vehicle is drawn up to a few blocks behind its server position, so melee on
+         * it may be rejected; add velocity-based slack if players need to hit moving vehicles.
+         */
+        const val REACH_SLACK = 0.5
+
+        /** Squared distance from [eye] to the hitbox the client melee ray tests (see ProjectileUtilMixin). */
+        @JvmStatic
+        fun hitboxDistanceSqr(eye: Vec3, target: Entity): Double {
+            val obbs = (target as? OBBEntity)?.takeUnless { it.enableAABB() }?.getOBBs().orEmpty()
+            val pick = target.pickRadius.toDouble()
+            // Vehicles with a collision OBB are hit only through their part OBBs, the rest also through the AABB.
+            val aabb = target.boundingBox.inflate(pick)
+                .takeUnless { obbs.isNotEmpty() && target is VehicleEntity && target.getCollisionOBB() != null }
+            return hitboxDistanceSqr(eye, aabb, obbs.filter { it.part != OBB.Part.COLLISION }.map { it.inflate(pick * 2) })
+        }
+
+        @JvmStatic
+        fun hitboxDistanceSqr(eye: Vec3, aabb: AABB?, parts: List<OBB>): Double {
+            val point = OBB.vec3ToVector3d(eye)
+            val toParts = parts.minOfOrNull { OBB.getClosestPointOBB(point, it).distanceSquared(point) } ?: Double.MAX_VALUE
+            return min(aabb?.distanceToSqr(eye) ?: Double.MAX_VALUE, toParts)
+        }
     }
 
     fun attack(attacker: Player, targets: List<Entity>) {
