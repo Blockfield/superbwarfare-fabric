@@ -18,7 +18,7 @@ if [ ! -s "$CACHE" ]; then
         ls "$HOME"/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged/*/*.jar | grep -v sources
         find "$HOME/.gradle/caches/modules-2" -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar'
         find "$HOME/.gradle/caches/fabric-loom" -name '*.jar' ! -name '*-sources.jar' -path '*remapped*'
-        ls libs/*.jar 2>/dev/null || true
+        ls .gradle/pinned-libs/*.jar 2>/dev/null || true
     } | sort -u | grep -v -e neoforge -e fancymodloader -e '/fmlloader/' > "$CACHE"
 fi
 CP=$(tr '\n' ':' < "$CACHE")

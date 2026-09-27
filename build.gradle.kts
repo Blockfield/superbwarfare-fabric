@@ -1,3 +1,9 @@
+import java.net.URI
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.security.MessageDigest
+import java.util.HexFormat
+
 plugins {
     idea
     id("java-library")
@@ -55,8 +61,32 @@ repositories {
             includeGroup("com.eliotlash.mclib")
         }
     }
-    flatDir { dir("libs") }
 }
+
+// Входы без Maven-репозитория: качаются один раз в .gradle/pinned-libs и сверяются по sha256
+// при каждой конфигурации. Происхождение и лицензии -- в libs/README.md.
+fun pinnedJar(url: String, sha256: String): File {
+    val jar = rootProject.file(".gradle/pinned-libs/" + url.substringAfterLast('/'))
+    fun sha(f: File) = HexFormat.of().formatHex(
+        MessageDigest.getInstance("SHA-256").digest(f.readBytes()))
+    if (jar.isFile && sha(jar) == sha256) return jar
+    jar.parentFile.mkdirs()
+    val part = File(jar.path + ".part")
+    URI(url).toURL().openStream().use { input -> part.outputStream().use { input.copyTo(it) } }
+    val actual = sha(part)
+    check(actual == sha256) { "$url: sha256 $actual, ожидался $sha256" }
+    Files.move(part.toPath(), jar.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    return jar
+}
+
+val simpleBedrockModelJar = pinnedJar(
+    "https://github.com/netherg-io/simplebedrockmodel-fabric/releases/download/bf4/simplebedrockmodel-fabric-2.5.1+mc1.21.1-bf4.jar",
+    "d32a0232a63bbc73561bd2d6aa18837911bcdeffa166d7bb6c4f524d4f5c80c6",
+)
+val rhinoJar = pinnedJar(
+    "https://raw.githubusercontent.com/Mercurows/SuperbWarfare/676af9f44fce5e0c12e5206c663b976898ced1a8/libs/rhino-1.8.1-SNAPSHOT.jar",
+    "4aab6124356e91e16263fa065556444b96bf5d9438e1399914cd971ef8b73616",
+)
 
 dependencies {
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
@@ -74,8 +104,8 @@ dependencies {
     implementation(project(":ksp"))
 
     // Fabric-порт SimpleBedrockModel 2.5.1 (Sh1roCu, LGPL-3.0), пакеты те же, что у neoforge-версии, включая v2.
-    // Jar лежит в git; происхождение и sha256 -- в libs/README.md.
-    modImplementation(files("libs/simplebedrockmodel-fabric-2.5.1+mc1.21.1-bf3.jar"))
+    // Тот же релиз bf4 нашего форка, что стоит в паке.
+    modImplementation(files(simpleBedrockModelJar))
     // Только для dev-запуска: в проде MAE приезжает вложенным jar внутри SimpleBedrockModel,
     // а loom вложенные jar не разворачивает, и клиент падает на NoClassDefFoundError.
     modRuntimeOnly("com.maydaymemory:mae:1.1.4")
@@ -95,7 +125,7 @@ dependencies {
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 
     // Скриптовый движок техники: апстрим зовёт shaded-пакет org.mozillaa из этого jar.
-    implementation(files("libs/rhino-1.8.1-SNAPSHOT.jar"))
+    implementation(files(rhinoJar))
 
     // Curios под 1.21.1 существует только для NeoForge, готового слоя совместимости нет.
     // Accessories -- живой fabric-аналог той же идеи (слоты аксессуаров).
@@ -144,7 +174,7 @@ val modVersion = version.toString()
 // Rhino шейднут в пакет org.mozillaa и модом не является, поэтому ни include (jar-in-jar,
 // нужен fabric.mod.json), ни отдельная запись в паке не годятся -- классы кладутся внутрь jar.
 tasks.jar {
-    from(zipTree(file("libs/rhino-1.8.1-SNAPSHOT.jar"))) {
+    from(zipTree(rhinoJar)) {
         exclude("META-INF/**")
     }
 }
