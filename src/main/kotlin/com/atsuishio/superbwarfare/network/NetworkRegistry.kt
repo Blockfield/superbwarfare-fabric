@@ -121,7 +121,6 @@ private fun registerPayloads() {
     playToServer<FiringParametersEditMessage>()
     playToServer<GunReforgeMessage>()
     playToServer<InteractMessage>()
-    playToServer<LaserShootMessage>()
     playToServer<LungeMineAttackMessage>()
     playToServer<MeleeAttackMessage>()
     playToServer<MouseMoveMessage>()
