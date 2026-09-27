@@ -1,6 +1,7 @@
 package com.atsuishio.superbwarfare.network.message.send
 
 import com.atsuishio.superbwarfare.data.gun.GunData
+import com.atsuishio.superbwarfare.data.gun.GunProp
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.gun.GunItem
@@ -31,17 +32,24 @@ import kotlin.random.Random
 data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
-        if (player.isSpectator) return
+        if (player.isSpectator || !player.isAlive) return
 
-        val entities = uuidList.mapNotNull { EntityFindUtil.findEntity(player.level(), it.toString()) }
-
+        // The client picks the targets; the server only accepts a gun melee on entities within
+        // that gun's reach (+1 block of lag slack, as vanilla attacks).
+        // ponytail: no server melee cooldown; hurt() invulnerability (10 ticks) keeps a spamming
+        // client close to the legit MeleeDuration cadence (15-20 ticks). Add one if melee damage grows.
         val stack = player.mainHandItem
-        if (stack.item is GunItem) {
-            val data = GunData.from(stack)
-            for (type in Perk.Type.entries) {
-                val instances = data.perk.getInstances(type)
-                instances.forEach { it.perk.onMeleeSwing(data, it, player) }
-            }
+        if (stack.item !is GunItem) return
+        val data = GunData.from(stack)
+        val reach = data.get(GunProp.MELEE_RANGE) + 1.0
+
+        val entities = uuidList.distinct()
+            .mapNotNull { EntityFindUtil.findEntity(player.level(), it.toString()) }
+            .filter { it !== player && player.canInteractWithEntity(it, reach) }
+
+        for (type in Perk.Type.entries) {
+            val instances = data.perk.getInstances(type)
+            instances.forEach { it.perk.onMeleeSwing(data, it, player) }
         }
 
         if (entities.isNotEmpty()) {
