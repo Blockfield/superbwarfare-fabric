@@ -21,5 +21,6 @@ fun main() {
     check(DamageTypeTool.isKnifeDamage(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse("blockfield:knife"))))
     check(!DamageTypeTool.isKnifeDamage(DamageTypes.ARROW))
     check(!DamageTypeTool.isKnifeDamage(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse("tacz:bullet"))))
-    println("Kill feed checks passed")
+    meleeReachChecks()
+    println("Kill feed and melee reach checks passed")
 }
