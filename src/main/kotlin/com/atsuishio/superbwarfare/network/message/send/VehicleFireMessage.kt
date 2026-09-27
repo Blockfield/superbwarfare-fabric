@@ -18,11 +18,20 @@ data class VehicleFireMessage(
 ) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
+        if (player.isSpectator || !player.isAlive) return
         val vehicle = if (shooterVehicleId != null) {
-            player.level().getEntity(shooterVehicleId) as? VehicleEntity
+            val remote = player.level().getEntity(shooterVehicleId) as? VehicleEntity ?: return
+            // Remote fire from the tactical map: the shooter must be a vehicle the sender
+            // is riding. Anything else is a forged id (no ownership/selection state exists
+            // on the server to validate against).
+            if (player.vehicle !== remote) return
+            remote
         } else {
             player.vehicle as? VehicleEntity
         } ?: return
+
+        // Unknown weapon names must not reach vehicleShoot: its gunData!! would NPE the tick.
+        if (weaponName != null && vehicle.getGunData(weaponName) == null) return
 
         if (targetPos != null) {
             // Map strike: fire a specific weapon by name
