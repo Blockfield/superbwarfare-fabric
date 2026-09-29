@@ -337,8 +337,9 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                         val x = point.x.toFloat()
                         val y = point.y.toFloat()
 
-                        // Blockfield: allies get a green frame, everyone else keeps the white one.
-                        if (e.isAlliedTo(player)) RenderSystem.setShaderColor(0.2f, 1f, 0.2f, 1f)
+                        // Blockfield: own frame for self and allies; everyone else keeps the white one.
+                        if (e == player || e.isAlliedTo(player)) RenderSystem.setShaderColor(0.2f, 1f, 0.2f, 1f)
+                        else RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
                         RenderHelper.preciseBlit(
                             guiGraphics,
                             FRAME,
