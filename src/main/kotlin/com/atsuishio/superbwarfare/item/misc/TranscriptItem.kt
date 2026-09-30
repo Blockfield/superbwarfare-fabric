@@ -17,13 +17,16 @@ open class TranscriptItem : Item(Properties().stacksTo(1)) {
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(Component.translatable("des.superbwarfare.transcript").withStyle(ChatFormatting.GRAY))
         addScoresText(stack, tooltipComponents)
     }
 
-    fun addScoresText(stack: ItemStack, tooltip: MutableList<Component>) {
+    fun addScoresText(
+        stack: ItemStack,
+        tooltip: MutableList<Component>,
+    ) {
         var scores = stack.get(ModDataComponents.TRANSCRIPT_SCORE.get())
         if (scores == null) scores = mutableListOf()
 
@@ -32,30 +35,38 @@ open class TranscriptItem : Item(Properties().stacksTo(1)) {
             val score: Int = info.getFirst()!!
             total += score
             tooltip.add(
-                Component.translatable("des.superbwarfare.transcript.score").withStyle(ChatFormatting.GRAY)
+                Component
+                    .translatable("des.superbwarfare.transcript.score")
+                    .withStyle(ChatFormatting.GRAY)
                     .append(
-                        Component.literal("$score ")
-                            .withStyle(if (score == 10) ChatFormatting.GOLD else ChatFormatting.WHITE)
-                    )
-                    .append(
-                        Component.translatable("des.superbwarfare.transcript.distance").withStyle(ChatFormatting.GRAY)
-                    )
-                    .append(
-                        Component.literal(FormatTool.format1D(info.getSecond()!!, "m")).withStyle(ChatFormatting.WHITE)
-                    )
+                        Component
+                            .literal("$score ")
+                            .withStyle(if (score == 10) ChatFormatting.GOLD else ChatFormatting.WHITE),
+                    ).append(
+                        Component.translatable("des.superbwarfare.transcript.distance").withStyle(ChatFormatting.GRAY),
+                    ).append(
+                        Component.literal(FormatTool.format1D(info.getSecond()!!, "m")).withStyle(ChatFormatting.WHITE),
+                    ),
             )
         }
 
         tooltip.add(
-            Component.translatable("des.superbwarfare.transcript.total").withStyle(ChatFormatting.YELLOW)
+            Component
+                .translatable("des.superbwarfare.transcript.total")
+                .withStyle(ChatFormatting.YELLOW)
                 .append(
-                    Component.literal("$total ")
-                        .withStyle(if (total == 100) ChatFormatting.GOLD else ChatFormatting.WHITE)
-                )
+                    Component
+                        .literal("$total ")
+                        .withStyle(if (total == 100) ChatFormatting.GOLD else ChatFormatting.WHITE),
+                ),
         )
     }
 
-    override fun use(pLevel: Level, pPlayer: Player, pUsedHand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        pLevel: Level,
+        pPlayer: Player,
+        pUsedHand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         if (pPlayer.isCrouching) {
             val stack = pPlayer.getItemInHand(pUsedHand)
             stack.set(ModDataComponents.TRANSCRIPT_SCORE.get(), listOf())

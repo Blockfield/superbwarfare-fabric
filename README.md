@@ -23,13 +23,15 @@ level_events, client_events, transfer) and SimpleBedrockModel-Fabric
 
 ## Build
 
-Requires JDK 21 (e.g. `mise use java@temurin-21`). No private repositories or tokens are needed;
+Requires native JDK 21, Python 3.12+, Node.js 22 and Just 1.57.0. No private repositories or tokens are needed;
 the two non-Maven inputs are downloaded from pinned URLs and checked by sha256 (see `libs/README.md`).
 
 ```sh
 git clone https://github.com/Blockfield/superbwarfare-fabric.git
 cd superbwarfare-fabric
-./gradlew build --no-daemon
+just setup
+just check
+just build
 ```
 
 The mod jar is written to `build/libs/superbwarfare-<version>-mc1.21.1.jar`. Release jars are
@@ -42,8 +44,20 @@ Code is licensed under the **GNU LGPL-3.0-only** ([COPYING.LESSER](./COPYING.LES
 supplements the GPL-3.0 in [COPYING](./COPYING)), as in the upstream repository. These files are
 kept unchanged from upstream.
 
-The upstream README states that models, textures and other art assets are *all rights reserved*
+The upstream README states that models, textures and other art assets are _all rights reserved_
 by the Superb Warfare team; they are included here exactly as published in the upstream public
 repository and remain the property of their authors.
 
 Port changes are © Blockfield and contributors, under the same license.
+
+## Developer checks
+
+Install Python 3.12+, Node.js 22 and Just 1.57.0, native JDK 21 (`JAVA_HOME`) on Linux or Windows. Quality tools stay in the project cache.
+
+```sh
+just setup
+just check
+just format
+```
+
+`just --list` lists supported build and application commands.

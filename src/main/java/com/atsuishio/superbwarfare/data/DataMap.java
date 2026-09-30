@@ -90,7 +90,9 @@ public class DataMap<T> extends HashMap<String, T> {
     @SuppressWarnings("unchecked")
     public @NotNull Collection<T> values() {
         if (!this.loadedData.containsKey(directory)) return Set.of();
-        return this.loadedData.get(directory).getDataMap().values().stream().map(v -> (T) v).toList();
+        return this.loadedData.get(directory).getDataMap().values().stream()
+                .map(v -> (T) v)
+                .toList();
     }
 
     @Override
@@ -101,5 +103,4 @@ public class DataMap<T> extends HashMap<String, T> {
                 .map(e -> new SimpleImmutableEntry<>(e.getKey(), (T) e.getValue()))
                 .collect(Collectors.toCollection(HashSet::new));
     }
-
 }

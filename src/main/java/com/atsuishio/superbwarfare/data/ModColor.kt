@@ -31,13 +31,14 @@ class ModColor {
         this.color = -0x1000000 or color
     }
 
-    fun get(): Int {
-        return -0x1000000 or this.color
-    }
+    fun get(): Int = -0x1000000 or this.color
 
     internal class ModColorAdapter : TypeAdapter<ModColor>() {
         @Throws(IOException::class)
-        override fun write(out: JsonWriter, value: ModColor) {
+        override fun write(
+            out: JsonWriter,
+            value: ModColor,
+        ) {
             out.value(value.color.toLong())
         }
 
@@ -74,11 +75,15 @@ class ModColor {
 }
 
 object ModColorSerializer : KSerializer<ModColor> {
-    override val descriptor = buildClassSerialDescriptor("ModColor") {
-        element<Int>("color")
-    }
+    override val descriptor =
+        buildClassSerialDescriptor("ModColor") {
+            element<Int>("color")
+        }
 
-    override fun serialize(encoder: Encoder, value: ModColor) {
+    override fun serialize(
+        encoder: Encoder,
+        value: ModColor,
+    ) {
         encoder.encodeInt(value.get())
     }
 

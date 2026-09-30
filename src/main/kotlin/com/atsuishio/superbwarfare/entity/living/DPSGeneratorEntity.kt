@@ -6,6 +6,8 @@ import com.atsuishio.superbwarfare.client.animation.entity.DPSGeneratorAnimation
 import com.atsuishio.superbwarfare.entity.getValue
 import com.atsuishio.superbwarfare.entity.setValue
 import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier.Companion.createDefaultModifier
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModSounds
@@ -13,6 +15,7 @@ import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.resource.model.EntityModelReloadListener
 import com.atsuishio.superbwarfare.tools.FormatTool.format1DZ
 import com.atsuishio.superbwarfare.tools.playLocalSound
+import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDeathEvent
 import net.minecraft.commands.arguments.EntityAnchorArgument
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -34,15 +37,15 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDeathEvent
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level) : LivingEntity(type, level){
+open class DPSGeneratorEntity(
+    type: EntityType<DPSGeneratorEntity>,
+    level: Level,
+) : LivingEntity(type, level) {
     val animationInstance: DPSGeneratorAnimationInstance? =
         if (this.level().isClientSide) DPSGeneratorAnimationInstance(this) else null
     open val modelInstance = EntityModelReloadListener.getModel(MODEL)?.createInstance()
@@ -55,20 +58,26 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
         super.defineSynchedData(builder)
 
-        builder.define(DOWN_TIME, 0)
+        builder
+            .define(DOWN_TIME, 0)
             .define(ENERGY, 0)
             .define(LEVEL, 0)
     }
 
-    override fun getArmorSlots(): Iterable<ItemStack> {
-        return NonNullList.withSize(1, ItemStack.EMPTY)
-    }
+    override fun getArmorSlots(): Iterable<ItemStack> = NonNullList.withSize(1, ItemStack.EMPTY)
 
     override fun getItemBySlot(pSlot: EquipmentSlot): ItemStack = ItemStack.EMPTY
 
-    override fun setItemSlot(pSlot: EquipmentSlot, pStack: ItemStack) {}
+    override fun setItemSlot(
+        pSlot: EquipmentSlot,
+        pStack: ItemStack,
+    ) {}
 
-    override fun causeFallDamage(l: Float, d: Float, source: DamageSource) = false
+    override fun causeFallDamage(
+        l: Float,
+        d: Float,
+        source: DamageSource,
+    ) = false
 
     override fun shouldRenderAtSqrDistance(pDistance: Double) = true
 
@@ -92,7 +101,10 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
         entityCap.setMaxExtract(this.maxTransfer)
     }
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         // 不处理/kill伤害
         var amount = DAMAGE_MODIFIER.compute(this, source, amount)
         if (source.`is`(DamageTypes.GENERIC_KILL)) {
@@ -113,7 +125,7 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
                 ModSounds.HIT.get(),
                 SoundSource.BLOCKS,
                 1f,
-                1f
+                1f,
             )
         } else {
             this.level().playLocalSound(
@@ -124,7 +136,7 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
                 SoundSource.BLOCKS,
                 1f,
                 1f,
-                false
+                false,
             )
         }
         return super.hurt(source, (amount / 2.0.pow(this.generatorLevel.toDouble())).toFloat())
@@ -132,7 +144,10 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
 
     override fun isPickable() = downTime == 0
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (!player.mainHandItem.isEmpty && !player.mainHandItem.`is`(ModTags.Items.TOOLS_CROWBAR)) {
             return InteractionResult.PASS
         }
@@ -176,8 +191,9 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
                         attacker.displayClientMessage(
                             Component.translatable(
                                 "tips.superbwarfare.dps_generator.dps",
-                                format1DZ(displayDamage.toDouble())
-                            ), true
+                                format1DZ(displayDamage.toDouble()),
+                            ),
+                            true,
                         )
                     }
                 }
@@ -185,9 +201,13 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
                 // 发电
                 (entityCap as SyncedEntityEnergyStorage).setMaxReceive(entityCap.maxEnergyStored)
                 entityCap.receiveEnergy(
-                    (128.0 * max(this.generatorLevel, 1) * 2.0.pow(
-                        this.generatorLevel.toDouble()
-                    ) * damage).roundToInt(), false
+                    (
+                        128.0 * max(this.generatorLevel, 1) *
+                            2.0.pow(
+                                this.generatorLevel.toDouble(),
+                            ) * damage
+                    ).roundToInt(),
+                    false,
                 )
                 entityCap.setMaxReceive(0)
             }
@@ -200,7 +220,6 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
                 (entityCap as SyncedEntityEnergyStorage).setCapacity(this.maxEnergy)
                 entityCap.setMaxExtract(this.maxTransfer)
 
-
                 if (!this.level().isClientSide()) {
                     this.level().playSound(
                         null,
@@ -208,7 +227,7 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
                         ModSounds.DPS_GENERATOR_EVOLVE.get(),
                         SoundSource.BLOCKS,
                         0.5f,
-                        1f
+                        1f,
                     )
                 } else {
                     this.level().playLocalSound(
@@ -219,7 +238,7 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
                         SoundSource.BLOCKS,
                         0.5f,
                         1f,
-                        false
+                        false,
                     )
                 }
             }
@@ -280,16 +299,17 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
     }
 
     val maxEnergy: Int
-        get() = when (this.generatorLevel) {
-            1 -> 25600
-            2 -> 102400
-            3 -> 409600
-            4 -> 1638400
-            5 -> 6553600
-            6 -> 26214400
-            7 -> 104857600
-            else -> 5120
-        }
+        get() =
+            when (this.generatorLevel) {
+                1 -> 25600
+                2 -> 102400
+                3 -> 409600
+                4 -> 1638400
+                5 -> 6553600
+                6 -> 26214400
+                7 -> 104857600
+                else -> 5120
+            }
 
     val maxTransfer: Int
         get() = this.maxEnergy / 2
@@ -342,8 +362,9 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
             }
         }
 
-        fun createAttributes(): AttributeSupplier.Builder {
-            return Mob.createMobAttributes()
+        fun createAttributes(): AttributeSupplier.Builder =
+            Mob
+                .createMobAttributes()
                 .add(Attributes.MOVEMENT_SPEED, 0.0)
                 .add(Attributes.MAX_HEALTH, 40.0)
                 .add(Attributes.ARMOR, 0.0)
@@ -351,15 +372,15 @@ open class DPSGeneratorEntity(type: EntityType<DPSGeneratorEntity>, level: Level
                 .add(Attributes.FOLLOW_RANGE, 16.0)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 10.0)
                 .add(Attributes.FLYING_SPEED, 0.0)
-        }
 
-        private val DAMAGE_MODIFIER = createDefaultModifier()
-            .immuneTo(DamageTypes.IN_WALL)
-            .immuneTo(DamageTypes.DROWN)
-            .immuneTo(DamageTypes.LAVA)
-            .immuneTo(DamageTypes.CACTUS)
-            .immuneTo(DamageTypes.FALL)
-            .immuneTo(DamageTypes.SWEET_BERRY_BUSH)
-            .immuneTo(DamageTypes.BAD_RESPAWN_POINT)
+        private val DAMAGE_MODIFIER =
+            createDefaultModifier()
+                .immuneTo(DamageTypes.IN_WALL)
+                .immuneTo(DamageTypes.DROWN)
+                .immuneTo(DamageTypes.LAVA)
+                .immuneTo(DamageTypes.CACTUS)
+                .immuneTo(DamageTypes.FALL)
+                .immuneTo(DamageTypes.SWEET_BERRY_BUSH)
+                .immuneTo(DamageTypes.BAD_RESPAWN_POINT)
     }
 }

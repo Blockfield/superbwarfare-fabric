@@ -15,42 +15,39 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
 
-class VehicleAssemblingCategory(helper: IGuiHelper) : IRecipeCategory<VehicleAssemblingRecipe> {
-    private val background: IDrawable = helper.drawableBuilder(TEXTURE, 0, 0, 144, 36)
-        .setTextureSize(144, 36)
-        .build()
-    private val icon: IDrawable = helper.createDrawableIngredient(
-        VanillaTypes.ITEM_STACK,
-        ItemStack(ModItems.VEHICLE_ASSEMBLING_TABLE.get())
-    )
+class VehicleAssemblingCategory(
+    helper: IGuiHelper,
+) : IRecipeCategory<VehicleAssemblingRecipe> {
+    private val background: IDrawable =
+        helper
+            .drawableBuilder(TEXTURE, 0, 0, 144, 36)
+            .setTextureSize(144, 36)
+            .build()
+    private val icon: IDrawable =
+        helper.createDrawableIngredient(
+            VanillaTypes.ITEM_STACK,
+            ItemStack(ModItems.VEHICLE_ASSEMBLING_TABLE.get()),
+        )
 
     @Deprecated("Deprecated in Java")
     @Suppress("removal")
-    override fun getBackground(): IDrawable {
-        return this.background
-    }
+    override fun getBackground(): IDrawable = this.background
 
-    override fun getRecipeType(): RecipeType<VehicleAssemblingRecipe> {
-        return TYPE
-    }
+    override fun getRecipeType(): RecipeType<VehicleAssemblingRecipe> = TYPE
 
-    override fun getTitle(): Component {
-        return Component.translatable("jei.superbwarfare.vehicle_assembling")
-    }
+    override fun getTitle(): Component = Component.translatable("jei.superbwarfare.vehicle_assembling")
 
-    override fun getIcon(): IDrawable {
-        return this.icon
-    }
+    override fun getIcon(): IDrawable = this.icon
 
-    override fun getWidth(): Int {
-        return 144
-    }
+    override fun getWidth(): Int = 144
 
-    override fun getHeight(): Int {
-        return 36
-    }
+    override fun getHeight(): Int = 36
 
-    override fun setRecipe(builder: IRecipeLayoutBuilder, recipe: VehicleAssemblingRecipe, focuses: IFocusGroup) {
+    override fun setRecipe(
+        builder: IRecipeLayoutBuilder,
+        recipe: VehicleAssemblingRecipe,
+        focuses: IFocusGroup,
+    ) {
         val res = recipe.result
         builder.addSlot(RecipeIngredientRole.OUTPUT, 1, 1).addItemStack(res.getResult().copyWithCount(res.count))
 
@@ -58,7 +55,8 @@ class VehicleAssemblingCategory(helper: IGuiHelper) : IRecipeCategory<VehicleAss
             if (i >= 12) return
             val ingredient = recipe.inputs[i].ingredient.getItems()
             ingredient.forEach { it.count = recipe.inputs[i].count }
-            builder.addSlot(RecipeIngredientRole.INPUT, 37 + (i % 6) * 18, 1 + i / 6 * 18)
+            builder
+                .addSlot(RecipeIngredientRole.INPUT, 37 + (i % 6) * 18, 1 + i / 6 * 18)
                 .addItemStacks(listOf(*ingredient))
         }
     }

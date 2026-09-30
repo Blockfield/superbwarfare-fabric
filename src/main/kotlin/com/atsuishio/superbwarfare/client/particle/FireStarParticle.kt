@@ -1,10 +1,10 @@
 package com.atsuishio.superbwarfare.client.particle
 
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.*
 import net.minecraft.core.particles.SimpleParticleType
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
@@ -16,9 +16,11 @@ open class FireStarParticle protected constructor(
     vx: Double,
     vy: Double,
     vz: Double,
-    private val spriteSet: SpriteSet
+    private val spriteSet: SpriteSet,
 ) : TextureSheetParticle(world, x, y, z) {
-    class FireStarParticleProvider(private val spriteSet: SpriteSet) : ParticleProvider<SimpleParticleType> {
+    class FireStarParticleProvider(
+        private val spriteSet: SpriteSet,
+    ) : ParticleProvider<SimpleParticleType> {
         override fun createParticle(
             typeIn: SimpleParticleType,
             worldIn: ClientLevel,
@@ -27,10 +29,8 @@ open class FireStarParticle protected constructor(
             z: Double,
             xSpeed: Double,
             ySpeed: Double,
-            zSpeed: Double
-        ): Particle {
-            return FireStarParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet)
-        }
+            zSpeed: Double,
+        ): Particle = FireStarParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet)
     }
 
     init {
@@ -45,25 +45,18 @@ open class FireStarParticle protected constructor(
         this.setSpriteFromAge(spriteSet)
     }
 
-    public override fun getLightColor(partialTick: Float): Int {
-        return 15728880
-    }
+    public override fun getLightColor(partialTick: Float): Int = 15728880
 
-    override fun getRenderType(): ParticleRenderType {
-        return ParticleRenderType.PARTICLE_SHEET_LIT
-    }
+    override fun getRenderType(): ParticleRenderType = ParticleRenderType.PARTICLE_SHEET_LIT
 
     override fun tick() {
         super.tick()
         if (!this.removed) {
             this.setSprite(this.spriteSet.get((this.age / 2) % 8 + 1, 8))
         }
-
     }
 
     companion object {
-        fun provider(spriteSet: SpriteSet): FireStarParticleProvider {
-            return FireStarParticleProvider(spriteSet)
-        }
+        fun provider(spriteSet: SpriteSet): FireStarParticleProvider = FireStarParticleProvider(spriteSet)
     }
 }

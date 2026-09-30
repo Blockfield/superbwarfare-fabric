@@ -14,6 +14,8 @@ import com.atsuishio.superbwarfare.tools.mc
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -24,8 +26,6 @@ import net.minecraft.util.Mth
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import org.joml.Math
 
 @Environment(EnvType.CLIENT)
@@ -52,7 +52,7 @@ class Ac130GunnerHud {
         guiGraphics: GuiGraphics,
         partialTick: Float,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         val mc = mc
         val poseStack = guiGraphics.pose()
@@ -71,14 +71,14 @@ class Ac130GunnerHud {
                 poseStack.translate(
                     lerpRecoil * 6 + screenWidth * 0.025f * recoil,
                     recoil * 3 + screenHeight * 0.025f * recoil - pitch,
-                    0f
+                    0f,
                 )
                 poseStack.scale(1 - recoil * 0.05f, 1 - recoil * 0.05f, 1f)
                 poseStack.rotateAround(
                     Axis.ZP.rotationDegrees(-0.3f * ClientEventHandler.cameraRoll + 2.5f * lerpRecoil),
                     screenWidth / 2f,
                     screenHeight / 2f,
-                    0f
+                    0f,
                 )
 
                 // 武器名
@@ -90,7 +90,7 @@ class Ac130GunnerHud {
                     mc.font,
                     screenWidth,
                     screenHeight,
-                    color
+                    color,
                 )
 
                 RenderSystem.disableDepthTest()
@@ -101,7 +101,7 @@ class Ac130GunnerHud {
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                     GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ZERO
+                    GlStateManager.DestFactor.ZERO,
                 )
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -111,14 +111,18 @@ class Ac130GunnerHud {
                     COMPASS,
                     screenWidth.toFloat() / 2 - 128,
                     10f,
-                    128 - (64f / 45 * VehicleVecUtils.getYRotFromVector(Vec3(mc.gameRenderer.mainCamera.lookVector))
-                        .toFloat()),
+                    128 - (
+                        64f / 45 *
+                            VehicleVecUtils
+                                .getYRotFromVector(Vec3(mc.gameRenderer.mainCamera.lookVector))
+                                .toFloat()
+                    ),
                     0f,
                     256f,
                     16f,
                     512f,
                     16f,
-                    color
+                    color,
                 )
                 RenderHelper.preciseBlitWithColor(
                     guiGraphics,
@@ -131,7 +135,7 @@ class Ac130GunnerHud {
                     16f,
                     16f,
                     16f,
-                    color
+                    color,
                 )
 
                 RenderSystem.enableBlend()
@@ -150,7 +154,7 @@ class Ac130GunnerHud {
                     (screenWidth + addW).toFloat(),
                     (screenHeight + addH).toFloat(),
                     (screenWidth + addW).toFloat(),
-                    (screenHeight + addH).toFloat()
+                    (screenHeight + addH).toFloat(),
                 )
                 RenderHelper.preciseBlitWithColor(
                     guiGraphics,
@@ -163,7 +167,7 @@ class Ac130GunnerHud {
                     1f,
                     128f,
                     1f,
-                    color
+                    color,
                 )
 
                 // 时速
@@ -172,17 +176,21 @@ class Ac130GunnerHud {
                     Component.literal(
                         format0D(
                             vehicle.absoluteSpeed * 72,
-                            " km/h"
-                        )
+                            " km/h",
+                        ),
                     ),
                     screenWidth / 2 + 160,
                     screenHeight / 2 - 48,
                     color,
-                    false
+                    false,
                 )
                 guiGraphics.drawString(
-                    Minecraft.getInstance().font, Component.literal(format0D(vehicle.y, " m")),
-                    screenWidth / 2 + 160, screenHeight / 2 - 39, color, false
+                    Minecraft.getInstance().font,
+                    Component.literal(format0D(vehicle.y, " m")),
+                    screenWidth / 2 + 160,
+                    screenHeight / 2 - 39,
+                    color,
+                    false,
                 )
 
                 // 低电量警告
@@ -192,16 +200,18 @@ class Ac130GunnerHud {
                 if (vehicle.tickCount != lastRangeTick) {
                     lastRangeTick = vehicle.tickCount
 
-                    val result = player.level().clip(
-                        ClipContext(
-                            vehicle.getShootPosForHud(player, 1f),
-                            vehicle.getShootPosForHud(player, 1f)
-                                .add(vehicle.getShootDirectionForHud(player, 1f).scale(512.0)),
-                            ClipContext.Block.VISUAL,
-                            ClipContext.Fluid.NONE,
-                            player
+                    val result =
+                        player.level().clip(
+                            ClipContext(
+                                vehicle.getShootPosForHud(player, 1f),
+                                vehicle
+                                    .getShootPosForHud(player, 1f)
+                                    .add(vehicle.getShootDirectionForHud(player, 1f).scale(512.0)),
+                                ClipContext.Block.VISUAL,
+                                ClipContext.Fluid.NONE,
+                                player,
+                            ),
                         )
-                    )
                     val hitPos = result.location
                     cachedBlockPos = BlockPos.containing(hitPos)
                     cachedRange = player.getEyePosition(1f).distanceTo(hitPos)
@@ -215,13 +225,14 @@ class Ac130GunnerHud {
                     }
                 }
 
-                val displayText = if (cachedIsEntity || cachedRange <= 500) {
-                    val bp = cachedBlockPos
-                    val coordStr = if (bp != null) " [${bp.x}, ${bp.y}, ${bp.z}]" else ""
-                    "${format0D(cachedRange, " m")}$coordStr"
-                } else {
-                    "---m"
-                }
+                val displayText =
+                    if (cachedIsEntity || cachedRange <= 500) {
+                        val bp = cachedBlockPos
+                        val coordStr = if (bp != null) " [${bp.x}, ${bp.y}, ${bp.z}]" else ""
+                        "${format0D(cachedRange, " m")}$coordStr"
+                    } else {
+                        "---m"
+                    }
 
                 val width = Minecraft.getInstance().font.width(displayText)
                 guiGraphics.drawString(
@@ -230,9 +241,9 @@ class Ac130GunnerHud {
                     screenWidth / 2 - width / 2,
                     screenHeight - 53,
                     color,
-                    false
+                    false,
                 )
-                
+
                 poseStack.popPose()
             }
         }

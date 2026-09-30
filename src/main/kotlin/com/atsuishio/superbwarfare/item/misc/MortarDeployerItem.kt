@@ -14,20 +14,18 @@ import javax.annotation.ParametersAreNonnullByDefault
 class MortarDeployerItem : AbstractDeployerItem(Properties().rarity(Rarity.RARE)) {
     override fun spawnDeployedEntity(
         level: Level,
-        player: Player
-    ): Entity {
-        return MortarEntity(level, player.yRot)
-    }
+        player: Player,
+    ): Entity = MortarEntity(level, player.yRot)
 
     @ParametersAreNonnullByDefault
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.mortar_deployer").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.mortar_deployer").withStyle(ChatFormatting.GRAY),
         )
     }
 }

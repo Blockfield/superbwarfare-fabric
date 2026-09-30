@@ -1,10 +1,13 @@
 package com.atsuishio.superbwarfare.client.tooltip
 
+import com.atsuishio.superbwarfare.client.boundKey
 import com.atsuishio.superbwarfare.client.tooltip.component.GunImageComponent
 import com.atsuishio.superbwarfare.data.gun.FireMode
 import com.atsuishio.superbwarfare.data.gun.GunData
 import com.atsuishio.superbwarfare.data.gun.GunData.Companion.from
 import com.atsuishio.superbwarfare.data.gun.GunProp
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModKeyMappings
 import com.atsuishio.superbwarfare.item.gun.GunItem
 import com.atsuishio.superbwarfare.perk.Perk
@@ -20,21 +23,25 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
-import com.atsuishio.superbwarfare.client.boundKey
 
-open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComponent {
+open class ClientGunImageTooltip(
+    tooltip: GunImageComponent,
+) : ClientTooltipComponent {
     protected val tipWidth: Int = tooltip.width
     protected val tipHeight: Int = tooltip.height
     protected val stack: ItemStack = tooltip.stack
     protected val data: GunData = from(stack)
 
-    override fun renderImage(font: Font, x: Int, y: Int, guiGraphics: GuiGraphics) {
+    override fun renderImage(
+        font: Font,
+        x: Int,
+        y: Int,
+        guiGraphics: GuiGraphics,
+    ) {
         guiGraphics.pose().pushPose()
 
         renderDamageAndRpmTooltip(font, guiGraphics, x, y)
@@ -73,9 +80,9 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
         return true
     }
 
-    protected fun shouldRenderPerks(): Boolean {
-        return data.perk.get(Perk.Type.AMMO) != null || data.perk.get(Perk.Type.DAMAGE) != null || data.perk.get(Perk.Type.FUNCTIONAL) != null
-    }
+    protected fun shouldRenderPerks(): Boolean =
+        data.perk.get(Perk.Type.AMMO) != null || data.perk.get(Perk.Type.DAMAGE) != null ||
+            data.perk.get(Perk.Type.FUNCTIONAL) != null
 
     protected fun shouldRenderEnergyTooltip(): Boolean {
         val cap = stack.getCapability(Capabilities.EnergyStorage.ITEM)
@@ -93,7 +100,12 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
     /**
      * 渲染武器伤害和射速
      */
-    protected fun renderDamageAndRpmTooltip(font: Font, guiGraphics: GuiGraphics, x: Int, y: Int) {
+    protected fun renderDamageAndRpmTooltip(
+        font: Font,
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+    ) {
         guiGraphics.drawString(font, this.damageComponent, x, y, 0xFFFFFF)
         val xo = font.width(this.damageComponent.visualOrderText)
         guiGraphics.drawString(font, this.rpmComponent, x + xo + 16, y, 0xFFFFFF)
@@ -113,7 +125,8 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
             }
 
             var component =
-                Component.translatable("des.superbwarfare.guns.damage")
+                Component
+                    .translatable("des.superbwarfare.guns.damage")
                     .withStyle(ChatFormatting.GRAY)
                     .append(Component.empty().withStyle(ChatFormatting.RESET))
                     .append(Component.literal(dmgStr).withStyle(ChatFormatting.GREEN))
@@ -123,11 +136,12 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
                 if (data.get(GunProp.PROJECTILE_AMOUNT) > 1) {
                     expDmgStr = expDmgStr + " * " + data.get(GunProp.PROJECTILE_AMOUNT)
                 }
-                component = component
-                    .append(Component.empty().withStyle(ChatFormatting.RESET))
-                    .append(
-                        Component.literal(" + $expDmgStr").withStyle(ChatFormatting.GOLD)
-                    )
+                component =
+                    component
+                        .append(Component.empty().withStyle(ChatFormatting.RESET))
+                        .append(
+                            Component.literal(" + $expDmgStr").withStyle(ChatFormatting.GOLD),
+                        )
             }
 
             return component
@@ -144,11 +158,12 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
             val info = data.selectedFireModeInfo()
 
             if (info.mode == FireMode.AUTO || info.mode == FireMode.BURST) {
-                return Component.translatable("des.superbwarfare.guns.rpm")
+                return Component
+                    .translatable("des.superbwarfare.guns.rpm")
                     .withStyle(ChatFormatting.GRAY)
                     .append(Component.empty().withStyle(ChatFormatting.RESET))
                     .append(
-                        Component.literal(format0D(data.get(GunProp.RPM).toDouble())).withStyle(ChatFormatting.GREEN)
+                        Component.literal(format0D(data.get(GunProp.RPM).toDouble())).withStyle(ChatFormatting.GREEN),
                     )
             }
             return Component.empty()
@@ -157,7 +172,12 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
     /**
      * 渲染武器等级和强化点数
      */
-    protected fun renderLevelAndUpgradePointTooltip(font: Font, guiGraphics: GuiGraphics, x: Int, y: Int) {
+    protected fun renderLevelAndUpgradePointTooltip(
+        font: Font,
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+    ) {
         guiGraphics.drawString(font, this.levelComponent, x, y, 0xFFFFFF)
         val xo = font.width(this.levelComponent.visualOrderText)
         guiGraphics.drawString(font, this.upgradePointComponent, x + xo + 16, y, 0xFFFFFF)
@@ -170,29 +190,33 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
         get() {
             val level = data.level.get()
             val rate = data.exp.get() / (20 * level.toDouble().pow(2.0) + 160 * level + 20)
-            val formatting = if (level < 10) {
-                ChatFormatting.WHITE
-            } else if (level < 20) {
-                ChatFormatting.AQUA
-            } else if (level < 30) {
-                ChatFormatting.LIGHT_PURPLE
-            } else if (level < 40) {
-                ChatFormatting.GOLD
-            } else {
-                ChatFormatting.RED
-            }
+            val formatting =
+                if (level < 10) {
+                    ChatFormatting.WHITE
+                } else if (level < 20) {
+                    ChatFormatting.AQUA
+                } else if (level < 30) {
+                    ChatFormatting.LIGHT_PURPLE
+                } else if (level < 40) {
+                    ChatFormatting.GOLD
+                } else {
+                    ChatFormatting.RED
+                }
 
-            return Component.translatable("des.superbwarfare.guns.level")
+            return Component
+                .translatable("des.superbwarfare.guns.level")
                 .withStyle(ChatFormatting.GRAY)
                 .append(Component.empty().withStyle(ChatFormatting.RESET))
                 .append(
-                    Component.literal(level.toString() + "").withStyle(formatting)
-                        .withStyle(ChatFormatting.BOLD)
-                )
-                .append(Component.empty().withStyle(ChatFormatting.RESET))
+                    Component
+                        .literal(level.toString() + "")
+                        .withStyle(formatting)
+                        .withStyle(ChatFormatting.BOLD),
+                ).append(Component.empty().withStyle(ChatFormatting.RESET))
                 .append(
-                    Component.literal(" (" + FormatTool.DECIMAL_FORMAT_2ZZZ.format(rate * 100) + "%)")
-                        .withStyle(ChatFormatting.GRAY)
+                    Component
+                        .literal(" (" + FormatTool.DECIMAL_FORMAT_2ZZZ.format(rate * 100) + "%)")
+                        .withStyle(ChatFormatting.GRAY),
                 )
         }
 
@@ -212,19 +236,27 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
             }
             upgradePoint = max(upgradePoint, 0)
 
-            return Component.translatable("des.superbwarfare.guns.upgrade_point")
+            return Component
+                .translatable("des.superbwarfare.guns.upgrade_point")
                 .withStyle(ChatFormatting.GRAY)
                 .append(Component.empty().withStyle(ChatFormatting.RESET))
                 .append(
-                    Component.literal(upgradePoint.toString())
-                        .withStyle(ChatFormatting.WHITE).withStyle(ChatFormatting.BOLD)
+                    Component
+                        .literal(upgradePoint.toString())
+                        .withStyle(ChatFormatting.WHITE)
+                        .withStyle(ChatFormatting.BOLD),
                 )
         }
 
     /**
      * 渲染武器穿甲比例和爆头倍率
      */
-    protected fun renderBypassAndHeadshotTooltip(font: Font, guiGraphics: GuiGraphics, x: Int, y: Int) {
+    protected fun renderBypassAndHeadshotTooltip(
+        font: Font,
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+    ) {
         guiGraphics.drawString(font, this.bypassComponent, x, y, 0xFFFFFF)
         val xo = font.width(this.bypassComponent.visualOrderText)
         guiGraphics.drawString(font, this.headshotComponent, x + xo + 16, y, 0xFFFFFF)
@@ -236,12 +268,14 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
          */
         get() {
             val bypassRate = max(data.get(GunProp.BYPASSES_ARMOR), 0.0)
-            return Component.translatable("des.superbwarfare.guns.bypass")
+            return Component
+                .translatable("des.superbwarfare.guns.bypass")
                 .withStyle(ChatFormatting.GRAY)
                 .append(Component.empty().withStyle(ChatFormatting.RESET))
                 .append(
-                    Component.literal(format2D(bypassRate * 100, "%"))
-                        .withStyle(ChatFormatting.GOLD)
+                    Component
+                        .literal(format2D(bypassRate * 100, "%"))
+                        .withStyle(ChatFormatting.GOLD),
                 )
         }
 
@@ -251,19 +285,26 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
          */
         get() {
             val headshot = data.get(GunProp.HEADSHOT)
-            return Component.translatable("des.superbwarfare.guns.headshot")
+            return Component
+                .translatable("des.superbwarfare.guns.headshot")
                 .withStyle(ChatFormatting.GRAY)
                 .append(Component.empty().withStyle(ChatFormatting.RESET))
                 .append(
-                    Component.literal(format1D(headshot, "x"))
-                        .withStyle(ChatFormatting.AQUA)
+                    Component
+                        .literal(format1D(headshot, "x"))
+                        .withStyle(ChatFormatting.AQUA),
                 )
         }
 
     /**
      * 渲染武器能量信息
      */
-    protected fun renderEnergyTooltip(font: Font, guiGraphics: GuiGraphics, x: Int, y: Int) {
+    protected fun renderEnergyTooltip(
+        font: Font,
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+    ) {
         guiGraphics.drawString(font, this.energyComponent, x, y, 0xFFFFFF)
     }
 
@@ -279,13 +320,14 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
             val maxEnergy = storage.maxEnergyStored
             val percentage = (energy.toFloat() / maxEnergy).coerceIn(0f, 1f)
             val component = Component.empty()
-            val format = if (percentage <= .2f) {
-                ChatFormatting.RED
-            } else if (percentage <= .6f) {
-                ChatFormatting.YELLOW
-            } else {
-                ChatFormatting.GREEN
-            }
+            val format =
+                if (percentage <= .2f) {
+                    ChatFormatting.RED
+                } else if (percentage <= .6f) {
+                    ChatFormatting.YELLOW
+                } else {
+                    ChatFormatting.GREEN
+                }
 
             val count = (percentage * 50).toInt()
             repeat(count) {
@@ -297,8 +339,9 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
             }
 
             component.append(
-                Component.literal(" $energy/$maxEnergy FE")
-                    .withStyle(ChatFormatting.GRAY)
+                Component
+                    .literal(" $energy/$maxEnergy FE")
+                    .withStyle(ChatFormatting.GRAY),
             )
 
             return component
@@ -307,7 +350,12 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
     /**
      * 渲染武器改装信息
      */
-    protected fun renderWeaponEditTooltip(font: Font, guiGraphics: GuiGraphics, x: Int, y: Int) {
+    protected fun renderWeaponEditTooltip(
+        font: Font,
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+    ) {
         guiGraphics.drawString(font, this.editComponent, x, y + 10, 0xFFFFFF)
     }
 
@@ -315,15 +363,23 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
         /**
          * 获取武器改装信息文本组件
          */
-        get() = Component.translatable(
-            "des.superbwarfare.guns.edit",
-            "[" + ModKeyMappings.EDIT_MODE.boundKey.displayName.string + "]"
-        ).withStyle(ChatFormatting.LIGHT_PURPLE).withStyle(ChatFormatting.ITALIC)
+        get() =
+            Component
+                .translatable(
+                    "des.superbwarfare.guns.edit",
+                    "[" + ModKeyMappings.EDIT_MODE.boundKey.displayName.string + "]",
+                ).withStyle(ChatFormatting.LIGHT_PURPLE)
+                .withStyle(ChatFormatting.ITALIC)
 
     /**
      * 渲染武器模组缩略图
      */
-    protected fun renderPerksShortcut(font: Font, guiGraphics: GuiGraphics, x: Int, y: Int) {
+    protected fun renderPerksShortcut(
+        font: Font,
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+    ) {
         guiGraphics.pose().pushPose()
 
         var xOffset = -20
@@ -358,13 +414,21 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
     /**
      * 渲染武器模组详细信息
      */
-    protected fun renderPerks(font: Font, guiGraphics: GuiGraphics, x: Int, y: Int) {
+    protected fun renderPerks(
+        font: Font,
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+    ) {
         guiGraphics.pose().pushPose()
 
-        var tip = Component.empty().append(
-            Component.translatable("perk.superbwarfare.tips").withStyle(ChatFormatting.GOLD)
-                .withStyle(ChatFormatting.UNDERLINE)
-        )
+        var tip =
+            Component.empty().append(
+                Component
+                    .translatable("perk.superbwarfare.tips")
+                    .withStyle(ChatFormatting.GOLD)
+                    .withStyle(ChatFormatting.UNDERLINE),
+            )
         var yOffset = -5
 
         val list: MutableList<PerkInstance> = mutableListOf()
@@ -377,10 +441,13 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
         val maxPage = ceil(list.size / (PAGE_SIZE * 1.0)).toInt()
 
         if (maxPage > 1) {
-            tip = tip.append(
-                Component.empty().withStyle(ChatFormatting.RESET)
-                    .append(Component.literal(" (" + (page + 1) + " / " + maxPage + ")").withStyle(ChatFormatting.GRAY))
-            )
+            tip =
+                tip.append(
+                    Component
+                        .empty()
+                        .withStyle(ChatFormatting.RESET)
+                        .append(Component.literal(" (" + (page + 1) + " / " + maxPage + ")").withStyle(ChatFormatting.GRAY)),
+                )
         }
 
         guiGraphics.drawString(font, tip, x, y + 10, 0xFFFFFF)
@@ -394,9 +461,12 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
 
             val id = perkInstance.perk.descriptionId
 
-            val component = Component.translatable("item.superbwarfare.$id").withStyle(perkInstance.perk.type.color)
-                .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
-                .append(Component.literal(" Lvl. ${perkInstance.level}").withStyle(ChatFormatting.WHITE))
+            val component =
+                Component
+                    .translatable("item.superbwarfare.$id")
+                    .withStyle(perkInstance.perk.type.color)
+                    .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
+                    .append(Component.literal(" Lvl. ${perkInstance.level}").withStyle(ChatFormatting.WHITE))
             val descComponent = Component.translatable("des.superbwarfare.$id").withStyle(ChatFormatting.GRAY)
 
             guiGraphics.drawString(font, component, x + 20, y + yOffset + 2, 0xFFFFFF)
@@ -409,15 +479,17 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
     protected fun getDefaultMaxWidth(font: Font): Int {
         var width =
             font.width(this.damageComponent.visualOrderText) + font.width(this.rpmComponent.visualOrderText) + 16
-        width = max(
-            width,
-            font.width(this.levelComponent.visualOrderText) + font.width(this.upgradePointComponent.visualOrderText) + 16
-        )
-        if (shouldRenderBypassAndHeadshotTooltip()) {
-            width = max(
+        width =
+            max(
                 width,
-                font.width(this.bypassComponent.visualOrderText) + font.width(this.headshotComponent.visualOrderText) + 16
+                font.width(this.levelComponent.visualOrderText) + font.width(this.upgradePointComponent.visualOrderText) + 16,
             )
+        if (shouldRenderBypassAndHeadshotTooltip()) {
+            width =
+                max(
+                    width,
+                    font.width(this.bypassComponent.visualOrderText) + font.width(this.headshotComponent.visualOrderText) + 16,
+                )
         }
         if (shouldRenderEditTooltip()) {
             width = max(width, font.width(this.editComponent.visualOrderText) + 16)
@@ -471,15 +543,16 @@ open class ClientGunImageTooltip(tooltip: GunImageComponent) : ClientTooltipComp
     override fun getWidth(font: Font): Int {
         var width = getMaxPerkDesWidth(font)
 
-        width = if (Screen.hasShiftDown()) {
-            if (width == 0) {
-                max(this.tipWidth, getDefaultMaxWidth(font))
+        width =
+            if (Screen.hasShiftDown()) {
+                if (width == 0) {
+                    max(this.tipWidth, getDefaultMaxWidth(font))
+                } else {
+                    max(width, getDefaultMaxWidth(font))
+                }
             } else {
-                max(width, getDefaultMaxWidth(font))
+                getDefaultMaxWidth(font)
             }
-        } else {
-            getDefaultMaxWidth(font)
-        }
 
         if (shouldRenderEnergyTooltip()) {
             width = max(width, font.width(this.energyComponent.visualOrderText) + 10)

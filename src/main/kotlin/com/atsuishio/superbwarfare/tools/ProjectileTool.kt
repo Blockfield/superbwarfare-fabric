@@ -15,18 +15,18 @@ fun Projectile.customExplode(
     source: DamageSource?,
     target: Entity,
     damage: Float,
-    radius: Float
+    radius: Float,
 ) = causeCustomExplode(this, source, target, damage, radius)
 
 fun Projectile.customExplode(
     target: Entity,
     damage: Float,
-    radius: Float
+    radius: Float,
 ) = causeCustomExplode(this, target, damage, radius)
 
 fun Projectile.customExplode(
     damage: Float,
-    radius: Float
+    radius: Float,
 ) = causeCustomExplode(this, damage, radius)
 
 object ProjectileTool {
@@ -36,14 +36,16 @@ object ProjectileTool {
         source: DamageSource?,
         target: Entity,
         damage: Float,
-        radius: Float
+        radius: Float,
     ) {
-        val explosion = CustomExplosion.Builder(projectile)
-            .damageSource(source)
-            .damage(damage)
-            .radius(radius)
-            .position(Vec3(target.x, target.y + 0.5 * target.bbHeight, target.z))
-            .particlePosition(projectile.position().add(projectile.deltaMovement.scale(0.5)))
+        val explosion =
+            CustomExplosion
+                .Builder(projectile)
+                .damageSource(source)
+                .damage(damage)
+                .radius(radius)
+                .position(Vec3(target.x, target.y + 0.5 * target.bbHeight, target.z))
+                .particlePosition(projectile.position().add(projectile.deltaMovement.scale(0.5)))
 
         if (projectile is IBulletProperties) {
             explosion.beast(projectile.isBeast())
@@ -59,7 +61,7 @@ object ProjectileTool {
                 pos.y,
                 pos.z,
                 0.5f * radius,
-                if (ExplosionConfig.EXPLOSION_DESTROY.get()) Level.ExplosionInteraction.BLOCK else Level.ExplosionInteraction.NONE
+                if (ExplosionConfig.EXPLOSION_DESTROY.get()) Level.ExplosionInteraction.BLOCK else Level.ExplosionInteraction.NONE,
             )
         }
 
@@ -71,18 +73,18 @@ object ProjectileTool {
         projectile: Projectile,
         target: Entity,
         damage: Float,
-        radius: Float
+        radius: Float,
     ) {
         causeCustomExplode(
             projectile,
             ModDamageTypes.causeCustomExplosionDamage(
                 projectile.level().registryAccess(),
                 projectile,
-                projectile.owner
+                projectile.owner,
             ),
             target,
             damage,
-            radius
+            radius,
         )
     }
 
@@ -90,7 +92,7 @@ object ProjectileTool {
     fun causeCustomExplode(
         projectile: Projectile,
         damage: Float,
-        radius: Float
+        radius: Float,
     ) {
         causeCustomExplode(projectile, projectile, damage, radius)
     }

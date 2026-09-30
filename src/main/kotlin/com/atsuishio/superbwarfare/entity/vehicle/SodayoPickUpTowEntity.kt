@@ -14,7 +14,10 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import java.util.*
 
-class SodayoPickUpTowEntity(type: EntityType<SodayoPickUpTowEntity>, world: Level) : VehicleEntity(type, world) {
+class SodayoPickUpTowEntity(
+    type: EntityType<SodayoPickUpTowEntity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     override fun baseTick() {
         super.baseTick()
         if (decoyInputDown) {
@@ -22,7 +25,11 @@ class SodayoPickUpTowEntity(type: EntityType<SodayoPickUpTowEntity>, world: Leve
         }
     }
 
-    override fun vehicleShoot(living: LivingEntity?, uuid: UUID?, targetPos: Vec3?) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        uuid: UUID?,
+        targetPos: Vec3?,
+    ) {
         super.vehicleShoot(living, uuid, targetPos)
 
         val barrelVector = getBarrelVector(1f)
@@ -30,14 +37,15 @@ class SodayoPickUpTowEntity(type: EntityType<SodayoPickUpTowEntity>, world: Leve
         val ab = AABB(pos, pos).inflate(0.75).move(barrelVector.scale(-2.0)).expandTowards(barrelVector.scale(-5.0))
 
         // 尾焰伤害
-        for (entity in level().getEntities(
+        for (
+        entity in level().getEntities(
             EntityTypeTest.forClass(Entity::class.java),
-            ab
+            ab,
         ) { target -> target !== this && target !== getFirstPassenger() && target.vehicle == null }
         ) {
             entity.hurt(
                 ModDamageTypes.causeBurnDamage(entity.level().registryAccess(), living),
-                30 - 2 * entity.distanceTo(this)
+                30 - 2 * entity.distanceTo(this),
             )
             val force = 4 - 0.7 * entity.distanceTo(this)
             entity.push(-force * barrelVector.x, -force * barrelVector.y, -force * barrelVector.z)

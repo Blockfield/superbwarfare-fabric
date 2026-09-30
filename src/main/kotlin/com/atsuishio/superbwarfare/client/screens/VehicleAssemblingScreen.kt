@@ -25,6 +25,8 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -46,8 +48,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.RecipeHolder
 import net.minecraft.world.phys.Vec2
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 import kotlin.math.min
 
@@ -55,9 +55,11 @@ import kotlin.math.min
  * Code based on TaC-Z
  */
 @Environment(EnvType.CLIENT)
-class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: Inventory, pTitle: Component) :
-    AbstractContainerScreen<VehicleAssemblingMenu>(pMenu, pPlayerInventory, pTitle) {
-
+class VehicleAssemblingScreen(
+    pMenu: VehicleAssemblingMenu,
+    pPlayerInventory: Inventory,
+    pTitle: Component,
+) : AbstractContainerScreen<VehicleAssemblingMenu>(pMenu, pPlayerInventory, pTitle) {
     private val recipes: MutableMap<VehicleAssemblingRecipe.Category?, MutableList<ResourceLocation?>?> =
         Maps.newLinkedHashMap()
 
@@ -99,17 +101,31 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         this.currentRecipes = this.recipes[this.currentCategory]
     }
 
-    fun addCategoryButtons(posX: Int, posY: Int) {
-        for ((i, category) in VehicleAssemblingRecipe.Category.entries.toTypedArray().withIndex()) {
-            val button = CategoryButton(posX, posY + 21 + i * 23, category) { _ ->
-                this.currentCategory = category
-                this.currentRecipes = this.recipes[category]
-                this.currentRecipe =
-                    this.getRecipeById(if (this.currentRecipes == null || this.currentRecipes!!.isEmpty()) null else this.currentRecipes!![0])
-                this.pageIndex = 0
-                this.calculateMaterialCount(this.currentRecipe)
-                this.init()
-            }
+    fun addCategoryButtons(
+        posX: Int,
+        posY: Int,
+    ) {
+        for ((i, category) in VehicleAssemblingRecipe.Category.entries
+            .toTypedArray()
+            .withIndex()) {
+            val button =
+                CategoryButton(posX, posY + 21 + i * 23, category) { _ ->
+                    this.currentCategory = category
+                    this.currentRecipes = this.recipes[category]
+                    this.currentRecipe =
+                        this.getRecipeById(
+                            if (this.currentRecipes == null ||
+                                this.currentRecipes!!.isEmpty()
+                            ) {
+                                null
+                            } else {
+                                this.currentRecipes!![0]
+                            },
+                        )
+                    this.pageIndex = 0
+                    this.calculateMaterialCount(this.currentRecipe)
+                    this.init()
+                }
             if (this.currentCategory == category) {
                 button.setSelected(true)
             }
@@ -117,7 +133,12 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         }
     }
 
-    override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+    override fun render(
+        guiGraphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+        partialTick: Float,
+    ) {
         this.renderBackground(guiGraphics, mouseX, mouseY, partialTick)
         super.render(guiGraphics, mouseX, mouseY, partialTick)
         this.renderTooltip(guiGraphics, mouseX, mouseY)
@@ -130,12 +151,16 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
                 this.font,
                 Component.translatable(
                     "container.superbwarfare.vehicle_assembling_table.count",
-                    currentRecipe.value().result.getResult().count
+                    currentRecipe
+                        .value()
+                        .result
+                        .getResult()
+                        .count,
                 ),
                 this.leftPos + 214,
                 this.topPos + 164,
                 5592405,
-                false
+                false,
             )
         }
 
@@ -155,14 +180,23 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         }
     }
 
-    override fun renderBg(pGuiGraphics: GuiGraphics, pPartialTick: Float, pMouseX: Int, pMouseY: Int) {
+    override fun renderBg(
+        pGuiGraphics: GuiGraphics,
+        pPartialTick: Float,
+        pMouseX: Int,
+        pMouseY: Int,
+    ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
         pGuiGraphics.blit(TEXTURE, i, j, 0f, 0f, this.imageWidth, this.imageHeight, IMAGE_SIZE, IMAGE_SIZE)
     }
 
     // 本方法留空
-    override fun renderLabels(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {}
+    override fun renderLabels(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+    ) {}
 
     private fun getRecipeById(recipeId: ResourceLocation?): RecipeHolder<VehicleAssemblingRecipe>? {
         if (recipeId == null) return null
@@ -201,7 +235,10 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         }
     }
 
-    fun addRecipeButtons(posX: Int, posY: Int) {
+    fun addRecipeButtons(
+        posX: Int,
+        posY: Int,
+    ) {
         val currentRecipes = this.currentRecipes
         if (!currentRecipes.isNullOrEmpty()) {
             for (i in 0..8) {
@@ -211,17 +248,18 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
                 val id = currentRecipes[index]
                 val recipe = this.getRecipeById(id) ?: break
 
-                val button = this.addRenderableWidget(
-                    RecipeButton(
-                        posX + 26,
-                        posY + 21 + i * 17,
-                        recipe.value().result.getResult()
-                    ) { _ ->
-                        this.currentRecipe = recipe
-                        this.calculateMaterialCount(recipe)
-                        this.init()
-                    }
-                )
+                val button =
+                    this.addRenderableWidget(
+                        RecipeButton(
+                            posX + 26,
+                            posY + 21 + i * 17,
+                            recipe.value().result.getResult(),
+                        ) { _ ->
+                            this.currentRecipe = recipe
+                            this.calculateMaterialCount(recipe)
+                            this.init()
+                        },
+                    )
                 if (recipe == this.currentRecipe) {
                     button.setSelected(true)
                 }
@@ -229,7 +267,11 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         }
     }
 
-    private fun renderIngredients(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int) {
+    private fun renderIngredients(
+        guiGraphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+    ) {
         val inputs = this.currentRecipe?.value()?.inputs ?: return
 
         val x = (this.width - this.imageWidth) / 2
@@ -287,12 +329,14 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
     }
 
     @Suppress("unchecked_cast")
-    private val scaleAnimator = ValueAnimator(300, DEFAULT_MODEL_SCALE)
-        .animation(AnimationCurves.EASE_OUT_EXPO) as ValueAnimator<Float>
+    private val scaleAnimator =
+        ValueAnimator(300, DEFAULT_MODEL_SCALE)
+            .animation(AnimationCurves.EASE_OUT_EXPO) as ValueAnimator<Float>
 
     @Suppress("unchecked_cast")
-    private val modelPosAnimator = ValueAnimator(300, Vec2(DEFAULT_MODEL_X.toFloat(), DEFAULT_MODEL_Y.toFloat()))
-        .animation(AnimationCurves.EASE_OUT_EXPO) as ValueAnimator<Vec2>
+    private val modelPosAnimator =
+        ValueAnimator(300, Vec2(DEFAULT_MODEL_X.toFloat(), DEFAULT_MODEL_Y.toFloat()))
+            .animation(AnimationCurves.EASE_OUT_EXPO) as ValueAnimator<Vec2>
 
     init {
         imageWidth = 356
@@ -304,7 +348,13 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         this.calculateMaterialCount(this.currentRecipe)
     }
 
-    override fun mouseDragged(pMouseX: Double, pMouseY: Double, pButton: Int, pDragX: Double, pDragY: Double): Boolean {
+    override fun mouseDragged(
+        pMouseX: Double,
+        pMouseY: Double,
+        pButton: Int,
+        pDragX: Double,
+        pDragY: Double,
+    ): Boolean {
         if (pMouseX >= this.leftPos + 114 && pMouseX <= this.leftPos + 354 && pMouseY >= this.topPos && pMouseY <= this.topPos + 99) {
             val newVec = modelPosAnimator.newValue()
             val posX =
@@ -317,7 +367,12 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY)
     }
 
-    override fun mouseScrolled(pMouseX: Double, pMouseY: Double, scrollX: Double, scrollY: Double): Boolean {
+    override fun mouseScrolled(
+        pMouseX: Double,
+        pMouseY: Double,
+        scrollX: Double,
+        scrollY: Double,
+    ): Boolean {
         if (pMouseX >= this.leftPos + 26 && pMouseX <= this.leftPos + 106 && pMouseY >= this.topPos + 21 && pMouseY <= this.topPos + 175) {
             if (scrollY > 0) {
                 this.pageIndex = max(0, this.pageIndex - 1)
@@ -333,21 +388,25 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         if (pMouseX >= this.leftPos + 114 && pMouseX <= this.leftPos + 354 && pMouseY >= this.topPos && pMouseY <= this.topPos + 99) {
             val targetScale: Float
             if (scrollY > 0) {
-                targetScale = min(
-                    scaleAnimator.lerp(
-                        scaleAnimator.oldValue(),
-                        scaleAnimator.newValue(),
-                        System.currentTimeMillis()
-                    ) + 20, MAX_MODEL_SCALE
-                )
+                targetScale =
+                    min(
+                        scaleAnimator.lerp(
+                            scaleAnimator.oldValue(),
+                            scaleAnimator.newValue(),
+                            System.currentTimeMillis(),
+                        ) + 20,
+                        MAX_MODEL_SCALE,
+                    )
             } else {
-                targetScale = max(
-                    scaleAnimator.lerp(
-                        scaleAnimator.oldValue(),
-                        scaleAnimator.newValue(),
-                        System.currentTimeMillis()
-                    ) - 20, MIN_MODEL_SCALE
-                )
+                targetScale =
+                    max(
+                        scaleAnimator.lerp(
+                            scaleAnimator.oldValue(),
+                            scaleAnimator.newValue(),
+                            System.currentTimeMillis(),
+                        ) - 20,
+                        MIN_MODEL_SCALE,
+                    )
             }
 
             scaleAnimator.update(targetScale)
@@ -358,9 +417,15 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         return super.mouseScrolled(pMouseX, pMouseY, scrollX, scrollY)
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
+    override fun mouseClicked(
+        pMouseX: Double,
+        pMouseY: Double,
+        pButton: Int,
+    ): Boolean {
         val list = this.getIngredientAreas()
-        if (list.isNotEmpty() && pMouseX >= this.leftPos + 214 && pMouseY >= this.topPos + 117 && pMouseX <= this.leftPos + 350 && pMouseY <= this.topPos + 160) {
+        if (list.isNotEmpty() && pMouseX >= this.leftPos + 214 && pMouseY >= this.topPos + 117 && pMouseX <= this.leftPos + 350 &&
+            pMouseY <= this.topPos + 160
+        ) {
             if (hasJEI()) {
                 val ingredientArea = list.stream().filter { area -> area.contains(pMouseX, pMouseY) }.findFirst()
                 if (ingredientArea.isPresent) {
@@ -374,18 +439,27 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         return super.mouseClicked(pMouseX, pMouseY, pButton)
     }
 
-    fun addPageButtons(posX: Int, posY: Int) {
-        val left = this.addRenderableWidget(PageButton(posX + 95, posY - 1, true) { _ ->
-            this.pageIndex = max(0, this.pageIndex - 1)
-            this.init()
-        })
+    fun addPageButtons(
+        posX: Int,
+        posY: Int,
+    ) {
+        val left =
+            this.addRenderableWidget(
+                PageButton(posX + 95, posY - 1, true) { _ ->
+                    this.pageIndex = max(0, this.pageIndex - 1)
+                    this.init()
+                },
+            )
         val currentRecipes = this.currentRecipes
-        val right = this.addRenderableWidget(PageButton(posX + 103, posY - 1, false) { _ ->
-            if (!currentRecipes.isNullOrEmpty()) {
-                this.pageIndex = min((currentRecipes.size - 1) / PAGE_SIZE, this.pageIndex + 1)
-                this.init()
-            }
-        })
+        val right =
+            this.addRenderableWidget(
+                PageButton(posX + 103, posY - 1, false) { _ ->
+                    if (!currentRecipes.isNullOrEmpty()) {
+                        this.pageIndex = min((currentRecipes.size - 1) / PAGE_SIZE, this.pageIndex + 1)
+                        this.init()
+                    }
+                },
+            )
         if (!currentRecipes.isNullOrEmpty()) {
             left.active = this.pageIndex > 0
             right.active = this.pageIndex < (currentRecipes.size - 1) / PAGE_SIZE
@@ -395,29 +469,38 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         }
     }
 
-    fun addAssembleButton(posX: Int, posY: Int) {
+    fun addAssembleButton(
+        posX: Int,
+        posY: Int,
+    ) {
         val currentRecipe = this.currentRecipe
         val materialCount = this.materialCount
-        this.addRenderableWidget(AssembleButton(posX + 295, posY + 163, Button.OnPress { _ ->
-            if (currentRecipe == null || materialCount == null) return@OnPress
-            val inputs = currentRecipe.value().inputs
-            val size = inputs.size
+        this.addRenderableWidget(
+            AssembleButton(
+                posX + 295,
+                posY + 163,
+                Button.OnPress { _ ->
+                    if (currentRecipe == null || materialCount == null) return@OnPress
+                    val inputs = currentRecipe.value().inputs
+                    val size = inputs.size
 
-            for (i in 0..<size) {
-                if (i >= materialCount.size) {
-                    return@OnPress
-                }
+                    for (i in 0..<size) {
+                        if (i >= materialCount.size) {
+                            return@OnPress
+                        }
 
-                val hasCount = materialCount.get(i)
-                val needCount = inputs[i].count
-                val player = localPlayer
-                val isCreative = player != null && player.isCreative()
-                if (hasCount < needCount && !isCreative) {
-                    return@OnPress
-                }
-            }
-            sendPacketToServer(AssembleVehicleMessage(this.currentRecipe!!.id, this.menu.containerId))
-        }))
+                        val hasCount = materialCount.get(i)
+                        val needCount = inputs[i].count
+                        val player = localPlayer
+                        val isCreative = player != null && player.isCreative()
+                        if (hasCount < needCount && !isCreative) {
+                            return@OnPress
+                        }
+                    }
+                    sendPacketToServer(AssembleVehicleMessage(this.currentRecipe!!.id, this.menu.containerId))
+                },
+            ),
+        )
     }
 
     fun finishAssembling() {
@@ -427,7 +510,10 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         this.init()
     }
 
-    fun addScaleButtons(posX: Int, posY: Int) {
+    fun addScaleButtons(
+        posX: Int,
+        posY: Int,
+    ) {
         this.addRenderableWidget(
             ScaleButton(posX + 324, posY + 90, 149, 182) { _ ->
                 val time = System.currentTimeMillis()
@@ -435,7 +521,7 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
                 scaleAnimator.beginForward(time)
                 modelPosAnimator.update(Vec2(DEFAULT_MODEL_X.toFloat(), DEFAULT_MODEL_Y.toFloat()))
                 modelPosAnimator.beginForward(time)
-            }
+            },
         )
         this.addRenderableWidget(
             ScaleButton(posX + 334, posY + 90, 159, 182) { _ ->
@@ -444,12 +530,13 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
                         scaleAnimator.lerp(
                             scaleAnimator.oldValue(),
                             scaleAnimator.newValue(),
-                            System.currentTimeMillis()
-                        ) - 20, MIN_MODEL_SCALE
-                    )
+                            System.currentTimeMillis(),
+                        ) - 20,
+                        MIN_MODEL_SCALE,
+                    ),
                 )
                 scaleAnimator.beginForward(System.currentTimeMillis())
-            }
+            },
         )
         this.addRenderableWidget(
             ScaleButton(posX + 344, posY + 90, 169, 182) { _ ->
@@ -458,16 +545,20 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
                         scaleAnimator.lerp(
                             scaleAnimator.oldValue(),
                             scaleAnimator.newValue(),
-                            System.currentTimeMillis()
-                        ) + 20, MAX_MODEL_SCALE
-                    )
+                            System.currentTimeMillis(),
+                        ) + 20,
+                        MAX_MODEL_SCALE,
+                    ),
                 )
                 scaleAnimator.beginForward(System.currentTimeMillis())
-            }
+            },
         )
     }
 
-    fun renderModel(holder: RecipeHolder<VehicleAssemblingRecipe>, guiGraphics: GuiGraphics) {
+    fun renderModel(
+        holder: RecipeHolder<VehicleAssemblingRecipe>,
+        guiGraphics: GuiGraphics,
+    ) {
         val mc = Minecraft.getInstance()
         val level = mc.level ?: return
 
@@ -484,9 +575,11 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
                 if (entityNameCache == key && entityCache != null) {
                     renderEntity = entityCache
                 } else {
-                    renderEntity = EntityType.byString(key)
-                        .map { it.create(level) }
-                        .orElse(null)
+                    renderEntity =
+                        EntityType
+                            .byString(key)
+                            .map { it.create(level) }
+                            .orElse(null)
                     if (renderEntity != null) {
                         entityNameCache = key
                         entityCache = renderEntity
@@ -519,7 +612,11 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         val scissorH = (height * windowGuiScale).toInt()
         RenderSystem.enableScissor(scissorX, scissorY, scissorW, scissorH)
 
-        Minecraft.getInstance().textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).setFilter(false, false)
+        Minecraft
+            .getInstance()
+            .textureManager
+            .getTexture(TextureAtlas.LOCATION_BLOCKS)
+            .setFilter(false, false)
         RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS)
         RenderSystem.enableBlend()
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
@@ -556,7 +653,7 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
             tmpPose,
             bufferSource,
             null,
-            0
+            0,
         )
 
         bufferSource.endBatch()
@@ -567,7 +664,10 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         RenderSystem.disableScissor()
     }
 
-    private fun renderEntityModel(guiGraphics: GuiGraphics, renderEntity: Entity?) {
+    private fun renderEntityModel(
+        guiGraphics: GuiGraphics,
+        renderEntity: Entity?,
+    ) {
         if (renderEntity == null) return
 
         val posestack = guiGraphics.pose()
@@ -619,7 +719,7 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
             1f,
             posestack,
             guiGraphics.bufferSource(),
-            15728880
+            15728880,
         )
         guiGraphics.flush()
         entityrenderdispatcher.setRenderShadow(true)
@@ -632,7 +732,7 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         holder: RecipeHolder<VehicleAssemblingRecipe>,
         guiGraphics: GuiGraphics,
         mouseX: Int,
-        mouseY: Int
+        mouseY: Int,
     ) {
         val stack = holder.value().result.getResult()
 
@@ -657,48 +757,79 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
 
         if (renderItemName) {
             RenderHelper.renderScrollingString(
-                guiGraphics, this.font,
-                Component.empty().append(stack.getHoverName()).withStyle(ChatFormatting.UNDERLINE)
+                guiGraphics,
+                this.font,
+                Component
+                    .empty()
+                    .append(stack.getHoverName())
+                    .withStyle(ChatFormatting.UNDERLINE)
                     .withStyle(ChatFormatting.YELLOW),
                 0.75f,
-                ((this.leftPos + 122) / 0.75f).toInt(), ((this.topPos + 119) / 0.75f).toInt(),
-                ((this.leftPos + 198) / 0.75f).toInt(), ((this.topPos + 130) / 0.75f).toInt(),
-                0xFFFFFF
+                ((this.leftPos + 122) / 0.75f).toInt(),
+                ((this.topPos + 119) / 0.75f).toInt(),
+                ((this.leftPos + 198) / 0.75f).toInt(),
+                ((this.topPos + 130) / 0.75f).toInt(),
+                0xFFFFFF,
             )
         }
 
-        val modName = Component.translatableWithFallback(
-            "info." + holder.id().namespace + ".mod_id",
-            holder.id().namespace
-        )
-        val modInfo = Component.translatable(
-            "container.superbwarfare.mod_info",
-            modName.withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.AQUA)
-        )
+        val modName =
+            Component.translatableWithFallback(
+                "info." + holder.id().namespace + ".mod_id",
+                holder.id().namespace,
+            )
+        val modInfo =
+            Component.translatable(
+                "container.superbwarfare.mod_info",
+                modName.withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.AQUA),
+            )
 
         RenderHelper.renderScrollingString(
-            guiGraphics, this.font,
+            guiGraphics,
+            this.font,
             modInfo,
             0.75f,
-            ((this.leftPos + 122) / 0.75f).toInt(), ((this.topPos + 167) / 0.75f).toInt(),
-            ((this.leftPos + 198) / 0.75f).toInt(), ((this.topPos + 178) / 0.75f).toInt(),
-            0xFFFFFF
+            ((this.leftPos + 122) / 0.75f).toInt(),
+            ((this.topPos + 167) / 0.75f).toInt(),
+            ((this.leftPos + 198) / 0.75f).toInt(),
+            ((this.topPos + 178) / 0.75f).toInt(),
+            0xFFFFFF,
         )
 
         pose.popPose()
     }
 
-    private fun renderContainerInfo(typeName: String, guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int) {
+    private fun renderContainerInfo(
+        typeName: String,
+        guiGraphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+    ) {
         val pose = guiGraphics.pose()
 
         val key = getEntityTranslationKey(typeName) ?: return
-        if (typeName.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray().size < 2) return
+        if (typeName
+                .split(":".toRegex())
+                .dropLastWhile { it.isEmpty() }
+                .toTypedArray()
+                .size < 2
+        ) {
+            return
+        }
 
         val info =
-            Component.translatableWithFallback("info." + typeName.split(":".toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray()[0] + "." + typeName.split(":".toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray()[1],
-                Component.translatable("info.superbwarfare.no_info").string)
+            Component.translatableWithFallback(
+                "info." +
+                    typeName
+                        .split(":".toRegex())
+                        .dropLastWhile { it.isEmpty() }
+                        .toTypedArray()[0] + "." +
+                    typeName
+                        .split(":".toRegex())
+                        .dropLastWhile { it.isEmpty() }
+                        .toTypedArray()[1],
+                Component.translatable("info.superbwarfare.no_info").string,
+            )
         val infoComponents = this.font.split(FormattedText.of(info.string), 100)
 
         pose.pushPose()
@@ -706,12 +837,15 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
 
         val hoverName = Component.translatable(key).withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.YELLOW)
         RenderHelper.renderScrollingString(
-            guiGraphics, this.font,
+            guiGraphics,
+            this.font,
             hoverName,
             0.75f,
-            ((this.leftPos + 122) / 0.75f).toInt(), ((this.topPos + 119) / 0.75f).toInt(),
-            ((this.leftPos + 198) / 0.75f).toInt(), ((this.topPos + 130) / 0.75f).toInt(),
-            0xFFFFFF
+            ((this.leftPos + 122) / 0.75f).toInt(),
+            ((this.topPos + 119) / 0.75f).toInt(),
+            ((this.leftPos + 198) / 0.75f).toInt(),
+            ((this.topPos + 130) / 0.75f).toInt(),
+            0xFFFFFF,
         )
 
         guiGraphics.enableScissor(this.leftPos + 120, this.topPos + 129, this.leftPos + 198, this.topPos + 165)
@@ -723,7 +857,7 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
                 ((this.leftPos + 122) / 0.75f).toInt(),
                 ((this.topPos + 129 + j * 7.5f) / 0.75f).toInt(),
                 0x2C3141,
-                false
+                false,
             )
         }
         guiGraphics.disableScissor()
@@ -735,14 +869,12 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
                 this.font,
                 this.font.split(FormattedText.of(info.string), 200),
                 mouseX,
-                mouseY
+                mouseY,
             )
         }
     }
 
-    fun getCurrentRecipe(): VehicleAssemblingRecipe? {
-        return this.currentRecipe?.value
-    }
+    fun getCurrentRecipe(): VehicleAssemblingRecipe? = this.currentRecipe?.value
 
     fun getIngredientAreas(): MutableList<IngredientArea> {
         val areas: MutableList<IngredientArea> = ArrayList()
@@ -772,11 +904,12 @@ class VehicleAssemblingScreen(pMenu: VehicleAssemblingMenu, pPlayerInventory: In
         val x: Double,
         val y: Double,
         val width: Double,
-        val height: Double
+        val height: Double,
     ) {
-        fun contains(mouseX: Double, mouseY: Double): Boolean {
-            return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height
-        }
+        fun contains(
+            mouseX: Double,
+            mouseY: Double,
+        ): Boolean = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height
     }
 
     companion object {

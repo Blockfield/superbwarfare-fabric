@@ -15,7 +15,10 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.DyeItem
 import net.minecraft.world.level.Level
 
-open class TinySpeedboatEntity(type: EntityType<TinySpeedboatEntity>, world: Level) : VehicleEntity(type, world) {
+open class TinySpeedboatEntity(
+    type: EntityType<TinySpeedboatEntity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     companion object {
         @JvmField
         val COLOR_ID: EntityDataAccessor<Int> =
@@ -39,7 +42,10 @@ open class TinySpeedboatEntity(type: EntityType<TinySpeedboatEntity>, world: Lev
         colorId = compound.getInt("ColorId")
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val stack = player.mainHandItem
         if (stack.item is DyeItem) {
             if (customName != null && customName!!.string == "jeb_") return InteractionResult.PASS

@@ -7,6 +7,11 @@ import com.atsuishio.superbwarfare.init.ModEnumExtensions
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.tools.localPlayer
+import io.github.fabricators_of_create.porting_lib.item.extensions.EntitySwingListenerItem
+import io.github.fabricators_of_create.porting_lib.item.extensions.ReequipAnimationItem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import net.minecraft.client.model.HumanoidModel.ArmPose
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer
 import net.minecraft.core.BlockPos
@@ -27,11 +32,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
-import io.github.fabricators_of_create.porting_lib.item.extensions.EntitySwingListenerItem
-import io.github.fabricators_of_create.porting_lib.item.extensions.ReequipAnimationItem
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import software.bernie.geckolib.animatable.GeoItem
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar
@@ -42,7 +42,11 @@ import software.bernie.geckolib.animation.RawAnimation
 import software.bernie.geckolib.util.GeckoLibUtil
 
 // 不要改这个东西，会肘击 YSM
-open class LungeMine : Item(Properties().stacksTo(4)), GeoItem, EntitySwingListenerItem, ReequipAnimationItem,
+open class LungeMine :
+    Item(Properties().stacksTo(4)),
+    GeoItem,
+    EntitySwingListenerItem,
+    ReequipAnimationItem,
     StackAttributeItem {
     private val cache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
 
@@ -72,31 +76,38 @@ open class LungeMine : Item(Properties().stacksTo(4)), GeoItem, EntitySwingListe
     }
 
     override fun registerControllers(data: ControllerRegistrar) {
-        val idleController = AnimationController<LungeMine>(
-            this,
-            "idleController",
-            2
-        ) { this.idlePredicate(it) }
+        val idleController =
+            AnimationController<LungeMine>(
+                this,
+                "idleController",
+                2,
+            ) { this.idlePredicate(it) }
         data.add(idleController)
     }
 
-    override fun getAnimatableInstanceCache(): AnimatableInstanceCache? {
-        return this.cache
-    }
+    override fun getAnimatableInstanceCache(): AnimatableInstanceCache? = this.cache
 
     // Porting Lib отдаёт onEntitySwing без InteractionHand, руку тут всё равно не использовали.
-    override fun onEntitySwing(stack: ItemStack, entity: LivingEntity): Boolean {
-        return false
-    }
+    override fun onEntitySwing(
+        stack: ItemStack,
+        entity: LivingEntity,
+    ): Boolean = false
 
-    override fun shouldCauseReequipAnimation(oldStack: ItemStack, newStack: ItemStack, slotChanged: Boolean): Boolean {
-        return false
-    }
+    override fun shouldCauseReequipAnimation(
+        oldStack: ItemStack,
+        newStack: ItemStack,
+        slotChanged: Boolean,
+    ): Boolean = false
 
-    override fun use(worldIn: Level, playerIn: Player, handIn: InteractionHand): InteractionResultHolder<ItemStack?> {
+    override fun use(
+        worldIn: Level,
+        playerIn: Player,
+        handIn: InteractionHand,
+    ): InteractionResultHolder<ItemStack?> {
         val stack = playerIn.getItemInHand(handIn)
         if (playerIn is ServerPlayer) {
-            playerIn.level()
+            playerIn
+                .level()
                 .playSound(null, playerIn.onPos, ModSounds.LUNGE_MINE_GROWL.get(), SoundSource.PLAYERS, 2f, 1f)
         }
         if (!playerIn.level().isClientSide()) {
@@ -104,9 +115,16 @@ open class LungeMine : Item(Properties().stacksTo(4)), GeoItem, EntitySwingListe
                 MobEffectInstance(
                     MobEffects.MOVEMENT_SPEED,
                     100,
-                    (if (playerIn.hasEffect(MobEffects.MOVEMENT_SPEED)) playerIn.getEffect(MobEffects.MOVEMENT_SPEED)!!
-                        .amplifier else 0) + 2
-                )
+                    (
+                        if (playerIn.hasEffect(MobEffects.MOVEMENT_SPEED)) {
+                            playerIn
+                                .getEffect(MobEffects.MOVEMENT_SPEED)!!
+                                .amplifier
+                        } else {
+                            0
+                        }
+                    ) + 2,
+                ),
             )
         } else {
             ClientEventHandler.lungeSprint = 180
@@ -119,10 +137,8 @@ open class LungeMine : Item(Properties().stacksTo(4)), GeoItem, EntitySwingListe
         state: BlockState,
         level: Level,
         pos: BlockPos,
-        player: Player
-    ): Boolean {
-        return false
-    }
+        player: Player,
+    ): Boolean = false
 
     override fun getDefaultAttributeModifiers(stack: ItemStack): ItemAttributeModifiers {
         val list = ArrayList(baseAttributeModifiers(stack).modifiers())
@@ -136,8 +152,8 @@ open class LungeMine : Item(Properties().stacksTo(4)), GeoItem, EntitySwingListe
                     1.5,
                     AttributeModifier.Operation.ADD_VALUE,
                 ),
-                EquipmentSlotGroup.MAINHAND
-            )
+                EquipmentSlotGroup.MAINHAND,
+            ),
         )
 
         return ItemAttributeModifiers(list, true)
@@ -155,14 +171,18 @@ open class LungeMine : Item(Properties().stacksTo(4)), GeoItem, EntitySwingListe
                 ModItems.LUNGE_MINE.get(),
                 BuiltinItemRendererRegistry.DynamicItemRenderer { stack, mode, poseStack, buffer, light, overlay ->
                     renderer.renderByItem(stack, mode, poseStack, buffer, light, overlay)
-                }
+                },
             )
         }
 
         // Аналога IClientItemExtensions#getArmPose на Fabric нет (ни в Fabric API, ни в Porting Lib):
         // осталась функцией без регистрации, звать из миксина на HumanoidModel/PlayerRenderer.
         @Environment(EnvType.CLIENT)
-        fun getArmPose(entityLiving: LivingEntity, hand: InteractionHand, itemStack: ItemStack): ArmPose {
+        fun getArmPose(
+            entityLiving: LivingEntity,
+            hand: InteractionHand,
+            itemStack: ItemStack,
+        ): ArmPose {
             if (!itemStack.isEmpty) {
                 if (entityLiving.usedItemHand == hand) {
                     return ModEnumExtensions.Client.lungeMinePose

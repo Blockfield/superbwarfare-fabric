@@ -7,17 +7,18 @@ import net.minecraft.commands.Commands
 import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.server.level.ServerPlayer
 
-class CommandNodeWithPlayersArg(builder: ArgumentBuilder<CommandSourceStack, *>, argName: String) :
-    CommandNodeWithArg<Collection<ServerPlayer>>(builder, argName) {
-
+class CommandNodeWithPlayersArg(
+    builder: ArgumentBuilder<CommandSourceStack, *>,
+    argName: String,
+) : CommandNodeWithArg<Collection<ServerPlayer>>(builder, argName) {
     val CommandContext<CommandSourceStack>.playersArg get() = getArg(this@CommandNodeWithPlayersArg)
 
-    override fun CommandContext<CommandSourceStack>.getArg(
-        ctx: CommandNodeWithArg<Collection<ServerPlayer>>
-    ): Collection<ServerPlayer> =
-        EntityArgument.getPlayers(this, ctx.name)
+    override fun CommandContext<CommandSourceStack>.getArg(ctx: CommandNodeWithArg<Collection<ServerPlayer>>): Collection<ServerPlayer> = EntityArgument.getPlayers(this, ctx.name)
 }
 
-inline fun CommandNode.playersArg(argName: String = "$name.players", builder: CommandNodeWithPlayersArg.() -> Unit) {
+inline fun CommandNode.playersArg(
+    argName: String = "$name.players",
+    builder: CommandNodeWithPlayersArg.() -> Unit,
+) {
     cmd += CommandNodeWithPlayersArg(Commands.argument(argName, EntityArgument.players()), argName).apply(builder)
 }

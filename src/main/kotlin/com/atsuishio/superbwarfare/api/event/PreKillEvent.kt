@@ -1,8 +1,8 @@
 package com.atsuishio.superbwarfare.api.event
 
+import com.atsuishio.superbwarfare.fabric.CancellableEvent
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.LivingEntity
-import com.atsuishio.superbwarfare.fabric.CancellableEvent
 import org.jetbrains.annotations.ApiStatus
 
 /**
@@ -12,11 +12,17 @@ import org.jetbrains.annotations.ApiStatus
 open class PreKillEvent private constructor(
     val entity: LivingEntity,
     val source: DamageSource,
-    val target: LivingEntity
+    val target: LivingEntity,
 ) : CancellableEvent() {
-    class SendKillMessage(entity: LivingEntity, source: DamageSource, target: LivingEntity) :
-        PreKillEvent(entity, source, target)
+    class SendKillMessage(
+        entity: LivingEntity,
+        source: DamageSource,
+        target: LivingEntity,
+    ) : PreKillEvent(entity, source, target)
 
-    class Indicator(entity: LivingEntity, source: DamageSource, target: LivingEntity) :
-        PreKillEvent(entity, source, target)
+    class Indicator(
+        entity: LivingEntity,
+        source: DamageSource,
+        target: LivingEntity,
+    ) : PreKillEvent(entity, source, target)
 }

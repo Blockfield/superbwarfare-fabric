@@ -1,5 +1,6 @@
 package com.atsuishio.superbwarfare.recipe
 
+import com.atsuishio.superbwarfare.fabric.RecipeWrapper
 import com.atsuishio.superbwarfare.init.ModRecipes
 import com.atsuishio.superbwarfare.tools.TagDataParser
 import com.google.gson.JsonObject
@@ -24,7 +25,6 @@ import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
-import com.atsuishio.superbwarfare.fabric.RecipeWrapper
 import kotlin.jvm.optionals.getOrNull
 
 class ResearchingRecipe(
@@ -35,7 +35,7 @@ class ResearchingRecipe(
     val selectable: Boolean,
     val color: Int,
     val time: Int,
-    val result: Result
+    val result: Result,
 ) : Recipe<RecipeWrapper> {
     companion object {
         fun create(
@@ -47,9 +47,9 @@ class ResearchingRecipe(
             color: Int,
             time: Int,
             count: Int,
-            result: Item
-        ): ResearchingRecipe {
-            return ResearchingRecipe(
+            result: Item,
+        ): ResearchingRecipe =
+            ResearchingRecipe(
                 input,
                 base,
                 addition,
@@ -57,9 +57,8 @@ class ResearchingRecipe(
                 selectable,
                 color,
                 time,
-                Result(item = BuiltInRegistries.ITEM.getKey(result).toString(), count = count)
+                Result(item = BuiltInRegistries.ITEM.getKey(result).toString(), count = count),
             )
-        }
 
         fun create(
             input: Ingredient,
@@ -70,9 +69,9 @@ class ResearchingRecipe(
             color: Int,
             time: Int,
             count: Int,
-            tag: TagKey<Item>
-        ): ResearchingRecipe {
-            return ResearchingRecipe(
+            tag: TagKey<Item>,
+        ): ResearchingRecipe =
+            ResearchingRecipe(
                 input,
                 base,
                 addition,
@@ -80,30 +79,34 @@ class ResearchingRecipe(
                 selectable,
                 color,
                 time,
-                Result(tag = tag.location.toString(), count = count)
+                Result(tag = tag.location.toString(), count = count),
             )
-        }
     }
 
     override fun matches(
         container: RecipeWrapper,
-        level: Level
+        level: Level,
     ): Boolean {
         if (container.size() < 4) {
             return false
         }
-        return input.test(container.getItem(0))
-                && base.test(container.getItem(1))
-                && addition.test(container.getItem(2))
-                && special.test(container.getItem(3))
+        return input.test(container.getItem(0)) &&
+            base.test(container.getItem(1)) &&
+            addition.test(container.getItem(2)) &&
+            special.test(container.getItem(3))
     }
 
-    override fun assemble(input: RecipeWrapper, registries: HolderLookup.Provider): ItemStack =
-        this.result.getResult().copy()
+    override fun assemble(
+        input: RecipeWrapper,
+        registries: HolderLookup.Provider,
+    ): ItemStack = this.result.getResult().copy()
 
     override fun isSpecial() = true
 
-    override fun canCraftInDimensions(pWidth: Int, pHeight: Int) = true
+    override fun canCraftInDimensions(
+        pWidth: Int,
+        pHeight: Int,
+    ) = true
 
     override fun getResultItem(registries: HolderLookup.Provider): ItemStack = this.result.getResult().copy()
 
@@ -118,23 +121,33 @@ class ResearchingRecipe(
         @SerializedName("nbt") var nbt: JsonObject? = null,
     ) {
         companion object {
-            val CODEC: Codec<Result> = RecordCodecBuilder.mapCodec<Result> { builder ->
-                builder.group(
-                    Codec.STRING.optionalFieldOf("item", "")
-                        .forGetter { it.item },
-                    Codec.STRING.optionalFieldOf("tag", "")
-                        .forGetter { it.tag },
-                    Codec.INT.optionalFieldOf("count", 1)
-                        .forGetter { it.count }
-                ).apply(builder, ::Result)
-            }.codec()
+            val CODEC: Codec<Result> =
+                RecordCodecBuilder
+                    .mapCodec<Result> { builder ->
+                        builder
+                            .group(
+                                Codec.STRING
+                                    .optionalFieldOf("item", "")
+                                    .forGetter { it.item },
+                                Codec.STRING
+                                    .optionalFieldOf("tag", "")
+                                    .forGetter { it.tag },
+                                Codec.INT
+                                    .optionalFieldOf("count", 1)
+                                    .forGetter { it.count },
+                            ).apply(builder, ::Result)
+                    }.codec()
 
-            val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, Result> = StreamCodec.composite(
-                ByteBufCodecs.STRING_UTF8, { r: Result -> r.item },
-                ByteBufCodecs.STRING_UTF8, { r: Result -> r.tag },
-                ByteBufCodecs.VAR_INT, { r: Result -> r.count },
-                ::Result
-            )
+            val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, Result> =
+                StreamCodec.composite(
+                    ByteBufCodecs.STRING_UTF8,
+                    { r: Result -> r.item },
+                    ByteBufCodecs.STRING_UTF8,
+                    { r: Result -> r.tag },
+                    ByteBufCodecs.VAR_INT,
+                    { r: Result -> r.count },
+                    ::Result,
+                )
         }
 
         @Transient
@@ -172,8 +185,11 @@ class ResearchingRecipe(
             if (this.tag.isEmpty()) return mutableListOf()
 
             val tagKey = TagKey.create(Registries.ITEM, ResourceLocation.parse(this.tag))
-            val itemTag = BuiltInRegistries.ITEM.getTag(tagKey)
-                .map { items -> items.map { it.value() } }.getOrNull() ?: return mutableListOf()
+            val itemTag =
+                BuiltInRegistries.ITEM
+                    .getTag(tagKey)
+                    .map { items -> items.map { it.value() } }
+                    .getOrNull() ?: return mutableListOf()
 
             val list = mutableListOf<Item>()
             itemTag.forEach { list.add(it) }
@@ -200,25 +216,25 @@ class ResearchingRecipe(
     }
 
     object Serializer : RecipeSerializer<ResearchingRecipe> {
-        val CODEC: MapCodec<ResearchingRecipe> = RecordCodecBuilder.mapCodec { builder ->
-            builder.group(
-                Ingredient.CODEC.fieldOf("input").forGetter { it.input },
-                Ingredient.CODEC.optionalFieldOf("base", Ingredient.EMPTY).forGetter { it.base },
-                Ingredient.CODEC.optionalFieldOf("addition", Ingredient.EMPTY).forGetter { it.addition },
-                Ingredient.CODEC.optionalFieldOf("special", Ingredient.EMPTY).forGetter { it.special },
-                Codec.BOOL.optionalFieldOf("selectable", false).forGetter { it.selectable },
-                Codec.INT.optionalFieldOf("color", 0).forGetter { it.color },
-                Codec.INT.optionalFieldOf("time", 1200).forGetter { it.time },
-                Result.CODEC.fieldOf("result").forGetter { it.result }
-            ).apply(builder, ::ResearchingRecipe)
-        }
+        val CODEC: MapCodec<ResearchingRecipe> =
+            RecordCodecBuilder.mapCodec { builder ->
+                builder
+                    .group(
+                        Ingredient.CODEC.fieldOf("input").forGetter { it.input },
+                        Ingredient.CODEC.optionalFieldOf("base", Ingredient.EMPTY).forGetter { it.base },
+                        Ingredient.CODEC.optionalFieldOf("addition", Ingredient.EMPTY).forGetter { it.addition },
+                        Ingredient.CODEC.optionalFieldOf("special", Ingredient.EMPTY).forGetter { it.special },
+                        Codec.BOOL.optionalFieldOf("selectable", false).forGetter { it.selectable },
+                        Codec.INT.optionalFieldOf("color", 0).forGetter { it.color },
+                        Codec.INT.optionalFieldOf("time", 1200).forGetter { it.time },
+                        Result.CODEC.fieldOf("result").forGetter { it.result },
+                    ).apply(builder, ::ResearchingRecipe)
+            }
 
         val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, ResearchingRecipe> =
             StreamCodec.of(this::toNetwork, this::fromNetwork)
 
-        fun fromNetwork(
-            buffer: RegistryFriendlyByteBuf
-        ): ResearchingRecipe {
+        fun fromNetwork(buffer: RegistryFriendlyByteBuf): ResearchingRecipe {
             val input = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
             val base = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
             val addition = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
@@ -240,7 +256,7 @@ class ResearchingRecipe(
 
         fun toNetwork(
             buffer: RegistryFriendlyByteBuf,
-            recipe: ResearchingRecipe
+            recipe: ResearchingRecipe,
         ) {
             Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.input)
             Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.base)
@@ -260,12 +276,8 @@ class ResearchingRecipe(
             }
         }
 
-        override fun codec(): MapCodec<ResearchingRecipe> {
-            return CODEC
-        }
+        override fun codec(): MapCodec<ResearchingRecipe> = CODEC
 
-        override fun streamCodec(): StreamCodec<RegistryFriendlyByteBuf, ResearchingRecipe> {
-            return STREAM_CODEC
-        }
+        override fun streamCodec(): StreamCodec<RegistryFriendlyByteBuf, ResearchingRecipe> = STREAM_CODEC
     }
 }

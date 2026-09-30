@@ -59,9 +59,13 @@ object SmartTextureBrightener {
                     val b = (color and 0xFF) / 255.0f
                     val luminance = 0.2126f * r + 0.7152f * g + 0.0722f * b
 
-                    if (luminance < 0.3f) darkPixels++
-                    else if (luminance < 0.7f) midPixels++
-                    else brightPixels++
+                    if (luminance < 0.3f) {
+                        darkPixels++
+                    } else if (luminance < 0.7f) {
+                        midPixels++
+                    } else {
+                        brightPixels++
+                    }
 
                     totalPixels++
                 }
@@ -103,19 +107,21 @@ object SmartTextureBrightener {
         }
 
         // 根据分布微调
-        baseFactor *= when (category) {
-            BrightnessCategory.DARK -> 1.1f
-
-            BrightnessCategory.BRIGHT -> 0.9f
-
-            else -> 1.0f
-        }
+        baseFactor *=
+            when (category) {
+                BrightnessCategory.DARK -> 1.1f
+                BrightnessCategory.BRIGHT -> 0.9f
+                else -> 1.0f
+            }
         // 限制在合理范围内
         return max(0.5f, min(3.0f, baseFactor))
     }
 
     // 智能调整亮度（自适应）
-    fun smartBrighten(original: NativeImage, targetBrightness: Float): NativeImage {
+    fun smartBrighten(
+        original: NativeImage,
+        targetBrightness: Float,
+    ): NativeImage {
         val currentBrightness = calculatePerceivedBrightness(original)
         val dynamicFactor = calculateDynamicBrightnessFactor(original)
 
@@ -133,7 +139,10 @@ object SmartTextureBrightener {
     }
 
     // 自适应亮度调整（不同区域不同处理）
-    fun applyAdaptiveBrightness(original: NativeImage, baseFactor: Float): NativeImage {
+    fun applyAdaptiveBrightness(
+        original: NativeImage,
+        baseFactor: Float,
+    ): NativeImage {
         val result = NativeImage(original.width, original.height, false)
 
         for (x in 0..<original.width) {
@@ -149,26 +158,28 @@ object SmartTextureBrightener {
 
                     // 根据当前像素的亮度动态调整系数
                     // 暗部提亮更多，亮部提亮更少
-                    val localFactor: Float = if (luminance < 0.2f) {
-                        // 暗部：提亮更多
-                        baseFactor * 1.1f
-                    } else if (luminance < 0.5f) {
-                        // 中间调：正常提亮
-                        baseFactor
-                    } else if (luminance < 0.8f) {
-                        // 亮部：少提亮
-                        baseFactor * 0.95f
-                    } else {
-                        // 高光：几乎不提亮
-                        baseFactor * 0.9f
-                    }
+                    val localFactor: Float =
+                        if (luminance < 0.2f) {
+                            // 暗部：提亮更多
+                            baseFactor * 1.1f
+                        } else if (luminance < 0.5f) {
+                            // 中间调：正常提亮
+                            baseFactor
+                        } else if (luminance < 0.8f) {
+                            // 亮部：少提亮
+                            baseFactor * 0.95f
+                        } else {
+                            // 高光：几乎不提亮
+                            baseFactor * 0.9f
+                        }
 
                     // 应用调整，使用曲线调整避免过曝
                     r = applyBrightnessCurve(r + 0.05f, localFactor)
                     g = applyBrightnessCurve(g + 0.05f, localFactor)
                     b = applyBrightnessCurve(b + 0.05f, localFactor)
 
-                    val newColor = (alpha shl 24) or
+                    val newColor =
+                        (alpha shl 24) or
                             ((r * 255).toInt() shl 16) or
                             ((g * 255).toInt() shl 8) or (b * 255).toInt()
 
@@ -183,19 +194,24 @@ object SmartTextureBrightener {
     }
 
     // 使用曲线调整亮度（避免线性调整的过曝问题）
-    private fun applyBrightnessCurve(value: Float, factor: Float): Float {
-        return if (factor >= 1.0f) {
+    private fun applyBrightnessCurve(
+        value: Float,
+        factor: Float,
+    ): Float =
+        if (factor >= 1.0f) {
             // 提亮时使用非线性曲线，避免高光过曝
             1.0f - exp((-factor * value).toDouble()).toFloat()
         } else {
             // 压暗时使用幂函数，保持对比度
             value.toDouble().pow((1.0f / factor).toDouble()).toFloat()
         }
-    }
 
     // 获取或创建智能调整后的纹理
     @JvmStatic
-    fun getSmartBrightenedTexture(originalLoc: ResourceLocation, targetBrightness: Float): ResourceLocation {
+    fun getSmartBrightenedTexture(
+        originalLoc: ResourceLocation,
+        targetBrightness: Float,
+    ): ResourceLocation {
         if (PROCESSED_TEXTURES.containsKey(originalLoc)) {
             return PROCESSED_TEXTURES[originalLoc]!!
         }
@@ -208,14 +224,15 @@ object SmartTextureBrightener {
             val brightenedImage = smartBrighten(originalImage, targetBrightness)
             originalImage.close()
 
-            val newTextureLoc = ResourceLocation.fromNamespaceAndPath(
-                originalLoc.namespace,
-                originalLoc.path.replace(".png", "_smartbright.png")
-            )
+            val newTextureLoc =
+                ResourceLocation.fromNamespaceAndPath(
+                    originalLoc.namespace,
+                    originalLoc.path.replace(".png", "_smartbright.png"),
+                )
 
             mc.textureManager.register(
                 newTextureLoc,
-                DynamicTexture(brightenedImage)
+                DynamicTexture(brightenedImage),
             )
 
             // 计算并存储实际使用的亮度系数
@@ -234,6 +251,8 @@ object SmartTextureBrightener {
 
     // 枚举：亮度分类
     enum class BrightnessCategory {
-        DARK, NORMAL, BRIGHT
+        DARK,
+        NORMAL,
+        BRIGHT,
     }
 }

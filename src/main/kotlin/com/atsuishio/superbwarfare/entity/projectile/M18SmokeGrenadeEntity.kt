@@ -24,7 +24,9 @@ import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.Vec3
 import kotlin.math.min
 
-open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
+open class M18SmokeGrenadeEntity :
+    BounceProjectile,
+    BasicGeoProjectileEntity {
     private var count = 8
     private var fuse = 100
     var red: Float = 1.0f
@@ -37,10 +39,10 @@ open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
     constructor(type: EntityType<out M18SmokeGrenadeEntity>, level: Level) : super(type, level)
 
     constructor(type: EntityType<out M18SmokeGrenadeEntity>, x: Double, y: Double, z: Double, world: Level) :
-            super(type, x, y, z, world)
+        super(type, x, y, z, world)
 
     constructor(entity: LivingEntity?, level: Level, fuse: Int) :
-            super(ModEntities.M18_SMOKE_GRENADE.get(), entity, level) {
+        super(ModEntities.M18_SMOKE_GRENADE.get(), entity, level) {
         this.fuse = fuse
     }
 
@@ -79,9 +81,7 @@ open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
 
     override fun canPassThroughFluid() = true
 
-    override fun getDefaultItem(): Item {
-        return ModItems.M18_SMOKE_GRENADE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.M18_SMOKE_GRENADE.get()
 
     override fun afterHitEntity(result: EntityHitResult) {
         if (result !is ExtendedEntityRayTraceResult) return
@@ -97,18 +97,19 @@ open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
                     ModSounds.INDICATION.get(),
                     SoundSource.VOICE,
                     1f,
-                    1f
+                    1f,
                 )
 
                 sendPacketTo(owner, ClientIndicatorMessage(0, 5))
             }
         }
         this.bounce(
-            Direction.getNearest(
-                this.deltaMovement.x(),
-                this.deltaMovement.y(),
-                this.deltaMovement.z()
-            ).opposite
+            Direction
+                .getNearest(
+                    this.deltaMovement.x(),
+                    this.deltaMovement.y(),
+                    this.deltaMovement.z(),
+                ).opposite,
         )
         this.deltaMovement = this.deltaMovement.multiply(0.25, 1.0, 0.25)
     }
@@ -129,7 +130,7 @@ open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
                 event,
                 SoundSource.AMBIENT,
                 volume,
-                1f
+                1f,
             )
         }
         this.bounce(result.direction)
@@ -167,15 +168,24 @@ open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
                     0.01,
                     0.075,
                     0.08,
-                    true
+                    true,
                 )
             }
         }
 
         if (level is ServerLevel) {
             ParticleTool.sendParticle(
-                level, ParticleTypes.SMOKE, this.xo, this.yo, this.zo,
-                1, 0.0, 0.0, 0.0, 0.01, true
+                level,
+                ParticleTypes.SMOKE,
+                this.xo,
+                this.yo,
+                this.zo,
+                1,
+                0.0,
+                0.0,
+                0.0,
+                0.01,
+                true,
             )
         }
     }
@@ -203,8 +213,17 @@ open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
                 val drift = 0.5 + 1.0 * decoyAge / MAX_PARTICLE_AGE
                 for (pos in decoyPuffs) {
                     level.sendParticles(
-                        player, CustomSmokeOption(this.red, this.green, this.blue, decoyAge), true,
-                        pos.x, pos.y, pos.z, DECOY_PUFFS, drift, drift * 0.5, drift, 0.01
+                        player,
+                        CustomSmokeOption(this.red, this.green, this.blue, decoyAge),
+                        true,
+                        pos.x,
+                        pos.y,
+                        pos.z,
+                        DECOY_PUFFS,
+                        drift,
+                        drift * 0.5,
+                        drift,
+                        0.01,
                     )
                 }
             }
@@ -216,10 +235,18 @@ open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
                 // Older puffs have drifted further from the grenade.
                 val spread = 1.0 + 1.5 * age / MAX_PARTICLE_AGE
                 level.sendParticles(
-                    player, CustomSmokeOption(this.red, this.green, this.blue, age), true,
+                    player,
+                    CustomSmokeOption(this.red, this.green, this.blue, age),
+                    true,
                     // The floor stops puffs from sinking, so the original cloud piles up into a ~3 block column.
-                    this.x, this.y + bbHeight + 1.7, this.z,
-                    4 * emitted / REPLAY_BATCHES, spread, 0.8, spread, 0.01
+                    this.x,
+                    this.y + bbHeight + 1.7,
+                    this.z,
+                    4 * emitted / REPLAY_BATCHES,
+                    spread,
+                    0.8,
+                    spread,
+                    0.01,
                 )
             }
         }
@@ -231,35 +258,41 @@ open class M18SmokeGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
         for (i in 0..<this.count) {
             val decoy = SmokeDecoyEntity(ModEntities.SMOKE_DECOY.get(), this.level(), false)
             decoy.setPos(this.x, this.y + bbHeight, this.z)
-            decoy.onPuff = { pos -> decoyPuffs.add(pos); decoyPuffTick = tickCount }
+            decoy.onPuff = { pos ->
+                decoyPuffs.add(pos)
+                decoyPuffTick = tickCount
+            }
             decoy.decoyShoot(this, vec3.yRot(i * (360f / this.count) * Mth.DEG_TO_RAD), 1.5f, 5f)
             this.level().addFreshEntity(decoy)
         }
     }
 
-    override fun getCustomGravity(): Float {
-        return 0.07f
-    }
+    override fun getCustomGravity(): Float = 0.07f
 
-    fun setColor(r: Float, g: Float, b: Float): M18SmokeGrenadeEntity {
+    fun setColor(
+        r: Float,
+        g: Float,
+        b: Float,
+    ): M18SmokeGrenadeEntity {
         this.red = r
         this.green = g
         this.blue = b
         return this
     }
 
-    override fun isFastMoving(): Boolean {
-        return false
-    }
+    override fun isFastMoving(): Boolean = false
 
     companion object {
         /** Upstream lifetime: smoke is emitted until this tick (8 puffs every 2 ticks = 4 per tick). */
         private const val EMIT_TICKS = 200
+
         /** Longest CustomSmokeParticle lifetime, in its age units. */
         private const val MAX_PARTICLE_AGE = 800
+
         /** Emission plus the longest particle life in ticks: after that nobody has any smoke left to replay. */
         private const val CLOUD_TICKS = EMIT_TICKS + MAX_PARTICLE_AGE / 2
         private const val REPLAY_BATCHES = 5
+
         /** SmokeDecoyEntity releases this many puffs when it ignites. */
         private const val DECOY_PUFFS = 50
     }

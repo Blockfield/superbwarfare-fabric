@@ -4,14 +4,14 @@ import com.atsuishio.superbwarfare.Mod
 import com.atsuishio.superbwarfare.data.gun.Ammo
 import com.atsuishio.superbwarfare.data.gun.AmmoConsumer
 import com.atsuishio.superbwarfare.data.gun.GunData
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.IItemHandler
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.tools.InventoryTool
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.player.Player
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
-import com.atsuishio.superbwarfare.fabric.IItemHandler
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player
 import kotlin.math.min
 
 /**
@@ -21,12 +21,15 @@ import kotlin.math.min
  * init: 从 "@RifleAmmo" 中手动提取 id "RifleAmmo"
  */
 object PlayerAmmoStrategy : AmmoConsumeStrategy() {
-
     override val defaultType = AmmoConsumer.AmmoConsumeType.PLAYER_AMMO
 
     override fun match(ammo: String) = ammo.startsWith("@") && Ammo.getType(ammo.substringAfter("@")) != null
 
-    override fun init(consumer: AmmoConsumer, count: Int, matchedString: String) {
+    override fun init(
+        consumer: AmmoConsumer,
+        count: Int,
+        matchedString: String,
+    ) {
         // 手动解析: matchedString 形如 "@RifleAmmo"
         val id = matchedString.substringAfter("@").trim()
         val ammoType = Ammo.getType(id)
@@ -39,7 +42,12 @@ object PlayerAmmoStrategy : AmmoConsumeStrategy() {
         consumer.stack = ammoType.itemStack
     }
 
-    override fun consume(data: GunData, consumer: AmmoConsumer, shooter: Entity, count: Int): Int {
+    override fun consume(
+        data: GunData,
+        consumer: AmmoConsumer,
+        shooter: Entity,
+        count: Int,
+    ): Int {
         var remaining = count
         var consumed = 0
 
@@ -66,14 +74,23 @@ object PlayerAmmoStrategy : AmmoConsumeStrategy() {
         }
     }
 
-    override fun consume(data: GunData, consumer: AmmoConsumer, handler: IItemHandler, count: Int): Int {
+    override fun consume(
+        data: GunData,
+        consumer: AmmoConsumer,
+        handler: IItemHandler,
+        count: Int,
+    ): Int {
         val consumed = InventoryTool.consumeAmmoItem(handler, consumer.playerAmmoType, count)
         val rest = consumed - count
         data.virtualAmmo.add(rest)
         return count
     }
 
-    override fun count(data: GunData, consumer: AmmoConsumer, entity: Entity?): Int {
+    override fun count(
+        data: GunData,
+        consumer: AmmoConsumer,
+        entity: Entity?,
+    ): Int {
         if (entity == null) return 0
         var playerAmmoCount = 0
         if (entity is Player) {
@@ -82,12 +99,20 @@ object PlayerAmmoStrategy : AmmoConsumeStrategy() {
         return playerAmmoCount + count(data, consumer, entity.getCapability(Capabilities.ItemHandler.ENTITY))
     }
 
-    override fun count(data: GunData, consumer: AmmoConsumer, handler: IItemHandler?): Int {
+    override fun count(
+        data: GunData,
+        consumer: AmmoConsumer,
+        handler: IItemHandler?,
+    ): Int {
         if (handler == null) return 0
         return InventoryTool.countAmmoItem(handler, consumer.playerAmmoType)
     }
 
-    override fun withdraw(consumer: AmmoConsumer, ammoSupplier: Entity, count: Int): Int {
+    override fun withdraw(
+        consumer: AmmoConsumer,
+        ammoSupplier: Entity,
+        count: Int,
+    ): Int {
         if (ammoSupplier is Player) {
             val ammoType = consumer.playerAmmoType
             if (ammoType != null) {
@@ -113,13 +138,15 @@ object PlayerAmmoStrategy : AmmoConsumeStrategy() {
         return 0
     }
 
-    override fun withdraw(consumer: AmmoConsumer, handler: IItemHandler, count: Int): Int {
+    override fun withdraw(
+        consumer: AmmoConsumer,
+        handler: IItemHandler,
+        count: Int,
+    ): Int {
         val ammoType = consumer.playerAmmoType ?: return 0
         return InventoryTool.insertItem(handler, ammoType.itemStack, count)
     }
 
     @Environment(EnvType.CLIENT)
-    override fun getDisplayName(consumer: AmmoConsumer): String {
-        return consumer.playerAmmoType?.displayName ?: super.getDisplayName(consumer)
-    }
+    override fun getDisplayName(consumer: AmmoConsumer): String = consumer.playerAmmoType?.displayName ?: super.getDisplayName(consumer)
 }

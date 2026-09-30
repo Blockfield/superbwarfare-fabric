@@ -1,18 +1,22 @@
 package com.atsuishio.superbwarfare.inventory.handler
 
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import com.atsuishio.superbwarfare.fabric.ItemStackHandler
 import net.minecraft.core.NonNullList
 import net.minecraft.world.item.ItemStack
-import com.atsuishio.superbwarfare.fabric.ItemStackHandler
 
-open class VehicleContainerHandler(size: Int, val vehicle: VehicleEntity) : ItemStackHandler(size) {
+open class VehicleContainerHandler(
+    size: Int,
+    val vehicle: VehicleEntity,
+) : ItemStackHandler(size) {
     override fun onContentsChanged(slot: Int) {
         this.vehicle.setChanged()
     }
 
-    override fun isItemValid(slot: Int, stack: ItemStack): Boolean {
-        return this.vehicle.canPlaceItem(slot, stack)
-    }
+    override fun isItemValid(
+        slot: Int,
+        stack: ItemStack,
+    ): Boolean = this.vehicle.canPlaceItem(slot, stack)
 
     open fun clear() {
         this.stacks.clear()

@@ -9,14 +9,17 @@ import java.util.function.Function
 object TagDataParser {
     /**
      * 将JsonObject转换为NBT Tag，并替换自定义数据
-     * 
+     *
      * @param object      JsonObject
      * @param tagModifier 替换函数
      * @return 替换后的NBT Tag
      */
     @JvmOverloads
     @JvmStatic
-    fun parseObject(`object`: JsonObject?, tagModifier: Function<String, Tag?>? = null): CompoundTag {
+    fun parseObject(
+        `object`: JsonObject?,
+        tagModifier: Function<String, Tag?>? = null,
+    ): CompoundTag {
         val tag = CompoundTag()
         if (`object` == null) return tag
 
@@ -34,13 +37,16 @@ object TagDataParser {
 
     /**
      * 尝试将单个JsonElement转为NBT Tag，并替换自定义数据
-     * 
+     *
      * @param object      JsonElement
      * @param tagModifier 替换函数
      * @return 替换后的NBT Tag
      */
     @JvmStatic
-    fun parseElement(`object`: JsonElement, tagModifier: Function<String, Tag?>?): Tag? {
+    fun parseElement(
+        `object`: JsonElement,
+        tagModifier: Function<String, Tag?>?,
+    ): Tag? {
         if (`object`.isJsonObject) {
             // 递归处理嵌套内容
             val tag = CompoundTag()

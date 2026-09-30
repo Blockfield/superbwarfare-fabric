@@ -15,9 +15,8 @@ data class VehicleShootClientMessage(
     val shooter: SerializedUUID,
     val vehicle: SerializedUUID,
     val index: Int,
-    val weaponName: String = ""
+    val weaponName: String = "",
 ) : ClientPacketPayload() {
-
     override fun PayloadContext.handler() {
         val player = localPlayer ?: return
 

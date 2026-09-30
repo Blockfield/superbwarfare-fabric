@@ -7,6 +7,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.VehicleAssemblingTableVehicleE
 import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.item.blockitem.VehicleAssemblingTableBlockItem
 import com.mojang.serialization.MapCodec
+import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent.RightClickBlock
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -33,16 +34,23 @@ import net.minecraft.world.level.pathfinder.PathComputationType
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.shapes.CollisionContext
 import net.minecraft.world.phys.shapes.VoxelShape
-import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent.RightClickBlock
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-open class VehicleAssemblingTableBlock : BaseEntityBlock(
-    Properties.of().strength(2f).requiresCorrectToolForDrops().noOcclusion().pushReaction(PushReaction.DESTROY)
-) {
+open class VehicleAssemblingTableBlock :
+    BaseEntityBlock(
+        Properties
+            .of()
+            .strength(2f)
+            .requiresCorrectToolForDrops()
+            .noOcclusion()
+            .pushReaction(PushReaction.DESTROY),
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any().setValue(FACING, Direction.NORTH)
-                .setValue(BLOCK_PART, BlockPart.FLB)
+            this.stateDefinition
+                .any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(BLOCK_PART, BlockPart.FLB),
         )
     }
 
@@ -50,33 +58,39 @@ open class VehicleAssemblingTableBlock : BaseEntityBlock(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.vehicle_assembly_table").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.vehicle_assembly_table").withStyle(ChatFormatting.GRAY),
         )
     }
 
-    override fun isPathfindable(state: BlockState, pathComputationType: PathComputationType): Boolean {
-        return false
-    }
+    override fun isPathfindable(
+        state: BlockState,
+        pathComputationType: PathComputationType,
+    ): Boolean = false
 
     override fun getShape(
         pState: BlockState,
         pLevel: BlockGetter,
         pPos: BlockPos,
-        pContext: CollisionContext
-    ): VoxelShape {
-        return if (pState.getValue(BLOCK_PART) == BlockPart.FLU || pState.getValue(BLOCK_PART) == BlockPart.FRU ||
+        pContext: CollisionContext,
+    ): VoxelShape =
+        if (pState.getValue(BLOCK_PART) == BlockPart.FLU || pState.getValue(BLOCK_PART) == BlockPart.FRU ||
             pState.getValue(BLOCK_PART) == BlockPart.BLU || pState.getValue(BLOCK_PART) == BlockPart.BRU
         ) {
             box(0.0, 0.0, 0.0, 16.0, 14.0, 16.0)
         } else {
             super.getShape(pState, pLevel, pPos, pContext)
         }
-    }
 
-    override fun setPlacedBy(level: Level, pos: BlockPos, state: BlockState, placer: LivingEntity?, stack: ItemStack) {
+    override fun setPlacedBy(
+        level: Level,
+        pos: BlockPos,
+        state: BlockState,
+        placer: LivingEntity?,
+        stack: ItemStack,
+    ) {
         super.setPlacedBy(level, pos, state, placer, stack)
 
         val facing = state.getValue(FACING)
@@ -111,7 +125,7 @@ open class VehicleAssemblingTableBlock : BaseEntityBlock(
         neighborState: BlockState,
         level: LevelAccessor,
         pos: BlockPos,
-        neighborPos: BlockPos
+        neighborPos: BlockPos,
     ): BlockState {
         val facing = state.getValue(FACING)
         val originalPos = state.getValue(BLOCK_PART).relativeNegative(pos, facing)
@@ -128,7 +142,12 @@ open class VehicleAssemblingTableBlock : BaseEntityBlock(
         return super.updateShape(state, direction, neighborState, level, pos, neighborPos)
     }
 
-    override fun playerWillDestroy(level: Level, pos: BlockPos, state: BlockState, player: Player): BlockState {
+    override fun playerWillDestroy(
+        level: Level,
+        pos: BlockPos,
+        state: BlockState,
+        player: Player,
+    ): BlockState {
         if (!level.isClientSide && player.isCreative) {
             val facing = state.getValue(FACING)
             val part = state.getValue(BLOCK_PART)
@@ -151,7 +170,7 @@ open class VehicleAssemblingTableBlock : BaseEntityBlock(
         level: Level,
         pos: BlockPos,
         player: Player,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): InteractionResult {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS
@@ -168,18 +187,17 @@ open class VehicleAssemblingTableBlock : BaseEntityBlock(
         pBuilder.add(FACING).add(BLOCK_PART)
     }
 
-    override fun getStateForPlacement(pContext: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(pContext: BlockPlaceContext): BlockState? =
+        this
+            .defaultBlockState()
             .setValue(FACING, pContext.horizontalDirection.opposite)
-    }
 
-    override fun newBlockEntity(pPos: BlockPos, pState: BlockState): BlockEntity {
-        return VehicleAssemblingTableBlockEntity(pPos, pState)
-    }
+    override fun newBlockEntity(
+        pPos: BlockPos,
+        pState: BlockState,
+    ): BlockEntity = VehicleAssemblingTableBlockEntity(pPos, pState)
 
-    override fun getRenderShape(pState: BlockState): RenderShape {
-        return RenderShape.ENTITYBLOCK_ANIMATED
-    }
+    override fun getRenderShape(pState: BlockState): RenderShape = RenderShape.ENTITYBLOCK_ANIMATED
 
     override fun codec() = CODEC
 
@@ -222,33 +240,36 @@ open class VehicleAssemblingTableBlock : BaseEntityBlock(
         private fun createVehicle(
             server: ServerLevel,
             facing: Direction,
-            originalPos: BlockPos
+            originalPos: BlockPos,
         ): VehicleAssemblingTableVehicleEntity {
             val vehicle = VehicleAssemblingTableVehicleEntity(server)
 
-            val xOffset = when (facing) {
-                Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH -> 1
-                Direction.NORTH, Direction.EAST -> 0
-            }
+            val xOffset =
+                when (facing) {
+                    Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH -> 1
+                    Direction.NORTH, Direction.EAST -> 0
+                }
 
-            val zOffset = when (facing) {
-                Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.EAST -> 0
-                Direction.NORTH, Direction.WEST -> 1
-            }
+            val zOffset =
+                when (facing) {
+                    Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.EAST -> 0
+                    Direction.NORTH, Direction.WEST -> 1
+                }
 
             vehicle.setPos(
                 (originalPos.x + xOffset).toDouble(),
                 originalPos.y.toDouble(),
-                (originalPos.z + zOffset).toDouble()
+                (originalPos.z + zOffset).toDouble(),
             )
-            val deg = vehicle.rotate(
-                when (facing) {
-                    Direction.SOUTH, Direction.UP, Direction.DOWN -> Rotation.NONE
-                    Direction.WEST -> Rotation.CLOCKWISE_90
-                    Direction.NORTH -> Rotation.CLOCKWISE_180
-                    Direction.EAST -> Rotation.COUNTERCLOCKWISE_90
-                }
-            )
+            val deg =
+                vehicle.rotate(
+                    when (facing) {
+                        Direction.SOUTH, Direction.UP, Direction.DOWN -> Rotation.NONE
+                        Direction.WEST -> Rotation.CLOCKWISE_90
+                        Direction.NORTH -> Rotation.CLOCKWISE_180
+                        Direction.EAST -> Rotation.COUNTERCLOCKWISE_90
+                    },
+                )
 
             vehicle.yRotO = deg
             vehicle.yRot = deg

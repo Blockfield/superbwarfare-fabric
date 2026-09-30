@@ -14,7 +14,6 @@ import net.minecraft.nbt.CompoundTag
  * @since 0.8.9.1
  */
 interface IBvrSyncableEntity {
-
     /**
      * Writes minimal NBT fields required for long-range BVR client rendering and tracking.
      *

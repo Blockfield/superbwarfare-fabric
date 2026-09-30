@@ -3,6 +3,7 @@ package com.atsuishio.superbwarfare.entity.projectile
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.config.server.ExplosionConfig
 import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier.Companion.createDefaultModifier
+import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModEntities
 import com.atsuishio.superbwarfare.init.ModItems
@@ -30,11 +31,12 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.entity.EntityTypeTest
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import java.util.*
 import kotlin.math.max
 
-open class Blu43Entity : Entity, OwnableEntity {
+open class Blu43Entity :
+    Entity,
+    OwnableEntity {
     open val modelInstance = ProjectileModelReloadListener.getModel(MODEL)?.createInstance()
 
     constructor(type: EntityType<Blu43Entity>, world: Level) : super(type, world)
@@ -53,11 +55,12 @@ open class Blu43Entity : Entity, OwnableEntity {
         }
     }
 
-    override fun isPickable(): Boolean {
-        return !this.isRemoved
-    }
+    override fun isPickable(): Boolean = !this.isRemoved
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         val damage = DAMAGE_MODIFIER.compute(this, source, amount)
         if (source.entity != null) {
             this.entityData.set(LAST_ATTACKER_UUID, source.entity!!.getStringUUID())
@@ -70,13 +73,9 @@ open class Blu43Entity : Entity, OwnableEntity {
         this.entityData.set(OWNER_UUID, Optional.ofNullable(pUuid))
     }
 
-    override fun getOwnerUUID(): UUID? {
-        return this.entityData.get(OWNER_UUID).orElse(null)
-    }
+    override fun getOwnerUUID(): UUID? = this.entityData.get(OWNER_UUID).orElse(null)
 
-    fun isOwnedBy(pEntity: LivingEntity?): Boolean {
-        return pEntity === this.owner
-    }
+    fun isOwnedBy(pEntity: LivingEntity?): Boolean = pEntity === this.owner
 
     public override fun addAdditionalSaveData(compound: CompoundTag) {
         compound.putFloat("Health", this.entityData.get(HEALTH))
@@ -102,15 +101,16 @@ open class Blu43Entity : Entity, OwnableEntity {
             val s = compound.getString("Owner")
             val server = this.server
 
-            uuid = if (server == null) {
-                try {
-                    UUID.fromString(s)
-                } catch (_: Exception) {
-                    null
+            uuid =
+                if (server == null) {
+                    try {
+                        UUID.fromString(s)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } else {
+                    OldUsersConverter.convertMobOwnerIfNecessary(server, s)
                 }
-            } else {
-                OldUsersConverter.convertMobOwnerIfNecessary(server, s)
-            }
         }
 
         if (uuid != null) {
@@ -121,7 +121,10 @@ open class Blu43Entity : Entity, OwnableEntity {
         }
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (this.isOwnedBy(player) && player.isShiftKeyDown) {
             if (!this.level().isClientSide()) {
                 this.discard()
@@ -148,7 +151,7 @@ open class Blu43Entity : Entity, OwnableEntity {
             this.moveTowardsClosestSpace(
                 this.x,
                 (this.boundingBox.minY + this.boundingBox.maxY) / 2.0,
-                this.z
+                this.z,
             )
         }
 
@@ -156,7 +159,10 @@ open class Blu43Entity : Entity, OwnableEntity {
         var f = 0.98f
         if (this.onGround()) {
             val pos = this.blockPosBelowThatAffectsMyMovement
-            f = this.level().getBlockState(pos).block.friction * 0.98f
+            f = this
+                .level()
+                .getBlockState(pos)
+                .block.friction * 0.98f
         }
 
         this.deltaMovement = this.deltaMovement.multiply(f.toDouble(), 0.98, f.toDouble())
@@ -176,22 +182,26 @@ open class Blu43Entity : Entity, OwnableEntity {
             val frontBox = boundingBox.inflate(0.2)
             var trigger = false
 
-            val entities = level().getEntities(
-                EntityTypeTest.forClass(Entity::class.java),
-                frontBox
-            ) { true }.asSequence().filter {
-                it != this
-                        && !(it is Player && it.isSpectator)
-                        && it !is HangingEntity
-                        && it !is Display
-                        && !it.type.`is`(ModTags.EntityTypes.DECOY)
-                        && it.boundingBox.size > 0.4
-                        && if (ExplosionConfig.FRIENDLY_MINES.get()) {
-                    if (owner == null) true else owner != it && !owner!!.isAlliedTo(it)
-                } else {
-                    (owner != null && owner != it && !owner!!.isAlliedTo(it)) || it.team == null || enabledTDM(it)
-                }
-            }.toList()
+            val entities =
+                level()
+                    .getEntities(
+                        EntityTypeTest.forClass(Entity::class.java),
+                        frontBox,
+                    ) { true }
+                    .asSequence()
+                    .filter {
+                        it != this &&
+                            !(it is Player && it.isSpectator) &&
+                            it !is HangingEntity &&
+                            it !is Display &&
+                            !it.type.`is`(ModTags.EntityTypes.DECOY) &&
+                            it.boundingBox.size > 0.4 &&
+                            if (ExplosionConfig.FRIENDLY_MINES.get()) {
+                                if (owner == null) true else owner != it && !owner!!.isAlliedTo(it)
+                            } else {
+                                (owner != null && owner != it && !owner!!.isAlliedTo(it)) || it.team == null || enabledTDM(it)
+                            }
+                    }.toList()
 
             for (entity in entities) {
                 if (entity != null) {
@@ -226,8 +236,9 @@ open class Blu43Entity : Entity, OwnableEntity {
                                 max(baseDuration, 20),
                                 baseAmplifier,
                                 false,
-                                false
-                            ), this.owner
+                                false,
+                            ),
+                            this.owner,
                         )
                         entity.addEffect(
                             MobEffectInstance(
@@ -235,8 +246,9 @@ open class Blu43Entity : Entity, OwnableEntity {
                                 max(baseDuration, 20),
                                 baseAmplifier,
                                 false,
-                                false
-                            ), this.owner
+                                false,
+                            ),
+                            this.owner,
                         )
                         entity.addEffect(MobEffectInstance(MobEffects.BLINDNESS, 30, 0, false, false), this.owner)
                     }
@@ -251,7 +263,8 @@ open class Blu43Entity : Entity, OwnableEntity {
     }
 
     private fun triggerExplode() {
-        CustomExplosion.Builder(this)
+        CustomExplosion
+            .Builder(this)
             .attacker(this.owner)
             .damage(ExplosionConfig.BLU_43_EXPLOSION_DAMAGE.get().toFloat())
             .radius(ExplosionConfig.BLU_43_EXPLOSION_RADIUS.get().toFloat())
@@ -261,16 +274,23 @@ open class Blu43Entity : Entity, OwnableEntity {
         this.discard()
     }
 
-    override fun isPushable(): Boolean {
-        return true
-    }
+    override fun isPushable(): Boolean = true
 
-    open fun shoot(pX: Double, pY: Double, pZ: Double, pVelocity: Float, pInaccuracy: Float) {
-        val vec3 = (Vec3(pX, pY, pZ)).normalize().add(
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble())
-        ).scale(pVelocity.toDouble())
+    open fun shoot(
+        pX: Double,
+        pY: Double,
+        pZ: Double,
+        pVelocity: Float,
+        pInaccuracy: Float,
+    ) {
+        val vec3 =
+            (Vec3(pX, pY, pZ))
+                .normalize()
+                .add(
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                ).scale(pVelocity.toDouble())
         this.deltaMovement = vec3
     }
 
@@ -289,10 +309,11 @@ open class Blu43Entity : Entity, OwnableEntity {
         val HEALTH: EntityDataAccessor<Float> =
             SynchedEntityData.defineId(Blu43Entity::class.java, EntityDataSerializers.FLOAT)
 
-        private val DAMAGE_MODIFIER = createDefaultModifier()
-            .multiply(0.02f, ModDamageTypes.CUSTOM_EXPLOSION)
-            .multiply(0.02f, ModDamageTypes.MINE)
-            .multiply(0.02f, ModDamageTypes.PROJECTILE_EXPLOSION)
-            .multiply(0.02f, DamageTypes.EXPLOSION)
+        private val DAMAGE_MODIFIER =
+            createDefaultModifier()
+                .multiply(0.02f, ModDamageTypes.CUSTOM_EXPLOSION)
+                .multiply(0.02f, ModDamageTypes.MINE)
+                .multiply(0.02f, ModDamageTypes.PROJECTILE_EXPLOSION)
+                .multiply(0.02f, DamageTypes.EXPLOSION)
     }
 }

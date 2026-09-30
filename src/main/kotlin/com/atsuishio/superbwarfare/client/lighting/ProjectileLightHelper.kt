@@ -3,13 +3,13 @@ package com.atsuishio.superbwarfare.client.lighting
 import com.atsuishio.superbwarfare.entity.projectile.*
 import com.atsuishio.superbwarfare.tools.localPlayer
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.lighting.LevelLightEngine
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.sin
@@ -39,7 +39,7 @@ object ProjectileLightHelper {
         val level: Int,
         val minLevel: Int,
         val ttl: Int,
-        val radial: Boolean = false
+        val radial: Boolean = false,
     )
 
     // -----------------------------------------------------------------
@@ -52,59 +52,72 @@ object ProjectileLightHelper {
      * grenades, mines, and other non-luminous projectiles.
      */
     @JvmStatic
-    fun getTrailLight(entity: Entity): TrailLight? = when (entity) {
-        // Guided missiles — rocket engine, brightest
-        is MissileProjectile -> TrailLight(15, 12, 10, radial = true)
+    fun getTrailLight(entity: Entity): TrailLight? =
+        when (entity) {
+            // Guided missiles — rocket engine, brightest
+            is MissileProjectile -> TrailLight(15, 12, 10, radial = true)
 
-        // Unguided rockets — strong engine glow
-        is MediumRocketEntity,
-        is RpgRocketStandardEntity,
-        is RpgRocketTBGEntity -> TrailLight(15, 11, 9, radial = true)
+            // Unguided rockets — strong engine glow
+            is MediumRocketEntity,
+            is RpgRocketStandardEntity,
+            is RpgRocketTBGEntity,
+            -> TrailLight(15, 11, 9, radial = true)
 
-        // Small rockets
-        is SmallRocketEntity -> TrailLight(14, 9, 7, radial = true)
+            // Small rockets
+            is SmallRocketEntity -> TrailLight(14, 9, 7, radial = true)
 
-        // Large cannon shells — superheated metal
-        is CannonShellEntity -> TrailLight(13, 9, 6)
+            // Large cannon shells — superheated metal
+            is CannonShellEntity -> TrailLight(13, 9, 6)
 
-        // Small cannon shells
-        is SmallCannonShellEntity -> TrailLight(11, 7, 5)
+            // Small cannon shells
+            is SmallCannonShellEntity -> TrailLight(11, 7, 5)
 
-        // Mortar shells — visible hot trajectory
-        is MortarShellEntity -> TrailLight(12, 8, 6)
+            // Mortar shells — visible hot trajectory
+            is MortarShellEntity -> TrailLight(12, 8, 6)
 
-        is GrapeshotEntity -> TrailLight(8, 6, 3)
+            is GrapeshotEntity -> TrailLight(8, 6, 3)
 
-        // Bullets, grenades, mines — no visible glow in flight
-        else -> null
-    }
+            // Bullets, grenades, mines — no visible glow in flight
+            else -> null
+        }
 
     /**
      * Launch backblast parameters for rockets and large shells.
      */
     @JvmStatic
-    fun getLaunchFlash(entity: Entity): MuzzleFlashHelper.FlashParams? = when (entity) {
-        is MissileProjectile -> MuzzleFlashHelper.FlashParams(15, 12, 7)
-        is MediumRocketEntity,
-        is RpgRocketStandardEntity,
-        is RpgRocketTBGEntity -> MuzzleFlashHelper.FlashParams(15, 11, 6)
+    fun getLaunchFlash(entity: Entity): MuzzleFlashHelper.FlashParams? =
+        when (entity) {
+            is MissileProjectile -> MuzzleFlashHelper.FlashParams(15, 12, 7)
 
-        is SmallRocketEntity -> MuzzleFlashHelper.FlashParams(14, 9, 5)
-        is CannonShellEntity -> MuzzleFlashHelper.FlashParams(15, 11, 5)
-        is MortarShellEntity -> MuzzleFlashHelper.FlashParams(14, 9, 4)
-        is GrapeshotEntity -> MuzzleFlashHelper.FlashParams(13, 10, 3)
-        else -> null
-    }
+            is MediumRocketEntity,
+            is RpgRocketStandardEntity,
+            is RpgRocketTBGEntity,
+            -> MuzzleFlashHelper.FlashParams(15, 11, 6)
+
+            is SmallRocketEntity -> MuzzleFlashHelper.FlashParams(14, 9, 5)
+
+            is CannonShellEntity -> MuzzleFlashHelper.FlashParams(15, 11, 5)
+
+            is MortarShellEntity -> MuzzleFlashHelper.FlashParams(14, 9, 4)
+
+            is GrapeshotEntity -> MuzzleFlashHelper.FlashParams(13, 10, 3)
+
+            else -> null
+        }
 
     // -----------------------------------------------------------------
     // Trail emission
     // -----------------------------------------------------------------
 
-    private val ADJACENT_OFFSETS = arrayOf(
-        intArrayOf(-1, 0, 0), intArrayOf(1, 0, 0),
-        intArrayOf(0, -1, 0), intArrayOf(0, 1, 0),
-        intArrayOf(0, 0, -1), intArrayOf(0, 0, 1)
-    )
+    private val ADJACENT_OFFSETS =
+        arrayOf(
+            intArrayOf(-1, 0, 0),
+            intArrayOf(1, 0, 0),
+            intArrayOf(0, -1, 0),
+            intArrayOf(0, 1, 0),
+            intArrayOf(0, 0, -1),
+            intArrayOf(0, 0, 1),
+        )
 
     /**
      * Emits trail light along the projectile's flight path.
@@ -162,7 +175,11 @@ object ProjectileLightHelper {
      * @param radius  logical explosion radius in blocks
      */
     @JvmStatic
-    fun emitExplosionFlashDirect(level: Level, center: Vec3, radius: Float) {
+    fun emitExplosionFlashDirect(
+        level: Level,
+        center: Vec3,
+        radius: Float,
+    ) {
         if (radius <= 0f) return
         val player = localPlayer ?: return
         if (player.distanceToSqr(center.x, center.y, center.z) > EXPLODE_CULL_SQ) return
@@ -205,16 +222,16 @@ object ProjectileLightHelper {
         ringDist: Double,
         maxLevel: Int,
         minLevel: Int,
-        ttl: Int
+        ttl: Int,
     ) {
         for (i in 0 until 6) {
             val angle = i * (Math.PI / 3.0)
-            val ringBp = BlockPos.containing(
-                center.x + ringDist * cos(angle),
-                center.y,
-                center.z + sin(angle) * ringDist
-
-            )
+            val ringBp =
+                BlockPos.containing(
+                    center.x + ringDist * cos(angle),
+                    center.y,
+                    center.z + sin(angle) * ringDist,
+                )
             // Skip if this maps to the same block as the center node
             if (ringBp == centerBp) continue
             LightPositionRegistry.putSpark(ringBp.asLong(), maxLevel, minLevel, ttl)

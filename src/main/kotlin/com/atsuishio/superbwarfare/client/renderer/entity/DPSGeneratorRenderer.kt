@@ -15,11 +15,10 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 
-class DPSGeneratorRenderer(renderManager: EntityRendererProvider.Context) :
-    EntityRenderer<DPSGeneratorEntity>(renderManager) {
-    override fun getTextureLocation(pEntity: DPSGeneratorEntity): ResourceLocation {
-        return TEXTURES[pEntity.generatorLevel.coerceIn(0, 7)]
-    }
+class DPSGeneratorRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<DPSGeneratorEntity>(renderManager) {
+    override fun getTextureLocation(pEntity: DPSGeneratorEntity): ResourceLocation = TEXTURES[pEntity.generatorLevel.coerceIn(0, 7)]
 
     override fun render(
         entity: DPSGeneratorEntity,
@@ -27,7 +26,7 @@ class DPSGeneratorRenderer(renderManager: EntityRendererProvider.Context) :
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val ani = entity.animationInstance ?: return
         val instance = entity.modelInstance ?: return
@@ -47,7 +46,7 @@ class DPSGeneratorRenderer(renderManager: EntityRendererProvider.Context) :
             poseStack,
             vertexConsumer,
             packedLight,
-            OverlayTexture.pack(0f, entity.hurtTime > 0 || entity.deathTime > 0)
+            OverlayTexture.pack(0f, entity.hurtTime > 0 || entity.deathTime > 0),
         )
 
         poseStack.pushPose()
@@ -64,7 +63,7 @@ class DPSGeneratorRenderer(renderManager: EntityRendererProvider.Context) :
             1f,
             1f,
             true,
-            false
+            false,
         )
         poseStack.popPose()
 
@@ -73,7 +72,7 @@ class DPSGeneratorRenderer(renderManager: EntityRendererProvider.Context) :
 
     companion object {
         val TEXTURES =
-            ArrayList<ResourceLocation>((0..7).map { loc("textures/bedrock/entity/dps_generator_tier_${it}.png") })
+            ArrayList<ResourceLocation>((0..7).map { loc("textures/bedrock/entity/dps_generator_tier_$it.png") })
         val TEXTURE_E = loc("textures/bedrock/entity/dps_generator_e.png")
         val BLENDER: EulerAdditiveBlender = SimpleEulerAdditiveBlender(ZYXBoneTransformFactory()) { ArrayPoseBuilder() }
     }

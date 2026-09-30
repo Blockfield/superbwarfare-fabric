@@ -8,12 +8,17 @@ import net.minecraft.commands.Commands
 import net.minecraft.network.chat.Component
 
 // success/fail 抛出此异常实现 execute 的早退，由 execute 捕获并转换为返回值
-internal class EarlyCommandReturn(val result: Int) : RuntimeException() {
+internal class EarlyCommandReturn(
+    val result: Int,
+) : RuntimeException() {
     override fun fillInStackTrace() = this
 }
 
 // 这才是真正的Builder！
-open class CommandNode(val argumentBuilder: ArgumentBuilder<CommandSourceStack, *>, val name: String = "default") {
+open class CommandNode(
+    val argumentBuilder: ArgumentBuilder<CommandSourceStack, *>,
+    val name: String = "default",
+) {
     val cmd: MutableList<CommandNode> = mutableListOf()
 
     fun execute(executor: CommandContext<CommandSourceStack>.() -> Int) {
@@ -43,25 +48,33 @@ open class CommandNode(val argumentBuilder: ArgumentBuilder<CommandSourceStack, 
     }
 
     // args
-    inline fun <A> arg(argName: String = "$name.arg", type: ArgumentType<A>, builder: CommandNode.() -> Unit) {
+    inline fun <A> arg(
+        argName: String = "$name.arg",
+        type: ArgumentType<A>,
+        builder: CommandNode.() -> Unit,
+    ) {
         cmd += CommandNode(Commands.argument(argName, type), argName).apply(builder)
     }
 
-    fun build(): ArgumentBuilder<CommandSourceStack, *> = run {
-        cmd.map { it.build() }.forEach { this.argumentBuilder.then(it) }
-        this.argumentBuilder
-    }
+    fun build(): ArgumentBuilder<CommandSourceStack, *> =
+        run {
+            cmd.map { it.build() }.forEach { this.argumentBuilder.then(it) }
+            this.argumentBuilder
+        }
 
     fun CommandContext<CommandSourceStack>.success(
         result: Int = 0,
         allowLogging: Boolean = true,
-        msg: (() -> Component)? = null
+        msg: (() -> Component)? = null,
     ): Nothing {
         msg?.let { source.sendSuccess(it, allowLogging) }
         throw EarlyCommandReturn(result)
     }
 
-    fun CommandContext<CommandSourceStack>.fail(result: Int = 0, msg: (() -> Component)? = null): Nothing {
+    fun CommandContext<CommandSourceStack>.fail(
+        result: Int = 0,
+        msg: (() -> Component)? = null,
+    ): Nothing {
         msg?.let { source.sendFailure(it()) }
         throw EarlyCommandReturn(result)
     }
@@ -70,10 +83,12 @@ open class CommandNode(val argumentBuilder: ArgumentBuilder<CommandSourceStack, 
 // 带参数命令的抽象基类，负责声明从命令上下文中取值的能力
 abstract class CommandNodeWithArg<T>(
     argumentBuilder: ArgumentBuilder<CommandSourceStack, *>,
-    name: String
+    name: String,
 ) : CommandNode(argumentBuilder, name) {
     abstract fun CommandContext<CommandSourceStack>.getArg(ctx: CommandNodeWithArg<T>): T
 }
 
-fun buildCommand(name: String, builder: CommandNode.() -> Unit) =
-    CommandNode(Commands.literal(name), name).apply(builder).build()
+fun buildCommand(
+    name: String,
+    builder: CommandNode.() -> Unit,
+) = CommandNode(Commands.literal(name), name).apply(builder).build()

@@ -1,6 +1,9 @@
 package com.atsuishio.superbwarfare.item.material
 
 import com.atsuishio.superbwarfare.client.tooltip.component.CellImageComponent
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.equippedAccessories
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.item.EnergyStorageItem
 import com.atsuishio.superbwarfare.tools.tag
 import net.minecraft.ChatFormatting
@@ -17,15 +20,15 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
-import com.atsuishio.superbwarfare.fabric.equippedAccessories
 import java.util.*
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-open class BatteryItem(var maxEnergy: Int, properties: Properties) : Item(properties.stacksTo(1)), EnergyStorageItem {
-
+open class BatteryItem(
+    var maxEnergy: Int,
+    properties: Properties,
+) : Item(properties.stacksTo(1)),
+    EnergyStorageItem {
     companion object {
         const val TAG_ENABLED = "Enabled"
     }
@@ -47,21 +50,19 @@ open class BatteryItem(var maxEnergy: Int, properties: Properties) : Item(proper
 
     override fun getBarColor(pStack: ItemStack) = 0xFFFF00
 
-    override fun getTooltipImage(pStack: ItemStack): Optional<TooltipComponent> {
-        return Optional.of(CellImageComponent(pStack))
-    }
+    override fun getTooltipImage(pStack: ItemStack): Optional<TooltipComponent> = Optional.of(CellImageComponent(pStack))
 
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         val flag = stack.tag == null || !stack.tag!!.getBoolean(TAG_ENABLED)
         tooltipComponents.add(
             Component.translatable("des.superbwarfare.battery.${if (flag) "disable" else "enable"}").withStyle(
-                if (flag) ChatFormatting.GRAY else ChatFormatting.GREEN
-            )
+                if (flag) ChatFormatting.GRAY else ChatFormatting.GREEN,
+            ),
         )
     }
 
@@ -73,7 +74,13 @@ open class BatteryItem(var maxEnergy: Int, properties: Properties) : Item(proper
         return stack
     }
 
-    override fun inventoryTick(pStack: ItemStack, pLevel: Level, entity: Entity, pSlotId: Int, pIsSelected: Boolean) {
+    override fun inventoryTick(
+        pStack: ItemStack,
+        pLevel: Level,
+        entity: Entity,
+        pSlotId: Int,
+        pIsSelected: Boolean,
+    ) {
         super.inventoryTick(pStack, pLevel, entity, pSlotId, pIsSelected)
         if (pStack.tag == null || !pStack.tag!!.getBoolean(TAG_ENABLED)) return
         if (entity !is Player) return
@@ -118,12 +125,16 @@ open class BatteryItem(var maxEnergy: Int, properties: Properties) : Item(proper
         slot: Slot,
         action: ClickAction,
         player: Player,
-        access: SlotAccess
+        access: SlotAccess,
     ): Boolean {
         if (other.isEmpty && action == ClickAction.SECONDARY) {
             val tag = stack.tag ?: CompoundTag()
             tag.putBoolean(TAG_ENABLED, !tag.getBoolean(TAG_ENABLED))
-            stack.set(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag))
+            stack.set(
+                DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData
+                    .of(tag),
+            )
             return true
         }
         return super.overrideOtherStackedOnMe(stack, other, slot, action, player, access)

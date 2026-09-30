@@ -16,7 +16,7 @@ class CustomCloudOption(
     val size: Float,
     val gravity: Float,
     val cooldown: Boolean,
-    val light: Boolean
+    val light: Boolean,
 ) : ParticleOptions {
     constructor(
         r: Float,
@@ -26,14 +26,14 @@ class CustomCloudOption(
         size: Float,
         gravity: Float,
         cooldown: Boolean,
-        light: Boolean
+        light: Boolean,
     ) : this(
         (r * 255).roundToInt() shl 16 or ((g * 255).roundToInt() shl 8) or (b * 255).roundToInt(),
         life,
         size,
         gravity,
         cooldown,
-        light
+        light,
     )
 
     val red: Float
@@ -45,9 +45,7 @@ class CustomCloudOption(
     val blue: Float
         get() = (this.color and 255) / 255f
 
-    override fun getType(): ParticleType<*> {
-        return ModParticleTypes.CUSTOM_CLOUD.get()
-    }
+    override fun getType(): ParticleType<*> = ModParticleTypes.CUSTOM_CLOUD.get()
 
     companion object {
         val STREAM_CODEC = createStreamCodec<CustomCloudOption>()

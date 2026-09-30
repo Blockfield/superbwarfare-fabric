@@ -19,7 +19,7 @@ class BlueprintResearchTableBlockEntityRenderer : BlockEntityRenderer<BlueprintR
         poseStack: PoseStack,
         buffer: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         val instance = blockEntity.modelInstance ?: return
         val bone = instance.getBone("rolling") ?: return
@@ -28,12 +28,13 @@ class BlueprintResearchTableBlockEntityRenderer : BlockEntityRenderer<BlueprintR
 
         instance.resetPose()
 
-        val rot = when (blockEntity.blockState.getValue(BlueprintResearchTableBlock.FACING)) {
-            Direction.EAST -> -90f
-            Direction.SOUTH -> 180f
-            Direction.WEST -> 90f
-            else -> 0f
-        }
+        val rot =
+            when (blockEntity.blockState.getValue(BlueprintResearchTableBlock.FACING)) {
+                Direction.EAST -> -90f
+                Direction.SOUTH -> 180f
+                Direction.WEST -> 90f
+                else -> 0f
+            }
 
         poseStack.translate(0.5, 0.0, 0.5)
         poseStack.mulPose(Axis.YP.rotationDegrees(rot))
@@ -46,14 +47,14 @@ class BlueprintResearchTableBlockEntityRenderer : BlockEntityRenderer<BlueprintR
             poseStack,
             buffer.getBuffer(RenderType.entityTranslucent(TEXTURE)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         instance.renderToBuffer(
             poseStack,
             buffer.getBuffer(RenderType.eyes(TEXTURE_E)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         poseStack.popPose()
@@ -61,10 +62,8 @@ class BlueprintResearchTableBlockEntityRenderer : BlockEntityRenderer<BlueprintR
 
     override fun shouldRender(
         pBlockEntity: BlueprintResearchTableBlockEntity,
-        pCameraPos: Vec3
-    ): Boolean {
-        return pBlockEntity.blockState.getValue(BlueprintResearchTableBlock.PART) == BedPart.FOOT
-    }
+        pCameraPos: Vec3,
+    ): Boolean = pBlockEntity.blockState.getValue(BlueprintResearchTableBlock.PART) == BedPart.FOOT
 
     // getRenderBoundingBox есть только в NeoForge; ванильный способ не отсекать двухблочную модель
     // по краю экрана -- shouldRenderOffScreen (так же поступают маяк и структурный блок).

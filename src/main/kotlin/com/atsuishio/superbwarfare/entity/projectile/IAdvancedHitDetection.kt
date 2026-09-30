@@ -56,20 +56,26 @@ interface IAdvancedHitDetection {
     /**
      * 在路径上查找所有可命中实体
      */
-    fun findEntitiesOnPath(startVec: Vec3, endVec: Vec3): MutableList<EntityResult> {
+    fun findEntitiesOnPath(
+        startVec: Vec3,
+        endVec: Vec3,
+    ): MutableList<EntityResult> {
         if (this !is Projectile) return mutableListOf()
         val hitEntities: MutableList<EntityResult> = arrayListOf()
-        val entities = this.level().getEntities(
-            this,
-            this.boundingBox
-                .expandTowards(this.deltaMovement)
-                .inflate(1.0),
-            PROJECTILE_TARGETS
-        )
+        val entities =
+            this.level().getEntities(
+                this,
+                this.boundingBox
+                    .expandTowards(this.deltaMovement)
+                    .inflate(1.0),
+                PROJECTILE_TARGETS,
+            )
         for (entity in entities) {
-            if (entity == this.owner || this.owner != null
-                && (entity == this.owner!!.vehicle || entity.rootVehicle === this.owner!!.rootVehicle)
-            ) continue
+            if (entity == this.owner || this.owner != null &&
+                (entity == this.owner!!.vehicle || entity.rootVehicle === this.owner!!.rootVehicle)
+            ) {
+                continue
+            }
 
             if (entity is TargetEntity && entity.getEntityData().get(TargetEntity.DOWN_TIME) > 0) continue
             if (entity is DPSGeneratorEntity && entity.getEntityData().get(DPSGeneratorEntity.DOWN_TIME) > 0) continue
@@ -85,7 +91,11 @@ interface IAdvancedHitDetection {
      *
      * Based on TaC-Z
      */
-    fun getHitResult(entity: Entity, startVec: Vec3, endVec: Vec3): EntityResult? {
+    fun getHitResult(
+        entity: Entity,
+        startVec: Vec3,
+        endVec: Vec3,
+    ): EntityResult? {
         if (this !is Projectile) return null
 
         val expandHeight = if (entity is Player && !entity.isCrouching) 0.0625 else 0.0
@@ -129,7 +139,7 @@ interface IAdvancedHitDetection {
                         ModSounds.HIT.get(),
                         SoundSource.PLAYERS,
                         1f,
-                        1f
+                        1f,
                     )
                 }
             } else if (collisionHitPos != null) {
@@ -151,13 +161,14 @@ interface IAdvancedHitDetection {
             val playerHitboxOffset = 3.0
             if (entity is ServerPlayer) {
                 if (entity.vehicle != null) {
-                    boundingBox = boundingBox.move(
-                        velocity.multiply(
-                            playerHitboxOffset / 2,
-                            playerHitboxOffset / 2,
-                            playerHitboxOffset / 2
+                    boundingBox =
+                        boundingBox.move(
+                            velocity.multiply(
+                                playerHitboxOffset / 2,
+                                playerHitboxOffset / 2,
+                                playerHitboxOffset / 2,
+                            ),
                         )
-                    )
                 }
                 boundingBox =
                     boundingBox.move(velocity.multiply(playerHitboxOffset, playerHitboxOffset, playerHitboxOffset))
@@ -192,12 +203,20 @@ interface IAdvancedHitDetection {
     /**
      * 执行带穿甲/爆头倍率的伤害
      */
-    fun performDamage(entity: Entity, damage: Float, isHeadshot: Boolean)
+    fun performDamage(
+        entity: Entity,
+        damage: Float,
+        isHeadshot: Boolean,
+    )
 
     /**
      * 执行命中生物后添加药水效果
      */
-    fun performAddEffect(entity: Entity, damage: Float, isHeadshot: Boolean) {
+    fun performAddEffect(
+        entity: Entity,
+        damage: Float,
+        isHeadshot: Boolean,
+    ) {
         if (this !is IBulletProperties) return
         if (entity.level().isClientSide) return
         if (this.getEffects().isNotEmpty() && entity is LivingEntity) {
@@ -210,7 +229,12 @@ interface IAdvancedHitDetection {
     /**
      * 执行命中后的伤害施加与击退
      */
-    fun performOnHit(entity: Entity, damage: Float, headshot: Boolean, knockback: Double) {
+    fun performOnHit(
+        entity: Entity,
+        damage: Float,
+        headshot: Boolean,
+        knockback: Double,
+    ) {
         if (this !is IBulletProperties) return
         if (this !is Projectile) return
 
@@ -234,7 +258,10 @@ interface IAdvancedHitDetection {
     /**
      * 记录靶环分数（用于训练场计分）
      */
-    fun recordHitScore(direction: Direction, hitVec: Vec3) {
+    fun recordHitScore(
+        direction: Direction,
+        hitVec: Vec3,
+    ) {
         if (this !is Projectile) return
 
         val shooter = this.owner as? Player ?: return
@@ -242,14 +269,20 @@ interface IAdvancedHitDetection {
         val distance = shooter.position().distanceTo(hitVec)
 
         shooter.displayClientMessage(
-            Component.literal(score.toString())
+            Component
+                .literal(score.toString())
                 .append(Component.translatable("tips.superbwarfare.shoot.rings"))
-                .append(Component.literal(" " + format1D(distance, "m"))), false
+                .append(Component.literal(" " + format1D(distance, "m"))),
+            false,
         )
 
         if (shooter is ServerPlayer) {
-            val holder = if (score == 10) Holder.direct(ModSounds.HEADSHOT.get())
-            else Holder.direct(ModSounds.INDICATION.get())
+            val holder =
+                if (score == 10) {
+                    Holder.direct(ModSounds.HEADSHOT.get())
+                } else {
+                    Holder.direct(ModSounds.INDICATION.get())
+                }
 
             sendPacketTo(
                 shooter,
@@ -261,8 +294,8 @@ interface IAdvancedHitDetection {
                     shooter.z,
                     1f,
                     1f,
-                    shooter.level().random.nextLong()
-                )
+                    shooter.level().random.nextLong(),
+                ),
             )
             sendPacketTo(shooter, ClientIndicatorMessage(if (score == 10) 1 else 0, 5))
         }
@@ -272,7 +305,10 @@ interface IAdvancedHitDetection {
             val size = 10
 
             val type = ModDataComponents.TRANSCRIPT_SCORE.get()
-            val scores = (stack.get(type) ?: emptyList()) + com.mojang.datafixers.util.Pair(score, distance)
+            val scores =
+                (stack.get(type) ?: emptyList()) +
+                    com.mojang.datafixers.util
+                        .Pair(score, distance)
 
             stack.set(type, scores.takeLast(size))
         }
@@ -288,7 +324,12 @@ interface IAdvancedHitDetection {
          * 供 FastThrowableProjectile 子类绕过原版命中检测时使用。
          */
         @JvmStatic
-        fun clipObb(projectile: Entity, entity: Entity, startVec: Vec3, endVec: Vec3): Vec3? {
+        fun clipObb(
+            projectile: Entity,
+            entity: Entity,
+            startVec: Vec3,
+            endVec: Vec3,
+        ): Vec3? {
             if (entity is OBBEntity && !entity.enableAABB()) {
                 var closestDistSqr = Double.MAX_VALUE
                 var closestHitPos: Vec3? = null
@@ -326,18 +367,22 @@ interface IAdvancedHitDetection {
         }
 
         @JvmStatic
-        fun getRings(direction: Direction, hitVec: Vec3): Int {
+        fun getRings(
+            direction: Direction,
+            hitVec: Vec3,
+        ): Int {
             val x = abs(Mth.frac(hitVec.x) - 0.5)
             val y = abs(Mth.frac(hitVec.y) - 0.5)
             val z = abs(Mth.frac(hitVec.z) - 0.5)
             val axis = direction.axis
-            val v: Double = if (axis === Direction.Axis.Y) {
-                max(x, z)
-            } else if (axis === Direction.Axis.Z) {
-                max(x, y)
-            } else {
-                max(y, z)
-            }
+            val v: Double =
+                if (axis === Direction.Axis.Y) {
+                    max(x, z)
+                } else if (axis === Direction.Axis.Z) {
+                    max(x, y)
+                } else {
+                    max(y, z)
+                }
 
             return max(1, ceil(10.0 * ((0.5 - v) / 0.5).coerceIn(0.0, 1.0)).toInt())
         }
@@ -346,7 +391,7 @@ interface IAdvancedHitDetection {
         fun rayTraceBlocks(
             world: Level,
             context: ClipContext,
-            ignorePredicate: Predicate<BlockState>
+            ignorePredicate: Predicate<BlockState>,
         ): BlockHitResult {
             // 1. Vanilla ray trace against world blocks
             val vanillaHit = rayTraceVanillaBlocks(world, context, ignorePredicate)
@@ -358,47 +403,48 @@ interface IAdvancedHitDetection {
         fun rayTraceBlocksWithFluid(
             world: Level,
             context: ClipContext,
-            ignorePredicate: Predicate<BlockState>
+            ignorePredicate: Predicate<BlockState>,
         ): Pair<BlockHitResult, BlockHitResult> {
             val blockStateGetter = CachedBlockStateGetter(world)
             var blockHit: BlockHitResult? = null
             var fluidAnyHit: BlockHitResult? = null
 
-            val vanillaResult = performRayTrace(
-                context,
-                { rayTraceContext, blockPos ->
-                    val clipResult = clipAt(world, blockStateGetter, rayTraceContext, blockPos, ignorePredicate)
-                    if (blockHit == null && clipResult.blockHit != null) {
-                        blockHit = clipResult.blockHit
-                    }
-                    if (fluidAnyHit == null) {
-                        fluidAnyHit = chooseClosest(rayTraceContext.from, clipResult.blockHit, clipResult.fluidHit)
-                    }
-                    if (blockHit != null && fluidAnyHit != null) {
-                        return@performRayTrace Pair(blockHit, fluidAnyHit!!)
-                    }
-                    null
-                },
-                { rayTraceContext ->
-                    Pair(
-                        blockHit ?: missResult(rayTraceContext),
-                        fluidAnyHit ?: missResult(rayTraceContext)
-                    )
-                }
-            )
+            val vanillaResult =
+                performRayTrace(
+                    context,
+                    { rayTraceContext, blockPos ->
+                        val clipResult = clipAt(world, blockStateGetter, rayTraceContext, blockPos, ignorePredicate)
+                        if (blockHit == null && clipResult.blockHit != null) {
+                            blockHit = clipResult.blockHit
+                        }
+                        if (fluidAnyHit == null) {
+                            fluidAnyHit = chooseClosest(rayTraceContext.from, clipResult.blockHit, clipResult.fluidHit)
+                        }
+                        if (blockHit != null && fluidAnyHit != null) {
+                            return@performRayTrace Pair(blockHit, fluidAnyHit!!)
+                        }
+                        null
+                    },
+                    { rayTraceContext ->
+                        Pair(
+                            blockHit ?: missResult(rayTraceContext),
+                            fluidAnyHit ?: missResult(rayTraceContext),
+                        )
+                    },
+                )
 
             val shipHit = null
 
             return Pair(
                 applyShipHit(context, vanillaResult.first, shipHit),
-                applyShipHit(context, vanillaResult.second, shipHit)
+                applyShipHit(context, vanillaResult.second, shipHit),
             )
         }
 
         private fun rayTraceVanillaBlocks(
             world: Level,
             context: ClipContext,
-            ignorePredicate: Predicate<BlockState>
+            ignorePredicate: Predicate<BlockState>,
         ): BlockHitResult {
             val blockStateGetter = CachedBlockStateGetter(world)
             return performRayTrace(
@@ -407,7 +453,7 @@ interface IAdvancedHitDetection {
                     val clipResult = clipAt(world, blockStateGetter, rayTraceContext, blockPos, ignorePredicate)
                     chooseClosest(rayTraceContext.from, clipResult.blockHit, clipResult.fluidHit)
                 },
-                { rayTraceContext -> missResult(rayTraceContext) }
+                { rayTraceContext -> missResult(rayTraceContext) },
             )
         }
 
@@ -416,7 +462,7 @@ interface IAdvancedHitDetection {
             blockStateGetter: CachedBlockStateGetter,
             rayTraceContext: ClipContext,
             blockPos: BlockPos,
-            ignorePredicate: Predicate<BlockState>
+            ignorePredicate: Predicate<BlockState>,
         ): BlockClipResult {
             val blockState = blockStateGetter.get(blockPos)
             if (ignorePredicate.test(blockState)) {
@@ -429,11 +475,12 @@ interface IAdvancedHitDetection {
             val blockResult = world.clipWithInteractionOverride(startVec, endVec, blockPos, blockShape, blockState)
 
             val fluidState = blockState.fluidState
-            val fluidResult = if (fluidState.isEmpty) {
-                null
-            } else {
-                rayTraceContext.getFluidShape(fluidState, world, blockPos).clip(startVec, endVec, blockPos)
-            }
+            val fluidResult =
+                if (fluidState.isEmpty) {
+                    null
+                } else {
+                    rayTraceContext.getFluidShape(fluidState, world, blockPos).clip(startVec, endVec, blockPos)
+                }
 
             return BlockClipResult(blockResult, fluidResult)
         }
@@ -441,7 +488,7 @@ interface IAdvancedHitDetection {
         private fun chooseClosest(
             from: Vec3,
             blockResult: BlockHitResult?,
-            fluidResult: BlockHitResult?
+            fluidResult: BlockHitResult?,
         ): BlockHitResult? {
             if (blockResult == null) return fluidResult
             if (fluidResult == null) return blockResult
@@ -455,23 +502,25 @@ interface IAdvancedHitDetection {
             return BlockHitResult.miss(
                 rayTraceContext.to,
                 Direction.getNearest(vec3.x, vec3.y, vec3.z),
-                BlockPos.containing(rayTraceContext.to)
+                BlockPos.containing(rayTraceContext.to),
             )
         }
 
         private fun applyShipHit(
             context: ClipContext,
             vanillaHit: BlockHitResult,
-            shipHit: Pair<Vec3, BlockPos>?
+            shipHit: Pair<Vec3, BlockPos>?,
         ): BlockHitResult {
             if (shipHit == null) return vanillaHit
 
             val (shipHitPos, _) = shipHit
             val shipDistSqr = context.from.distanceToSqr(shipHitPos)
-            val vanillaDistSqr = if (vanillaHit.type != HitResult.Type.MISS)
-                context.from.distanceToSqr(vanillaHit.location)
-            else
-                Double.MAX_VALUE
+            val vanillaDistSqr =
+                if (vanillaHit.type != HitResult.Type.MISS) {
+                    context.from.distanceToSqr(vanillaHit.location)
+                } else {
+                    Double.MAX_VALUE
+                }
 
             if (shipDistSqr < vanillaDistSqr) {
                 val dir = context.from.subtract(shipHitPos)
@@ -480,13 +529,15 @@ interface IAdvancedHitDetection {
                     shipHitPos,
                     Direction.getNearest(dir.x, dir.y, dir.z),
                     projectileBlockPos,
-                    false
+                    false,
                 )
             }
             return vanillaHit
         }
 
-        private class CachedBlockStateGetter(private val world: Level) {
+        private class CachedBlockStateGetter(
+            private val world: Level,
+        ) {
             private var chunkX = Int.MIN_VALUE
             private var chunkZ = Int.MIN_VALUE
             private var chunk: LevelChunk? = null
@@ -509,14 +560,14 @@ interface IAdvancedHitDetection {
 
         private class BlockClipResult(
             val blockHit: BlockHitResult?,
-            val fluidHit: BlockHitResult?
+            val fluidHit: BlockHitResult?,
         )
 
         @JvmStatic
         fun <T> performRayTrace(
             context: ClipContext,
             hitFunction: BiFunction<ClipContext, BlockPos, T?>,
-            function: Function<ClipContext, T>
+            function: Function<ClipContext, T>,
         ): T {
             val startVec = context.from
             val endVec = context.to

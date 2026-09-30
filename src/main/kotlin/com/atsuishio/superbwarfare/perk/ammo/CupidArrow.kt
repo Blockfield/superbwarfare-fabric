@@ -23,7 +23,7 @@ object CupidArrow : AmmoPerk(Builder("cupid_arrow", Type.AMMO).damageRate(0.0).s
         attacker: LivingEntity,
         data: GunData,
         instance: PerkInstance,
-        target: Entity
+        target: Entity,
     ) {
         val perkLevel = instance.level
         val list = target.level().getEntities(null, target.boundingBox.inflate(perkLevel * 0.25)) { it is AgeableMob }
@@ -44,7 +44,7 @@ object CupidArrow : AmmoPerk(Builder("cupid_arrow", Type.AMMO).damageRate(0.0).s
                 if (it is AgeableMob && it.isBaby) {
                     it.ageUp(
                         AgeableMob.getSpeedUpSecondsWhenFeeding(-it.getAge()) * (1.0.coerceAtLeast(perkLevel - 10.0) / 5).toInt(),
-                        true
+                        true,
                     )
                 }
             }
@@ -64,7 +64,7 @@ object CupidArrow : AmmoPerk(Builder("cupid_arrow", Type.AMMO).damageRate(0.0).s
                     d1,
                     d2,
                     0.1,
-                    false
+                    false,
                 )
             }
         }

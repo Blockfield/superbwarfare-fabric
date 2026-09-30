@@ -12,21 +12,30 @@ object EntityModelReloadListener : BasicModelReloadListener("entity") {
     override fun apply(
         map: Map<ResourceLocation, BedrockModelPOJO>,
         resourceManager: ResourceManager,
-        profiler: ProfilerFiller
+        profiler: ProfilerFiller,
     ) {
         this.models.clear()
         this.animations.clear()
 
         map.forEach { (location, pojo) ->
             // 从 model path 反查 id，再反查 animation path
-            val id = this.idToModelPaths.entries.firstOrNull { it.value == location }?.key
-            val animPath = id?.let { i -> this.animPathToIds.entries.firstOrNull { it.value == i }?.key }
+            val id =
+                this.idToModelPaths.entries
+                    .firstOrNull { it.value == location }
+                    ?.key
+            val animPath =
+                id?.let { i ->
+                    this.animPathToIds.entries
+                        .firstOrNull { it.value == i }
+                        ?.key
+                }
             val anim = animPath?.let { this.animFiles[it] }
-            val options = if (anim != null) {
-                BakerOptions.ofAnimationFile(anim)
-            } else {
-                BakerOptions.defaults()
-            }.withPreservedBoneRegexes(setOf("^move_.*"))
+            val options =
+                if (anim != null) {
+                    BakerOptions.ofAnimationFile(anim)
+                } else {
+                    BakerOptions.defaults()
+                }.withPreservedBoneRegexes(setOf("^move_.*"))
 
             this.models[location] = BakedBedrockModel.bake(pojo, options)
         }

@@ -17,9 +17,12 @@ data class SwitchVehicleWeaponMessage(
 
         val vehicle = player.vehicle as? VehicleEntity ?: return
         if (vehicle.hasWeapon(vehicle.getSeatIndex(player))) {
-            val value = if (isScroll) {
-                (if (value > 0) Mth.ceil(value) else Mth.floor(value)).coerceIn(-1, 1).toDouble()
-            } else value
+            val value =
+                if (isScroll) {
+                    (if (value > 0) Mth.ceil(value) else Mth.floor(value)).coerceIn(-1, 1).toDouble()
+                } else {
+                    value
+                }
 
             vehicle.changeWeapon(index, value.toInt(), isScroll)
         }

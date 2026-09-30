@@ -37,7 +37,7 @@ class DestroyInfo {
         explodePassengers: Boolean,
         explodeBlocks: Boolean,
         explosionDamage: Float,
-        explosionRadius: Float
+        explosionRadius: Float,
     ) {
         this.crashPassengers = crashPassengers
         this.explodePassengers = explodePassengers

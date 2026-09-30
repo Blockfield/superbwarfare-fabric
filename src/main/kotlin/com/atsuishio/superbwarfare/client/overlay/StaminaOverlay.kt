@@ -6,17 +6,15 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.event.ClientEventHandler
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.util.Mth
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 object StaminaOverlay : CommonOverlay("stamina") {
-
-    override fun shouldRender() =
-        super.shouldRender() && DisplayConfig.STAMINA_HUD.get() && !ClientEventHandler.isEditing
+    override fun shouldRender() = super.shouldRender() && DisplayConfig.STAMINA_HUD.get() && !ClientEventHandler.isEditing
 
     override fun RenderContext.render() {
         val vehicle = player.vehicle
@@ -33,7 +31,7 @@ object StaminaOverlay : CommonOverlay("stamina") {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
 
         if (ClientEventHandler.exhaustion) {
@@ -50,7 +48,7 @@ object StaminaOverlay : CommonOverlay("stamina") {
             w.toFloat() / 2 + 90,
             (h - 24).toFloat(),
             -90f,
-            -16777216
+            -16777216,
         )
         RenderHelper.fill(
             guiGraphics,
@@ -60,7 +58,7 @@ object StaminaOverlay : CommonOverlay("stamina") {
             (w / 2f + 90 - 1.8 * ClientEventHandler.stamina).toFloat(),
             (h - 24).toFloat(),
             -90f,
-            -1
+            -1,
         )
 
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)

@@ -8,20 +8,22 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.EntityHitResult
 
-open class GunGrenadeEntity : FastThrowableProjectile, BasicGeoProjectileEntity {
+open class GunGrenadeEntity :
+    FastThrowableProjectile,
+    BasicGeoProjectileEntity {
     constructor(type: EntityType<out GunGrenadeEntity>, world: Level) : super(type, world)
 
     constructor(entity: Entity?, level: Level, damage: Float, explosionDamage: Float, explosionRadius: Float) : super(
-        ModEntities.GUN_GRENADE.get(), entity, level
+        ModEntities.GUN_GRENADE.get(),
+        entity,
+        level,
     ) {
         this.damageValue = damage
         this.explosionDamageValue = explosionDamage
         this.explosionRadiusValue = explosionRadius
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.GRENADE_40MM.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.GRENADE_40MM.get()
 
     override fun afterHitEntity(result: EntityHitResult) {
         if (this.tickCount > 0) {
@@ -35,9 +37,7 @@ open class GunGrenadeEntity : FastThrowableProjectile, BasicGeoProjectileEntity 
         shellTrail()
     }
 
-    override fun isFastMoving(): Boolean {
-        return false
-    }
+    override fun isFastMoving(): Boolean = false
 
     override fun getHiddenTicks() = 1
 }

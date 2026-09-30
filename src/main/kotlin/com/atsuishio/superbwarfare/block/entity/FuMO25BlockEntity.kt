@@ -3,6 +3,8 @@ package com.atsuishio.superbwarfare.block.entity
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.block.FuMO25Block
 import com.atsuishio.superbwarfare.config.server.SyncConfig
+import com.atsuishio.superbwarfare.fabric.EnergyStorage
+import com.atsuishio.superbwarfare.fabric.IEnergyStorage
 import com.atsuishio.superbwarfare.init.ModBlockEntities
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.inventory.menu.FuMO25Menu
@@ -31,15 +33,15 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.EnergyStorage
-import com.atsuishio.superbwarfare.fabric.IEnergyStorage
 import java.util.*
 import javax.annotation.ParametersAreNonnullByDefault
 import kotlin.math.abs
 
-open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
-    BlockEntity(ModBlockEntities.FUMO_25.get(), pPos, pBlockState), MenuProvider {
-
+open class FuMO25BlockEntity(
+    pPos: BlockPos,
+    pBlockState: BlockState,
+) : BlockEntity(ModBlockEntities.FUMO_25.get(), pPos, pBlockState),
+    MenuProvider {
     private val energyStorage: IEnergyStorage = EnergyStorage(MAX_ENERGY)
 
     open val modelInstance = BlockModelReloadListener.getModel(MODEL)?.createInstance()
@@ -50,32 +52,33 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
     var tick: Int = 0
     var ownerUUID: UUID? = null
 
-    protected val dataAccess: ContainerEnergyData = object : ContainerEnergyData {
-        override fun get(index: Int): Long {
-            return when (index) {
-                0 -> this@FuMO25BlockEntity.energyStorage.energyStored
-                1 -> this@FuMO25BlockEntity.type.ordinal
-                2 -> if (this@FuMO25BlockEntity.powered) 1 else 0
-                3 -> this@FuMO25BlockEntity.tick
-                4 -> this@FuMO25BlockEntity.tickO
-                else -> 0
-            }.toLong()
-        }
+    protected val dataAccess: ContainerEnergyData =
+        object : ContainerEnergyData {
+            override fun get(index: Int): Long =
+                when (index) {
+                    0 -> this@FuMO25BlockEntity.energyStorage.energyStored
+                    1 -> this@FuMO25BlockEntity.type.ordinal
+                    2 -> if (this@FuMO25BlockEntity.powered) 1 else 0
+                    3 -> this@FuMO25BlockEntity.tick
+                    4 -> this@FuMO25BlockEntity.tickO
+                    else -> 0
+                }.toLong()
 
-        override fun set(index: Int, value: Long) {
-            when (index) {
-                0 -> this@FuMO25BlockEntity.energyStorage.receiveEnergy(value.toInt(), false)
-                1 -> this@FuMO25BlockEntity.type = FuncType.entries[value.toInt()]
-                2 -> this@FuMO25BlockEntity.powered = value == 1L
-                3 -> this@FuMO25BlockEntity.tick = value.toInt()
-                4 -> this@FuMO25BlockEntity.tickO = value.toInt()
+            override fun set(
+                index: Int,
+                value: Long,
+            ) {
+                when (index) {
+                    0 -> this@FuMO25BlockEntity.energyStorage.receiveEnergy(value.toInt(), false)
+                    1 -> this@FuMO25BlockEntity.type = FuncType.entries[value.toInt()]
+                    2 -> this@FuMO25BlockEntity.powered = value == 1L
+                    3 -> this@FuMO25BlockEntity.tick = value.toInt()
+                    4 -> this@FuMO25BlockEntity.tickO = value.toInt()
+                }
             }
-        }
 
-        override fun getCount(): Int {
-            return MAX_DATA_COUNT
+            override fun getCount(): Int = MAX_DATA_COUNT
         }
-    }
 
     private fun setGlowEffect() {
         if (this.type != FuncType.GLOW) return
@@ -89,7 +92,10 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
         }
     }
 
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun loadAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.loadAdditional(tag, registries)
 
         val energyTag = tag.get("Energy")
@@ -107,7 +113,10 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
     }
 
     @ParametersAreNonnullByDefault
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun saveAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveAdditional(tag, registries)
 
         tag.put("Energy", (energyStorage as EnergyStorage).serializeNBT(registries))
@@ -119,17 +128,19 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
         this.ownerUUID?.let { tag.putUUID("OwnerUUID", it) }
     }
 
-    override fun getDisplayName(): Component {
-        return Component.empty()
-    }
+    override fun getDisplayName(): Component = Component.empty()
 
-    override fun createMenu(pContainerId: Int, pPlayerInventory: Inventory, pPlayer: Player): AbstractContainerMenu? {
+    override fun createMenu(
+        pContainerId: Int,
+        pPlayerInventory: Inventory,
+        pPlayer: Player,
+    ): AbstractContainerMenu? {
         val level = this.level ?: return null
         return FuMO25Menu(
             pContainerId,
             pPlayerInventory,
             ContainerLevelAccess.create(level, this.blockPos),
-            this.dataAccess
+            this.dataAccess,
         )
     }
 
@@ -146,9 +157,7 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
         return tag
     }
 
-    override fun getUpdatePacket(): Packet<ClientGamePacketListener> {
-        return ClientboundBlockEntityDataPacket.create(this)
-    }
+    override fun getUpdatePacket(): Packet<ClientGamePacketListener> = ClientboundBlockEntityDataPacket.create(this)
 
     fun getEnergyStorage() = this.energyStorage
 
@@ -156,7 +165,7 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
         NORMAL,
         WIDER,
         GLOW,
-        GUIDE
+        GUIDE,
     }
 
     companion object {
@@ -176,7 +185,12 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
 
         const val MAX_DATA_COUNT: Int = 5
 
-        fun serverTick(level: Level, pos: BlockPos, state: BlockState, blockEntity: FuMO25BlockEntity) {
+        fun serverTick(
+            level: Level,
+            pos: BlockPos,
+            state: BlockState,
+            blockEntity: FuMO25BlockEntity,
+        ) {
             if (!SyncConfig.SYNC_ENTITY_OVER_RANGE.get()) return
             val energyStorage = blockEntity.getEnergyStorage()
             val energy = energyStorage.energyStored
@@ -189,11 +203,12 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
             }
 
             val funcType = blockEntity.type
-            val energyCost = if (funcType == FuncType.WIDER) {
-                MAX_ENERGY_COST
-            } else {
-                DEFAULT_ENERGY_COST
-            }
+            val energyCost =
+                if (funcType == FuncType.WIDER) {
+                    MAX_ENERGY_COST
+                } else {
+                    DEFAULT_ENERGY_COST
+                }
 
             if (energy < energyCost) {
                 if (state.getValue(FuMO25Block.POWERED)) {
@@ -236,7 +251,8 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
                                     yRot = blockEntity.tick.toDouble(),
                                     searchType = RadarScanner.SearchType.VEHICLES,
                                     sourceId = sourceId,
-                                ), level
+                                ),
+                                level,
                             )
                             // 每 SYNC_ENTITY_INTERVAL 扫描实体
                             scanEntities(level, pos, blockEntity, owner)
@@ -254,7 +270,6 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
                 blockEntity.tick += 360
                 blockEntity.tickO = deltaT + blockEntity.tick
             }
-
 
 //            // 测试粒子
 //            if (level is ServerLevel) {
@@ -304,35 +319,36 @@ open class FuMO25BlockEntity(pPos: BlockPos, pBlockState: BlockState) :
             blockEntity: FuMO25BlockEntity,
             player: Player,
         ) {
-
             val range = if (blockEntity.type == FuncType.WIDER) 2048 else 1024
             val radarPos = Vec3(pos.x + 0.5, pos.y + 2.5, pos.z + 0.5)
 
             val sourceId = "block_${pos.x}_${pos.y}_${pos.z}"
-            val config = RadarScanner.RadarConfig(
-                owner = player,
-                center = radarPos,
-                radius = range.toDouble(),
-                sweepAngle = 120.0,
-                yRot = blockEntity.tick.toDouble(),
-                searchType = RadarScanner.SearchType.VEHICLES,
-                sourceId = sourceId,
-                affectedByStealthTarget = true
-            )
+            val config =
+                RadarScanner.RadarConfig(
+                    owner = player,
+                    center = radarPos,
+                    radius = range.toDouble(),
+                    sweepAngle = 120.0,
+                    yRot = blockEntity.tick.toDouble(),
+                    searchType = RadarScanner.SearchType.VEHICLES,
+                    sourceId = sourceId,
+                    affectedByStealthTarget = true,
+                )
 
             val result = RadarScanner.scan(level, config)
             result.sendToClients(player, level, config.shareWithTeammates)
 
             val rangeLiving = if (blockEntity.type == FuncType.WIDER) 96 else 128
-            val configLiving = RadarScanner.RadarConfig(
-                owner = player,
-                center = radarPos,
-                radius = rangeLiving.toDouble(),
-                sweepAngle = 120.0,
-                yRot = blockEntity.tick.toDouble(),
-                searchType = RadarScanner.SearchType.LIVING,
-                sourceId = sourceId,
-            )
+            val configLiving =
+                RadarScanner.RadarConfig(
+                    owner = player,
+                    center = radarPos,
+                    radius = rangeLiving.toDouble(),
+                    sweepAngle = 120.0,
+                    yRot = blockEntity.tick.toDouble(),
+                    searchType = RadarScanner.SearchType.LIVING,
+                    sourceId = sourceId,
+                )
 
             val resultLiving = RadarScanner.scan(level, configLiving)
             resultLiving.sendToClients(player, level, configLiving.shareWithTeammates)

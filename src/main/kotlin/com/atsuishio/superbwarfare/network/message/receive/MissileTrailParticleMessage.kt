@@ -18,9 +18,8 @@ data class MissileTrailParticleMessage(
     val bbHeight: Double,
     val motionX: Double,
     val motionY: Double,
-    val motionZ: Double
+    val motionZ: Double,
 ) : ClientPacketPayload() {
-
     override fun PayloadContext.handler() {
         val player = localPlayer ?: return
         val level = player.level()
@@ -33,16 +32,27 @@ data class MissileTrailParticleMessage(
             val random = 2 * (level.random.nextFloat() - 0.5f)
             level.addParticle(
                 CustomFlareOption(
-                    0.5f, 0.43f, 0.36f, 160, 0.93f,
-                    (10 + 8 * random).toInt(), 0.03f
-                ), true, pos.x + random * 0.25, pos.y + random * 0.25, pos.z + random * 0.25, 0.0, 0.0, 0.0
+                    0.5f,
+                    0.43f,
+                    0.36f,
+                    160,
+                    0.93f,
+                    (10 + 8 * random).toInt(),
+                    0.03f,
+                ),
+                true,
+                pos.x + random * 0.25,
+                pos.y + random * 0.25,
+                pos.z + random * 0.25,
+                0.0,
+                0.0,
+                0.0,
             )
             i += 2.0
         }
     }
 
     companion object {
-
         /**
          * Sends the missile trail particle message to all players in the same dimension.
          * This allows the huge missile trail to be visible even when the missile entity
@@ -51,16 +61,21 @@ data class MissileTrailParticleMessage(
         @JvmStatic
         fun sendToNearbyPlayers(
             level: ServerLevel,
-            xo: Double, yo: Double, zo: Double,
+            xo: Double,
+            yo: Double,
+            zo: Double,
             bbHeight: Double,
-            motionX: Double, motionY: Double, motionZ: Double
+            motionX: Double,
+            motionY: Double,
+            motionZ: Double,
         ) {
             for (player in level.players()) {
-                val distance = try {
-                    SyncConfig.MAX_RENDER_DISTANCE.get()
-                } catch (_: Exception) {
-                    2048
-                }
+                val distance =
+                    try {
+                        SyncConfig.MAX_RENDER_DISTANCE.get()
+                    } catch (_: Exception) {
+                        2048
+                    }
                 if (player.position().distanceToSqr(Vec3(xo, yo, zo)) < distance * distance) {
                     player.sendPacket(MissileTrailParticleMessage(xo, yo, zo, bbHeight, motionX, motionY, motionZ))
                 }

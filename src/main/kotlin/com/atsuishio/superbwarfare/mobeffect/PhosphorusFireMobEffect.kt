@@ -6,20 +6,20 @@ import com.atsuishio.superbwarfare.init.ModMobEffects
 import com.atsuishio.superbwarfare.network.message.receive.ClientPhosphorusFireMessage
 import com.atsuishio.superbwarfare.tools.forceHurt
 import com.atsuishio.superbwarfare.tools.sendPacketToTrackingThis
-import net.minecraft.core.registries.Registries
-import net.minecraft.world.effect.MobEffect
-import net.minecraft.world.effect.MobEffectCategory
-import net.minecraft.world.effect.MobEffectInstance
-import net.minecraft.world.effect.MobEffects
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.item.enchantment.EnchantmentHelper
-import net.minecraft.world.item.enchantment.Enchantments
 import io.github.fabricators_of_create.porting_lib.entity.EffectCure
 import io.github.fabricators_of_create.porting_lib.entity.events.living.MobEffectEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.tick.EntityTickEvent
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents
+import net.minecraft.core.registries.Registries
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.effect.MobEffect
+import net.minecraft.world.effect.MobEffectCategory
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.item.enchantment.Enchantments
 
 object PhosphorusFireMobEffect : MobEffect(MobEffectCategory.HARMFUL, 0xB1C1F2) {
     const val TAG_PHOSPHORUS_FIRE_COUNT = "SbwPhosphorusFireCount"
@@ -33,12 +33,16 @@ object PhosphorusFireMobEffect : MobEffect(MobEffectCategory.HARMFUL, 0xB1C1F2) 
         EntityTickEvent.Post.EVENT.register { onLivingTick(it) }
     }
 
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
-        val attacker = if (!entity.persistentData.contains(TAG_PHOSPHORUS_FIRE_ATTACKER)) {
-            null
-        } else {
-            entity.level().getEntity(entity.persistentData.getInt(TAG_PHOSPHORUS_FIRE_ATTACKER))
-        }
+    override fun applyEffectTick(
+        entity: LivingEntity,
+        amplifier: Int,
+    ): Boolean {
+        val attacker =
+            if (!entity.persistentData.contains(TAG_PHOSPHORUS_FIRE_ATTACKER)) {
+                null
+            } else {
+                entity.level().getEntity(entity.persistentData.getInt(TAG_PHOSPHORUS_FIRE_ATTACKER))
+            }
 
         val fireCount = entity.persistentData.getInt(TAG_PHOSPHORUS_FIRE_COUNT)
         val fireLevel = fireCount / 4
@@ -51,10 +55,13 @@ object PhosphorusFireMobEffect : MobEffect(MobEffectCategory.HARMFUL, 0xB1C1F2) 
             damage /= 2f
         }
 
-        val enchantment = entity.level().registryAccess()
-            .lookupOrThrow(Registries.ENCHANTMENT)
-            .get(Enchantments.FIRE_PROTECTION)
-            .orElse(null)
+        val enchantment =
+            entity
+                .level()
+                .registryAccess()
+                .lookupOrThrow(Registries.ENCHANTMENT)
+                .get(Enchantments.FIRE_PROTECTION)
+                .orElse(null)
         if (enchantment != null) {
             val fireResLevel = EnchantmentHelper.getEnchantmentLevel(enchantment, entity)
             damage /= 1 + fireResLevel * 0.1f
@@ -62,20 +69,21 @@ object PhosphorusFireMobEffect : MobEffect(MobEffectCategory.HARMFUL, 0xB1C1F2) 
 
         entity.forceHurt(
             ModDamageTypes.causePhosphorusFireDamage(entity.level().registryAccess(), null, attacker),
-            damage
+            damage,
         )
         entity.invulnerableTime = 0
         entity.persistentData.putInt(TAG_PHOSPHORUS_FIRE_COUNT, fireCount + 1)
         return true
     }
 
-    override fun shouldApplyEffectTickThisTick(pDuration: Int, pAmplifier: Int): Boolean {
-        return pDuration % 10 == 0
-    }
+    override fun shouldApplyEffectTickThisTick(
+        pDuration: Int,
+        pAmplifier: Int,
+    ): Boolean = pDuration % 10 == 0
 
     override fun fillEffectCures(
         cures: Set<EffectCure?>,
-        effectInstance: MobEffectInstance
+        effectInstance: MobEffectInstance,
     ) {
     }
 
@@ -119,7 +127,10 @@ object PhosphorusFireMobEffect : MobEffect(MobEffectCategory.HARMFUL, 0xB1C1F2) 
         }
     }
 
-    private fun onStartTracking(target: Entity, player: ServerPlayer) {
+    private fun onStartTracking(
+        target: Entity,
+        player: ServerPlayer,
+    ) {
         if (target is LivingEntity) {
             if (target.hasEffect(ModMobEffects.PHOSPHORUS_FIRE)) {
                 player.sendPacketToTrackingThis(ClientPhosphorusFireMessage(target.id, true))
@@ -129,7 +140,9 @@ object PhosphorusFireMobEffect : MobEffect(MobEffectCategory.HARMFUL, 0xB1C1F2) 
 
     private fun onLivingTick(event: EntityTickEvent.Post) {
         val living = event.entity as? LivingEntity ?: return
-        if (!living.level().isClientSide && living.hasEffect(ModMobEffects.PHOSPHORUS_FIRE) && living.level().gameTime % 1000 == 0.toLong()) {
+        if (!living.level().isClientSide && living.hasEffect(ModMobEffects.PHOSPHORUS_FIRE) &&
+            living.level().gameTime % 1000 == 0.toLong()
+        ) {
             event.entity.sendPacketToTrackingThis(ClientPhosphorusFireMessage(living.id, true))
         }
     }

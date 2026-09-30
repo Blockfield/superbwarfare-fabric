@@ -16,14 +16,15 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.Mth
 import java.io.IOException
 
-class HappiestGhastRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
-
+class HappiestGhastRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
     override fun transformCustomModelPart(
         entity: VehicleEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
         val turretRight = instance.getBone("move_turret_right")
@@ -46,33 +47,48 @@ class HappiestGhastRenderer(manager: EntityRendererProvider.Context) : BasicVehi
         entityYaw: Float,
         partialTicks: Float,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         super.renderCustomPart(entity, instance, poseStack, entityYaw, partialTicks, buffer, packedLight)
 
         // 确保动态纹理已预计算，直接获取当前帧对应的预计算纹理
         ensureFlowTexturesLoaded()
-        val texLocation = if (flowTexturesReady && !entity.sympatheticDetonated) {
-            getFlowFrame(entity.tickCount)
-        } else {
-            GLASS
-        }
+        val texLocation =
+            if (flowTexturesReady && !entity.sympatheticDetonated) {
+                getFlowFrame(entity.tickCount)
+            } else {
+                GLASS
+            }
 
         val renderType = RenderType.entityTranslucent(texLocation)
         val renderTypeLight = RenderType.eyes(texLocation)
         val polyMeshType = BedrockModelRenderTypes.polyMeshCutout(texLocation)
 
         instance.renderToBuffer(
-            poseStack, buffer, renderType, polyMeshType,
-            packedLight, OverlayTexture.NO_OVERLAY,
-            1f, 1f, 1f, 1f
+            poseStack,
+            buffer,
+            renderType,
+            polyMeshType,
+            packedLight,
+            OverlayTexture.NO_OVERLAY,
+            1f,
+            1f,
+            1f,
+            1f,
         )
 
         if (!entity.sympatheticDetonated) {
             instance.renderToBuffer(
-                poseStack, buffer, renderTypeLight, polyMeshType,
-                packedLight, OverlayTexture.NO_OVERLAY,
-                1f, 1f, 1f, 1f
+                poseStack,
+                buffer,
+                renderTypeLight,
+                polyMeshType,
+                packedLight,
+                OverlayTexture.NO_OVERLAY,
+                1f,
+                1f,
+                1f,
+                1f,
             )
         }
     }
@@ -128,7 +144,10 @@ class HappiestGhastRenderer(manager: EntityRendererProvider.Context) : BasicVehi
          * 对每个像素做 HSV 色相偏移，保留原始饱和度和明度。
          * 此方法仅在初始化时调用 CYCLE_TICKS 次，运行时不再调用。
          */
-        private fun createHueShiftedFrame(source: NativeImage, hueShift: Float): NativeImage {
+        private fun createHueShiftedFrame(
+            source: NativeImage,
+            hueShift: Float,
+        ): NativeImage {
             val dest = NativeImage(source.width, source.height, true)
 
             for (y in 0 until source.height) {
@@ -161,19 +180,24 @@ class HappiestGhastRenderer(manager: EntityRendererProvider.Context) : BasicVehi
         // ========== RGB ↔ HSV 转换 ==========
 
         /** RGB 0-1 → HSV (Hue 0-1, Sat 0-1, Val 0-1) */
-        private fun rgbToHsv(r: Float, g: Float, b: Float): Triple<Float, Float, Float> {
+        private fun rgbToHsv(
+            r: Float,
+            g: Float,
+            b: Float,
+        ): Triple<Float, Float, Float> {
             val max = maxOf(r, g, b)
             val min = minOf(r, g, b)
             val delta = max - min
 
-            val h = when {
-                delta == 0f -> 0f
-                max == r -> ((g - b) / delta) % 6f
-                max == g -> ((b - r) / delta) + 2f
-                else -> ((r - g) / delta) + 4f
-            }.let { raw ->
-                if (raw < 0f) raw + 6f else raw
-            } / 6f
+            val h =
+                when {
+                    delta == 0f -> 0f
+                    max == r -> ((g - b) / delta) % 6f
+                    max == g -> ((b - r) / delta) + 2f
+                    else -> ((r - g) / delta) + 4f
+                }.let { raw ->
+                    if (raw < 0f) raw + 6f else raw
+                } / 6f
 
             val s = if (max == 0f) 0f else delta / max
 
@@ -181,7 +205,11 @@ class HappiestGhastRenderer(manager: EntityRendererProvider.Context) : BasicVehi
         }
 
         /** HSV → RGB 0-1：保留纹理原本的饱和度和明度，只偏移色相 */
-        private fun hsvToRgbScalar(h: Float, s: Float, v: Float): Triple<Float, Float, Float> {
+        private fun hsvToRgbScalar(
+            h: Float,
+            s: Float,
+            v: Float,
+        ): Triple<Float, Float, Float> {
             if (s == 0f) return Triple(v, v, v)
 
             val hue6 = h * 6f

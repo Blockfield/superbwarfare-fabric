@@ -26,32 +26,41 @@ import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-open class BarbedWireBlock : Block(
-    Properties.of().ignitedByLava().forceSolidOn().instrument(NoteBlockInstrument.BASS)
-        .sound(SoundType.WOOD).strength(10f, 2f)
-        .noCollission().speedFactor(0.01f).noOcclusion()
-        .isRedstoneConductor { _, _, _ -> false }
-) {
+open class BarbedWireBlock :
+    Block(
+        Properties
+            .of()
+            .ignitedByLava()
+            .forceSolidOn()
+            .instrument(NoteBlockInstrument.BASS)
+            .sound(SoundType.WOOD)
+            .strength(10f, 2f)
+            .noCollission()
+            .speedFactor(0.01f)
+            .noOcclusion()
+            .isRedstoneConductor { _, _, _ -> false },
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(WATERLOGGED, false)
+                .setValue(WATERLOGGED, false),
         )
     }
 
-    override fun propagatesSkylightDown(state: BlockState, reader: BlockGetter, pos: BlockPos): Boolean {
-        return true
-    }
+    override fun propagatesSkylightDown(
+        state: BlockState,
+        reader: BlockGetter,
+        pos: BlockPos,
+    ): Boolean = true
 
     override fun getVisualShape(
         state: BlockState,
         world: BlockGetter,
         pos: BlockPos,
-        context: CollisionContext
-    ): VoxelShape {
-        return Shapes.empty()
-    }
+        context: CollisionContext,
+    ): VoxelShape = Shapes.empty()
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block?, BlockState?>) {
         builder.add(FACING, WATERLOGGED)
@@ -59,22 +68,23 @@ open class BarbedWireBlock : Block(
 
     override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
         val flag = context.level.getFluidState(context.clickedPos).type === Fluids.WATER
-        return this.defaultBlockState()
+        return this
+            .defaultBlockState()
             .setValue(FACING, context.horizontalDirection.opposite)
             .setValue(WATERLOGGED, flag)
     }
 
-    override fun getFluidState(state: BlockState): FluidState {
-        return if (state.getValue(WATERLOGGED)) Fluids.WATER.getSource(false) else super.getFluidState(state)
-    }
+    override fun getFluidState(state: BlockState): FluidState = if (state.getValue(WATERLOGGED)) Fluids.WATER.getSource(false) else super.getFluidState(state)
 
-    override fun rotate(state: BlockState, rot: Rotation): BlockState {
-        return state.setValue(FACING, rot.rotate(state.getValue(FACING)))
-    }
+    override fun rotate(
+        state: BlockState,
+        rot: Rotation,
+    ): BlockState = state.setValue(FACING, rot.rotate(state.getValue(FACING)))
 
-    override fun mirror(state: BlockState, mirrorIn: Mirror): BlockState {
-        return state.rotate(mirrorIn.getRotation(state.getValue(FACING)))
-    }
+    override fun mirror(
+        state: BlockState,
+        mirrorIn: Mirror,
+    ): BlockState = state.rotate(mirrorIn.getRotation(state.getValue(FACING)))
 
     override fun updateShape(
         state: BlockState,
@@ -82,7 +92,7 @@ open class BarbedWireBlock : Block(
         facingState: BlockState,
         world: LevelAccessor,
         currentPos: BlockPos,
-        facingPos: BlockPos
+        facingPos: BlockPos,
     ): BlockState {
         if (state.getValue(WATERLOGGED)) {
             world.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
@@ -90,15 +100,23 @@ open class BarbedWireBlock : Block(
         return super.updateShape(state, facing, facingState, world, currentPos, facingPos)
     }
 
-    override fun entityInside(blockstate: BlockState, world: Level, pos: BlockPos, entity: Entity) {
+    override fun entityInside(
+        blockstate: BlockState,
+        world: Level,
+        pos: BlockPos,
+        entity: Entity,
+    ) {
         super.entityInside(blockstate, world, pos, entity)
         if (entity is LivingEntity) {
             entity.makeStuckInBlock(Blocks.AIR.defaultBlockState(), Vec3(0.15, 0.04, 0.15))
             entity.hurt(
                 DamageSource(
-                    world.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
-                        .getHolderOrThrow(DamageTypes.CACTUS)
-                ), 2f
+                    world
+                        .registryAccess()
+                        .registryOrThrow(Registries.DAMAGE_TYPE)
+                        .getHolderOrThrow(DamageTypes.CACTUS),
+                ),
+                2f,
             )
         }
     }

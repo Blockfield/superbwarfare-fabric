@@ -9,19 +9,18 @@ import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils.transfor
 import com.atsuishio.superbwarfare.event.ClientEventHandler
 import com.atsuishio.superbwarfare.event.ClientMouseHandler
 import com.atsuishio.superbwarfare.tools.maxZoom
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec2
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 /**
  * 处理载具客户端专用方法的工具类
  */
 object VehicleClientUtils {
-
     /**
      * 获取视角旋转
      *
@@ -39,7 +38,7 @@ object VehicleClientUtils {
         partialTicks: Float,
         player: Player,
         zoom: Boolean,
-        isFirstPerson: Boolean
+        isFirstPerson: Boolean,
     ): Vec2? {
         val index = vehicle.getSeatIndex(player)
         val seat = vehicle.computed().seats().getOrNull(index)
@@ -50,31 +49,41 @@ object VehicleClientUtils {
                 if (zoom && gunData != null && gunData.get(GunProp.SHOOT_POS).viewDirection != null) {
                     return if (ClientEventHandler.isNacelleCam(player)) {
                         Vec2(
-                            (-getYRotFromVector(vehicle.getViewVec(player, partialTicks)).toFloat() - ClientMouseHandler.nacelleCameraYaw).toFloat(),
-                            (-getXRotFromVector(vehicle.getViewVec(player, partialTicks)).toFloat() + ClientMouseHandler.nacelleCameraPitch).toFloat()
+                            (
+                                -getYRotFromVector(
+                                    vehicle.getViewVec(player, partialTicks),
+                                ).toFloat() - ClientMouseHandler.nacelleCameraYaw
+                            ).toFloat(),
+                            (
+                                -getXRotFromVector(
+                                    vehicle.getViewVec(player, partialTicks),
+                                ).toFloat() + ClientMouseHandler.nacelleCameraPitch
+                            ).toFloat(),
                         )
-                    } else Vec2(
-                        -getYRotFromVector(vehicle.getViewVec(player, partialTicks)).toFloat(),
-                        -getXRotFromVector(vehicle.getViewVec(player, partialTicks)).toFloat()
-                    )
+                    } else {
+                        Vec2(
+                            -getYRotFromVector(vehicle.getViewVec(player, partialTicks)).toFloat(),
+                            -getXRotFromVector(vehicle.getViewVec(player, partialTicks)).toFloat(),
+                        )
+                    }
                 }
                 if (vehicle.useAircraftCamera(index)) {
                     return if (ClientEventHandler.isNacelleCam(player)) {
                         Vec2(
                             (vehicle.getYaw(partialTicks) - ClientMouseHandler.nacelleCameraYaw).toFloat(),
-                            (vehicle.getPitch(partialTicks) + ClientMouseHandler.nacelleCameraPitch).toFloat()
+                            (vehicle.getPitch(partialTicks) + ClientMouseHandler.nacelleCameraPitch).toFloat(),
                         )
                     } else {
                         Vec2(
                             (vehicle.getYaw(partialTicks) - ClientMouseHandler.freeCameraYaw).toFloat(),
-                            (vehicle.getPitch(partialTicks) + ClientMouseHandler.freeCameraPitch).toFloat()
+                            (vehicle.getPitch(partialTicks) + ClientMouseHandler.freeCameraPitch).toFloat(),
                         )
                     }
                 }
                 if (zoom || isFirstPerson) {
                     return Vec2(
                         -getYRotFromVector(vehicle.cameraDirection(player, partialTicks)).toFloat(),
-                        -getXRotFromVector(vehicle.cameraDirection(player, partialTicks)).toFloat()
+                        -getXRotFromVector(vehicle.cameraDirection(player, partialTicks)).toFloat(),
                     )
                 }
             } else {
@@ -101,7 +110,7 @@ object VehicleClientUtils {
         partialTicks: Float,
         player: Player,
         zoom: Boolean,
-        isFirstPerson: Boolean
+        isFirstPerson: Boolean,
     ): Vec3? {
         val index = vehicle.getSeatIndex(player)
         val seat = vehicle.computed().seats().getOrNull(index)
@@ -121,12 +130,13 @@ object VehicleClientUtils {
                     }
                 } else if (vehicle.useAircraftCamera(index)) {
                     val transform = vehicle.getClientVehicleTransform(partialTicks)
-                    val maxCameraPosition = transformPosition(
-                        transform,
-                        data.aircraftCameraPos.x,
-                        data.aircraftCameraPos.y + 0.1 * ClientMouseHandler.custom3pDistanceLerp,
-                        data.aircraftCameraPos.z - ClientMouseHandler.custom3pDistanceLerp
-                    )
+                    val maxCameraPosition =
+                        transformPosition(
+                            transform,
+                            data.aircraftCameraPos.x,
+                            data.aircraftCameraPos.y + 0.1 * ClientMouseHandler.custom3pDistanceLerp,
+                            data.aircraftCameraPos.z - ClientMouseHandler.custom3pDistanceLerp,
+                        )
                     return maxCameraPosition.maxZoom(transform)
                 }
             }
@@ -144,7 +154,10 @@ object VehicleClientUtils {
      */
     @Environment(EnvType.CLIENT)
     @JvmStatic
-    fun useFixedCameraPos(vehicle: VehicleEntity, entity: Entity?): Boolean {
+    fun useFixedCameraPos(
+        vehicle: VehicleEntity,
+        entity: Entity?,
+    ): Boolean {
         val index = vehicle.getSeatIndex(entity)
         val seat = vehicle.computed().seats().getOrNull(index) ?: return false
         val data = seat.cameraPos ?: return false
@@ -156,7 +169,11 @@ object VehicleClientUtils {
      */
     @Environment(EnvType.CLIENT)
     @JvmStatic
-    fun firstPersonAmmoComponent(vehicle: VehicleEntity, data: GunData, player: Player?): Component {
+    fun firstPersonAmmoComponent(
+        vehicle: VehicleEntity,
+        data: GunData,
+        player: Player?,
+    ): Component {
         val name = data.get(GunProp.NAME)
         if (name.isNullOrBlank()) return Component.empty()
 
@@ -169,7 +186,9 @@ object VehicleClientUtils {
      */
     @Environment(EnvType.CLIENT)
     @JvmStatic
-    fun thirdPersonAmmoComponent(vehicle: VehicleEntity, data: GunData, player: Player?): Component {
-        return firstPersonAmmoComponent(vehicle, data, player)
-    }
+    fun thirdPersonAmmoComponent(
+        vehicle: VehicleEntity,
+        data: GunData,
+        player: Player?,
+    ): Component = firstPersonAmmoComponent(vehicle, data, player)
 }

@@ -33,9 +33,13 @@ import net.minecraft.world.phys.Vec3
 import java.util.*
 import kotlin.math.max
 
-open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity {
+open class MortarShellEntity :
+    FastThrowableProjectile,
+    BasicGeoProjectileEntity {
     enum class Type {
-        NORMAL, WP, SMOKE
+        NORMAL,
+        WP,
+        SMOKE,
     }
 
     private var type: Type? = Type.NORMAL
@@ -63,7 +67,7 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         y: Double,
         z: Double,
         level: Level,
-        gravity: Float
+        gravity: Float,
     ) : super(type, x, y, z, level) {
         this.gravityValue = gravity
     }
@@ -73,7 +77,7 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         level: Level,
         damage: Float,
         explosionDamage: Float,
-        explosionRadius: Float
+        explosionRadius: Float,
     ) : super(ModEntities.MORTAR_SHELL.get(), entity, level) {
         this.damageValue = damage
         this.explosionDamageValue = explosionDamage
@@ -110,9 +114,7 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         }
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.MORTAR_SHELL.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.MORTAR_SHELL.get()
 
     override fun addAdditionalSaveData(compound: CompoundTag) {
         super.addAdditionalSaveData(compound)
@@ -120,10 +122,11 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         if (this.potion != Potions.WATER.value() && this.potion != null) {
             compound.putString(
                 "Potion",
-                Objects.requireNonNullElse(
-                    BuiltInRegistries.POTION.getKey(this.potion!!),
-                    "empty"
-                ).toString()
+                Objects
+                    .requireNonNullElse(
+                        BuiltInRegistries.POTION.getKey(this.potion!!),
+                        "empty",
+                    ).toString(),
             )
         }
 
@@ -157,8 +160,14 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
 
         if (!this.level().isClientSide()) {
             when (type) {
-                Type.WP -> this.causeWPEffect(result.getLocation(), this.owner!!)
-                Type.SMOKE -> this.releaseSmoke()
+                Type.WP -> {
+                    this.causeWPEffect(result.getLocation(), this.owner!!)
+                }
+
+                Type.SMOKE -> {
+                    this.releaseSmoke()
+                }
+
                 else -> {}
             }
 
@@ -171,8 +180,14 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
     override fun afterHitBlock(result: BlockHitResult) {
         if (!this.level().isClientSide() && this.owner != null) {
             when (type) {
-                Type.WP -> causeWPEffect(result.getLocation(), this.owner!!)
-                Type.SMOKE -> releaseSmoke()
+                Type.WP -> {
+                    causeWPEffect(result.getLocation(), this.owner!!)
+                }
+
+                Type.SMOKE -> {
+                    releaseSmoke()
+                }
+
                 else -> {}
             }
         }
@@ -186,16 +201,22 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         this.discard()
     }
 
-    open fun causeWPEffect(pos: Vec3, shooter: Entity) {
+    open fun causeWPEffect(
+        pos: Vec3,
+        shooter: Entity,
+    ) {
         if (this.level() is ServerLevel) {
-            val entities = SeekTool.Builder(shooter)
-                .withinRange(pos, explosionRadiusValue.toDouble())
-                .notItsVehicle()
-                .baseFilter()
-                .noVehicle()
-                .build()
+            val entities =
+                SeekTool
+                    .Builder(shooter)
+                    .withinRange(pos, explosionRadiusValue.toDouble())
+                    .notItsVehicle()
+                    .baseFilter()
+                    .noVehicle()
+                    .build()
 
-            entities.asSequence()
+            entities
+                .asSequence()
                 .filter { it is LivingEntity && !(it is Player && it.isCreative) }
                 .forEach {
                     val dis = pos.distanceTo(it.position())
@@ -204,8 +225,9 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
                         MobEffectInstance(
                             ModMobEffects.PHOSPHORUS_FIRE,
                             (300 - 30 * dis).toInt(),
-                            max(explosionRadiusValue - dis, 0.0).toInt()
-                        ), this.owner
+                            max(explosionRadiusValue - dis, 0.0).toInt(),
+                        ),
+                        this.owner,
                     )
                 }
         }
@@ -216,8 +238,9 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         if (level is ServerLevel) {
             val vec3 = Vec3(1.0, 0.05, 0.0)
             for (i in 0..<this.smokeCount) {
-                val decoy = SmokeDecoyEntity(ModEntities.SMOKE_DECOY.get(), level, true)
-                    .setColor(this.red, this.green, this.blue)
+                val decoy =
+                    SmokeDecoyEntity(ModEntities.SMOKE_DECOY.get(), level, true)
+                        .setColor(this.red, this.green, this.blue)
                 decoy.setPos(this.x, this.y + bbHeight, this.z)
                 decoy.decoyShoot(this, vec3.yRot(i * (360f / this.smokeCount) * Mth.DEG_TO_RAD), 2f, 5f)
                 level.addFreshEntity(decoy)
@@ -225,9 +248,7 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         }
     }
 
-    override fun forceLoadChunk(): Boolean {
-        return true
-    }
+    override fun forceLoadChunk(): Boolean = true
 
     override fun tick() {
         val level = this.level()
@@ -243,15 +264,16 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         }
 
         if (type == Type.WP) {
-            val hitResult = level().clip(
-                ClipContext(
-                    position(),
-                    position().add(deltaMovement.scale(8.0)),
-                    ClipContext.Block.VISUAL,
-                    ClipContext.Fluid.ANY,
-                    this
+            val hitResult =
+                level().clip(
+                    ClipContext(
+                        position(),
+                        position().add(deltaMovement.scale(8.0)),
+                        ClipContext.Block.VISUAL,
+                        ClipContext.Fluid.ANY,
+                        this,
+                    ),
                 )
-            )
 
             if (hitResult.type == HitResult.Type.BLOCK) {
                 releaseWp(owner)
@@ -272,7 +294,7 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
                     deltaMovement.y,
                     deltaMovement.z,
                     (random.nextFloat() * 0.05f + 0.1f * deltaMovement.length()).toFloat(),
-                    35f
+                    35f,
                 )
                 level.addFreshEntity(whitePhosphorusProjectileEntity)
             }
@@ -280,7 +302,10 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         }
     }
 
-    open fun createAreaCloud(level: Level, pos: Vec3) {
+    open fun createAreaCloud(
+        level: Level,
+        pos: Vec3,
+    ) {
         if (this.potion === Potions.WATER.value() && this.getEffects().isEmpty()) return
 
         val cloud = AreaEffectCloud(level, pos.x, pos.y, pos.z)
@@ -297,11 +322,7 @@ open class MortarShellEntity : FastThrowableProjectile, BasicGeoProjectileEntity
         level.addFreshEntity(cloud)
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.SHELL_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.SHELL_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.06f
-    }
+    override fun getVolume(): Float = 0.06f
 }

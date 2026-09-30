@@ -18,25 +18,26 @@ object DataGenerators {
         generator.addProvider(event.includeServer(), ModRecipeProvider(packOutput, lookupProvider))
         generator.addProvider(event.includeClient(), ModBlockStateProvider(packOutput, existingFileHelper))
         generator.addProvider(event.includeClient(), ModItemModelProvider(packOutput, existingFileHelper))
-        val tagProvider = generator.addProvider(
+        val tagProvider =
+            generator.addProvider(
+                event.includeServer(),
+                ModBlockTagProvider(packOutput, lookupProvider, existingFileHelper),
+            )
+        generator.addProvider(
             event.includeServer(),
-            ModBlockTagProvider(packOutput, lookupProvider, existingFileHelper)
+            ModItemTagProvider(packOutput, lookupProvider, tagProvider.contentsGetter(), existingFileHelper),
         )
         generator.addProvider(
             event.includeServer(),
-            ModItemTagProvider(packOutput, lookupProvider, tagProvider.contentsGetter(), existingFileHelper)
+            ModEntityTypeTagProvider(packOutput, lookupProvider, existingFileHelper),
         )
         generator.addProvider(
             event.includeServer(),
-            ModEntityTypeTagProvider(packOutput, lookupProvider, existingFileHelper)
+            ModDamageTypeTagProvider(packOutput, lookupProvider, existingFileHelper),
         )
         generator.addProvider(
             event.includeServer(),
-            ModDamageTypeTagProvider(packOutput, lookupProvider, existingFileHelper)
-        )
-        generator.addProvider(
-            event.includeServer(),
-            ModAdvancementProvider(packOutput, lookupProvider, existingFileHelper)
+            ModAdvancementProvider(packOutput, lookupProvider, existingFileHelper),
         )
         generator.addProvider(event.includeServer(), ModPerkTagProvider(packOutput, lookupProvider, existingFileHelper))
         generator.addProvider(event.includeServer(), ModWreckageLootProvider(packOutput, existingFileHelper))

@@ -11,7 +11,9 @@ import com.atsuishio.superbwarfare.init.ModDamageTypes;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
 import net.minecraft.world.entity.EntityType;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -26,7 +28,8 @@ public class VehicleData implements DefaultDataSupplier<DefaultVehicleData> {
         this.vehicle = entity;
     }
 
-    private final JsonPropertyModifier<VehicleData, DefaultVehicleData> jsonPropModifier = new JsonPropertyModifier<>();
+    private final JsonPropertyModifier<VehicleData, DefaultVehicleData> jsonPropModifier =
+            new JsonPropertyModifier<>();
 
     public static @NotNull DefaultVehicleData compute(VehicleEntity vehicle) {
         return from(vehicle).compute();
@@ -77,14 +80,16 @@ public class VehicleData implements DefaultDataSupplier<DefaultVehicleData> {
         return EntityType.getKey(type).toString();
     }
 
-    public static final LoadingCache<VehicleEntity, VehicleData> dataCache = CacheBuilder.newBuilder()
-            .weakKeys()
-            .weakValues()
-            .build(new CacheLoader<>() {
-                public @NotNull VehicleData load(@NotNull VehicleEntity entity) {
-                    return new VehicleData(entity);
-                }
-            });
+    public static final LoadingCache<VehicleEntity, VehicleData> dataCache =
+            CacheBuilder.newBuilder()
+                    .weakKeys()
+                    .weakValues()
+                    .build(
+                            new CacheLoader<>() {
+                                public @NotNull VehicleData load(@NotNull VehicleEntity entity) {
+                                    return new VehicleData(entity);
+                                }
+                            });
 
     public static @NotNull VehicleData from(VehicleEntity entity) {
         return dataCache.getUnchecked(entity);

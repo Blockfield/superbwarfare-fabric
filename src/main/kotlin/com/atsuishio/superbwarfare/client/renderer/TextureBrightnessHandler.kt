@@ -10,7 +10,10 @@ object TextureBrightnessHandler {
     // 缓存处理过的纹理，避免重复处理
     private val BRIGHTENED_TEXTURES: MutableMap<ResourceLocation, ResourceLocation> = hashMapOf()
 
-    fun getBrightenedTexture(originalTextureLoc: ResourceLocation, brightnessMultiplier: Float): ResourceLocation {
+    fun getBrightenedTexture(
+        originalTextureLoc: ResourceLocation,
+        brightnessMultiplier: Float,
+    ): ResourceLocation {
         // 检查是否已缓存
         if (BRIGHTENED_TEXTURES.containsKey(originalTextureLoc)) {
             return BRIGHTENED_TEXTURES[originalTextureLoc]!!
@@ -26,15 +29,16 @@ object TextureBrightnessHandler {
             val brightenedImage = brightenImage(originalImage, brightnessMultiplier)
 
             // 3. 创建新的纹理资源
-            val newTextureLoc = ResourceLocation.fromNamespaceAndPath(
-                originalTextureLoc.namespace,
-                originalTextureLoc.path.replace(".png", "_bright.png")
-            )
+            val newTextureLoc =
+                ResourceLocation.fromNamespaceAndPath(
+                    originalTextureLoc.namespace,
+                    originalTextureLoc.path.replace(".png", "_bright.png"),
+                )
 
             // 4. 注册到纹理管理器
             mc.textureManager.register(
                 newTextureLoc,
-                DynamicTexture(brightenedImage)
+                DynamicTexture(brightenedImage),
             )
 
             // 5. 缓存并返回
@@ -47,7 +51,10 @@ object TextureBrightnessHandler {
         }
     }
 
-    fun brightenImage(original: NativeImage, multiplier: Float): NativeImage {
+    fun brightenImage(
+        original: NativeImage,
+        multiplier: Float,
+    ): NativeImage {
         // 创建相同尺寸的新图像
         val brightened = NativeImage(original.width, original.height, false)
 

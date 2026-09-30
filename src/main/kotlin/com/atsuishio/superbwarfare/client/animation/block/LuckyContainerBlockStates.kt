@@ -6,17 +6,20 @@ import com.github.mcmodderanchor.simplebedrockmodel.v1.common.animation.SimpleTr
 
 object LuckyContainerBlockStates {
     val INIT: SimpleAnimationState<LuckyContainerBlockContext> =
-        SimpleAnimationState.Builder<LuckyContainerBlockContext>()
+        SimpleAnimationState
+            .Builder<LuckyContainerBlockContext>()
             .evaluatePose { it.getPose() }
             .build()
 
     val OPEN: SimpleAnimationState<LuckyContainerBlockContext> =
-        SimpleAnimationState.Builder<LuckyContainerBlockContext>()
+        SimpleAnimationState
+            .Builder<LuckyContainerBlockContext>()
             .evaluatePose { it.getPose() }
             .build()
 
     val INIT_TRANS: SimpleTransition<LuckyContainerBlockContext> =
-        SimpleTransition.Builder<LuckyContainerBlockContext>()
+        SimpleTransition
+            .Builder<LuckyContainerBlockContext>()
             .predicate { it.isOpen() }
             .target(OPEN)
             .from(INIT)

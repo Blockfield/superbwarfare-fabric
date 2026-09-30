@@ -1,12 +1,12 @@
 package com.atsuishio.superbwarfare.client.lighting
 
 import com.atsuishio.superbwarfare.entity.projectile.IBulletProperties
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.projectile.Projectile
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 /**
  * Client-side bridge that routes projectile lifecycle events to the lighting system.
@@ -19,7 +19,6 @@ import net.fabricmc.api.Environment
  */
 @Environment(EnvType.CLIENT)
 object ClientLightingHandler {
-
     /**
      * Called every client tick from {@code ProjectileEntity} and
      * {@code FastThrowableProjectile#tick()}.
@@ -46,11 +45,12 @@ object ClientLightingHandler {
             val params = MuzzleFlashHelper.calculateFromOwner(owner)
 
             if (params != null) {
-                val direction = if (entity.deltaMovement.lengthSqr() > 1e-6) {
-                    entity.deltaMovement
-                } else {
-                    owner.lookAngle
-                }
+                val direction =
+                    if (entity.deltaMovement.lengthSqr() > 1e-6) {
+                        entity.deltaMovement
+                    } else {
+                        owner.lookAngle
+                    }
                 MuzzleFlashHelper.spawnFlashCone(entity.position(), direction, params)
             }
         }
@@ -58,11 +58,12 @@ object ClientLightingHandler {
         // Launch backblast for rockets and large shells
         val launchFlash = ProjectileLightHelper.getLaunchFlash(entity)
         if (launchFlash != null) {
-            val direction = if (entity.deltaMovement.lengthSqr() > 1e-6) {
-                entity.deltaMovement
-            } else {
-                (entity as? Projectile)?.owner?.lookAngle ?: entity.deltaMovement
-            }
+            val direction =
+                if (entity.deltaMovement.lengthSqr() > 1e-6) {
+                    entity.deltaMovement
+                } else {
+                    (entity as? Projectile)?.owner?.lookAngle ?: entity.deltaMovement
+                }
             MuzzleFlashHelper.spawnFlashCone(entity.position(), direction, launchFlash)
         }
     }
@@ -77,7 +78,9 @@ object ClientLightingHandler {
         val radius = getExplosionRadius(entity)
         if (radius > 0f) {
             ProjectileLightHelper.emitExplosionFlashDirect(
-                entity.level(), entity.position(), radius
+                entity.level(),
+                entity.position(),
+                radius,
             )
         }
     }
@@ -88,6 +91,5 @@ object ClientLightingHandler {
      * @param entity the projectile entity
      * @return explosion radius in blocks, or {@code 0} if non-explosive
      */
-    private fun getExplosionRadius(entity: Entity): Float =
-        (entity as? IBulletProperties)?.getExplosionRadius() ?: 0f
+    private fun getExplosionRadius(entity: Entity): Float = (entity as? IBulletProperties)?.getExplosionRadius() ?: 0f
 }

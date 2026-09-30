@@ -11,9 +11,13 @@ import com.atsuishio.superbwarfare.perk.PerkInstance
 import net.minecraft.world.entity.Entity
 
 object IncendiaryBullet : AmmoPerk(
-    Builder("incendiary_bullet", Type.AMMO).bypassArmorRate(-0.4).damageRate(0.7).speedRate(0.75).slug()
+    Builder("incendiary_bullet", Type.AMMO)
+        .bypassArmorRate(-0.4)
+        .damageRate(0.7)
+        .speedRate(0.75)
+        .slug()
         .rgb(230, 131, 65)
-        .mobEffect(ModMobEffects.BURN)
+        .mobEffect(ModMobEffects.BURN),
 ) {
     override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) {
         super.modifyProperty(modifier)
@@ -22,14 +26,12 @@ object IncendiaryBullet : AmmoPerk(
         }
     }
 
-    override fun getEffectDuration(instance: PerkInstance): Int {
-        return 60 + 20 * instance.level
-    }
+    override fun getEffectDuration(instance: PerkInstance): Int = 60 + 20 * instance.level
 
     override fun modifyProjectile(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity
+        entity: Entity,
     ) {
         super.modifyProjectile(data, instance, entity)
         if (entity !is ProjectileEntity) return

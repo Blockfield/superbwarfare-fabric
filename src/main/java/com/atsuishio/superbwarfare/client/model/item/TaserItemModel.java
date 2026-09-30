@@ -4,17 +4,20 @@ import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.special.TaserItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class TaserItemModel extends CustomGunModel<TaserItem> {
 
     @Override
-    public void setCustomAnimations(TaserItem animatable, long instanceId, AnimationState<TaserItem> animationState) {
+    public void setCustomAnimations(
+            TaserItem animatable, long instanceId, AnimationState<TaserItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -27,7 +30,8 @@ public class TaserItemModel extends CustomGunModel<TaserItem> {
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
 
-        ClientEventHandler.handleShootAnimation(shen, 0.1f, -0.1f, 0.3f, 0.2f, 0.1f, 0.1f, 0.5f, 0.75f);
+        ClientEventHandler.handleShootAnimation(
+                shen, 0.1f, -0.1f, 0.3f, 0.2f, 0.1f, 0.1f, 0.5f, 0.75f);
 
         CrossHairOverlay.gunRot = shen.getRotZ();
 
@@ -45,6 +49,9 @@ public class TaserItemModel extends CustomGunModel<TaserItem> {
         float numP = (float) (1 - 0.68 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

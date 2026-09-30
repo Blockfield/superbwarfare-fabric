@@ -2,6 +2,7 @@ package com.atsuishio.superbwarfare.entity.projectile
 
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.config.server.MiscConfig
+import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.resource.model.ProjectileModelReloadListener
 import net.minecraft.nbt.CompoundTag
@@ -22,19 +23,22 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.entity.EntityTypeTest
-import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 
-open class MedicalKitEntity(type: EntityType<MedicalKitEntity>, level: Level) : Entity(type, level) {
+open class MedicalKitEntity(
+    type: EntityType<MedicalKitEntity>,
+    level: Level,
+) : Entity(type, level) {
     open val modelInstance = ProjectileModelReloadListener.getModel(MODEL)?.createInstance()
 
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
     }
 
-    override fun isPickable(): Boolean {
-        return true
-    }
+    override fun isPickable(): Boolean = true
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (player.isShiftKeyDown) {
             if (!this.level().isClientSide()) {
                 this.discard()
@@ -57,7 +61,7 @@ open class MedicalKitEntity(type: EntityType<MedicalKitEntity>, level: Level) : 
             this.moveTowardsClosestSpace(
                 this.x,
                 (this.boundingBox.minY + this.boundingBox.maxY) / 2.0,
-                this.z
+                this.z,
             )
         }
 
@@ -66,7 +70,10 @@ open class MedicalKitEntity(type: EntityType<MedicalKitEntity>, level: Level) : 
         if (this.onGround()) {
             this.xRot = -90f
             val pos = this.blockPosBelowThatAffectsMyMovement
-            f = this.level().getBlockState(pos).block.friction * 0.98f
+            f = this
+                .level()
+                .getBlockState(pos)
+                .block.friction * 0.98f
         } else {
             this.updateRotation()
         }
@@ -92,10 +99,11 @@ open class MedicalKitEntity(type: EntityType<MedicalKitEntity>, level: Level) : 
         if (level is ServerLevel) {
             val frontBox = boundingBox.inflate(0.3)
 
-            val entities = level.getEntities(
-                EntityTypeTest.forClass(LivingEntity::class.java),
-                frontBox
-            ) { it.health < it.maxHealth }
+            val entities =
+                level.getEntities(
+                    EntityTypeTest.forClass(LivingEntity::class.java),
+                    frontBox,
+                ) { it.health < it.maxHealth }
 
             for (entity in entities) {
                 if (entity != null) {
@@ -108,7 +116,7 @@ open class MedicalKitEntity(type: EntityType<MedicalKitEntity>, level: Level) : 
                         SoundEvents.ITEM_PICKUP,
                         SoundSource.PLAYERS,
                         0.5f,
-                        1f
+                        1f,
                     )
                     this.discard()
                     break
@@ -127,14 +135,16 @@ open class MedicalKitEntity(type: EntityType<MedicalKitEntity>, level: Level) : 
         if (deltaMovement.length() > 0.05) {
             val vec3 = this.deltaMovement
             val d0 = vec3.horizontalDistance()
-            this.xRot = lerpRotation(
-                this.xRotO,
-                (Mth.atan2(vec3.y, d0) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-            )
-            this.yRot = lerpRotation(
-                this.yRotO,
-                (Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-            )
+            this.xRot =
+                lerpRotation(
+                    this.xRotO,
+                    (Mth.atan2(vec3.y, d0) * (180f / Math.PI.toFloat()).toDouble()).toFloat(),
+                )
+            this.yRot =
+                lerpRotation(
+                    this.yRotO,
+                    (Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat(),
+                )
         }
     }
 
@@ -149,7 +159,10 @@ open class MedicalKitEntity(type: EntityType<MedicalKitEntity>, level: Level) : 
         val MODEL = loc("models/bedrock/projectile/medical_kit.geo.json")
 
         @JvmStatic
-        protected fun lerpRotation(pCurrentRotation: Float, pTargetRotation: Float): Float {
+        protected fun lerpRotation(
+            pCurrentRotation: Float,
+            pTargetRotation: Float,
+        ): Float {
             var pCurrentRotation = pCurrentRotation
             while (pTargetRotation - pCurrentRotation < -180f) {
                 pCurrentRotation -= 360f

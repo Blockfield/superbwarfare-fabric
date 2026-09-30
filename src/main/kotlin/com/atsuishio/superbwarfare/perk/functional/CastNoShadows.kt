@@ -15,7 +15,7 @@ object CastNoShadows : Perk("cast_no_shadows", Type.FUNCTIONAL) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         super.onMeleeAttack(data, instance, target, source)
 

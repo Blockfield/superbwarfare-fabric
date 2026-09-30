@@ -60,24 +60,28 @@ object VehicleMotionUtils {
      */
     @JvmStatic
     fun preventStacking(vehicle: VehicleEntity) {
-        val entities = vehicle.level().getEntities(
-            EntityTypeTest.forClass(VehicleEntity::class.java),
-            vehicle.boundingBox.inflate(6.0)
-        ) { entity: VehicleEntity ->
-            entity !== vehicle && !vehicle.getPassengers().contains(entity) && entity.vehicle == null
-        }
+        val entities =
+            vehicle.level().getEntities(
+                EntityTypeTest.forClass(VehicleEntity::class.java),
+                vehicle.boundingBox.inflate(6.0),
+            ) { entity: VehicleEntity ->
+                entity !== vehicle && !vehicle.getPassengers().contains(entity) && entity.vehicle == null
+            }
 
         for (entity in entities) {
             if (entity.boundingBox.intersects(vehicle.boundingBox)) {
-                val toVec = vehicle.position()
-                    .add(Vec3(1.0, 1.0, 1.0).scale((vehicle.getRandom().nextFloat() * 0.01f + 1f).toDouble()))
-                    .vectorTo(entity.position())
-                val velAdd = toVec.normalize().scale(
-                    Math.max(
-                        (vehicle.bbWidth + 2) - vehicle.position().distanceTo(entity.position()),
-                        0.0
-                    ) * 0.1
-                )
+                val toVec =
+                    vehicle
+                        .position()
+                        .add(Vec3(1.0, 1.0, 1.0).scale((vehicle.getRandom().nextFloat() * 0.01f + 1f).toDouble()))
+                        .vectorTo(entity.position())
+                val velAdd =
+                    toVec.normalize().scale(
+                        Math.max(
+                            (vehicle.bbWidth + 2) - vehicle.position().distanceTo(entity.position()),
+                            0.0,
+                        ) * 0.1,
+                    )
                 val entitySize = (entity.bbWidth * entity.bbHeight).toDouble()
                 val thisSize = (vehicle.bbWidth * vehicle.bbHeight).toDouble()
                 val f = Math.min(entitySize / thisSize, 2.0)
@@ -105,11 +109,16 @@ object VehicleMotionUtils {
         if (vehicle.enableAABB()) return
 
         val searchBox = calculateCombinedAABBOptimized(vehicle).inflate(0.5)
-        val entities = vehicle.level().getEntities(
-            EntityTypeTest.forClass(Entity::class.java), searchBox
-        ) { entity ->
-            entity !== vehicle && entity !== vehicle.getFirstPassenger() && entity.vehicle == null && entity !is C4Entity && entity !is SmokeDecoyEntity && entity !is FlareDecoyEntity && entity !is CatapultShuttleEntity
-        }
+        val entities =
+            vehicle.level().getEntities(
+                EntityTypeTest.forClass(Entity::class.java),
+                searchBox,
+            ) { entity ->
+                entity !== vehicle && entity !== vehicle.getFirstPassenger() && entity.vehicle == null && entity !is C4Entity &&
+                    entity !is SmokeDecoyEntity &&
+                    entity !is FlareDecoyEntity &&
+                    entity !is CatapultShuttleEntity
+            }
 
         for (entity in entities) {
             if (!entity.isAlive) continue
@@ -134,7 +143,10 @@ object VehicleMotionUtils {
      * - 阶段A：当前帧已陷入OBB → 从当前位置沿MTV推出（纯位置修正，不含deltaMovement）
      * - 阶段B：deltaMovement会导致穿入 → 只截速度不调位置（交给entity.move()处理）
      */
-    private fun handleEntityObbCollision(vehicle: VehicleEntity, entity: Entity) {
+    private fun handleEntityObbCollision(
+        vehicle: VehicleEntity,
+        entity: Entity,
+    ) {
         if (entity is Projectile) return
         if (vehicle.enableAABB()) return
         if (entity.noPhysics || vehicle.noPhysics) return
@@ -171,7 +183,7 @@ object VehicleMotionUtils {
                 }
             }
 
-            if (bestLenSq == 0.0) return@repeat  // 没有碰撞
+            if (bestLenSq == 0.0) return@repeat // 没有碰撞
 
             // 推出方向单位向量，额外加余量防止立刻再陷入
             val bestLen = Math.sqrt(bestLenSq)
@@ -189,7 +201,7 @@ object VehicleMotionUtils {
                 entity.setPos(
                     entity.x + pushX + vehicleDx,
                     entity.y + pushY,
-                    entity.z + pushZ + vehicleDz
+                    entity.z + pushZ + vehicleDz,
                 )
                 entity.deltaMovement = Vec3(vehicle.deltaMovement.x, 0.0, vehicle.deltaMovement.z)
                 entity.setOnGround(true)
@@ -200,15 +212,16 @@ object VehicleMotionUtils {
             entity.setPos(
                 entity.x + pushX,
                 entity.y + pushY,
-                entity.z + pushZ
+                entity.z + pushZ,
             )
             val velToward = movement.x * pushNx + movement.y * pushNy + movement.z * pushNz
             if (velToward > 0) {
-                entity.deltaMovement = Vec3(
-                    movement.x - pushNx * velToward,
-                    movement.y - pushNy * velToward,
-                    movement.z - pushNz * velToward
-                )
+                entity.deltaMovement =
+                    Vec3(
+                        movement.x - pushNx * velToward,
+                        movement.y - pushNy * velToward,
+                        movement.z - pushNz * velToward,
+                    )
             }
 
             // 玩家潜行时侧面碰撞OBB → 缓慢推车
@@ -272,7 +285,6 @@ object VehicleMotionUtils {
         }
     }
 
-
     /**
      * Tests nearby entities for vehicle-crush collisions and applies damage and
      * impulse to entities that are struck.
@@ -295,25 +307,26 @@ object VehicleMotionUtils {
         val vec3 = vehicle.deltaMovement
 
         // Broad-phase: collect raw candidates from the level's entity sections.
-        val candidates: List<Entity> = if (!vehicle.enableAABB()) {
-            vehicle.level().getEntities(
-                EntityTypeTest.forClass(Entity::class.java),
-                vehicle.getCombinedAABB()
-            ) { entity ->
-                entity !== vehicle
-                        && entity !== vehicle.getFirstPassenger()
-                        && entity.vehicle == null
+        val candidates: List<Entity> =
+            if (!vehicle.enableAABB()) {
+                vehicle.level().getEntities(
+                    EntityTypeTest.forClass(Entity::class.java),
+                    vehicle.getCombinedAABB(),
+                ) { entity ->
+                    entity !== vehicle &&
+                        entity !== vehicle.getFirstPassenger() &&
+                        entity.vehicle == null
+                }
+            } else {
+                vehicle.level().getEntities(
+                    EntityTypeTest.forClass(Entity::class.java),
+                    vehicle.boundingBox.move(vec3),
+                ) { entity ->
+                    entity !== vehicle &&
+                        entity !== vehicle.getFirstPassenger() &&
+                        entity.vehicle == null
+                }
             }
-        } else {
-            vehicle.level().getEntities(
-                EntityTypeTest.forClass(Entity::class.java),
-                vehicle.boundingBox.move(vec3)
-            ) { entity ->
-                entity !== vehicle
-                        && entity !== vehicle.getFirstPassenger()
-                        && entity.vehicle == null
-            }
-        }
 
         if (candidates.isEmpty()) return
 
@@ -326,12 +339,13 @@ object VehicleMotionUtils {
             val type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)
             val inWhitelist = VehicleConfig.COLLISION_ENTITY_WHITELIST.get().contains(type.toString())
 
-            val qualifies = entity is VehicleEntity
-                    || entity is Boat
-                    || entity is Minecart
-                    || (entity is TurretWreckEntity && entity.tickCount > 5)
-                    || (entity is LivingEntity && !(entity is Player && entity.isSpectator))
-                    || inWhitelist
+            val qualifies =
+                entity is VehicleEntity ||
+                    entity is Boat ||
+                    entity is Minecart ||
+                    (entity is TurretWreckEntity && entity.tickCount > 5) ||
+                    (entity is LivingEntity && !(entity is Player && entity.isSpectator)) ||
+                    inWhitelist
 
             if (!qualifies) continue
 
@@ -372,24 +386,31 @@ object VehicleMotionUtils {
             if (length <= 0.3) continue
 
             vehicle.level().playSound(
-                null, vehicle, ModSounds.VEHICLE_STRIKE.get(), vehicle.soundSource, 1f, 1f
+                null,
+                vehicle,
+                ModSounds.VEHICLE_STRIKE.get(),
+                vehicle.soundSource,
+                1f,
+                1f,
             )
 
             if (entity is LivingEntity) {
                 entity.forceHurt(
                     ModDamageTypes.causeVehicleStrikeDamage(
-                        vehicle.level().registryAccess(), vehicle,
-                        vehicle.getFirstPassenger() ?: vehicle
+                        vehicle.level().registryAccess(),
+                        vehicle,
+                        vehicle.getFirstPassenger() ?: vehicle,
                     ),
-                    (f1 * 80 * (Mth.abs(length) - 0.3) * (Mth.abs(length) - 0.3)).toFloat()
+                    (f1 * 80 * (Mth.abs(length) - 0.3) * (Mth.abs(length) - 0.3)).toFloat(),
                 )
             } else {
                 entity.hurt(
                     ModDamageTypes.causeVehicleStrikeDamage(
-                        vehicle.level().registryAccess(), vehicle,
-                        vehicle.getFirstPassenger() ?: vehicle
+                        vehicle.level().registryAccess(),
+                        vehicle,
+                        vehicle.getFirstPassenger() ?: vehicle,
                     ),
-                    (f1 * 60 * (Mth.abs(length) - 0.3) * (Mth.abs(length) - 0.3)).toFloat()
+                    (f1 * 60 * (Mth.abs(length) - 0.3) * (Mth.abs(length) - 0.3)).toFloat(),
                 )
             }
 
@@ -400,10 +421,11 @@ object VehicleMotionUtils {
             if (entity is VehicleEntity) {
                 vehicle.hurt(
                     ModDamageTypes.causeVehicleStrikeDamage(
-                        vehicle.level().registryAccess(), entity,
-                        entity.getFirstPassenger() ?: entity
+                        vehicle.level().registryAccess(),
+                        entity,
+                        entity.getFirstPassenger() ?: entity,
                     ),
-                    (f * 40 * (Mth.abs(length) - 0.3) * (Mth.abs(length) - 0.3)).toFloat()
+                    (f * 40 * (Mth.abs(length) - 0.3) * (Mth.abs(length) - 0.3)).toFloat(),
                 )
 
                 if (!vehicle.enableAABB() && vehicle.isInObb(entity, Vec3.ZERO)) {
@@ -425,12 +447,14 @@ object VehicleMotionUtils {
                         }
                     }
 
-                    val toVec = thisPos
-                        .add(Vec3(1.0, 1.0, 1.0).scale((vehicle.getRandom().nextFloat() * 0.01f + 1f).toDouble()))
-                        .vectorTo(otherPos)
-                    velAdd = toVec.normalize().scale(
-                        Math.max(thisPos.distanceTo(otherPos), 0.0) * 0.01
-                    )
+                    val toVec =
+                        thisPos
+                            .add(Vec3(1.0, 1.0, 1.0).scale((vehicle.getRandom().nextFloat() * 0.01f + 1f).toDouble()))
+                            .vectorTo(otherPos)
+                    velAdd =
+                        toVec.normalize().scale(
+                            Math.max(thisPos.distanceTo(otherPos), 0.0) * 0.01,
+                        )
                     vehicle.pushNew(-f * velAdd.x, -f * velAdd.y, -f * velAdd.z)
                 }
 
@@ -468,7 +492,7 @@ object VehicleMotionUtils {
         val axes = OBB.AXES_A.get()
 
         for (obb in obbList) {
-            obb.getAxesInto(axes)           // zero-allocation fill
+            obb.getAxesInto(axes) // zero-allocation fill
             val c = obb.center
             val e = obb.extents
 
@@ -494,11 +518,13 @@ object VehicleMotionUtils {
      */
     @JvmStatic
     fun collideBlocks(vehicle: VehicleEntity) {
-        if (!VehicleConfig.COLLISION_DESTROY_SOFT_BLOCKS.get()
-            && !VehicleConfig.COLLISION_DESTROY_NORMAL_BLOCKS.get()
-            && !VehicleConfig.COLLISION_DESTROY_HARD_BLOCKS.get()
-            && !VehicleConfig.COLLISION_DESTROY_BLOCKS_BEASTLY.get()
-        ) return
+        if (!VehicleConfig.COLLISION_DESTROY_SOFT_BLOCKS.get() &&
+            !VehicleConfig.COLLISION_DESTROY_NORMAL_BLOCKS.get() &&
+            !VehicleConfig.COLLISION_DESTROY_HARD_BLOCKS.get() &&
+            !VehicleConfig.COLLISION_DESTROY_BLOCKS_BEASTLY.get()
+        ) {
+            return
+        }
 
         val collisionLevel = vehicle.computed().collisionLevel
         val limits = collisionLevel.powerLimits
@@ -506,32 +532,42 @@ object VehicleMotionUtils {
         val power = vehicle.power
         val motion = vehicle.deltaMovement.horizontalDistance()
 
-        val flags = booleanArrayOf(
-            VehicleConfig.COLLISION_DESTROY_SOFT_BLOCKS.get() && collisionLevel.level >= 1,
-            VehicleConfig.COLLISION_DESTROY_NORMAL_BLOCKS.get() && collisionLevel.level >= 2,
-            VehicleConfig.COLLISION_DESTROY_HARD_BLOCKS.get() && collisionLevel.level >= 3,
-            VehicleConfig.COLLISION_DESTROY_BLOCKS_BEASTLY.get() && collisionLevel.level >= 4
-        )
+        val flags =
+            booleanArrayOf(
+                VehicleConfig.COLLISION_DESTROY_SOFT_BLOCKS.get() && collisionLevel.level >= 1,
+                VehicleConfig.COLLISION_DESTROY_NORMAL_BLOCKS.get() && collisionLevel.level >= 2,
+                VehicleConfig.COLLISION_DESTROY_HARD_BLOCKS.get() && collisionLevel.level >= 3,
+                VehicleConfig.COLLISION_DESTROY_BLOCKS_BEASTLY.get() && collisionLevel.level >= 4,
+            )
 
         var i = 0
         while (i < flags.size && i < limits.size) {
             val limit = limits[i]
             flags[i] =
-                flags[i] and if (limit.equals) power >= limit.power || motion >= limit.motion else power > limit.power || motion > limit.motion
+                flags[i] and
+                if (limit.equals) power >= limit.power || motion >= limit.motion else power > limit.power || motion > limit.motion
             i++
         }
 
         if (!vehicle.enableAABB()) {
-            val aabb = vehicle.getCombinedAABB().inflate(0.25, 0.0, 0.25).move(vehicle.deltaMovement)
-                .move(0.0, 0.5, 0.0)
+            val aabb =
+                vehicle
+                    .getCombinedAABB()
+                    .inflate(0.25, 0.0, 0.25)
+                    .move(vehicle.deltaMovement)
+                    .move(0.0, 0.5, 0.0)
             BlockPos.betweenClosedStream(aabb).forEach { pos ->
                 val state = vehicle.level().getBlockState(pos)
                 if (vehicle.isInObb(pos, vehicle.deltaMovement)) {
                     if ((flags[0] && state.`is`(ModTags.Blocks.SOFT_COLLISION)) ||
                         (flags[1] && state.`is`(ModTags.Blocks.NORMAL_COLLISION)) ||
                         (flags[2] && state.`is`(ModTags.Blocks.HARD_COLLISION)) ||
-                        (flags[3] && (state.block.defaultDestroyTime() > 0 || state.block
-                            .defaultDestroyTime() <= 4))
+                        (
+                            flags[3] && (
+                                state.block.defaultDestroyTime() > 0 || state.block
+                                    .defaultDestroyTime() <= 4
+                            )
+                        )
                     ) {
                         vehicle.level().destroyBlock(pos, true)
                     }
@@ -539,14 +575,22 @@ object VehicleMotionUtils {
             }
         }
 
-        val aabb = vehicle.boundingBox.inflate(0.25, 0.0, 0.25).move(vehicle.deltaMovement).move(0.0, 0.5, 0.0)
+        val aabb =
+            vehicle.boundingBox
+                .inflate(0.25, 0.0, 0.25)
+                .move(vehicle.deltaMovement)
+                .move(0.0, 0.5, 0.0)
         BlockPos.betweenClosedStream(aabb).forEach { pos ->
             val state = vehicle.level().getBlockState(pos)
             if ((flags[0] && state.`is`(ModTags.Blocks.SOFT_COLLISION)) ||
                 (flags[1] && state.`is`(ModTags.Blocks.NORMAL_COLLISION)) ||
                 (flags[2] && state.`is`(ModTags.Blocks.HARD_COLLISION)) ||
-                (flags[3] && (state.block.defaultDestroyTime() > 0 || state.block
-                    .defaultDestroyTime() <= 4))
+                (
+                    flags[3] && (
+                        state.block.defaultDestroyTime() > 0 || state.block
+                            .defaultDestroyTime() <= 4
+                    )
+                )
             ) {
                 vehicle.level().destroyBlock(pos, true)
             }
@@ -581,16 +625,28 @@ object VehicleMotionUtils {
     }
 
     @JvmStatic
-    fun bounceHorizontal(vehicle: VehicleEntity, direction: Direction) {
+    fun bounceHorizontal(
+        vehicle: VehicleEntity,
+        direction: Direction,
+    ) {
         when (direction.axis) {
-            Direction.Axis.X -> vehicle.setDeltaMovement(vehicle.deltaMovement.multiply(0.8, 0.99, 0.99))
-            Direction.Axis.Z -> vehicle.setDeltaMovement(vehicle.deltaMovement.multiply(0.99, 0.99, 0.8))
+            Direction.Axis.X -> {
+                vehicle.setDeltaMovement(vehicle.deltaMovement.multiply(0.8, 0.99, 0.99))
+            }
+
+            Direction.Axis.Z -> {
+                vehicle.setDeltaMovement(vehicle.deltaMovement.multiply(0.99, 0.99, 0.8))
+            }
+
             else -> {}
         }
     }
 
     @JvmStatic
-    fun bounceVertical(vehicle: VehicleEntity, direction: Direction) {
+    fun bounceVertical(
+        vehicle: VehicleEntity,
+        direction: Direction,
+    ) {
         if (!vehicle.level().isClientSide) {
             vehicle.level().playSound(null, vehicle, ModSounds.VEHICLE_STRIKE.get(), vehicle.soundSource, 1f, 1f)
         }
@@ -611,7 +667,10 @@ object VehicleMotionUtils {
     }
 
     @JvmStatic
-    fun terrainCompact(vehicle: VehicleEntity, positions: MutableList<Vec3>) {
+    fun terrainCompact(
+        vehicle: VehicleEntity,
+        positions: MutableList<Vec3>,
+    ) {
         if (vehicle.vehicleType == VehicleType.AIRSHIP) return
 
         val level = vehicle.level()
@@ -627,17 +686,19 @@ object VehicleMotionUtils {
             return
         }
 
-        val maxHalfExtent = run {
-            val s = collisionInfo.size
-            max(max(s.x, s.y), s.z)
-        }
+        val maxHalfExtent =
+            run {
+                val s = collisionInfo.size
+                max(max(s.x, s.y), s.z)
+            }
 
         // 有碰撞OBB时检测整个OBB底部离地高度，无OBB时检测自身AABB底部离地高度
         // 若离地超过阈值则认为悬空，不处理地形贴合
         val heightAboveGround = (vehicle.y + collisionInfo.position.y - collisionInfo.size.y) - groundY
         if (heightAboveGround > maxHalfExtent) {
             if (vehicle.isInFluidType) {
-                vehicle.xRot *= 0.9f; vehicle.setZRot(vehicle.roll * 0.9f)
+                vehicle.xRot *= 0.9f
+                vehicle.setZRot(vehicle.roll * 0.9f)
             }
             return
         }
@@ -684,10 +745,10 @@ object VehicleMotionUtils {
         if (count == 0) return
 
         // 容差/坑洞参数（单位：方块）
-        val embedTolerance = 0.25    // 横向嵌入容差：地面与OBB底相差不超过此值视为贴合，不产生倾角
-        val searchUp = vehicle.stepHeight.toDouble()           // 上坡探测上限：检测高出OBB底的地形（爬坡），同时限制最大抬头幅度
-        val searchDown = maxHalfExtent         // 下坡/坑洞探测下限：检测低于OBB底的地形，同时限制最大低头幅度
-        val potholeDepth = 0.6       // 采样列地面低于OBB底超过此值视为"坑"
+        val embedTolerance = 0.25 // 横向嵌入容差：地面与OBB底相差不超过此值视为贴合，不产生倾角
+        val searchUp = vehicle.stepHeight.toDouble() // 上坡探测上限：检测高出OBB底的地形（爬坡），同时限制最大抬头幅度
+        val searchDown = maxHalfExtent // 下坡/坑洞探测下限：检测低于OBB底的地形，同时限制最大低头幅度
+        val potholeDepth = 0.6 // 采样列地面低于OBB底超过此值视为"坑"
         val potholeIgnoreRatio = 0.4 // 坑采样占比不超过此值时忽略其影响（保持水平，不栽进小坑）
 
         // 第一遍：对每个采样列做精确AABB探测，求地面相对OBB底的高度差
@@ -711,8 +772,14 @@ object VehicleMotionUtils {
                 // 容差：极小的嵌入/悬空都吸附为贴合(0)，避免体素噪声造成的细碎抖动；
                 // 超出容差后线性响应——上坡(负)允许少量横向嵌入，爬坡时车身抬头
                 var h = rawPre
-                h = if (h in -embedTolerance..embedTolerance) 0.0
-                else if (h > 0) h - embedTolerance else h + embedTolerance
+                h =
+                    if (h in -embedTolerance..embedTolerance) {
+                        0.0
+                    } else if (h > 0) {
+                        h - embedTolerance
+                    } else {
+                        h + embedTolerance
+                    }
                 heightY[i] = h.coerceIn(-searchUp, searchDown)
             }
         }
@@ -767,7 +834,11 @@ object VehicleMotionUtils {
                 val state = level.getBlockState(blockPos)
                 if (state.isAir) continue
                 if (state.`is`(BlockTags.SAND) || state.`is`(BlockTags.SNOW)) {
-                    val model = Minecraft.getInstance().modelManager.blockModelShaper.getBlockModel(state)
+                    val model =
+                        Minecraft
+                            .getInstance()
+                            .modelManager.blockModelShaper
+                            .getBlockModel(state)
                     val sprite = model.particleIcon
                     val color = SpritePixelHelper.getRandomPixelRGB(sprite, 0)
                     val speed = Math.min(vehicle.deltaMovement.length(), 0.5).toFloat()
@@ -778,13 +849,13 @@ object VehicleMotionUtils {
                             1f + 7f * speed + Math.random().toFloat() * 2,
                             Math.random().toFloat() * -0.12f,
                             false,
-                            light = false
+                            light = false,
                         ),
                         p.add(0.0, 0.2, 0.0).subtract(vehicle.deltaMovement.scale(1.5)),
                         speed,
                         level,
                         1,
-                        vehicle.deltaMovement.scale(1.0)
+                        vehicle.deltaMovement.scale(1.0),
                     )
                 } else {
                     vehicle.addRandomParticle(
@@ -793,25 +864,29 @@ object VehicleMotionUtils {
                         0.2f,
                         level,
                         0f,
-                        1
+                        1,
                     )
-                    if (vehicle.engineInfo is EngineInfo.Track && vehicle.drift() && vehicle.deltaMovement.horizontalDistanceSqr() > 0.0004
-                        && state.`is`(BlockTags.MINEABLE_WITH_PICKAXE)
-                    )
+                    if (vehicle.engineInfo is EngineInfo.Track && vehicle.drift() && vehicle.deltaMovement.horizontalDistanceSqr() > 0.0004 &&
+                        state.`is`(BlockTags.MINEABLE_WITH_PICKAXE)
+                    ) {
                         vehicle.addRandomParticle(
                             ModParticleTypes.FIRE_STAR.get(),
                             p.add(0.0, 0.1, 0.0),
                             0.25f,
                             level,
                             0.08f,
-                            1
+                            1,
                         )
+                    }
                 }
             }
         }
     }
 
-    fun terrainCompactAABB(vehicle: VehicleEntity, positions: MutableList<Vec3>) {
+    fun terrainCompactAABB(
+        vehicle: VehicleEntity,
+        positions: MutableList<Vec3>,
+    ) {
         if (vehicle.onGround()) {
             val transform = vehicle.getWheelsTransform(1f)
             val supportedPos = computeSupportedPosition(vehicle)
@@ -820,12 +895,16 @@ object VehicleMotionUtils {
                 val vector4d = transformPosition(transform, vec3.x, vec3.y - 0.02, vec3.z)
                 val p = Vec3(vector4d.x, vector4d.y, vector4d.z)
                 val level = vehicle.level()
-                val res = level.clip(
-                    ClipContext(
-                        p, p.add(0.0, -128.0, 0.0),
-                        ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, vehicle
+                val res =
+                    level.clip(
+                        ClipContext(
+                            p,
+                            p.add(0.0, -128.0, 0.0),
+                            ClipContext.Block.COLLIDER,
+                            ClipContext.Fluid.NONE,
+                            vehicle,
+                        ),
                     )
-                )
 
                 val heightY: Double
 
@@ -839,33 +918,40 @@ object VehicleMotionUtils {
 
                 if (vehicle.level().isClientSide && vehicle.deltaMovement.horizontalDistanceSqr() > 0.01) {
                     if (state.`is`(BlockTags.SAND) || state.`is`(BlockTags.SNOW)) {
-                        val model = Minecraft.getInstance().modelManager.blockModelShaper.getBlockModel(state)
+                        val model =
+                            Minecraft
+                                .getInstance()
+                                .modelManager.blockModelShaper
+                                .getBlockModel(state)
                         val sprite = model.particleIcon
                         val color = SpritePixelHelper.getRandomPixelRGB(sprite, 0)
                         val speed = Math.min(vehicle.deltaMovement.length(), 0.5).toFloat()
 
-                        val particleOption = CustomCloudOption(
-                            color,
-                            70,
-                            1f + 7f * speed + Math.random().toFloat() * 2,
-                            Math.random().toFloat() * -0.12f,
-                            false,
-                            light = false
-                        )
+                        val particleOption =
+                            CustomCloudOption(
+                                color,
+                                70,
+                                1f + 7f * speed + Math.random().toFloat() * 2,
+                                Math.random().toFloat() * -0.12f,
+                                false,
+                                light = false,
+                            )
                         vehicle.addRandomParticle(
                             particleOption,
                             p.add(0.0, 0.2, 0.0).subtract(vehicle.deltaMovement.scale(1.5)),
                             speed,
                             level,
                             1,
-                            vehicle.deltaMovement.scale(1.0)
+                            vehicle.deltaMovement.scale(1.0),
                         )
                     } else {
                         val particleData = BlockParticleOption(ParticleTypes.BLOCK, state)
                         vehicle.addRandomParticle(particleData, p.add(0.0, 0.1, 0.0), 0.2f, vehicle.level(), 0f, 1)
 
-                        if (vehicle.engineInfo is EngineInfo.Track && vehicle.drift() && vehicle.deltaMovement.horizontalDistanceSqr() > 0.0004 && state.`is`(
-                                BlockTags.MINEABLE_WITH_PICKAXE
+                        if (vehicle.engineInfo is EngineInfo.Track && vehicle.drift() &&
+                            vehicle.deltaMovement.horizontalDistanceSqr() > 0.0004 &&
+                            state.`is`(
+                                BlockTags.MINEABLE_WITH_PICKAXE,
                             )
                         ) {
                             vehicle.addRandomParticle(
@@ -874,19 +960,20 @@ object VehicleMotionUtils {
                                 0.25f,
                                 vehicle.level(),
                                 0.08f,
-                                1
+                                1,
                             )
                         }
                     }
                 }
 
-                heightY = if (!shape.isEmpty) {
-                    p.y - (shape.max(Direction.Axis.Y) + blockPos.y)
-                } else if (res.type == HitResult.Type.BLOCK && level.noCollision(AABB(p, p))) {
-                    Mth.clamp(p.y - res.location.y, 0.0, 20.0)
-                } else {
-                    0.0
-                }
+                heightY =
+                    if (!shape.isEmpty) {
+                        p.y - (shape.max(Direction.Axis.Y) + blockPos.y)
+                    } else if (res.type == HitResult.Type.BLOCK && level.noCollision(AABB(p, p))) {
+                        Mth.clamp(p.y - res.location.y, 0.0, 20.0)
+                    } else {
+                        0.0
+                    }
 
                 updateTerrainCompact(vehicle, p, heightY, supportedPos)
             }
@@ -931,7 +1018,12 @@ object VehicleMotionUtils {
      *                       shared across all sample points within the same tick.
      */
     @JvmStatic
-    fun updateTerrainCompact(entity: VehicleEntity, landingTarget: Vec3, heightY: Double, supportedPos: Vec3) {
+    fun updateTerrainCompact(
+        entity: VehicleEntity,
+        landingTarget: Vec3,
+        heightY: Double,
+        supportedPos: Vec3,
+    ) {
         val horizontalOffset = Vec3(landingTarget.x - supportedPos.x, 0.0, landingTarget.z - supportedPos.z)
         val horizontalDistance = horizontalOffset.length()
         val horizontalDirection = if (horizontalDistance > 0) horizontalOffset.normalize() else Vec3.ZERO
@@ -941,11 +1033,12 @@ object VehicleMotionUtils {
             Math.min(heightY * 9 * entity.data().compute().terrainCompatRotateRate * horizontalDistance, 45.0).toFloat()
 
         val yawRad = Math.toRadians(-entity.yRot)
-        val localDirection = Vec3(
-            horizontalDirection.x * Math.cos(yawRad) - horizontalDirection.z * Math.sin(yawRad),
-            0.0,
-            horizontalDirection.x * Math.sin(yawRad) + horizontalDirection.z * Math.cos(yawRad)
-        )
+        val localDirection =
+            Vec3(
+                horizontalDirection.x * Math.cos(yawRad) - horizontalDirection.z * Math.sin(yawRad),
+                0.0,
+                horizontalDirection.x * Math.sin(yawRad) + horizontalDirection.z * Math.cos(yawRad),
+            )
 
         val targetXRot = (-localDirection.z * targetTilt).toFloat()
         val targetZRot = (localDirection.x * targetTilt).toFloat()
@@ -962,10 +1055,14 @@ object VehicleMotionUtils {
      */
     @Deprecated(
         message = "Recomputes findSupportingBlock on every call; use the 4-arg overload with a cached supportedPos when calling in a loop.",
-        replaceWith = ReplaceWith("updateTerrainCompact(entity, landingTarget, heightY, computeSupportedPosition(entity))")
+        replaceWith = ReplaceWith("updateTerrainCompact(entity, landingTarget, heightY, computeSupportedPosition(entity))"),
     )
     @JvmStatic
-    fun updateTerrainCompact(entity: VehicleEntity, landingTarget: Vec3, heightY: Double) {
+    fun updateTerrainCompact(
+        entity: VehicleEntity,
+        landingTarget: Vec3,
+        heightY: Double,
+    ) {
         updateTerrainCompact(entity, landingTarget, heightY, computeSupportedPosition(entity))
     }
 
@@ -980,8 +1077,11 @@ object VehicleMotionUtils {
      */
     private fun sampleTerrainTop(
         level: Level,
-        wx: Double, wy: Double, wz: Double,
-        searchUp: Double, searchDown: Double
+        wx: Double,
+        wy: Double,
+        wz: Double,
+        searchUp: Double,
+        searchDown: Double,
     ): Double? {
         val bx = Mth.floor(wx)
         val bz = Mth.floor(wz)
@@ -1001,7 +1101,7 @@ object VehicleMotionUtils {
                     // and individual AABB allocations that toAabbs() would create.
                     // For 15 sample columns × 91 vehicles this eliminates ~thousands
                     // of short-lived objects per tick.
-                    val curBy = by  // capture for lambda
+                    val curBy = by // capture for lambda
                     shape.forAllBoxes { minX, _, minZ, maxX, maxY, maxZ ->
                         if (wx >= bx + minX - 1e-6 && wx <= bx + maxX + 1e-6 &&
                             wz >= bz + minZ - 1e-6 && wz <= bz + maxZ + 1e-6
@@ -1029,7 +1129,13 @@ object VehicleMotionUtils {
      * 角度约定：正xRot = 低头，正roll = 右侧下沉
      */
     @JvmStatic
-    fun updateTerrainCompact(entity: VehicleEntity, sumXH: Double, sumZH: Double, sumX2: Double, sumZ2: Double) {
+    fun updateTerrainCompact(
+        entity: VehicleEntity,
+        sumXH: Double,
+        sumZH: Double,
+        sumX2: Double,
+        sumZ2: Double,
+    ) {
         val rate = entity.data().compute().terrainCompatRotateRate
 
         val slopeX = if (sumX2 > 0.0) (sumXH / sumX2).coerceIn(-3.0, 3.0) * rate * 2.5 else 0.0
@@ -1060,10 +1166,15 @@ object VehicleMotionUtils {
         val halfX = Math.abs(axes[0].x) * ext.x + Math.abs(axes[1].x) * ext.y + Math.abs(axes[2].x) * ext.z
         val halfY = Math.abs(axes[0].y) * ext.x + Math.abs(axes[1].y) * ext.y + Math.abs(axes[2].y) * ext.z
         val halfZ = Math.abs(axes[0].z) * ext.x + Math.abs(axes[1].z) * ext.y + Math.abs(axes[2].z) * ext.z
-        val searchAABB = AABB(
-            testObb.center.x - halfX - 0.15, testObb.center.y - halfY - 0.15, testObb.center.z - halfZ - 0.15,
-            testObb.center.x + halfX + 0.15, testObb.center.y + halfY + 0.15, testObb.center.z + halfZ + 0.15
-        )
+        val searchAABB =
+            AABB(
+                testObb.center.x - halfX - 0.15,
+                testObb.center.y - halfY - 0.15,
+                testObb.center.z - halfZ - 0.15,
+                testObb.center.x + halfX + 0.15,
+                testObb.center.y + halfY + 0.15,
+                testObb.center.z + halfZ + 0.15,
+            )
         for (pos in BlockPos.betweenClosedStream(searchAABB)) {
             val state = vehicle.level().getBlockState(pos)
             if (state.isAir) continue
@@ -1088,7 +1199,10 @@ object VehicleMotionUtils {
      *         修正量 > 0 表示OBB有部分陷入地表以下，需要向上推
      */
     @JvmStatic
-    fun checkBottomSupportRatio(vehicle: VehicleEntity, obb: OBB): Pair<Double, Double> {
+    fun checkBottomSupportRatio(
+        vehicle: VehicleEntity,
+        obb: OBB,
+    ): Pair<Double, Double> {
         val level = vehicle.level()
         val axes = obb.getAxes()
         val center = obb.center
@@ -1097,13 +1211,18 @@ object VehicleMotionUtils {
         val ez = obb.extents.z
 
         // 底面5个采样点：四角 + 中心
-        val sampleOffsets = listOf(
-            Pair(-1.0, -1.0), Pair(-1.0, 1.0), Pair(1.0, -1.0), Pair(1.0, 1.0), Pair(0.0, 0.0)
-        )
+        val sampleOffsets =
+            listOf(
+                Pair(-1.0, -1.0),
+                Pair(-1.0, 1.0),
+                Pair(1.0, -1.0),
+                Pair(1.0, 1.0),
+                Pair(0.0, 0.0),
+            )
 
-        val closeThreshold = 1.5  // 方块表面0.5格内视为"接触地表"
+        val closeThreshold = 1.5 // 方块表面0.5格内视为"接触地表"
         var onSurfaceCount = 0
-        var maxPenetration = 0.0  // 采样点低于方块表面的最大深度
+        var maxPenetration = 0.0 // 采样点低于方块表面的最大深度
 
         for ((fx, fz) in sampleOffsets) {
             val lx = fx * ex
@@ -1128,11 +1247,18 @@ object VehicleMotionUtils {
 
             if (!shape.isEmpty) {
                 // 使用正确的blockPos（与shape对应的）
-                val shapeBlockPos = if (!level.getBlockState(blockPosBelow)
-                        .getCollisionShape(level, blockPosBelow).isEmpty
-                ) blockPosBelow else blockPos
+                val shapeBlockPos =
+                    if (!level
+                            .getBlockState(blockPosBelow)
+                            .getCollisionShape(level, blockPosBelow)
+                            .isEmpty
+                    ) {
+                        blockPosBelow
+                    } else {
+                        blockPos
+                    }
                 val blockTopY = shapeBlockPos.y + shape.max(Direction.Axis.Y)
-                val dist = wy - blockTopY  // >0=在地表上方, <0=陷入地表
+                val dist = wy - blockTopY // >0=在地表上方, <0=陷入地表
 
                 if (Math.abs(dist) <= closeThreshold) {
                     onSurfaceCount++
@@ -1148,12 +1274,15 @@ object VehicleMotionUtils {
     }
 
     @JvmStatic
-    fun getWheelsTransform(vehicle: VehicleEntity, partialTicks: Float): Matrix4d {
+    fun getWheelsTransform(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Matrix4d {
         val transform = Matrix4d()
         transform.translate(
             Mth.lerp(partialTicks.toDouble(), vehicle.xo, vehicle.x).toFloat().toDouble(),
             Mth.lerp(partialTicks.toDouble(), vehicle.yo, vehicle.y).toFloat().toDouble(),
-            Mth.lerp(partialTicks.toDouble(), vehicle.zo, vehicle.z).toFloat().toDouble()
+            Mth.lerp(partialTicks.toDouble(), vehicle.zo, vehicle.z).toFloat().toDouble(),
         )
         transform.rotate(Axis.YP.rotationDegrees(-Mth.lerp(partialTicks, vehicle.yRotO, vehicle.yRot)))
         return transform
@@ -1170,7 +1299,10 @@ object VehicleMotionUtils {
      * @return corrected movement vector after collision clipping
      */
     @JvmStatic
-    fun resolveObbWorldCollision(vehicle: VehicleEntity, movement: Vec3): Vec3 {
+    fun resolveObbWorldCollision(
+        vehicle: VehicleEntity,
+        movement: Vec3,
+    ): Vec3 {
         vehicle.updateOBB()
 
         val collisionObb = vehicle.getCollisionOBB()
@@ -1193,33 +1325,46 @@ object VehicleMotionUtils {
      *         beyond zero (no bouncing)
      */
     @JvmStatic
-    fun resolveObbWorldCollision(vehicle: VehicleEntity, movement: Vec3, obbs: List<OBB>): Vec3 {
+    fun resolveObbWorldCollision(
+        vehicle: VehicleEntity,
+        movement: Vec3,
+        obbs: List<OBB>,
+    ): Vec3 {
         if (movement.lengthSqr() < 1e-7) return movement
-        if (obbs.isEmpty()) return Entity.collideBoundingBox(
-            vehicle, movement, vehicle.boundingBox, vehicle.level(),
-            vehicle.level().getEntityCollisions(vehicle, vehicle.boundingBox.expandTowards(movement))
-        )
+        if (obbs.isEmpty()) {
+            return Entity.collideBoundingBox(
+                vehicle,
+                movement,
+                vehicle.boundingBox,
+                vehicle.level(),
+                vehicle.level().getEntityCollisions(vehicle, vehicle.boundingBox.expandTowards(movement)),
+            )
+        }
 
         // Derive world-space axes once per OBB per tick; orientation is invariant
         // under translation, so this array is reused across all three axis passes.
         val obbsWithAxes = obbs.map { it to it.getAxes() }
 
         // Build search box: union of all OBB world-AABBs expanded toward movement
-        var sMinX = Double.MAX_VALUE;
-        var sMinY = Double.MAX_VALUE;
+        var sMinX = Double.MAX_VALUE
+        var sMinY = Double.MAX_VALUE
         var sMinZ = Double.MAX_VALUE
-        var sMaxX = -Double.MAX_VALUE;
-        var sMaxY = -Double.MAX_VALUE;
+        var sMaxX = -Double.MAX_VALUE
+        var sMaxY = -Double.MAX_VALUE
         var sMaxZ = -Double.MAX_VALUE
         for (obb in obbs) {
             val a = OBB.getWorldAABB(obb).expandTowards(movement)
-            if (a.minX < sMinX) sMinX = a.minX; if (a.minY < sMinY) sMinY = a.minY
-            if (a.minZ < sMinZ) sMinZ = a.minZ; if (a.maxX > sMaxX) sMaxX = a.maxX
-            if (a.maxY > sMaxY) sMaxY = a.maxY; if (a.maxZ > sMaxZ) sMaxZ = a.maxZ
+            if (a.minX < sMinX) sMinX = a.minX
+            if (a.minY < sMinY) sMinY = a.minY
+            if (a.minZ < sMinZ) sMinZ = a.minZ
+            if (a.maxX > sMaxX) sMaxX = a.maxX
+            if (a.maxY > sMaxY) sMaxY = a.maxY
+            if (a.maxZ > sMaxZ) sMaxZ = a.maxZ
         }
-        val searchBox = AABB(sMinX, sMinY, sMinZ, sMaxX, sMaxY, sMaxZ)
-            .inflate(0.5)
-            .expandTowards(0.0, vehicle.stepHeight.toDouble() + 0.5, 0.0)
+        val searchBox =
+            AABB(sMinX, sMinY, sMinZ, sMaxX, sMaxY, sMaxZ)
+                .inflate(0.5)
+                .expandTowards(0.0, vehicle.stepHeight.toDouble() + 0.5, 0.0)
 
         // Collect candidate AABBs
         //
@@ -1235,15 +1380,23 @@ object VehicleMotionUtils {
             cachedCoords = vehicle.blockCollisionCoords
             cachedCount = vehicle.blockCollisionCount
         } else {
-            var buf = if (vehicle.blockCollisionCoords.size >= 1200) vehicle.blockCollisionCoords
-            else DoubleArray(1200)
+            var buf =
+                if (vehicle.blockCollisionCoords.size >= 1200) {
+                    vehicle.blockCollisionCoords
+                } else {
+                    DoubleArray(1200)
+                }
             var n = 0
             if (!isSearchBoxProvablyAirborne(vehicle.level(), searchBox)) {
                 for (shape in vehicle.level().getBlockCollisions(vehicle, searchBox)) {
                     shape.forAllBoxes { x0, y0, z0, x1, y1, z1 ->
                         if (n + 6 > buf.size) buf = buf.copyOf(buf.size * 2)
-                        buf[n] = x0; buf[n + 1] = y0; buf[n + 2] = z0
-                        buf[n + 3] = x1; buf[n + 4] = y1; buf[n + 5] = z1
+                        buf[n] = x0
+                        buf[n + 1] = y0
+                        buf[n + 2] = z0
+                        buf[n + 3] = x1
+                        buf[n + 4] = y1
+                        buf[n + 5] = z1
                         n += 6
                     }
                 }
@@ -1261,9 +1414,13 @@ object VehicleMotionUtils {
         while (ci < cachedCount) {
             allAabbs.add(
                 AABB(
-                    cachedCoords[ci], cachedCoords[ci + 1], cachedCoords[ci + 2],
-                    cachedCoords[ci + 3], cachedCoords[ci + 4], cachedCoords[ci + 5]
-                )
+                    cachedCoords[ci],
+                    cachedCoords[ci + 1],
+                    cachedCoords[ci + 2],
+                    cachedCoords[ci + 3],
+                    cachedCoords[ci + 4],
+                    cachedCoords[ci + 5],
+                ),
             )
             ci += 6
         }
@@ -1391,10 +1548,11 @@ object VehicleMotionUtils {
         val longestSide = calculateLongestSide(vehicle)
         val towerLongestSide = calculateLongestSide(tower)
 
-        val minDist = max(
-            VehicleConfig.TOW_PULL_DISTANCE.get().toDouble(),
-            longestSide + towerLongestSide + 4.0
-        )
+        val minDist =
+            max(
+                VehicleConfig.TOW_PULL_DISTANCE.get().toDouble(),
+                longestSide + towerLongestSide + 4.0,
+            )
         val maxDist = VehicleConfig.TOW_BREAK_DISTANCE.get().toDouble()
 
         if (dist > maxDist && maxDist > 0) {
@@ -1409,11 +1567,16 @@ object VehicleMotionUtils {
         // 使用双方的相对速度，使阻尼更准确
         val relVelAlong = vehicle.deltaMovement.subtract(tower.deltaMovement).dot(dir)
 
-        val k = 0.2  // 钢索刚性
+        val k = 0.2 // 钢索刚性
         val d = 0.01 // 阻尼
         val ropeForce = -k * overshoot - d * relVelAlong
 
-        val towerFactor = tower.computed().towForceFactor.toDouble().coerceAtLeast(0.0)
+        val towerFactor =
+            tower
+                .computed()
+                .towForceFactor
+                .toDouble()
+                .coerceAtLeast(0.0)
         val towedMass = vehicle.mass.toDouble().coerceAtLeast(0.01)
         val towerMass = tower.mass.toDouble().coerceAtLeast(0.01)
 
@@ -1430,11 +1593,14 @@ object VehicleMotionUtils {
 
         if (!vehicle.computed().forwardTowed) towerDir = towerDir.scale(-1.0)
 
-        val diffY = Mth.wrapDegrees(
-            -VehicleVecUtils.getYRotFromVector(towerDir) + VehicleVecUtils.getYRotFromVector(
-                vehicle.getViewVector(1f)
-            )
-        ).toFloat()
+        val diffY =
+            Mth
+                .wrapDegrees(
+                    -VehicleVecUtils.getYRotFromVector(towerDir) +
+                        VehicleVecUtils.getYRotFromVector(
+                            vehicle.getViewVector(1f),
+                        ),
+                ).toFloat()
         vehicle.yRot += 0.05f * diffY
     }
 
@@ -1459,10 +1625,11 @@ object VehicleMotionUtils {
             val bb = towed.boundingBox
             val longestSide = maxOf(bb.xsize, bb.ysize, bb.zsize)
 
-            val minDist = max(
-                VehicleConfig.TOW_PULL_DISTANCE.get().toDouble(),
-                longestSide + thisLongestSide + 1.0
-            )
+            val minDist =
+                max(
+                    VehicleConfig.TOW_PULL_DISTANCE.get().toDouble(),
+                    longestSide + thisLongestSide + 1.0,
+                )
 
             if (dist > maxDist && maxDist > 0) {
                 val filtered = vehicle.towingUUIDs.filter { it != uuid }
@@ -1474,10 +1641,15 @@ object VehicleMotionUtils {
             if (dist <= minDist) continue
 
             val overshoot = dist - minDist
-            val dir = vehicle.position().subtract(towed.position()).reverse().normalize()
+            val dir =
+                vehicle
+                    .position()
+                    .subtract(towed.position())
+                    .reverse()
+                    .normalize()
             val relVelAlong = towed.deltaMovement.subtract(vehicle.deltaMovement).dot(dir)
 
-            val k = 0.2  // 钢索刚性
+            val k = 0.2 // 钢索刚性
             val d = 0.01 // 阻尼
             val ropeForce = -k * overshoot - d * relVelAlong
 
@@ -1485,11 +1657,14 @@ object VehicleMotionUtils {
             val pullForce = dir.scale((ropeForce / 6.0).coerceIn(-maxDeltaV, maxDeltaV))
 
             towed.fallDistance = 0f
-            val diffY = Mth.wrapDegrees(
-                -VehicleVecUtils.getYRotFromVector(pullForce) + VehicleVecUtils.getYRotFromVector(
-                    towed.getViewVector(1f)
-                )
-            ).toFloat()
+            val diffY =
+                Mth
+                    .wrapDegrees(
+                        -VehicleVecUtils.getYRotFromVector(pullForce) +
+                            VehicleVecUtils.getYRotFromVector(
+                                towed.getViewVector(1f),
+                            ),
+                    ).toFloat()
 
             if (towed is Player && towed.level().isClientSide) {
                 towed.deltaMovement = towed.deltaMovement.add(pullForce)
@@ -1542,7 +1717,10 @@ object VehicleMotionUtils {
      * @return {@code true} if it is guaranteed that no block collision shape can be
      *         present inside [box]; {@code false} otherwise (caller must run the full query).
      */
-    private fun isSearchBoxProvablyAirborne(level: Level, box: AABB): Boolean {
+    private fun isSearchBoxProvablyAirborne(
+        level: Level,
+        box: AABB,
+    ): Boolean {
         val minBlockX = Mth.floor(box.minX)
         val maxBlockX = Mth.floor(box.maxX)
         val minBlockZ = Mth.floor(box.minZ)

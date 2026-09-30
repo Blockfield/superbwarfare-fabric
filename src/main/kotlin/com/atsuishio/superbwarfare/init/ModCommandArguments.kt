@@ -9,7 +9,6 @@ import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceLocation
 
 object ModCommandArguments {
-
     /**
      * Пустой: ArgumentTypeRegistry сам кладёт инфо и в реестр, и в карту класс -> инфо
      * (аналог ArgumentTypeInfos.registerByClass из NeoForge). Поле оставлено точкой входа
@@ -23,7 +22,7 @@ object ModCommandArguments {
         ArgumentTypeRegistry.registerArgumentType(
             ResourceLocation.fromNamespaceAndPath(Mod.MODID, "lower_camel_case_enum"),
             LowerCamelCaseEnumArgument::class.java,
-            LowerCamelCaseEnumArgument.Info()
+            LowerCamelCaseEnumArgument.Info(),
         )
     }
 }

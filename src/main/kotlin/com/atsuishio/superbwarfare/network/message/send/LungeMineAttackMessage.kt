@@ -32,8 +32,8 @@ data class LungeMineAttackMessage(
                 // The client picks the target: only accept entities within the player's
                 // entity interaction range (+1 block of lag slack, as vanilla attacks).
                 // The mine is only consumed on a real hit; a forged UUID is a no-op.
-                if (lookingEntity != null && lookingEntity !== player
-                    && player.canInteractWithEntity(lookingEntity, player.entityInteractionRange() + 1.0)
+                if (lookingEntity != null && lookingEntity !== player &&
+                    player.canInteractWithEntity(lookingEntity, player.entityInteractionRange() + 1.0)
                 ) {
                     if (!player.isCreative) {
                         stack.shrink(1)
@@ -41,7 +41,7 @@ data class LungeMineAttackMessage(
                     val damage = ExplosionConfig.LUNGE_MINE_ATTACK_DAMAGE.get().toFloat()
                     lookingEntity.forceHurt(
                         ModDamageTypes.causeLungeMineDamage(player.level().registryAccess(), player, player),
-                        if (lookingEntity is VehicleEntity) damage else damage / 4f
+                        if (lookingEntity is VehicleEntity) damage else damage / 4f,
                     )
                     causeLungeMineExplode(player, lookingEntity)
                 }
@@ -53,7 +53,8 @@ data class LungeMineAttackMessage(
                         stack.shrink(1)
                     }
 
-                    CustomExplosion.Builder(player)
+                    CustomExplosion
+                        .Builder(player)
                         .damage(ExplosionConfig.LUNGE_MINE_EXPLOSION_DAMAGE.get().toFloat())
                         .radius(ExplosionConfig.LUNGE_MINE_EXPLOSION_RADIUS.get().toFloat())
                         .position(pos)
@@ -64,8 +65,12 @@ data class LungeMineAttackMessage(
         }
     }
 
-    fun causeLungeMineExplode(attacker: Entity, target: Entity) {
-        CustomExplosion.Builder(target)
+    fun causeLungeMineExplode(
+        attacker: Entity,
+        target: Entity,
+    ) {
+        CustomExplosion
+            .Builder(target)
             .damage(ExplosionConfig.LUNGE_MINE_EXPLOSION_DAMAGE.get().toFloat())
             .radius(ExplosionConfig.LUNGE_MINE_EXPLOSION_RADIUS.get().toFloat())
             .attacker(attacker)

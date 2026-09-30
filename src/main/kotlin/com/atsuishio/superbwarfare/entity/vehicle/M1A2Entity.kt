@@ -10,8 +10,15 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import java.util.*
 
-class M1A2Entity(type: EntityType<M1A2Entity>, world: Level) : VehicleEntity(type, world) {
-    override fun vehicleShoot(living: LivingEntity?, uuid: UUID?, targetPos: Vec3?) {
+class M1A2Entity(
+    type: EntityType<M1A2Entity>,
+    world: Level,
+) : VehicleEntity(type, world) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        uuid: UUID?,
+        targetPos: Vec3?,
+    ) {
         val level = living?.level()
         if (level is ServerLevel && living == firstPassenger && getWeaponIndex(0) == 0) {
             ParticleTool.spawnBigCannonMuzzleParticles(getShootVec(living, 1f), getShootPos(living, 1f), level, this)

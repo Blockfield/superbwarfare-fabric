@@ -19,24 +19,34 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Math
 
-open class Tom6Entity(type: EntityType<Tom6Entity>, world: Level) : VehicleEntity(type, world) {
+open class Tom6Entity(
+    type: EntityType<Tom6Entity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     val hasMelon
         get() = weaponData?.hasEnoughAmmoToShoot(this) ?: false
 
-    override fun computeProperties(data: VehicleData, rawData: DefaultVehicleData): DefaultVehicleData {
+    override fun computeProperties(
+        data: VehicleData,
+        rawData: DefaultVehicleData,
+    ): DefaultVehicleData {
         if (hasMelon) {
-            rawData.destroyInfo = DestroyInfo(
-                rawData.destroyInfo.crashPassengers,
-                rawData.destroyInfo.explodePassengers,
-                rawData.destroyInfo.explodeBlocks,
-                this.melonExplosionDamage,
-                this.melonExplosionRadius
-            )
+            rawData.destroyInfo =
+                DestroyInfo(
+                    rawData.destroyInfo.crashPassengers,
+                    rawData.destroyInfo.explodePassengers,
+                    rawData.destroyInfo.explodeBlocks,
+                    this.melonExplosionDamage,
+                    this.melonExplosionRadius,
+                )
         }
         return super.computeProperties(data, rawData)
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val data = weaponData ?: return super.interact(player, hand)
 
         if (hasMelon) {
@@ -79,8 +89,8 @@ open class Tom6Entity(type: EntityType<Tom6Entity>, world: Level) : VehicleEntit
                         0.0,
                         false,
                         null,
-                        null
-                    )
+                        null,
+                    ),
                 )
             }
 
@@ -98,19 +108,19 @@ open class Tom6Entity(type: EntityType<Tom6Entity>, world: Level) : VehicleEntit
     val melonExplosionRadius
         get() = weaponData?.get(GunProp.EXPLOSION_RADIUS)?.toFloat() ?: 0f
 
-    override fun engineRunning() =
-        getFirstPassenger() != null && Math.abs(deltaMovement.length()) > 0
+    override fun engineRunning() = getFirstPassenger() != null && Math.abs(deltaMovement.length()) > 0
 
-    override fun getEngineSoundVolume() =
-        deltaMovement.length().toFloat()
+    override fun getEngineSoundVolume() = deltaMovement.length().toFloat()
 
-    override fun getSensitivity(original: Double, zoom: Boolean, seatIndex: Int, isOnGround: Boolean) =
-        if (ModKeyMappings.FREE_CAMERA.isDown) 0.0 else 0.6
+    override fun getSensitivity(
+        original: Double,
+        zoom: Boolean,
+        seatIndex: Int,
+        isOnGround: Boolean,
+    ) = if (ModKeyMappings.FREE_CAMERA.isDown) 0.0 else 0.6
 
-    override fun useAircraftCamera(seatIndex: Int) =
-        ModKeyMappings.FREE_CAMERA.isDown && !ClientEventHandler.zoom
+    override fun useAircraftCamera(seatIndex: Int) = ModKeyMappings.FREE_CAMERA.isDown && !ClientEventHandler.zoom
 
     override val mouseSensitivity
         get() = if (ModKeyMappings.FREE_CAMERA.isDown) 0.3 else 0.0
-
 }

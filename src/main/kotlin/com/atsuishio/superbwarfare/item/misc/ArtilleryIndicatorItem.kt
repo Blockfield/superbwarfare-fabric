@@ -10,6 +10,8 @@ import com.atsuishio.superbwarfare.item.IVehicleInteract
 import com.atsuishio.superbwarfare.item.ItemScreenProvider
 import com.atsuishio.superbwarfare.tools.EntityFindUtil
 import com.atsuishio.superbwarfare.tools.NBTTool
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.nbt.CompoundTag
@@ -27,56 +29,59 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.*
 import net.minecraft.world.level.Level
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
-open class ArtilleryIndicatorItem : Item(Properties().stacksTo(1).rarity(Rarity.UNCOMMON)), ItemScreenProvider,
+open class ArtilleryIndicatorItem :
+    Item(Properties().stacksTo(1).rarity(Rarity.UNCOMMON)),
+    ItemScreenProvider,
     IVehicleInteract {
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         TooltipTool.addScreenProviderText(tooltipComponents)
         if (NBTTool.getTag(stack).contains(TAG_TYPE)) {
             tooltipComponents.add(
-                Component.translatable(
-                    "des.superbwarfare.artillery_indicator.type",
-                    Component.translatable(
-                        NBTTool.getTag(stack).getString(TAG_TYPE)
-                    )
-                )
-                    .withStyle(ChatFormatting.WHITE)
+                Component
+                    .translatable(
+                        "des.superbwarfare.artillery_indicator.type",
+                        Component.translatable(
+                            NBTTool.getTag(stack).getString(TAG_TYPE),
+                        ),
+                    ).withStyle(ChatFormatting.WHITE),
             )
         }
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.artillery_indicator_1").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.artillery_indicator_1").withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.artillery_indicator_2").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.artillery_indicator_2").withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.artillery_indicator_3").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.artillery_indicator_3").withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.artillery_indicator_4").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.artillery_indicator_4").withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(Component.literal(" ").withStyle(ChatFormatting.GRAY))
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.artillery_indicator_5").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.artillery_indicator_5").withStyle(ChatFormatting.GRAY),
         )
     }
 
-    override fun getUseDuration(stack: ItemStack, entity: LivingEntity): Int {
-        return 72000
-    }
+    override fun getUseDuration(
+        stack: ItemStack,
+        entity: LivingEntity,
+    ): Int = 72000
 
-    override fun getUseAnimation(stack: ItemStack): UseAnim {
-        return UseAnim.SPYGLASS
-    }
+    override fun getUseAnimation(stack: ItemStack): UseAnim = UseAnim.SPYGLASS
 
-    override fun use(pLevel: Level, pPlayer: Player, pHand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        pLevel: Level,
+        pPlayer: Player,
+        pHand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         if (pHand == InteractionHand.OFF_HAND) {
             return InteractionResultHolder.fail(pPlayer.getItemInHand(pHand))
         }
@@ -85,12 +90,21 @@ open class ArtilleryIndicatorItem : Item(Properties().stacksTo(1).rarity(Rarity.
         return InteractionResultHolder.consume(pPlayer.getItemInHand(pHand))
     }
 
-    override fun finishUsingItem(pStack: ItemStack, pLevel: Level, pLivingEntity: LivingEntity): ItemStack {
+    override fun finishUsingItem(
+        pStack: ItemStack,
+        pLevel: Level,
+        pLivingEntity: LivingEntity,
+    ): ItemStack {
         pLivingEntity.playSound(SoundEvents.SPYGLASS_STOP_USING, 1f, 1f)
         return pStack
     }
 
-    override fun releaseUsing(pStack: ItemStack, pLevel: Level, pLivingEntity: LivingEntity, pTimeCharged: Int) {
+    override fun releaseUsing(
+        pStack: ItemStack,
+        pLevel: Level,
+        pLivingEntity: LivingEntity,
+        pTimeCharged: Int,
+    ) {
         pLivingEntity.playSound(SoundEvents.SPYGLASS_STOP_USING, 1f, 1f)
     }
 
@@ -99,7 +113,10 @@ open class ArtilleryIndicatorItem : Item(Properties().stacksTo(1).rarity(Rarity.
         return tags.size >= MiscConfig.ARTILLERY_INDICATOR_LIST_SIZE.get()
     }
 
-    fun addCannon(stack: ItemStack, entity: Entity): Boolean {
+    fun addCannon(
+        stack: ItemStack,
+        entity: Entity,
+    ): Boolean {
         val uuid = entity.getStringUUID()
         val tag = NBTTool.getTag(stack)
         val tags = tag.getList(TAG_CANNON, Tag.TAG_COMPOUND.toInt())
@@ -132,7 +149,10 @@ open class ArtilleryIndicatorItem : Item(Properties().stacksTo(1).rarity(Rarity.
         return true
     }
 
-    fun removeCannon(stack: ItemStack, uuid: String?): Boolean {
+    fun removeCannon(
+        stack: ItemStack,
+        uuid: String?,
+    ): Boolean {
         val tag = NBTTool.getTag(stack)
         val tags = tag.getList(TAG_CANNON, Tag.TAG_COMPOUND.toInt())
         val list: MutableList<CompoundTag> = arrayListOf()
@@ -159,11 +179,16 @@ open class ArtilleryIndicatorItem : Item(Properties().stacksTo(1).rarity(Rarity.
     }
 
     @Environment(EnvType.CLIENT)
-    override fun getItemScreen(stack: ItemStack, player: Player, hand: InteractionHand): Screen {
-        return ArtilleryIndicatorScreen(stack, hand)
-    }
+    override fun getItemScreen(
+        stack: ItemStack,
+        player: Player,
+        hand: InteractionHand,
+    ): Screen = ArtilleryIndicatorScreen(stack, hand)
 
-    fun setTarget(stack: ItemStack, player: Player) {
+    fun setTarget(
+        stack: ItemStack,
+        player: Player,
+    ) {
         val mainTag = NBTTool.getTag(stack)
         val tags = mainTag.getList(TAG_CANNON, Tag.TAG_COMPOUND.toInt())
         val list: MutableList<CompoundTag> = arrayListOf()
@@ -189,38 +214,51 @@ open class ArtilleryIndicatorItem : Item(Properties().stacksTo(1).rarity(Rarity.
         }
     }
 
-    fun bind(stack: ItemStack, player: Player, entity: Entity): InteractionResult {
+    fun bind(
+        stack: ItemStack,
+        player: Player,
+        entity: Entity,
+    ): InteractionResult {
         if (this.checkFull(stack)) {
             player.displayClientMessage(
-                Component.translatable("des.superbwarfare.artillery_indicator.full").withStyle(ChatFormatting.RED), true
+                Component.translatable("des.superbwarfare.artillery_indicator.full").withStyle(ChatFormatting.RED),
+                true,
             )
             return InteractionResult.FAIL
         }
 
         if (this.addCannon(stack, entity)) {
             if (player is ServerPlayer) {
-                player.level()
+                player
+                    .level()
                     .playSound(null, player.onPos, SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.5f, 1f)
             }
             player.displayClientMessage(
-                Component.translatable("des.superbwarfare.artillery_indicator.add", entity.displayName)
-                    .withStyle(ChatFormatting.GREEN), true
+                Component
+                    .translatable("des.superbwarfare.artillery_indicator.add", entity.displayName)
+                    .withStyle(ChatFormatting.GREEN),
+                true,
             )
             return InteractionResult.SUCCESS
         } else if (this.removeCannon(stack, entity.getStringUUID())) {
             if (player is ServerPlayer) {
-                player.level()
+                player
+                    .level()
                     .playSound(null, player.onPos, SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.5f, 1f)
             }
             player.displayClientMessage(
-                Component.translatable("des.superbwarfare.artillery_indicator.remove", entity.displayName)
-                    .withStyle(ChatFormatting.RED), true
+                Component
+                    .translatable("des.superbwarfare.artillery_indicator.remove", entity.displayName)
+                    .withStyle(ChatFormatting.RED),
+                true,
             )
             return InteractionResult.SUCCESS
         } else {
             player.displayClientMessage(
-                Component.translatable("des.superbwarfare.artillery_indicator.fail", entity.displayName)
-                    .withStyle(ChatFormatting.RED), true
+                Component
+                    .translatable("des.superbwarfare.artillery_indicator.fail", entity.displayName)
+                    .withStyle(ChatFormatting.RED),
+                true,
             )
             return InteractionResult.FAIL
         }
@@ -230,7 +268,7 @@ open class ArtilleryIndicatorItem : Item(Properties().stacksTo(1).rarity(Rarity.
         vehicle: VehicleEntity,
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult? {
         if (vehicle !is ArtilleryEntity) return null
         if (!vehicle.canBind() && vehicle.isWreck) return null

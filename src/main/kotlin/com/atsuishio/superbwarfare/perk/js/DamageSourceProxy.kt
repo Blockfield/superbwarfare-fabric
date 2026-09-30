@@ -14,8 +14,9 @@ import net.minecraft.world.entity.projectile.Projectile
 /**
  * Proxy that exposes DamageSource properties and methods to JS perk scripts.
  */
-class DamageSourceProxy(private val source: DamageSource) {
-
+class DamageSourceProxy(
+    private val source: DamageSource,
+) {
     // ── Damage type checks ──
     fun isGunDamage(): Boolean = DamageTypeTool.isGunDamage(source)
 
@@ -45,12 +46,13 @@ class DamageSourceProxy(private val source: DamageSource) {
      */
     fun getAttackingPlayer(): EntityProxy {
         val sourceEntity = source.entity
-        val player = sourceEntity as? Player
-            ?: if (sourceEntity is Projectile && sourceEntity.owner is Player) {
-                sourceEntity.owner as Player
-            } else {
-                null
-            }
+        val player =
+            sourceEntity as? Player
+                ?: if (sourceEntity is Projectile && sourceEntity.owner is Player) {
+                    sourceEntity.owner as Player
+                } else {
+                    null
+                }
         return EntityProxy(player)
     }
 

@@ -27,8 +27,7 @@ object NvgHandler {
         ClientTickEvents.END_CLIENT_TICK.register { _ -> tick() }
     }
 
-    private fun hasNvgHelmet(player: Player) =
-        player.getItemBySlot(EquipmentSlot.HEAD).`is`(ModTags.Items.HAS_NVG)
+    private fun hasNvgHelmet(player: Player) = player.getItemBySlot(EquipmentSlot.HEAD).`is`(ModTags.Items.HAS_NVG)
 
     private fun tick() {
         val player = mc.player

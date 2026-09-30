@@ -11,15 +11,15 @@ import com.atsuishio.superbwarfare.entity.projectile.*
 import com.atsuishio.superbwarfare.entity.vehicle.*
 import com.atsuishio.superbwarfare.entity.vehicle.base.AutoAimableEntity
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import com.atsuishio.superbwarfare.fabric.DeferredHolder
+import com.atsuishio.superbwarfare.fabric.DeferredRegister
+import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricDefaultAttributeRegistry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.Difficulty
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.monster.Monster
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.levelgen.Heightmap
-import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricDefaultAttributeRegistry
-import com.atsuishio.superbwarfare.fabric.DeferredHolder
-import com.atsuishio.superbwarfare.fabric.DeferredRegister
 
 /** Общая сторона: вызывать из ModInitializer. */
 object ModEntities {
@@ -27,100 +27,153 @@ object ModEntities {
 
     // Living Entities
     @JvmField
-    val TARGET = register(
-        "target",
-        EntityType.Builder.of(::TargetEntity, MobCategory.CREATURE)
-            .clientTrackingRange(64).updateInterval(3).fireImmune().eyeHeight(1.57f).sized(0.875f, 2f)
-    )
+    val TARGET =
+        register(
+            "target",
+            EntityType.Builder
+                .of(::TargetEntity, MobCategory.CREATURE)
+                .clientTrackingRange(64)
+                .updateInterval(3)
+                .fireImmune()
+                .eyeHeight(1.57f)
+                .sized(0.875f, 2f),
+        )
 
     @JvmField
-    val DPS_GENERATOR = register(
-        "dps_generator",
-        EntityType.Builder.of(::DPSGeneratorEntity, MobCategory.CREATURE)
-            .clientTrackingRange(64).updateInterval(3).fireImmune().eyeHeight(1.57f).sized(0.875f, 2f)
-    )
+    val DPS_GENERATOR =
+        register(
+            "dps_generator",
+            EntityType.Builder
+                .of(::DPSGeneratorEntity, MobCategory.CREATURE)
+                .clientTrackingRange(64)
+                .updateInterval(3)
+                .fireImmune()
+                .eyeHeight(1.57f)
+                .sized(0.875f, 2f),
+        )
 
     @JvmField
-    val SENPAI = register(
-        "senpai",
-        EntityType.Builder.of(::SenpaiEntity, MobCategory.MONSTER)
-            .clientTrackingRange(64).updateInterval(3).sized(0.65f, 2f).eyeHeight(1.75f)
-    )
+    val SENPAI =
+        register(
+            "senpai",
+            EntityType.Builder
+                .of(::SenpaiEntity, MobCategory.MONSTER)
+                .clientTrackingRange(64)
+                .updateInterval(3)
+                .sized(0.65f, 2f)
+                .eyeHeight(1.75f),
+        )
 
     @JvmField
-    val STEEL_COIL = register(
-        "steel_coil", EntityType.Builder.of(::SteelCoilEntity, MobCategory.MONSTER)
-            .clientTrackingRange(64).updateInterval(3).sized(2f, 2f).fireImmune()
-    )
+    val STEEL_COIL =
+        register(
+            "steel_coil",
+            EntityType.Builder
+                .of(::SteelCoilEntity, MobCategory.MONSTER)
+                .clientTrackingRange(64)
+                .updateInterval(3)
+                .sized(2f, 2f)
+                .fireImmune(),
+        )
 
     // Misc Entities
     @JvmField
-    val FLARE_DECOY = register(
-        "flare_decoy",
-        misc(::FlareDecoyEntity).clientTrackingRange(64).updateInterval(1).noSave().sized(1f, 1f)
-    )
+    val FLARE_DECOY =
+        register(
+            "flare_decoy",
+            misc(::FlareDecoyEntity)
+                .clientTrackingRange(64)
+                .updateInterval(1)
+                .noSave()
+                .sized(1f, 1f),
+        )
 
     @JvmField
-    val CATAPULT_SHUTTLE = register(
-        "catapult_shuttle",
-        misc(::CatapultShuttleEntity).clientTrackingRange(64).updateInterval(1).sized(1.0f, 1.2f)
-    )
+    val CATAPULT_SHUTTLE =
+        register(
+            "catapult_shuttle",
+            misc(::CatapultShuttleEntity).clientTrackingRange(64).updateInterval(1).sized(1.0f, 1.2f),
+        )
 
     @JvmField
-    val PRISMATIC_BOLT = register(
-        "prismatic_bolt",
-        misc(::PrismaticBoltEntity).clientTrackingRange(64).updateInterval(1).noSave().noSummon().fireImmune()
-            .sized(0.05f, 0.05f)
-    )
+    val PRISMATIC_BOLT =
+        register(
+            "prismatic_bolt",
+            misc(::PrismaticBoltEntity)
+                .clientTrackingRange(64)
+                .updateInterval(1)
+                .noSave()
+                .noSummon()
+                .fireImmune()
+                .sized(0.05f, 0.05f),
+        )
 
     @JvmField
-    val SMOKE_DECOY = register(
-        "smoke_decoy",
-        misc(::SmokeDecoyEntity).clientTrackingRange(64).updateInterval(1).noSave().sized(5.5f, 5.5f)
-    )
+    val SMOKE_DECOY =
+        register(
+            "smoke_decoy",
+            misc(::SmokeDecoyEntity)
+                .clientTrackingRange(64)
+                .updateInterval(1)
+                .noSave()
+                .sized(5.5f, 5.5f),
+        )
 
     @JvmField
-    val CLAYMORE = register(
-        "claymore",
-        misc(::ClaymoreEntity).clientTrackingRange(64).updateInterval(1).sized(0.25f, 0.25f)
-    )
+    val CLAYMORE =
+        register(
+            "claymore",
+            misc(::ClaymoreEntity).clientTrackingRange(64).updateInterval(1).sized(0.25f, 0.25f),
+        )
 
     @JvmField
-    val BLU_43 = register(
-        "blu_43",
-        misc(::Blu43Entity).clientTrackingRange(32).updateInterval(1).sized(0.12f, 0.05f)
-    )
+    val BLU_43 =
+        register(
+            "blu_43",
+            misc(::Blu43Entity).clientTrackingRange(32).updateInterval(1).sized(0.12f, 0.05f),
+        )
 
     @JvmField
     val TM_62 = register("tm_62", misc(::Tm62Entity).clientTrackingRange(32).updateInterval(1).sized(0.5f, 0.15f))
 
     @JvmField
-    val PTKM_1R = register(
-        "ptkm_1r",
-        misc(::Ptkm1rEntity).clientTrackingRange(64).updateInterval(1).sized(0.2f, 0.7f)
-    )
+    val PTKM_1R =
+        register(
+            "ptkm_1r",
+            misc(::Ptkm1rEntity).clientTrackingRange(64).updateInterval(1).sized(0.2f, 0.7f),
+        )
 
     @JvmField
     val C4 = register("c4", misc(::C4Entity).clientTrackingRange(64).updateInterval(1).sized(0.25f, 0.25f))
 
     @JvmField
-    val MEDICAL_KIT = register(
-        "medical_kit",
-        misc(::MedicalKitEntity).clientTrackingRange(64).updateInterval(1).sized(0.4f, 0.2f)
-    )
+    val MEDICAL_KIT =
+        register(
+            "medical_kit",
+            misc(::MedicalKitEntity).clientTrackingRange(64).updateInterval(1).sized(0.4f, 0.2f),
+        )
 
     @JvmField
-    val EDD = register("edd", misc(::EDDEntity).clientTrackingRange(10).eyeHeight(0f).updateInterval(Int.MAX_VALUE).sized(0.5f, 0.5f))
+    val EDD =
+        register(
+            "edd",
+            misc(::EDDEntity)
+                .clientTrackingRange(10)
+                .eyeHeight(0f)
+                .updateInterval(Int.MAX_VALUE)
+                .sized(0.5f, 0.5f),
+        )
 
     // Projectiles
     @JvmField
     val TASER_BULLET = register("taser_bullet", fastProjectile(::TaserBulletEntity, true).sized(0.25f, 0.25f))
 
     @JvmField
-    val WHITE_PHOSPHORUS_PROJECTILE = register(
-        "white_phosphorus_projectile",
-        fastProjectile(::WhitePhosphorusProjectileEntity, true).sized(0.1f, 0.1f)
-    )
+    val WHITE_PHOSPHORUS_PROJECTILE =
+        register(
+            "white_phosphorus_projectile",
+            fastProjectile(::WhitePhosphorusProjectileEntity, true).sized(0.1f, 0.1f),
+        )
 
     // Fast Projectiles
     @JvmField
@@ -336,10 +389,11 @@ object ModEntities {
     val DRONE = register("drone", misc(::DroneEntity).clientTrackingRange(512).updateInterval(1).sized(0.6f, 0.2f))
 
     @JvmField
-    val SCOUT_DRONE = register(
-        "scout_drone",
-        misc(::ScoutDroneEntity).clientTrackingRange(512).updateInterval(1).sized(0.6f, 0.2f)
-    )
+    val SCOUT_DRONE =
+        register(
+            "scout_drone",
+            misc(::ScoutDroneEntity).clientTrackingRange(512).updateInterval(1).sized(0.6f, 0.2f),
+        )
 
     @JvmField
     val MORTAR = register("mortar", vehicle(::MortarEntity).sized(0.8f, 1.4f))
@@ -368,37 +422,34 @@ object ModEntities {
 
     private fun <T : Entity> register(
         name: String,
-        entityTypeBuilder: EntityType.Builder<T>
-    ): DeferredHolder<EntityType<*>, EntityType<T>> {
-        return REGISTRY.register(name) { -> entityTypeBuilder.build(name) }
-    }
+        entityTypeBuilder: EntityType.Builder<T>,
+    ): DeferredHolder<EntityType<*>, EntityType<T>> = REGISTRY.register(name) { entityTypeBuilder.build(name) }
 
-    private fun <T : Entity> misc(
-        entity: (EntityType<T>, Level) -> T
-    ): EntityType.Builder<T> = EntityType.Builder.of(entity, MobCategory.MISC)
+    private fun <T : Entity> misc(entity: (EntityType<T>, Level) -> T): EntityType.Builder<T> = EntityType.Builder.of(entity, MobCategory.MISC)
 
-    private fun vehicle(): EntityType.Builder<VehicleEntity> = misc(::VehicleEntity)
-        .clientTrackingRange(512)
-        .updateInterval(1)
-        .fireImmune()
+    private fun vehicle(): EntityType.Builder<VehicleEntity> =
+        misc(::VehicleEntity)
+            .clientTrackingRange(512)
+            .updateInterval(1)
+            .fireImmune()
 
-    private fun <T : Entity> vehicle(
-        entity: (EntityType<T>, Level) -> T
-    ): EntityType.Builder<T> = misc(entity)
-        .clientTrackingRange(512)
-        .updateInterval(1)
-        .fireImmune()
+    private fun <T : Entity> vehicle(entity: (EntityType<T>, Level) -> T): EntityType.Builder<T> =
+        misc(entity)
+            .clientTrackingRange(512)
+            .updateInterval(1)
+            .fireImmune()
 
     // setShouldReceiveVelocityUpdates из NeoForge = alwaysUpdateVelocity из fabric-object-builder
     // (интерфейс FabricEntityType.Builder вкручен в EntityType.Builder): false выключает
     // velocity-пакеты ServerEntity, true -- шлёт всегда.
     private fun <T : Entity> fastProjectile(
         entity: (EntityType<T>, Level) -> T,
-        receiveVelocityUpdates: Boolean = false
-    ): EntityType.Builder<T> = misc(entity)
-        .alwaysUpdateVelocity(receiveVelocityUpdates)
-        .clientTrackingRange(64)
-        .updateInterval(1)
+        receiveVelocityUpdates: Boolean = false,
+    ): EntityType.Builder<T> =
+        misc(entity)
+            .alwaysUpdateVelocity(receiveVelocityUpdates)
+            .clientTrackingRange(64)
+            .updateInterval(1)
 
     fun init() {
         REGISTRY.register(null)
@@ -408,20 +459,24 @@ object ModEntities {
 
     private fun registerSpawnPlacements() {
         SpawnPlacements.register(
-            SENPAI.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES
+            SENPAI.get(),
+            SpawnPlacementTypes.ON_GROUND,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
         ) { entityType, world, reason, pos, random ->
-            world.difficulty != Difficulty.PEACEFUL
-                    && SpawnConfig.SPAWN_SENPAI.get()
-                    && Monster.isDarkEnoughToSpawn(world, pos, random)
-                    && Mob.checkMobSpawnRules(entityType, world, reason, pos, random)
+            world.difficulty != Difficulty.PEACEFUL &&
+                SpawnConfig.SPAWN_SENPAI.get() &&
+                Monster.isDarkEnoughToSpawn(world, pos, random) &&
+                Mob.checkMobSpawnRules(entityType, world, reason, pos, random)
         }
         SpawnPlacements.register(
-            STEEL_COIL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES
+            STEEL_COIL.get(),
+            SpawnPlacementTypes.ON_GROUND,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
         ) { entityType, world, reason, pos, random ->
-            world.difficulty != Difficulty.PEACEFUL
-                    && SpawnConfig.SPAWN_STEEL_COIL.get()
-                    && Monster.isDarkEnoughToSpawn(world, pos, random)
-                    && Mob.checkMobSpawnRules(entityType, world, reason, pos, random)
+            world.difficulty != Difficulty.PEACEFUL &&
+                SpawnConfig.SPAWN_STEEL_COIL.get() &&
+                Monster.isDarkEnoughToSpawn(world, pos, random) &&
+                Mob.checkMobSpawnRules(entityType, world, reason, pos, random)
         }
     }
 

@@ -13,16 +13,17 @@ object MonsterHunter : Perk("monster_hunter", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
-    ): Float {
-        return if (target is Monster) {
+        source: DamageSource,
+    ): Float =
+        if (target is Monster) {
             damage * (1.1f + 0.1f * instance.level)
-        } else super.getModifiedDamage(
-            damage,
-            data,
-            instance,
-            target,
-            source
-        )
-    }
+        } else {
+            super.getModifiedDamage(
+                damage,
+                data,
+                instance,
+                target,
+                source,
+            )
+        }
 }

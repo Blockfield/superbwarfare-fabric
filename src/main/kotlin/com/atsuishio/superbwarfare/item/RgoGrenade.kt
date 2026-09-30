@@ -24,8 +24,14 @@ import net.minecraft.world.item.UseAnim
 import net.minecraft.world.level.Level
 import kotlin.math.min
 
-open class RgoGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLaunchable {
-    override fun use(worldIn: Level, playerIn: Player, handIn: InteractionHand): InteractionResultHolder<ItemStack> {
+open class RgoGrenade :
+    Item(Properties().rarity(Rarity.UNCOMMON)),
+    DispenserLaunchable {
+    override fun use(
+        worldIn: Level,
+        playerIn: Player,
+        handIn: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = playerIn.getItemInHand(handIn)
         playerIn.startUsingItem(handIn)
         if (playerIn is ServerPlayer) {
@@ -34,11 +40,14 @@ open class RgoGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLau
         return InteractionResultHolder.consume(stack)
     }
 
-    override fun getUseAnimation(stack: ItemStack): UseAnim {
-        return UseAnim.SPEAR
-    }
+    override fun getUseAnimation(stack: ItemStack): UseAnim = UseAnim.SPEAR
 
-    override fun releaseUsing(stack: ItemStack, level: Level, living: LivingEntity, timeLeft: Int) {
+    override fun releaseUsing(
+        stack: ItemStack,
+        level: Level,
+        living: LivingEntity,
+        timeLeft: Int,
+    ) {
         if (!level.isClientSide) {
             if (living is Player) {
                 val usingTime = this.getUseDuration(stack, living) - timeLeft
@@ -54,7 +63,7 @@ open class RgoGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLau
                         living.yRot,
                         0.0f,
                         power,
-                        0.0f
+                        0.0f,
                     )
                     level.addFreshEntity(rgoGrenade)
 
@@ -65,7 +74,7 @@ open class RgoGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLau
                             ModSounds.GRENADE_THROW.get(),
                             SoundSource.PLAYERS,
                             1f,
-                            1f
+                            1f,
                         )
                     }
 
@@ -77,11 +86,16 @@ open class RgoGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLau
         }
     }
 
-    override fun finishUsingItem(pStack: ItemStack, pLevel: Level, pLivingEntity: LivingEntity): ItemStack {
+    override fun finishUsingItem(
+        pStack: ItemStack,
+        pLevel: Level,
+        pLivingEntity: LivingEntity,
+    ): ItemStack {
         if (!pLevel.isClientSide) {
             val rgoGrenade = RgoGrenadeEntity(pLivingEntity, pLevel)
 
-            CustomExplosion.Builder(rgoGrenade)
+            CustomExplosion
+                .Builder(rgoGrenade)
                 .attacker(pLivingEntity)
                 .damage(ExplosionConfig.RGO_GRENADE_EXPLOSION_DAMAGE.get().toFloat())
                 .radius(ExplosionConfig.RGO_GRENADE_EXPLOSION_RADIUS.get().toFloat())
@@ -99,25 +113,28 @@ open class RgoGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLau
         return super.finishUsingItem(pStack, pLevel, pLivingEntity)
     }
 
-    override fun getUseDuration(stack: ItemStack, entity: LivingEntity): Int {
-        return 80
-    }
+    override fun getUseDuration(
+        stack: ItemStack,
+        entity: LivingEntity,
+    ): Int = 80
 
-    override fun getLaunchBehavior(): DispenseItemBehavior {
-        return object : AbstractProjectileDispenseBehavior() {
-            override fun getProjectile(level: Level, position: Position, stack: ItemStack): Projectile {
-                return RgoGrenadeEntity(
+    override fun getLaunchBehavior(): DispenseItemBehavior =
+        object : AbstractProjectileDispenseBehavior() {
+            override fun getProjectile(
+                level: Level,
+                position: Position,
+                stack: ItemStack,
+            ): Projectile =
+                RgoGrenadeEntity(
                     ModEntities.RGO_GRENADE.get(),
                     position.x(),
                     position.y(),
                     position.z(),
-                    level
+                    level,
                 )
-            }
 
             override fun playSound(source: BlockSource) {
                 source.level.playSound(null, source.pos, ModSounds.GRENADE_THROW.get(), SoundSource.BLOCKS, 1f, 1f)
             }
         }
-    }
 }

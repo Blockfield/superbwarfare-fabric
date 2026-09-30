@@ -8,7 +8,9 @@ import com.atsuishio.superbwarfare.tools.SoundTool
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ZoomMessage(val msgType: Int) : ServerPacketPayload() {
+data class ZoomMessage(
+    val msgType: Int,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
 

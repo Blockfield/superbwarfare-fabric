@@ -33,7 +33,10 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.block.state.BlockState
 
-open class SenpaiEntity(type: EntityType<SenpaiEntity>, level: Level) : Monster(type, level) {
+open class SenpaiEntity(
+    type: EntityType<SenpaiEntity>,
+    level: Level,
+) : Monster(type, level) {
     open val animationInstance: SenpaiAnimationInstance? =
         if (this.level().isClientSide) SenpaiAnimationInstance(this) else null
     open val modelInstance = EntityModelReloadListener.getModel(MODEL)?.createInstance()
@@ -54,7 +57,7 @@ open class SenpaiEntity(type: EntityType<SenpaiEntity>, level: Level) : Monster(
         level: ServerLevelAccessor,
         difficulty: DifficultyInstance,
         spawnType: MobSpawnType,
-        spawnGroupData: SpawnGroupData?
+        spawnGroupData: SpawnGroupData?,
     ): SpawnGroupData? {
         this.runner = Math.random() < 0.3
 
@@ -63,16 +66,16 @@ open class SenpaiEntity(type: EntityType<SenpaiEntity>, level: Level) : Monster(
                 AttributeModifier(
                     Mod.ATTRIBUTE_MODIFIER,
                     0.4,
-                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE
-                )
+                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
+                ),
             )
         } else {
             this.getAttribute(Attributes.ATTACK_DAMAGE)?.addPermanentModifier(
                 AttributeModifier(
                     Mod.ATTRIBUTE_MODIFIER,
                     3.0,
-                    AttributeModifier.Operation.ADD_VALUE
-                )
+                    AttributeModifier.Operation.ADD_VALUE,
+                ),
             )
         }
 
@@ -99,22 +102,18 @@ open class SenpaiEntity(type: EntityType<SenpaiEntity>, level: Level) : Monster(
         this.targetSelector.addGoal(6, NearestAttackableTargetGoal(this, Player::class.java, false, false))
     }
 
+    public override fun getAmbientSound(): SoundEvent? = ModSounds.IDLE.get()
 
-    public override fun getAmbientSound(): SoundEvent? {
-        return ModSounds.IDLE.get()
-    }
-
-    public override fun playStepSound(pos: BlockPos, blockIn: BlockState) {
+    public override fun playStepSound(
+        pos: BlockPos,
+        blockIn: BlockState,
+    ) {
         this.playSound(ModSounds.STEP.get(), 0.25f, 1f)
     }
 
-    public override fun getHurtSound(ds: DamageSource): SoundEvent {
-        return ModSounds.OUCH.get()
-    }
+    public override fun getHurtSound(ds: DamageSource): SoundEvent = ModSounds.OUCH.get()
 
-    public override fun getDeathSound(): SoundEvent {
-        return ModSounds.GROWL.get()
-    }
+    public override fun getDeathSound(): SoundEvent = ModSounds.GROWL.get()
 
     override fun baseTick() {
         super.baseTick()
@@ -138,15 +137,14 @@ open class SenpaiEntity(type: EntityType<SenpaiEntity>, level: Level) : Monster(
         val RUNNER: EntityDataAccessor<Boolean> =
             SynchedEntityData.defineId(SenpaiEntity::class.java, EntityDataSerializers.BOOLEAN)
 
-        fun createAttributes(): AttributeSupplier.Builder {
-            return createMobAttributes()
+        fun createAttributes(): AttributeSupplier.Builder =
+            createMobAttributes()
                 .add(Attributes.MOVEMENT_SPEED, 0.23)
                 .add(Attributes.MAX_HEALTH, 24.0)
                 .add(Attributes.ARMOR, 0.0)
                 .add(Attributes.ATTACK_DAMAGE, 5.0)
                 .add(Attributes.FOLLOW_RANGE, 64.0)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.5)
-        }
 
         val MODEL = loc("models/bedrock/entity/senpai.geo.json")
     }

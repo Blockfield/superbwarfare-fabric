@@ -10,6 +10,8 @@ import com.atsuishio.superbwarfare.tools.ParticleTool
 import com.atsuishio.superbwarfare.tools.SeekTool
 import com.atsuishio.superbwarfare.tools.forceHurt
 import com.atsuishio.superbwarfare.tools.sendPacket
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.core.Holder
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.chat.Component
@@ -23,15 +25,20 @@ import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
-open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : VehicleEntity(type, world) {
+open class PrismTankEntity(
+    type: EntityType<PrismTankEntity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     init {
         this.noCulling = true
     }
 
-    fun hitBlock(pos: Vec3, gunData: GunData, shooter: Entity?) {
+    fun hitBlock(
+        pos: Vec3,
+        gunData: GunData,
+        shooter: Entity?,
+    ) {
         val serverLevel = level() as? ServerLevel ?: return
 
         if (gunData.get(GunProp.EXPLOSION_RADIUS) > 0) {
@@ -47,7 +54,7 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.2,
-                true
+                true,
             )
             ParticleTool.sendParticle(
                 serverLevel,
@@ -60,7 +67,7 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.4,
-                true
+                true,
             )
         } else {
             ParticleTool.sendParticle(
@@ -74,7 +81,7 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.05,
-                true
+                true,
             )
             ParticleTool.sendParticle(
                 serverLevel,
@@ -87,12 +94,16 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.15,
-                true
+                true,
             )
         }
     }
 
-    fun hitEntity(pos: Vec3, gunData: GunData, shooter: Entity?) {
+    fun hitEntity(
+        pos: Vec3,
+        gunData: GunData,
+        shooter: Entity?,
+    ) {
         val serverLevel = level() as? ServerLevel ?: return
 
         if (gunData.get(GunProp.EXPLOSION_RADIUS) > 0) {
@@ -108,7 +119,7 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.2,
-                true
+                true,
             )
             ParticleTool.sendParticle(
                 serverLevel,
@@ -121,7 +132,7 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.4,
-                true
+                true,
             )
         } else {
             ParticleTool.sendParticle(
@@ -135,7 +146,7 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.05,
-                true
+                true,
             )
             ParticleTool.sendParticle(
                 serverLevel,
@@ -148,25 +159,31 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.15,
-                true
+                true,
             )
         }
     }
 
-    fun findNearEntity(vec: Vec3, gunData: GunData, shooter: Entity?) {
+    fun findNearEntity(
+        vec: Vec3,
+        gunData: GunData,
+        shooter: Entity?,
+    ) {
         val serverLevel = level() as? ServerLevel ?: return
 
         val aoeDamage = gunData.get(GunProp.EXPLOSION_DAMAGE)
         val range = gunData.get(GunProp.EXPLOSION_RADIUS)
 
-        val entities = SeekTool.Builder(this)
-            .withinRange(vec, range)
-            .notItsVehicle()
-            .baseFilter()
-            .noVehicle()
-            .notFriendly()
-            .isNotMyOwner()
-            .build()
+        val entities =
+            SeekTool
+                .Builder(this)
+                .withinRange(vec, range)
+                .notItsVehicle()
+                .baseFilter()
+                .noVehicle()
+                .notFriendly()
+                .isNotMyOwner()
+                .build()
 
         for (e in entities) {
             val dis = vec.distanceTo(e.eyePosition)
@@ -185,7 +202,7 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                     0.0,
                     0.0,
                     0.0,
-                    true
+                    true,
                 )
                 i += 0.1f
             }
@@ -201,11 +218,11 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                 0.0,
                 0.0,
                 0.15,
-                true
+                true,
             )
             e.forceHurt(
                 ModDamageTypes.causeLaserDamage(this.level().registryAccess(), this, shooter),
-                (aoeDamage - Mth.clamp(dis / range, 0.0, 0.75) * aoeDamage).toFloat()
+                (aoeDamage - Mth.clamp(dis / range, 0.0, 0.75) * aoeDamage).toFloat(),
             )
 
             if (shooter is ServerPlayer) {
@@ -219,8 +236,8 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
                         shooter.z,
                         1f,
                         1f,
-                        shooter.level().random.nextLong()
-                    )
+                        shooter.level().random.nextLong(),
+                    ),
                 )
                 shooter.sendPacket(ClientIndicatorMessage(0, 5))
             }
@@ -228,7 +245,10 @@ open class PrismTankEntity(type: EntityType<PrismTankEntity>, world: Level) : Ve
     }
 
     @Environment(EnvType.CLIENT)
-    override fun firstPersonAmmoComponent(data: GunData, player: Player?): Component {
+    override fun firstPersonAmmoComponent(
+        data: GunData,
+        player: Player?,
+    ): Component {
         val name = data.get(GunProp.NAME)
         if (name.isNullOrBlank()) return Component.empty()
 

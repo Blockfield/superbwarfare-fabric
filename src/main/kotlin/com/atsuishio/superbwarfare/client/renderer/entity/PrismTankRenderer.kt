@@ -7,17 +7,17 @@ import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class PrismTankRenderer(manager: EntityRendererProvider.Context) : GeoVehicleRenderer<PrismTankEntity>(manager) {
-    override fun hideForTurretControllerWhileZooming(): Boolean {
-        return true
-    }
+class PrismTankRenderer(
+    manager: EntityRendererProvider.Context,
+) : GeoVehicleRenderer<PrismTankEntity>(manager) {
+    override fun hideForTurretControllerWhileZooming(): Boolean = true
 
     override fun transformCustomModelPart(
         entity: PrismTankEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 
@@ -30,16 +30,22 @@ class PrismTankRenderer(manager: EntityRendererProvider.Context) : GeoVehicleRen
         fanR?.rotation?.rotationY(rot)
     }
 
-    override fun customLaserLength(laserBones: List<BoneState>, entity: PrismTankEntity, partialTicks: Float) {
+    override fun customLaserLength(
+        laserBones: List<BoneState>,
+        entity: PrismTankEntity,
+        partialTicks: Float,
+    ) {
         for (laser in laserBones) {
             laser.visible = false
 
             laser.zScale = 10 * entity.laserLength
-            val scale = Mth.lerp(
-                partialTicks,
-                entity.laserScaleO,
-                entity.laserScale
-            ).coerceAtMost(1.2f)
+            val scale =
+                Mth
+                    .lerp(
+                        partialTicks,
+                        entity.laserScaleO,
+                        entity.laserScale,
+                    ).coerceAtMost(1.2f)
 
             laser.xScale = scale
             laser.yScale = 2.8f * scale

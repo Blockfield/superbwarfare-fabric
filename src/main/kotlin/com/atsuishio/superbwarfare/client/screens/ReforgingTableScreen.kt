@@ -1,12 +1,15 @@
 package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.Mod.loc
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.inventory.menu.ReforgingTableMenu
 import com.atsuishio.superbwarfare.network.message.send.GunReforgeMessage
 import com.atsuishio.superbwarfare.network.message.send.SetPerkLevelMessage
 import com.atsuishio.superbwarfare.perk.Perk
 import com.atsuishio.superbwarfare.tools.sendPacketToServer
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.narration.NarrationElementOutput
@@ -14,19 +17,24 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 @Environment(EnvType.CLIENT)
-open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inventory, pTitle: Component) :
-    AbstractContainerScreen<ReforgingTableMenu>(pMenu, pPlayerInventory, pTitle) {
+open class ReforgingTableScreen(
+    pMenu: ReforgingTableMenu,
+    pPlayerInventory: Inventory,
+    pTitle: Component,
+) : AbstractContainerScreen<ReforgingTableMenu>(pMenu, pPlayerInventory, pTitle) {
     init {
         imageWidth = 176
         imageHeight = 177
     }
 
-    override fun renderBg(guiGraphics: GuiGraphics, partialTicks: Float, gx: Int, gy: Int) {
+    override fun renderBg(
+        guiGraphics: GuiGraphics,
+        partialTicks: Float,
+        gx: Int,
+        gy: Int,
+    ) {
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
@@ -34,7 +42,12 @@ open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inv
         RenderSystem.disableBlend()
     }
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
 
@@ -60,7 +73,14 @@ open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inv
         this.renderTooltip(pGuiGraphics, pMouseX, pMouseY)
     }
 
-    private fun renderNumber(guiGraphics: GuiGraphics, x: Int, y: Int, u: Int, v: Int, number: Int) {
+    private fun renderNumber(
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+        u: Int,
+        v: Int,
+        number: Int,
+    ) {
         val g = number / 10
         val s = number % 10
         guiGraphics.blit(TEXTURE, x, y, (u + 5 * g).toFloat(), v.toFloat(), 5, 5, 200, 200)
@@ -95,8 +115,17 @@ open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inv
     }
 
     @Environment(EnvType.CLIENT)
-    internal class ReforgeButton(pX: Int, pY: Int) : AbstractButton(pX, pY, 40, 16, Component.empty()), AccessoriesButtonStub {
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    internal class ReforgeButton(
+        pX: Int,
+        pY: Int,
+    ) : AbstractButton(pX, pY, 40, 16, Component.empty()),
+        AccessoriesButtonStub {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             pGuiGraphics.blit(
                 TEXTURE,
                 this.x,
@@ -106,7 +135,7 @@ open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inv
                 29,
                 15,
                 200,
-                200
+                200,
             )
         }
 
@@ -119,9 +148,18 @@ open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inv
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class UpgradeButton(pX: Int, pY: Int, var type: Perk.Type) :
-        AbstractButton(pX, pY, 9, 9, Component.empty()), AccessoriesButtonStub {
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    internal inner class UpgradeButton(
+        pX: Int,
+        pY: Int,
+        var type: Perk.Type,
+    ) : AbstractButton(pX, pY, 9, 9, Component.empty()),
+        AccessoriesButtonStub {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             pGuiGraphics.blit(
                 TEXTURE,
                 this.x,
@@ -131,7 +169,7 @@ open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inv
                 9,
                 9,
                 200,
-                200
+                200,
             )
         }
 
@@ -167,9 +205,18 @@ open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inv
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class DowngradeButton(pX: Int, pY: Int, var type: Perk.Type) :
-        AbstractButton(pX, pY, 12, 12, Component.empty()), AccessoriesButtonStub {
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    internal inner class DowngradeButton(
+        pX: Int,
+        pY: Int,
+        var type: Perk.Type,
+    ) : AbstractButton(pX, pY, 12, 12, Component.empty()),
+        AccessoriesButtonStub {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             pGuiGraphics.blit(
                 TEXTURE,
                 this.x,
@@ -179,7 +226,7 @@ open class ReforgingTableScreen(pMenu: ReforgingTableMenu, pPlayerInventory: Inv
                 9,
                 9,
                 200,
-                200
+                200,
             )
         }
 

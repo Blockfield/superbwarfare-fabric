@@ -6,7 +6,9 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BlueprintSetIndexMessage(val index: Int) : ServerPacketPayload() {
+data class BlueprintSetIndexMessage(
+    val index: Int,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = this.sender()
         val menu = player.containerMenu as? BlueprintResearchTableMenu ?: return

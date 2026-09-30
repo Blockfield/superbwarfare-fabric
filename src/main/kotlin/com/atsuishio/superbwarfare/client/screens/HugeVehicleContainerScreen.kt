@@ -7,8 +7,11 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.player.Inventory
 
-class HugeVehicleContainerScreen(menu: HugeVehicleContainerMenu, inventory: Inventory, title: Component) :
-    AbstractVehicleContainerScreen<HugeVehicleContainerMenu>(menu, inventory, title) {
+class HugeVehicleContainerScreen(
+    menu: HugeVehicleContainerMenu,
+    inventory: Inventory,
+    title: Component,
+) : AbstractVehicleContainerScreen<HugeVehicleContainerMenu>(menu, inventory, title) {
     override fun init() {
         super.init()
         this.imageWidth = 320
@@ -21,7 +24,7 @@ class HugeVehicleContainerScreen(menu: HugeVehicleContainerMenu, inventory: Inve
         guiGraphics: GuiGraphics,
         pPartialTick: Float,
         pMouseX: Int,
-        pMouseY: Int
+        pMouseY: Int,
     ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2

@@ -16,7 +16,7 @@ object FieldDoctor : Perk("field_doctor", Type.FUNCTIONAL) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         super.onHurtEntity(damage, data, instance, target, source)
         if (!trigger(target, source)) {
@@ -27,7 +27,10 @@ object FieldDoctor : Perk("field_doctor", Type.FUNCTIONAL) {
         }
     }
 
-    fun trigger(target: Entity?, source: DamageSource): Boolean {
+    fun trigger(
+        target: Entity?,
+        source: DamageSource,
+    ): Boolean {
         target ?: return false
 
         val directEntity = source.directEntity

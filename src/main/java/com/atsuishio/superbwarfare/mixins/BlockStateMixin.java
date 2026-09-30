@@ -4,6 +4,7 @@ import com.atsuishio.superbwarfare.entity.misc.CatapultShuttleEntity;
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
 import com.atsuishio.superbwarfare.init.ModBlocks;
 import com.atsuishio.superbwarfare.init.ModTags;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -16,6 +17,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,8 +33,16 @@ public abstract class BlockStateMixin {
     @Shadow
     public abstract VoxelShape getShape(BlockGetter level, BlockPos pos);
 
-    @Inject(at = @At("HEAD"), method = "getCollisionShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;", cancellable = true)
-    private void getCollisionShape(BlockGetter worldIn, BlockPos pos, CollisionContext context, CallbackInfoReturnable<VoxelShape> ci) {
+    @Inject(
+            at = @At("HEAD"),
+            method =
+                    "getCollisionShape(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/shapes/CollisionContext;)Lnet/minecraft/world/phys/shapes/VoxelShape;",
+            cancellable = true)
+    private void getCollisionShape(
+            BlockGetter worldIn,
+            BlockPos pos,
+            CollisionContext context,
+            CallbackInfoReturnable<VoxelShape> ci) {
         Entity entity = null;
         if (context instanceof EntityCollisionContext) {
             entity = ((EntityCollisionContext) context).getEntity();
@@ -40,21 +50,24 @@ public abstract class BlockStateMixin {
         if (entity instanceof VehicleEntity vehicle) {
             BlockState state = vehicle.level().getBlockState(pos);
 
-            if (state.is(ModTags.Blocks.VEHICLE_PASS_THROUGH) && !state.is(BlockTags.MINEABLE_WITH_AXE)) {
+            if (state.is(ModTags.Blocks.VEHICLE_PASS_THROUGH)
+                    && !state.is(BlockTags.MINEABLE_WITH_AXE)) {
                 ci.setReturnValue(Shapes.empty());
             }
 
-			if (state.is(ModBlocks.DRAGON_TEETH.get())) {
-                ci.setReturnValue(this.getShape(worldIn, pos).move(0, Mth.clamp(vehicle.getBbHeight() - 0.25, 0, 1), 0));
+            if (state.is(ModBlocks.DRAGON_TEETH.get())) {
+                ci.setReturnValue(
+                        this.getShape(worldIn, pos)
+                                .move(0, Mth.clamp(vehicle.getBbHeight() - 0.25, 0, 1), 0));
             }
-		}
+        }
 
-		if (entity instanceof CatapultShuttleEntity catapultShuttle) {
-			BlockState state = catapultShuttle.level().getBlockState(pos);
+        if (entity instanceof CatapultShuttleEntity catapultShuttle) {
+            BlockState state = catapultShuttle.level().getBlockState(pos);
 
-			if (state.is(ModBlocks.AIRCRAFT_CATAPULT.get())) {
-				ci.setReturnValue(Shapes.empty());
-			}
-		}
-	}
+            if (state.is(ModBlocks.AIRCRAFT_CATAPULT.get())) {
+                ci.setReturnValue(Shapes.empty());
+            }
+        }
+    }
 }

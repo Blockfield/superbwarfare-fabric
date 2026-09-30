@@ -10,8 +10,6 @@ import net.minecraft.world.level.Level
 class DroneItem : AbstractDeployerItem(Properties().rarity(Rarity.UNCOMMON)) {
     override fun spawnDeployedEntity(
         level: Level,
-        player: Player
-    ): Entity {
-        return DroneEntity(ModEntities.DRONE.get(), level)
-    }
+        player: Player,
+    ): Entity = DroneEntity(ModEntities.DRONE.get(), level)
 }

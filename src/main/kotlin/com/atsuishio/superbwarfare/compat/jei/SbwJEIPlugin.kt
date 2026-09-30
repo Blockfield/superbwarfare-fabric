@@ -32,9 +32,7 @@ import javax.annotation.ParametersAreNonnullByDefault
 
 @JeiPlugin
 class SbwJEIPlugin : IModPlugin {
-    override fun getPluginUid(): ResourceLocation {
-        return loc("jei_plugin")
-    }
+    override fun getPluginUid(): ResourceLocation = loc("jei_plugin")
 
     override fun onRuntimeAvailable(jeiRuntime: IJeiRuntime) {
         Companion.jeiRuntime = jeiRuntime
@@ -50,11 +48,11 @@ class SbwJEIPlugin : IModPlugin {
         registration.addRecipeCatalyst(ItemStack(ModItems.REFORGING_TABLE.get()), GunPerksCategory.TYPE)
         registration.addRecipeCatalyst(
             ItemStack(ModItems.VEHICLE_ASSEMBLING_TABLE.get()),
-            VehicleAssemblingCategory.TYPE
+            VehicleAssemblingCategory.TYPE,
         )
         registration.addRecipeCatalyst(
             ItemStack(ModItems.BLUEPRINT_RESEARCH_TABLE.get()),
-            ResearchingCategory.TYPE
+            ResearchingCategory.TYPE,
         )
     }
 
@@ -63,28 +61,34 @@ class SbwJEIPlugin : IModPlugin {
         val level = Minecraft.getInstance().level ?: return
         val recipeManager = level.recipeManager
 
-        val guns = BuiltInRegistries.ITEM.stream().filter { item: Item? -> item is GunItem }
-            .map { obj -> obj.defaultInstance }.toList()
+        val guns =
+            BuiltInRegistries.ITEM
+                .stream()
+                .filter { item: Item? -> item is GunItem }
+                .map { obj -> obj.defaultInstance }
+                .toList()
         registration.addRecipes(GunPerksCategory.TYPE, guns)
         registration.addRecipes(
             VehicleAssemblingCategory.TYPE,
-            recipeManager.getAllRecipesFor(ModRecipes.VEHICLE_ASSEMBLING_TYPE.get())
-                .map { it.value }
+            recipeManager
+                .getAllRecipesFor(ModRecipes.VEHICLE_ASSEMBLING_TYPE.get())
+                .map { it.value },
         )
 
         registration.addRecipes(
             ResearchingCategory.TYPE,
-            recipeManager.getAllRecipesFor(ModRecipes.RESEARCHING_TYPE.get())
-                .map { it.value }
+            recipeManager
+                .getAllRecipesFor(ModRecipes.RESEARCHING_TYPE.get())
+                .map { it.value },
         )
 
         registration.addItemStackInfo(
             ItemStack(ModItems.ANCIENT_CPU.get()),
-            Component.translatable("jei.superbwarfare.ancient_cpu")
+            Component.translatable("jei.superbwarfare.ancient_cpu"),
         )
         registration.addItemStackInfo(
             ItemStack(ModItems.CHARGING_STATION.get()),
-            Component.translatable("jei.superbwarfare.charging_station")
+            Component.translatable("jei.superbwarfare.charging_station"),
         )
 
         val specialCraftingRecipes = createRecipes()
@@ -92,35 +96,48 @@ class SbwJEIPlugin : IModPlugin {
     }
 
     override fun registerItemSubtypes(registration: ISubtypeRegistration) {
-        registration.registerSubtypeInterpreter(ModItems.CONTAINER.get(), object : ISubtypeInterpreter<ItemStack> {
-            override fun getSubtypeData(ingredient: ItemStack, context: UidContext): Any {
-                val data = ingredient.get(DataComponents.BLOCK_ENTITY_DATA)
-                val tag = if (data != null) data.copyTag() else CompoundTag()
-                if (tag.contains("EntityType")) {
-                    return tag.getString("EntityType")
+        registration.registerSubtypeInterpreter(
+            ModItems.CONTAINER.get(),
+            object : ISubtypeInterpreter<ItemStack> {
+                override fun getSubtypeData(
+                    ingredient: ItemStack,
+                    context: UidContext,
+                ): Any {
+                    val data = ingredient.get(DataComponents.BLOCK_ENTITY_DATA)
+                    val tag = if (data != null) data.copyTag() else CompoundTag()
+                    if (tag.contains("EntityType")) {
+                        return tag.getString("EntityType")
+                    }
+                    return ""
                 }
-                return ""
-            }
 
-            @Deprecated("Deprecated in Java")
-            @ParametersAreNonnullByDefault
-            override fun getLegacyStringSubtypeInfo(ingredient: ItemStack, context: UidContext): String {
-                return getSubtypeData(ingredient, context).toString()
-            }
-        })
+                @Deprecated("Deprecated in Java")
+                @ParametersAreNonnullByDefault
+                override fun getLegacyStringSubtypeInfo(
+                    ingredient: ItemStack,
+                    context: UidContext,
+                ): String = getSubtypeData(ingredient, context).toString()
+            },
+        )
 
         registration.registerSubtypeInterpreter(
             ModItems.POTION_MORTAR_SHELL.get(),
             object : ISubtypeInterpreter<ItemStack> {
                 @ParametersAreNonnullByDefault
-                override fun getSubtypeData(ingredient: ItemStack, context: UidContext): Any? {
+                override fun getSubtypeData(
+                    ingredient: ItemStack,
+                    context: UidContext,
+                ): Any? {
                     val contents = ingredient.get(DataComponents.POTION_CONTENTS) ?: return null
                     return contents.potion().orElse(null)
                 }
 
                 @Deprecated("Deprecated in Java")
                 @ParametersAreNonnullByDefault
-                override fun getLegacyStringSubtypeInfo(ingredient: ItemStack, context: UidContext): String {
+                override fun getLegacyStringSubtypeInfo(
+                    ingredient: ItemStack,
+                    context: UidContext,
+                ): String {
                     if (ingredient.componentsPatch.isEmpty) {
                         return ""
                     }
@@ -128,39 +145,49 @@ class SbwJEIPlugin : IModPlugin {
                         ingredient.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)
                     val itemDescriptionId = ingredient.item.descriptionId
                     val potionEffectId =
-                        contents.potion().map(Function { obj: Holder<Potion?>? -> obj!!.registeredName })
+                        contents
+                            .potion()
+                            .map(Function { obj: Holder<Potion?>? -> obj!!.registeredName })
                             .orElse("none")
                     return "$itemDescriptionId.effect_id.$potionEffectId"
                 }
-            })
+            },
+        )
 
-        registration.registerSubtypeInterpreter(ModItems.C4_BOMB.get(), object : ISubtypeInterpreter<ItemStack> {
-            @ParametersAreNonnullByDefault
-            override fun getSubtypeData(ingredient: ItemStack, context: UidContext): Any {
-                return NBTTool.getTag(ingredient).getBoolean("Control")
-            }
+        registration.registerSubtypeInterpreter(
+            ModItems.C4_BOMB.get(),
+            object : ISubtypeInterpreter<ItemStack> {
+                @ParametersAreNonnullByDefault
+                override fun getSubtypeData(
+                    ingredient: ItemStack,
+                    context: UidContext,
+                ): Any = NBTTool.getTag(ingredient).getBoolean("Control")
 
-            @Deprecated("Deprecated in Java")
-            @ParametersAreNonnullByDefault
-            override fun getLegacyStringSubtypeInfo(ingredient: ItemStack, context: UidContext): String {
-                return getSubtypeData(ingredient, context).toString()
-            }
-        })
+                @Deprecated("Deprecated in Java")
+                @ParametersAreNonnullByDefault
+                override fun getLegacyStringSubtypeInfo(
+                    ingredient: ItemStack,
+                    context: UidContext,
+                ): String = getSubtypeData(ingredient, context).toString()
+            },
+        )
     }
 
     override fun registerGuiHandlers(registration: IGuiHandlerRegistration) {
         registration.addRecipeClickArea(
             BlueprintResearchTableScreen::class.java,
-            64, 23, 48, 12, ResearchingCategory.TYPE
+            64,
+            23,
+            48,
+            12,
+            ResearchingCategory.TYPE,
         )
     }
 
     companion object {
         private var jeiRuntime: IJeiRuntime? = null
 
-        fun getJeiRuntime(): Optional<IJeiRuntime> {
-            return Optional.ofNullable<IJeiRuntime>(jeiRuntime)
-        }
+        fun getJeiRuntime(): Optional<IJeiRuntime> = Optional.ofNullable<IJeiRuntime>(jeiRuntime)
 
         /**
          * Code based on @Mafuyu404's [TACZ-addon](https://github.com/Mafuyu404/TACZ-addon)
@@ -169,11 +196,12 @@ class SbwJEIPlugin : IModPlugin {
         fun showRecipes(itemStack: ItemStack): Boolean {
             val result = booleanArrayOf(false)
             getJeiRuntime().ifPresent { jeiRuntime ->
-                jeiRuntime.ingredientManager.getIngredientTypeChecked(itemStack)
+                jeiRuntime.ingredientManager
+                    .getIngredientTypeChecked(itemStack)
                     .ifPresent { type ->
                         jeiRuntime.recipesGui.show(
                             jeiRuntime.jeiHelpers.focusFactory
-                                .createFocus(RecipeIngredientRole.OUTPUT, type, itemStack)
+                                .createFocus(RecipeIngredientRole.OUTPUT, type, itemStack),
                         )
                         result[0] = true
                     }

@@ -15,7 +15,9 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.BlockPos
 
-class ProjectileEntityRenderer(manager: EntityRendererProvider.Context) : EntityRenderer<ProjectileEntity>(manager) {
+class ProjectileEntityRenderer(
+    manager: EntityRendererProvider.Context,
+) : EntityRenderer<ProjectileEntity>(manager) {
     override fun getTextureLocation(pEntity: ProjectileEntity) = loc("textures/entity/empty.png")
 
     override fun shouldRender(
@@ -23,10 +25,8 @@ class ProjectileEntityRenderer(manager: EntityRendererProvider.Context) : Entity
         pCamera: Frustum,
         pCamX: Double,
         pCamY: Double,
-        pCamZ: Double
-    ): Boolean {
-        return true
-    }
+        pCamZ: Double,
+    ): Boolean = true
 
     // 渲染方式参考 ywzj_vehicle
     // 非常的永无，非常的止境（嗯OC）
@@ -36,7 +36,7 @@ class ProjectileEntityRenderer(manager: EntityRendererProvider.Context) : Entity
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val instance = entity.modelInstance ?: return
         val eyePos = localPlayer?.eyePosition ?: return
@@ -64,14 +64,17 @@ class ProjectileEntityRenderer(manager: EntityRendererProvider.Context) : Entity
                 entity.getEntityData().get(ProjectileEntity.COLOR_R),
                 entity.getEntityData().get(ProjectileEntity.COLOR_G),
                 entity.getEntityData().get(ProjectileEntity.COLOR_B),
-                1.0f
+                1.0f,
             )
         }
 
         poseStack.popPose()
     }
 
-    override fun getBlockLightLevel(pEntity: ProjectileEntity, pPos: BlockPos): Int = 15
+    override fun getBlockLightLevel(
+        pEntity: ProjectileEntity,
+        pPos: BlockPos,
+    ): Int = 15
 
     companion object {
         val TEXTURE = loc("textures/bedrock/projectile/projectile.png")

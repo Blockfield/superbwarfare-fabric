@@ -8,57 +8,71 @@ import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.damagesource.DamageSource
-import net.minecraft.world.damagesource.DamageTypes
 import net.minecraft.world.damagesource.DamageType
+import net.minecraft.world.damagesource.DamageTypes
 
 object DamageTypeTool {
-    fun isKnifeDamage(damageType: ResourceKey<DamageType>) =
-        damageType == DamageTypes.PLAYER_ATTACK || damageType.location().toString() == "blockfield:knife"
+    fun isKnifeDamage(damageType: ResourceKey<DamageType>) = damageType == DamageTypes.PLAYER_ATTACK || damageType.location().toString() == "blockfield:knife"
 
     @JvmStatic
     fun isGunDamage(source: DamageSource) = source.`is`(ModTags.DamageTypes.GUN_DAMAGE)
 
     @JvmStatic
-    fun isGunDamage(damageType: ResourceKey<DamageType>, registryAccess: RegistryAccess): Boolean {
+    fun isGunDamage(
+        damageType: ResourceKey<DamageType>,
+        registryAccess: RegistryAccess,
+    ): Boolean {
         val damageTypeRegistry = registryAccess.registryOrThrow(Registries.DAMAGE_TYPE)
         val holder = damageTypeRegistry.getHolder(damageType).orElse(null)
         return holder != null && holder.`is`(ModTags.DamageTypes.GUN_DAMAGE)
     }
 
     @JvmStatic
-    fun isHeadshotDamage(source: DamageSource) = source.`is`(ModDamageTypes.GUN_FIRE_HEADSHOT)
-            || source.`is`(ModDamageTypes.GUN_FIRE_HEADSHOT_ABSOLUTE)
-            || source.`is`(ModDamageTypes.PROJECTILE_HIT_HEADSHOT)
-            || source.`is`(ModDamageTypes.LASER_HEADSHOT)
+    fun isHeadshotDamage(source: DamageSource) =
+        source.`is`(ModDamageTypes.GUN_FIRE_HEADSHOT) ||
+            source.`is`(ModDamageTypes.GUN_FIRE_HEADSHOT_ABSOLUTE) ||
+            source.`is`(ModDamageTypes.PROJECTILE_HIT_HEADSHOT) ||
+            source.`is`(ModDamageTypes.LASER_HEADSHOT)
 
     @JvmStatic
-    fun isGunFireDamage(source: DamageSource) = source.`is`(ModDamageTypes.GUN_FIRE)
-            || source.`is`(ModDamageTypes.GUN_FIRE_ABSOLUTE)
-            || source.`is`(ModDamageTypes.SHOCK)
-            || source.`is`(ModDamageTypes.BURN)
-            || source.`is`(ModDamageTypes.LASER)
+    fun isGunFireDamage(source: DamageSource) =
+        source.`is`(ModDamageTypes.GUN_FIRE) ||
+            source.`is`(ModDamageTypes.GUN_FIRE_ABSOLUTE) ||
+            source.`is`(ModDamageTypes.SHOCK) ||
+            source.`is`(ModDamageTypes.BURN) ||
+            source.`is`(ModDamageTypes.LASER)
 
     @JvmStatic
     fun isModDamage(source: DamageSource): Boolean =
-        source.typeHolder().unwrapKey().map { it.location().namespace.equals(Mod.MODID) }.orElseGet { false }
+        source
+            .typeHolder()
+            .unwrapKey()
+            .map { it.location().namespace.equals(Mod.MODID) }
+            .orElseGet { false }
 
     @JvmStatic
-    fun isCompatGunDamage(damageType: ResourceKey<DamageType>, registryAccess: RegistryAccess) =
-        isGunDamage(damageType, registryAccess)
-                || damageType == ResourceKey.create(
+    fun isCompatGunDamage(
+        damageType: ResourceKey<DamageType>,
+        registryAccess: RegistryAccess,
+    ) = isGunDamage(damageType, registryAccess) ||
+        damageType ==
+        ResourceKey.create(
             Registries.DAMAGE_TYPE,
-            ResourceLocation.fromNamespaceAndPath("tacz", "bullet")
-        )
-                || damageType == ResourceKey.create(
+            ResourceLocation.fromNamespaceAndPath("tacz", "bullet"),
+        ) ||
+        damageType ==
+        ResourceKey.create(
             Registries.DAMAGE_TYPE,
-            ResourceLocation.fromNamespaceAndPath("tacz", "bullet_void")
-        )
-                || damageType == ResourceKey.create(
+            ResourceLocation.fromNamespaceAndPath("tacz", "bullet_void"),
+        ) ||
+        damageType ==
+        ResourceKey.create(
             Registries.DAMAGE_TYPE,
-            ResourceLocation.fromNamespaceAndPath("tacz", "bullet_ignore_armor")
-        )
-                || damageType == ResourceKey.create(
+            ResourceLocation.fromNamespaceAndPath("tacz", "bullet_ignore_armor"),
+        ) ||
+        damageType ==
+        ResourceKey.create(
             Registries.DAMAGE_TYPE,
-            ResourceLocation.fromNamespaceAndPath("tacz", "bullet_void_ignore_armor")
+            ResourceLocation.fromNamespaceAndPath("tacz", "bullet_void_ignore_armor"),
         )
 }

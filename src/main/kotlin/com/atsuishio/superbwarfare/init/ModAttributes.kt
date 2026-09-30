@@ -20,11 +20,12 @@ import net.minecraft.world.entity.ai.attributes.RangedAttribute
  */
 object ModAttributes {
     @JvmField
-    val BULLET_RESISTANCE: Holder<Attribute> = Registry.registerForHolder(
-        BuiltInRegistries.ATTRIBUTE,
-        ResourceLocation.fromNamespaceAndPath(Mod.MODID, "bullet_resistance"),
-        RangedAttribute("attribute." + Mod.MODID + ".bullet_resistance", 0.0, 0.0, 1.0).setSyncable(true)
-    )
+    val BULLET_RESISTANCE: Holder<Attribute> =
+        Registry.registerForHolder(
+            BuiltInRegistries.ATTRIBUTE,
+            ResourceLocation.fromNamespaceAndPath(Mod.MODID, "bullet_resistance"),
+            RangedAttribute("attribute." + Mod.MODID + ".bullet_resistance", 0.0, 0.0, 1.0).setSyncable(true),
+        )
 
     fun init() = Unit
 }

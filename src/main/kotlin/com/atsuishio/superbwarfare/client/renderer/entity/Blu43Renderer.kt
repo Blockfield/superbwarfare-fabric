@@ -11,10 +11,10 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 
-class Blu43Renderer(renderManager: EntityRendererProvider.Context) : EntityRenderer<Blu43Entity>(renderManager) {
-    override fun getTextureLocation(pEntity: Blu43Entity): ResourceLocation {
-        return TEXTURE
-    }
+class Blu43Renderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<Blu43Entity>(renderManager) {
+    override fun getTextureLocation(pEntity: Blu43Entity): ResourceLocation = TEXTURE
 
     override fun render(
         entityIn: Blu43Entity,
@@ -22,7 +22,7 @@ class Blu43Renderer(renderManager: EntityRendererProvider.Context) : EntityRende
         pPartialTick: Float,
         poseStack: PoseStack,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         val instance = entityIn.modelInstance ?: return
 
@@ -37,7 +37,7 @@ class Blu43Renderer(renderManager: EntityRendererProvider.Context) : EntityRende
             poseStack,
             vertexConsumer,
             packedLightIn,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()

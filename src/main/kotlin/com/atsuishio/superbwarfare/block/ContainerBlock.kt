@@ -6,8 +6,8 @@ import com.atsuishio.superbwarfare.init.ModBlockEntities
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.resource.vehicle.VehicleResource
-import com.mojang.serialization.MapCodec
 import com.atsuishio.superbwarfare.tools.clientLevel
+import com.mojang.serialization.MapCodec
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.BlockPos
@@ -45,12 +45,20 @@ import kotlin.math.ceil
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 open class ContainerBlock :
-    BaseEntityBlock(Properties.of().sound(SoundType.METAL).strength(3.0f).noOcclusion().requiresCorrectToolForDrops()) {
+    BaseEntityBlock(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .noOcclusion()
+            .requiresCorrectToolForDrops(),
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(OPENED, false)
+                .setValue(OPENED, false),
         )
     }
 
@@ -61,14 +69,16 @@ open class ContainerBlock :
         pos: BlockPos,
         player: Player,
         hand: InteractionHand,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): ItemInteractionResult {
         val blockEntity = level.getBlockEntity(pos)
-        if (level.isClientSide
-            || state.getValue(OPENED)
-            || blockEntity !is ContainerBlockEntity
-            || hand == InteractionHand.OFF_HAND
-        ) return ItemInteractionResult.FAIL
+        if (level.isClientSide ||
+            state.getValue(OPENED) ||
+            blockEntity !is ContainerBlockEntity ||
+            hand == InteractionHand.OFF_HAND
+        ) {
+            return ItemInteractionResult.FAIL
+        }
 
         if (!stack.`is`(ModTags.Items.TOOLS_CROWBAR)) {
             player.displayClientMessage(Component.translatable("des.superbwarfare.container.fail.crowbar"), true)
@@ -88,7 +98,7 @@ open class ContainerBlock :
                 ModSounds.OPEN.get(),
                 SoundSource.BLOCKS,
                 1f,
-                1f
+                1f,
             )
 
             return ItemInteractionResult.SUCCESS
@@ -98,7 +108,10 @@ open class ContainerBlock :
         }
     }
 
-    fun hasEntity(pLevel: Level, pPos: BlockPos): Boolean {
+    fun hasEntity(
+        pLevel: Level,
+        pPos: BlockPos,
+    ): Boolean {
         val blockEntity = pLevel.getBlockEntity(pPos)
         if (blockEntity !is ContainerBlockEntity) return false
         return blockEntity.entityTag != null || blockEntity.entityType != null
@@ -107,13 +120,13 @@ open class ContainerBlock :
     override fun <T : BlockEntity?> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T>
+        pBlockEntityType: BlockEntityType<T>,
     ): BlockEntityTicker<T?>? {
         if (!pLevel.isClientSide) {
             return createTickerHelper<ContainerBlockEntity, T>(
                 pBlockEntityType,
                 ModBlockEntities.CONTAINER.get(),
-                ContainerBlockEntity::serverTick
+                ContainerBlockEntity::serverTick,
             )
         }
         return null
@@ -123,7 +136,7 @@ open class ContainerBlock :
         stack: ItemStack,
         context: TooltipContext,
         tooltip: MutableList<Component>,
-        flag: TooltipFlag
+        flag: TooltipFlag,
     ) {
         super.appendHoverText(stack, context, tooltip, flag)
 
@@ -143,19 +156,20 @@ open class ContainerBlock :
                 tooltip.add(info.withStyle(ChatFormatting.GRAY))
                 tooltip.add(Component.empty())
                 tooltip.add(
-                    Component.translatableWithFallback(
-                        "info." + location.namespace + ".mod_id",
-                        location.namespace
-                    )
-                        .withStyle(ChatFormatting.ITALIC)
-                        .withStyle(ChatFormatting.AQUA)
+                    Component
+                        .translatableWithFallback(
+                            "info." + location.namespace + ".mod_id",
+                            location.namespace,
+                        ).withStyle(ChatFormatting.ITALIC)
+                        .withStyle(ChatFormatting.AQUA),
                 )
             } else {
                 tooltip.add(
-                    Component.translatable(
-                        "des.superbwarfare.container.info",
-                        Component.literal("[Shift]").withStyle(ChatFormatting.AQUA)
-                    ).withStyle(ChatFormatting.GRAY)
+                    Component
+                        .translatable(
+                            "des.superbwarfare.container.info",
+                            Component.literal("[Shift]").withStyle(ChatFormatting.AQUA),
+                        ).withStyle(ChatFormatting.GRAY),
                 )
             }
 
@@ -179,8 +193,9 @@ open class ContainerBlock :
                     w *= 2f
                     if (w.toInt() % 2 == 0) w++
                     tooltip.add(
-                        Component.literal(w.toInt().toString() + " x " + w.toInt() + " x " + h)
-                            .withStyle(ChatFormatting.YELLOW)
+                        Component
+                            .literal(w.toInt().toString() + " x " + w.toInt() + " x " + h)
+                            .withStyle(ChatFormatting.YELLOW),
                     )
                 }
             }
@@ -190,48 +205,56 @@ open class ContainerBlock :
                 val sponsor = resource.sponsor
                 if (sponsor != null) {
                     tooltip.add(
-                        Component.translatable(
-                            "des.superbwarfare.container.sponsor",
-                            Component.literal("[${sponsor.name}]").withStyle(Style.EMPTY.withColor(sponsor.color.color))
-                        ).withStyle(Style.EMPTY.withColor(0x7DEA79))
+                        Component
+                            .translatable(
+                                "des.superbwarfare.container.sponsor",
+                                Component.literal("[${sponsor.name}]").withStyle(Style.EMPTY.withColor(sponsor.color.color)),
+                            ).withStyle(Style.EMPTY.withColor(0x7DEA79)),
                     )
                 }
             }
         }
     }
 
-    override fun getShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
-        return if (state.getValue(OPENED)) box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0)
-        else box(0.0, 0.0, 0.0, 16.0, 15.0, 16.0)
-    }
+    override fun getShape(
+        state: BlockState,
+        world: BlockGetter,
+        pos: BlockPos,
+        context: CollisionContext,
+    ): VoxelShape =
+        if (state.getValue(OPENED)) {
+            box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0)
+        } else {
+            box(0.0, 0.0, 0.0, 16.0, 15.0, 16.0)
+        }
 
     override fun codec() = CODEC
 
-    override fun getRenderShape(state: BlockState): RenderShape {
-        return RenderShape.ENTITYBLOCK_ANIMATED
-    }
+    override fun getRenderShape(state: BlockState): RenderShape = RenderShape.ENTITYBLOCK_ANIMATED
 
-    override fun newBlockEntity(blockPos: BlockPos, blockState: BlockState): BlockEntity? {
-        return ContainerBlockEntity(blockPos, blockState)
-    }
+    override fun newBlockEntity(
+        blockPos: BlockPos,
+        blockState: BlockState,
+    ): BlockEntity? = ContainerBlockEntity(blockPos, blockState)
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block?, BlockState?>) {
         builder.add(FACING).add(OPENED)
     }
 
-    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? =
+        this
+            .defaultBlockState()
             .setValue(FACING, context.horizontalDirection.opposite)
             .setValue(OPENED, false)
-    }
 
     override fun getCloneItemStack(
         level: LevelReader,
         pos: BlockPos,
-        state: BlockState
+        state: BlockState,
     ): ItemStack {
         val itemStack = super.getCloneItemStack(level, pos, state)
-        level.getBlockEntity(pos, ModBlockEntities.CONTAINER.get())
+        level
+            .getBlockEntity(pos, ModBlockEntities.CONTAINER.get())
             .ifPresent { blockEntity ->
                 blockEntity.saveToItem(itemStack, level.registryAccess())
             }
@@ -249,7 +272,12 @@ open class ContainerBlock :
         val CODEC: MapCodec<ContainerBlock> = simpleCodec { _ -> ContainerBlock() }
 
         @JvmStatic
-        fun canOpen(pLevel: Level, pPos: BlockPos, entityType: EntityType<*>?, tag: CompoundTag?): Boolean {
+        fun canOpen(
+            pLevel: Level,
+            pPos: BlockPos,
+            entityType: EntityType<*>?,
+            tag: CompoundTag?,
+        ): Boolean {
             if (entityType == null) return false
 
             val entity: Entity? = entityType.create(pLevel)
@@ -296,4 +324,3 @@ open class ContainerBlock :
         }
     }
 }
-

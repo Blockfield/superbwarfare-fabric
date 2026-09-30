@@ -1,6 +1,7 @@
 package com.atsuishio.superbwarfare.data.gun.subdata
 
 import com.atsuishio.superbwarfare.data.gun.GunData
+import com.atsuishio.superbwarfare.fabric.DeferredHolder
 import com.atsuishio.superbwarfare.init.ModPerks
 import com.atsuishio.superbwarfare.item.misc.PerkItem
 import com.atsuishio.superbwarfare.perk.Perk
@@ -8,7 +9,6 @@ import com.atsuishio.superbwarfare.perk.PerkInstance
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.Tag
-import com.atsuishio.superbwarfare.fabric.DeferredHolder
 
 /**
  * Manages perk storage for a single [GunData] instance.
@@ -18,8 +18,9 @@ import com.atsuishio.superbwarfare.fabric.DeferredHolder
  *
  * @param gun the owning [GunData] instance.
  */
-class Perks(private val gun: GunData) {
-
+class Perks(
+    private val gun: GunData,
+) {
     private val rootTag: CompoundTag = gun.perk()
 
     /** Structural invalidation callback — clears the PMC when perk state changes. */
@@ -34,8 +35,8 @@ class Perks(private val gun: GunData) {
         private val PERK_BY_NAME: Map<String, Perk> by lazy {
             val all: List<DeferredHolder<Perk, out Perk>> =
                 ModPerks.AMMO_PERKS.entries.toList() +
-                        ModPerks.FUNC_PERKS.entries.toList() +
-                        ModPerks.DAMAGE_PERKS.entries.toList()
+                    ModPerks.FUNC_PERKS.entries.toList() +
+                    ModPerks.DAMAGE_PERKS.entries.toList()
 
             buildMap(all.size) {
                 for (entry in all) {
@@ -112,6 +113,7 @@ class Perks(private val gun: GunData) {
     }
 
     fun getLevel(registry: DeferredHolder<Perk, out Perk>): Short = getLevel(registry.get())
+
     fun getLevel(item: PerkItem): Short = getLevel(item.perk)
 
     /**
@@ -146,19 +148,25 @@ class Perks(private val gun: GunData) {
      * @param perk the perk to apply.
      * @param level the perk level.
      */
-    fun set(perk: Perk, level: Short) {
+    fun set(
+        perk: Perk,
+        level: Short,
+    ) {
         val list = getOrCreateList(perk.type)
-        val existing = list.firstOrNull {
-            (it as CompoundTag).getString("Name") == perk.name
-        } as? CompoundTag
+        val existing =
+            list.firstOrNull {
+                (it as CompoundTag).getString("Name") == perk.name
+            } as? CompoundTag
 
         if (existing != null) {
             existing.putShort("Level", level)
         } else {
-            list.add(CompoundTag().apply {
-                putString("Name", perk.name)
-                putShort("Level", level)
-            })
+            list.add(
+                CompoundTag().apply {
+                    putString("Name", perk.name)
+                    putShort("Level", level)
+                },
+            )
         }
         rootTag.put(perk.type.typeName, list)
         gun.nbtVersion.invalidateStructural()
@@ -208,11 +216,15 @@ class Perks(private val gun: GunData) {
      * @param perk        the owning perk.
      * @param cooldownKey the NBT key of the cooldown counter.
      */
-    fun reduceCooldown(perk: Perk, cooldownKey: String) {
+    fun reduceCooldown(
+        perk: Perk,
+        cooldownKey: String,
+    ) {
         val list = rootTag.getList(perk.type.typeName, Tag.TAG_COMPOUND.toInt())
-        val entry = list.firstOrNull {
-            (it as CompoundTag).getString("Name") == perk.name
-        } as? CompoundTag ?: return
+        val entry =
+            list.firstOrNull {
+                (it as CompoundTag).getString("Name") == perk.name
+            } as? CompoundTag ?: return
 
         if (!entry.contains(cooldownKey)) return
 
@@ -234,7 +246,11 @@ class Perks(private val gun: GunData) {
      * @param key   the NBT key to write.
      * @param value the integer value.
      */
-    fun putStructuralInt(perk: Perk, key: String, value: Int) {
+    fun putStructuralInt(
+        perk: Perk,
+        key: String,
+        value: Int,
+    ) {
         val tag = getTag(perk) ?: return
         val old = if (tag.contains(key)) tag.getInt(key) else 0
         tag.putInt(key, value)
@@ -261,14 +277,18 @@ class Perks(private val gun: GunData) {
     }
 
     fun get(registry: DeferredHolder<Perk, out Perk>): Perk? = get(registry.get())
+
     fun get(perk: Perk): Perk? = get(perk.type)
 
     fun get(type: Perk.Type): Perk? {
         val typeName = type.typeName
         return if (rootTag.contains(typeName, Tag.TAG_LIST.toInt())) {
             val list = rootTag.getList(typeName, Tag.TAG_COMPOUND.toInt())
-            if (list.isEmpty()) null
-            else findPerkByName(list.getCompound(0).getString("Name"))
+            if (list.isEmpty()) {
+                null
+            } else {
+                findPerkByName(list.getCompound(0).getString("Name"))
+            }
         } else {
             findPerkByName(rootTag.getCompound(typeName).getString("Name"))
         }

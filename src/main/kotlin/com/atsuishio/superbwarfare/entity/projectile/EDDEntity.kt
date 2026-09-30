@@ -3,6 +3,7 @@ package com.atsuishio.superbwarfare.entity.projectile
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.config.server.ExplosionConfig
 import com.atsuishio.superbwarfare.entity.living.TargetEntity
+import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import com.atsuishio.superbwarfare.init.ModEntities
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModTags
@@ -40,10 +41,11 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.CollisionContext
-import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import java.util.*
 
-open class EDDEntity : HangingEntity, OwnableEntity {
+open class EDDEntity :
+    HangingEntity,
+    OwnableEntity {
     // 0 - Left Top; 1 - Left Bottom; 2 - Right Bottom; 3 - Right Top
     var corner: Int
     open val modelInstance = ProjectileModelReloadListener.getModel(MODEL)?.createInstance()
@@ -52,7 +54,7 @@ open class EDDEntity : HangingEntity, OwnableEntity {
     constructor(
         type: EntityType<out EDDEntity> = ModEntities.EDD.get(),
         level: Level,
-        corner: Int = 0
+        corner: Int = 0,
     ) : super(type, level) {
         this.corner = corner
     }
@@ -62,7 +64,7 @@ open class EDDEntity : HangingEntity, OwnableEntity {
         type: EntityType<out EDDEntity> = ModEntities.EDD.get(),
         owner: LivingEntity?,
         level: Level,
-        corner: Int = 0
+        corner: Int = 0,
     ) : super(type, level) {
         this.corner = corner
         if (owner != null) {
@@ -77,7 +79,7 @@ open class EDDEntity : HangingEntity, OwnableEntity {
         level: Level,
         pos: BlockPos,
         direction: Direction,
-        corner: Int = 0
+        corner: Int = 0,
     ) : super(type, level, pos) {
         this.corner = corner
         if (owner != null) {
@@ -86,13 +88,17 @@ open class EDDEntity : HangingEntity, OwnableEntity {
         this.setDirection(direction)
     }
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         if (source.directEntity is EDDEntity) return false
         return super.hurt(source, amount)
     }
 
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
-        builder.define(OWNER_UUID, Optional.empty())
+        builder
+            .define(OWNER_UUID, Optional.empty())
             .define(LAST_ATTACKER_UUID, "undefined")
     }
 
@@ -123,15 +129,16 @@ open class EDDEntity : HangingEntity, OwnableEntity {
             val s = tag.getString("Owner")
             val server = this.server
 
-            uuid = if (server == null) {
-                try {
-                    UUID.fromString(s)
-                } catch (_: Exception) {
-                    null
+            uuid =
+                if (server == null) {
+                    try {
+                        UUID.fromString(s)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } else {
+                    OldUsersConverter.convertMobOwnerIfNecessary(server, s)
                 }
-            } else {
-                OldUsersConverter.convertMobOwnerIfNecessary(server, s)
-            }
         }
 
         if (uuid != null) {
@@ -161,7 +168,7 @@ open class EDDEntity : HangingEntity, OwnableEntity {
 
     override fun calculateBoundingBox(
         pos: BlockPos,
-        direction: Direction
+        direction: Direction,
     ): AABB {
         val d0 = 0.46875
         val centerX = this.pos.x.toDouble() + 0.5 - direction.stepX.toDouble() * d0
@@ -189,8 +196,12 @@ open class EDDEntity : HangingEntity, OwnableEntity {
         }
 
         return AABB(
-            finalX - dx, finalY - dy, finalZ - dz,
-            finalX + dx, finalY + dy, finalZ + dz
+            finalX - dx,
+            finalY - dy,
+            finalZ - dz,
+            finalX + dx,
+            finalY + dy,
+            finalZ + dz,
         )
     }
 
@@ -198,12 +209,12 @@ open class EDDEntity : HangingEntity, OwnableEntity {
         direction: Direction,
         corner: Int,
         width: Double,
-        height: Double
+        height: Double,
     ): Vec3 {
         if (corner !in 0..3) return Vec3.ZERO
 
-        val left = (corner == 0 || corner == 1)   // 左
-        val top = (corner == 0 || corner == 3)   // 上
+        val left = (corner == 0 || corner == 1) // 左
+        val top = (corner == 0 || corner == 3) // 上
 
         val signY = if (top) 1.0 else -1.0
 
@@ -228,12 +239,13 @@ open class EDDEntity : HangingEntity, OwnableEntity {
                 Vec3(0.0, signY * height, signZ * width)
             }
 
-            else -> Vec3.ZERO
+            else -> {
+                Vec3.ZERO
+            }
         }
     }
 
     override fun dropItem(pBrokenEntity: Entity?) {
-
     }
 
     override fun playPlacementSound() {
@@ -245,8 +257,11 @@ open class EDDEntity : HangingEntity, OwnableEntity {
             return false
         } else {
             val blockstate = this.level().getBlockState(this.pos.relative(this.direction.opposite))
-            return if (blockstate.isSolid || this.direction.axis.isHorizontal && DiodeBlock.isDiode(blockstate))
-                this.level().getEntities(this, this.boundingBox, HANGING_ENTITY).isEmpty() else false
+            return if (blockstate.isSolid || this.direction.axis.isHorizontal && DiodeBlock.isDiode(blockstate)) {
+                this.level().getEntities(this, this.boundingBox, HANGING_ENTITY).isEmpty()
+            } else {
+                false
+            }
         }
     }
 
@@ -265,33 +280,25 @@ open class EDDEntity : HangingEntity, OwnableEntity {
         this.entityData.set(OWNER_UUID, Optional.ofNullable(pUuid))
     }
 
-    override fun getOwnerUUID(): UUID? {
-        return this.entityData.get(OWNER_UUID).orElse(null)
-    }
+    override fun getOwnerUUID(): UUID? = this.entityData.get(OWNER_UUID).orElse(null)
 
-    fun isOwnedBy(pEntity: LivingEntity?): Boolean {
-        return pEntity === this.owner
-    }
+    fun isOwnedBy(pEntity: LivingEntity?): Boolean = pEntity === this.owner
 
-    fun isFacingLeft(): Boolean {
-        return this.corner == 0 || this.corner == 1
-    }
+    fun isFacingLeft(): Boolean = this.corner == 0 || this.corner == 1
 
-    fun getFacingDirection(): Direction {
-        return when (this.direction) {
+    fun getFacingDirection(): Direction =
+        when (this.direction) {
             Direction.NORTH -> if (this.isFacingLeft()) Direction.EAST else Direction.WEST
             Direction.SOUTH -> if (this.isFacingLeft()) Direction.WEST else Direction.EAST
             Direction.EAST -> if (this.isFacingLeft()) Direction.SOUTH else Direction.NORTH
             else -> if (this.isFacingLeft()) Direction.NORTH else Direction.SOUTH
         }
-    }
 
-    override fun isPickable(): Boolean {
-        return !this.isRemoved
-    }
+    override fun isPickable(): Boolean = !this.isRemoved
 
     private fun triggerExplode(pos: Vec3) {
-        CustomExplosion.Builder(this)
+        CustomExplosion
+            .Builder(this)
             .position(pos)
             .attacker(this.owner)
             .damage(ExplosionConfig.EDD_EXPLOSION_DAMAGE.get().toFloat())
@@ -302,7 +309,10 @@ open class EDDEntity : HangingEntity, OwnableEntity {
         this.discard()
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (this.isOwnedBy(player) && player.isShiftKeyDown) {
             if (!this.level().isClientSide()) {
                 this.discard()
@@ -321,33 +331,42 @@ open class EDDEntity : HangingEntity, OwnableEntity {
 
         val facing = this.getFacingDirection()
 
-        val aabb = this.boundingBox
-            .expandTowards(this.lookAngle.normalize().scale(0.5))
-            .expandTowards(facing.step().toVec3().scale(ExplosionConfig.EDD_TRACE_RANGE.get().toDouble()))
-        val entity = this.level().getEntitiesOfClass(
-            Entity::class.java,
-            aabb
-        ) { true }.asSequence().filter {
-            it !is EDDEntity && it !is TargetEntity
-                    && !it.type.`is`(ModTags.EntityTypes.DECOY)
-                    && it != this.owner
-                    && !(it is Player && (it.isCreative || it.isSpectator))
-                    && if (ExplosionConfig.FRIENDLY_MINES.get()) {
-                if (owner == null) true else owner != it && !owner!!.isAlliedTo(it)
-            } else {
-                (owner != null && owner != it && !owner!!.isAlliedTo(it)) || it.team == null || enabledTDM(it)
-            }
-        }.toList().firstOrNull {
-            this.level().clip(
-                ClipContext(
-                    this.position(),
-                    it.position(),
-                    ClipContext.Block.COLLIDER,
-                    ClipContext.Fluid.NONE,
-                    CollisionContext.empty()
-                )
-            ).type != HitResult.Type.BLOCK
-        }
+        val aabb =
+            this.boundingBox
+                .expandTowards(this.lookAngle.normalize().scale(0.5))
+                .expandTowards(facing.step().toVec3().scale(ExplosionConfig.EDD_TRACE_RANGE.get().toDouble()))
+        val entity =
+            this
+                .level()
+                .getEntitiesOfClass(
+                    Entity::class.java,
+                    aabb,
+                ) { true }
+                .asSequence()
+                .filter {
+                    it !is EDDEntity && it !is TargetEntity &&
+                        !it.type.`is`(ModTags.EntityTypes.DECOY) &&
+                        it != this.owner &&
+                        !(it is Player && (it.isCreative || it.isSpectator)) &&
+                        if (ExplosionConfig.FRIENDLY_MINES.get()) {
+                            if (owner == null) true else owner != it && !owner!!.isAlliedTo(it)
+                        } else {
+                            (owner != null && owner != it && !owner!!.isAlliedTo(it)) || it.team == null || enabledTDM(it)
+                        }
+                }.toList()
+                .firstOrNull {
+                    this
+                        .level()
+                        .clip(
+                            ClipContext(
+                                this.position(),
+                                it.position(),
+                                ClipContext.Block.COLLIDER,
+                                ClipContext.Fluid.NONE,
+                                CollisionContext.empty(),
+                            ),
+                        ).type != HitResult.Type.BLOCK
+                }
 
         if (entity != null) {
             this.triggerExplode(entity.position())

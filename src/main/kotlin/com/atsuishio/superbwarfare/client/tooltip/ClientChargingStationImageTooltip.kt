@@ -13,18 +13,30 @@ import net.minecraft.util.Mth
 import net.minecraft.world.item.ItemStack
 import kotlin.math.max
 
-open class ClientChargingStationImageTooltip(tooltip: GunImageComponent) : ClientTooltipComponent {
+open class ClientChargingStationImageTooltip(
+    tooltip: GunImageComponent,
+) : ClientTooltipComponent {
     protected val tipWidth: Int = tooltip.width
     protected val tipHeight: Int = tooltip.height
     protected val stack: ItemStack = tooltip.stack
 
-    override fun renderImage(font: Font, x: Int, y: Int, guiGraphics: GuiGraphics) {
+    override fun renderImage(
+        font: Font,
+        x: Int,
+        y: Int,
+        guiGraphics: GuiGraphics,
+    ) {
         guiGraphics.pose().pushPose()
         renderEnergyTooltip(font, guiGraphics, x, y)
         guiGraphics.pose().popPose()
     }
 
-    protected fun renderEnergyTooltip(font: Font, guiGraphics: GuiGraphics, x: Int, y: Int) {
+    protected fun renderEnergyTooltip(
+        font: Font,
+        guiGraphics: GuiGraphics,
+        x: Int,
+        y: Int,
+    ) {
         guiGraphics.drawString(font, this.energyComponent, x, y, 0xFFFFFF)
     }
 
@@ -34,13 +46,14 @@ open class ClientChargingStationImageTooltip(tooltip: GunImageComponent) : Clien
             val maxEnergy = max(1, MiscConfig.CHARGING_STATION_MAX_ENERGY.get())
             val percentage = Mth.clamp(energy.toFloat() / maxEnergy, 0f, 1f)
             val component = Component.empty()
-            val format = if (percentage <= .2f) {
-                ChatFormatting.RED
-            } else if (percentage <= .6f) {
-                ChatFormatting.YELLOW
-            } else {
-                ChatFormatting.GREEN
-            }
+            val format =
+                if (percentage <= .2f) {
+                    ChatFormatting.RED
+                } else if (percentage <= .6f) {
+                    ChatFormatting.YELLOW
+                } else {
+                    ChatFormatting.GREEN
+                }
 
             val count = (percentage * 50).toInt()
             repeat(count) {
@@ -52,15 +65,13 @@ open class ClientChargingStationImageTooltip(tooltip: GunImageComponent) : Clien
             }
 
             component.append(
-                Component.literal(" $energy/$maxEnergy FE").withStyle(ChatFormatting.GRAY)
+                Component.literal(" $energy/$maxEnergy FE").withStyle(ChatFormatting.GRAY),
             )
 
             return component
         }
 
-    override fun getHeight(): Int {
-        return max(20, this.tipHeight) - 10
-    }
+    override fun getHeight(): Int = max(20, this.tipHeight) - 10
 
     override fun getWidth(font: Font): Int {
         if (Screen.hasShiftDown()) {

@@ -8,8 +8,9 @@ import com.atsuishio.superbwarfare.fabric.getCapability
 /**
  * Proxy that exposes GunData properties and methods to JS perk scripts.
  */
-class GunDataProxy(private val data: GunData) {
-
+class GunDataProxy(
+    private val data: GunData,
+) {
     // ── Gun Properties ──
     fun getBypassesArmor(): Double = data.get(GunProp.BYPASSES_ARMOR)
 
@@ -43,7 +44,10 @@ class GunDataProxy(private val data: GunData) {
         return data.countBackupAmmo(entity)
     }
 
-    fun consumeBackupAmmo(entityProxy: EntityProxy?, amount: Int) {
+    fun consumeBackupAmmo(
+        entityProxy: EntityProxy?,
+        amount: Int,
+    ) {
         val entity = entityProxy?.entity
         data.consumeBackupAmmo(entity, amount)
     }

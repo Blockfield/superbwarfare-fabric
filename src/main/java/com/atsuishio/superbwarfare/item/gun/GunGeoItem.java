@@ -5,6 +5,10 @@ import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.CustomRendererItem;
 import com.atsuishio.superbwarfare.resource.gun.GunResource;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -14,9 +18,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
+
 import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -45,7 +47,8 @@ public abstract class GunGeoItem extends GunItem implements GeoItem, CustomRende
     }
 
     @Environment(EnvType.CLIENT)
-    public HumanoidModel.ArmPose getArmPose(LivingEntity entityLiving, InteractionHand hand, ItemStack stack) {
+    public HumanoidModel.ArmPose getArmPose(
+            LivingEntity entityLiving, InteractionHand hand, ItemStack stack) {
         return PoseTool.pose(entityLiving, hand, stack);
     }
 
@@ -66,7 +69,8 @@ public abstract class GunGeoItem extends GunItem implements GeoItem, CustomRende
         if (animation == null || animation.idle == null) return PlayState.STOP;
 
         // Idle
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
             return event.setAndContinue(RawAnimation.begin().thenLoop(animation.idle));
         }
 
@@ -102,7 +106,10 @@ public abstract class GunGeoItem extends GunItem implements GeoItem, CustomRende
         }
 
         // Run & Sprint
-        if (player.isSprinting() && player.onGround() && ClientEventHandler.noSprintTicks == 0 && ClientEventHandler.drawTime < 0.01) {
+        if (player.isSprinting()
+                && player.onGround()
+                && ClientEventHandler.noSprintTicks == 0
+                && ClientEventHandler.drawTime < 0.01) {
             if (animation.run != null) {
                 return event.setAndContinue(RawAnimation.begin().thenLoop(animation.run));
             }
@@ -113,13 +120,16 @@ public abstract class GunGeoItem extends GunItem implements GeoItem, CustomRende
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "animationController", 1, this::animationPredicate));
+        controllers.add(
+                new AnimationController<>(
+                        this, "animationController", 1, this::animationPredicate));
     }
 
     /**
-     * Клиент: BEWLR из IClientItemExtensions#getCustomRenderer заменён на DynamicItemRenderer из Fabric API.
-     * <p>
-     * Второй половине расширения -- IClientItemExtensions#getArmPose -- аналога на Fabric нет,
+     * Клиент: BEWLR из IClientItemExtensions#getCustomRenderer заменён на DynamicItemRenderer из
+     * Fabric API.
+     *
+     * <p>Второй половине расширения -- IClientItemExtensions#getArmPose -- аналога на Fabric нет,
      * поэтому {@link #getArmPose} осталась методом предмета без регистрации.
      */
     @Environment(EnvType.CLIENT)
@@ -127,7 +137,8 @@ public abstract class GunGeoItem extends GunItem implements GeoItem, CustomRende
         for (var item : BuiltInRegistries.ITEM) {
             if (item instanceof GunGeoItem gun) {
                 BlockEntityWithoutLevelRenderer renderer = gun.getRenderer().get();
-                BuiltinItemRendererRegistry.DynamicItemRenderer dynamicRenderer = renderer::renderByItem;
+                BuiltinItemRendererRegistry.DynamicItemRenderer dynamicRenderer =
+                        renderer::renderByItem;
                 BuiltinItemRendererRegistry.INSTANCE.register(item, dynamicRenderer);
             }
         }

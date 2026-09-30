@@ -21,17 +21,24 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.Ingredient
 
-class ResearchingCategory(helper: IGuiHelper) : IRecipeCategory<ResearchingRecipe> {
-    private val background: IDrawable = helper.drawableBuilder(TEXTURE, 0, 0, 138, 58)
-        .setTextureSize(256, 128)
-        .build()
-    private val icon: IDrawable = helper.createDrawableIngredient(
-        VanillaTypes.ITEM_STACK,
-        ItemStack(ModItems.BLUEPRINT_RESEARCH_TABLE.get())
-    )
-    private val progress: IDrawableAnimated = helper.drawableBuilder(TEXTURE, 0, 59, 128, 32)
-        .setTextureSize(256, 128)
-        .buildAnimated(100, IDrawableAnimated.StartDirection.LEFT, false)
+class ResearchingCategory(
+    helper: IGuiHelper,
+) : IRecipeCategory<ResearchingRecipe> {
+    private val background: IDrawable =
+        helper
+            .drawableBuilder(TEXTURE, 0, 0, 138, 58)
+            .setTextureSize(256, 128)
+            .build()
+    private val icon: IDrawable =
+        helper.createDrawableIngredient(
+            VanillaTypes.ITEM_STACK,
+            ItemStack(ModItems.BLUEPRINT_RESEARCH_TABLE.get()),
+        )
+    private val progress: IDrawableAnimated =
+        helper
+            .drawableBuilder(TEXTURE, 0, 59, 128, 32)
+            .setTextureSize(256, 128)
+            .buildAnimated(100, IDrawableAnimated.StartDirection.LEFT, false)
 
     @Deprecated("Deprecated in Java")
     @Suppress("removal")
@@ -52,7 +59,7 @@ class ResearchingCategory(helper: IGuiHelper) : IRecipeCategory<ResearchingRecip
         recipeSlotsView: IRecipeSlotsView,
         guiGraphics: GuiGraphics,
         mouseX: Double,
-        mouseY: Double
+        mouseY: Double,
     ) {
         this.progress.draw(guiGraphics, 5, 24)
 
@@ -60,31 +67,46 @@ class ResearchingCategory(helper: IGuiHelper) : IRecipeCategory<ResearchingRecip
             mc.font,
             Component.translatable(
                 "gui.jei.category.smelting.time.seconds",
-                (recipe.time / 20f).toString().format("##.#")
+                (recipe.time / 20f).toString().format("##.#"),
             ),
-            36, 3, 0xdedede, false
+            36,
+            3,
+            0xdedede,
+            false,
         )
         if (recipe.selectable) {
             guiGraphics.drawString(
                 mc.font,
                 Component.translatable("jei.superbwarfare.researching.selectable"),
-                36, 13, 0xff8426, false
+                36,
+                13,
+                0xff8426,
+                false,
             )
         }
 
         val color = recipe.color
-        val colorU = when (color) {
-            1, 3 -> 139
-            else -> 176
-        }
-        val colorV = when (color) {
-            1, 2 -> 0
-            else -> 25
-        }
+        val colorU =
+            when (color) {
+                1, 3 -> 139
+                else -> 176
+            }
+        val colorV =
+            when (color) {
+                1, 2 -> 0
+                else -> 25
+            }
         if (color != 0) {
             guiGraphics.blit(
-                TEXTURE, 50, 28, colorU.toFloat(), colorV.toFloat(),
-                36, 24, 256, 128
+                TEXTURE,
+                50,
+                28,
+                colorU.toFloat(),
+                colorV.toFloat(),
+                36,
+                24,
+                256,
+                128,
             )
         }
     }
@@ -92,7 +114,7 @@ class ResearchingCategory(helper: IGuiHelper) : IRecipeCategory<ResearchingRecip
     override fun setRecipe(
         builder: IRecipeLayoutBuilder,
         recipe: ResearchingRecipe,
-        focuses: IFocusGroup
+        focuses: IFocusGroup,
     ) {
         builder.addSlot(RecipeIngredientRole.INPUT, 11, 32).addIngredients(recipe.input)
         builder.addSlot(RecipeIngredientRole.INPUT, 99, 3).addIngredients(recipe.base)
@@ -110,7 +132,8 @@ class ResearchingCategory(helper: IGuiHelper) : IRecipeCategory<ResearchingRecip
             builder.addSlot(RecipeIngredientRole.OUTPUT, 109, 32).addItemStacks(list)
         }
 
-        builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 11, 3)
+        builder
+            .addSlot(RecipeIngredientRole.RENDER_ONLY, 11, 3)
             .addIngredients(Ingredient.of(ModTags.Items.RESEARCH_FUEL))
     }
 

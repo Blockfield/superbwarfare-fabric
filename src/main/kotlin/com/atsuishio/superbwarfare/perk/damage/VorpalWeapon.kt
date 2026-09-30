@@ -15,7 +15,7 @@ object VorpalWeapon : Perk("vorpal_weapon", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ): Float {
         if (DamageTypeTool.isGunDamage(source) && target is LivingEntity && target.health >= 100.0f) {
             return (damage + target.health * 0.00002f * instance.level.toDouble().pow(2)).toFloat()

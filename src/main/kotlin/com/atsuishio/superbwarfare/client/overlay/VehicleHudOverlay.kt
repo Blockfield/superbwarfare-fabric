@@ -4,6 +4,8 @@ import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.client.RenderHelper
 import com.atsuishio.superbwarfare.client.animation.AnimationCurves
 import com.atsuishio.superbwarfare.client.animation.AnimationTimer
+import com.atsuishio.superbwarfare.client.boundKey
+import com.atsuishio.superbwarfare.client.drawString
 import com.atsuishio.superbwarfare.config.client.DisplayConfig
 import com.atsuishio.superbwarfare.config.server.MiscConfig
 import com.atsuishio.superbwarfare.data.gun.AmmoConsumer
@@ -12,6 +14,7 @@ import com.atsuishio.superbwarfare.data.vehicle.subdata.EngineInfo.Aircraft
 import com.atsuishio.superbwarfare.data.vehicle.subdata.EngineInfo.Helicopter
 import com.atsuishio.superbwarfare.data.vehicle.subdata.EngineType
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import com.atsuishio.superbwarfare.fabric.findFirstEquipped
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModKeyMappings
 import com.atsuishio.superbwarfare.tools.FormatTool
@@ -20,6 +23,8 @@ import com.atsuishio.superbwarfare.tools.localPlayer
 import com.atsuishio.superbwarfare.tools.mc
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -31,12 +36,7 @@ import net.minecraft.util.Mth
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import org.joml.Math
-import com.atsuishio.superbwarfare.fabric.findFirstEquipped
-import com.atsuishio.superbwarfare.client.boundKey
-import com.atsuishio.superbwarfare.client.drawString
 
 @Environment(EnvType.CLIENT)
 object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
@@ -56,17 +56,18 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
     private val FRACTION = loc("textures/overlay/vehicle/weapon/frame/fraction.png")
     private val PLUS = loc("textures/overlay/vehicle/weapon/frame/plus.png")
 
-    private val FRAMES = arrayOf(
-        loc("textures/overlay/vehicle/weapon/frame/frame_1.png"),
-        loc("textures/overlay/vehicle/weapon/frame/frame_2.png"),
-        loc("textures/overlay/vehicle/weapon/frame/frame_3.png"),
-        loc("textures/overlay/vehicle/weapon/frame/frame_4.png"),
-        loc("textures/overlay/vehicle/weapon/frame/frame_5.png"),
-        loc("textures/overlay/vehicle/weapon/frame/frame_6.png"),
-        loc("textures/overlay/vehicle/weapon/frame/frame_7.png"),
-        loc("textures/overlay/vehicle/weapon/frame/frame_8.png"),
-        loc("textures/overlay/vehicle/weapon/frame/frame_9.png")
-    )
+    private val FRAMES =
+        arrayOf(
+            loc("textures/overlay/vehicle/weapon/frame/frame_1.png"),
+            loc("textures/overlay/vehicle/weapon/frame/frame_2.png"),
+            loc("textures/overlay/vehicle/weapon/frame/frame_3.png"),
+            loc("textures/overlay/vehicle/weapon/frame/frame_4.png"),
+            loc("textures/overlay/vehicle/weapon/frame/frame_5.png"),
+            loc("textures/overlay/vehicle/weapon/frame/frame_6.png"),
+            loc("textures/overlay/vehicle/weapon/frame/frame_7.png"),
+            loc("textures/overlay/vehicle/weapon/frame/frame_8.png"),
+            loc("textures/overlay/vehicle/weapon/frame/frame_9.png"),
+        )
 
     private val HIT_MARKER = loc("textures/overlay/crosshair/hit_marker.png")
     private val HIT_MARKER_VEHICLE = loc("textures/overlay/crosshair/hit_marker_vehicle.png")
@@ -105,7 +106,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -126,7 +127,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 8f,
                 8f,
                 8f,
-                8f
+                8f,
             )
             RenderHelper.preciseBlit(
                 guiGraphics,
@@ -139,7 +140,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 60f,
                 6f,
                 60f,
-                6f
+                6f,
             )
             RenderHelper.preciseBlit(
                 guiGraphics,
@@ -152,7 +153,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 (60 * energy / maxEnergy).toInt().toFloat(),
                 6f,
                 60f,
-                6f
+                6f,
             )
         }
 
@@ -170,7 +171,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
             8f,
             8f,
             8f,
-            8f
+            8f,
         )
         RenderHelper.preciseBlit(
             guiGraphics,
@@ -183,7 +184,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
             60f,
             6f,
             60f,
-            6f
+            6f,
         )
         RenderHelper.preciseBlit(
             guiGraphics,
@@ -196,7 +197,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
             (60 * health / maxHealth).toInt().toFloat(),
             6f,
             60f,
-            6f
+            6f,
         )
 
         renderWeaponInfo(guiGraphics, entity, screenWidth, screenHeight)
@@ -222,7 +223,11 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
     }
 
     @JvmStatic
-    fun renderKillIndicator(guiGraphics: GuiGraphics?, w: Float, h: Float) {
+    fun renderKillIndicator(
+        guiGraphics: GuiGraphics?,
+        w: Float,
+        h: Float,
+    ) {
         if (MiscConfig.HIDE_COMBAT_HUD.get()) return
 
         val posX = w / 2f - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
@@ -255,7 +260,11 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
     }
 
     @JvmStatic
-    fun renderKillIndicatorDynamic(guiGraphics: GuiGraphics?, posX: Float, posY: Float) {
+    fun renderKillIndicatorDynamic(
+        guiGraphics: GuiGraphics?,
+        posX: Float,
+        posY: Float,
+    ) {
         if (MiscConfig.HIDE_COMBAT_HUD.get()) return
 
         val rate = (40 - CrossHairOverlay.killIndicator * 5) / 5.5f
@@ -289,7 +298,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
         guiGraphics: GuiGraphics,
         vehicle: VehicleEntity,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         val passengers = vehicle.getOrderedPassengers()
 
@@ -317,7 +326,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 25 - mc.font.width(num),
                 y,
                 0x66ff00,
-                true
+                true,
             )
 
             RenderHelper.preciseBlit(
@@ -331,7 +340,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 8f,
                 8f,
                 8f,
-                8f
+                8f,
             )
         }
     }
@@ -342,7 +351,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
         w: Int,
         h: Int,
         partialTick: Float,
-        compatHeight: Int
+        compatHeight: Int,
     ) {
         val engineType = vehicle.computed().engineType
         if (engineType != EngineType.AIRCRAFT) return
@@ -354,18 +363,20 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
 
         if (vehicle.gearUp) {
             if (vehicle.synchedGearRot == 1f) {
-                componentReady = Component.translatable("tips.superbwarfare.gear_retracted").append(
-                    Component.literal(" [${ModKeyMappings.MOVE_SPACE.boundKey.displayName.string}]")
-                )
+                componentReady =
+                    Component.translatable("tips.superbwarfare.gear_retracted").append(
+                        Component.literal(" [${ModKeyMappings.MOVE_SPACE.boundKey.displayName.string}]"),
+                    )
             } else {
                 componentReady =
                     Component.translatable("tips.superbwarfare.gear_retracting").withStyle(ChatFormatting.RED)
             }
         } else {
             if (vehicle.synchedGearRot == 0f) {
-                componentReady = Component.translatable("tips.superbwarfare.gear_extended").append(
-                    Component.literal(" [${ModKeyMappings.MOVE_SPACE.boundKey.displayName.string}]")
-                )
+                componentReady =
+                    Component.translatable("tips.superbwarfare.gear_extended").append(
+                        Component.literal(" [${ModKeyMappings.MOVE_SPACE.boundKey.displayName.string}]"),
+                    )
             } else {
                 componentReady =
                     Component.translatable("tips.superbwarfare.gear_extending").withStyle(ChatFormatting.RED)
@@ -378,7 +389,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
             85,
             (h - 13 - compatHeight),
             -1,
-            false
+            false,
         )
     }
 
@@ -388,7 +399,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
         w: Int,
         h: Int,
         partialTick: Float,
-        compatHeight: Int
+        compatHeight: Int,
     ) {
         val engineType = vehicle.computed().engineType
         if (engineType != EngineType.HELICOPTER) return
@@ -396,14 +407,16 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
         if (engineInfo !is Helicopter) return
         if (localPlayer != vehicle.firstPassenger) return
 
-        var componentReady = Component.translatable("tips.superbwarfare.hover_mode_off").append(
-            Component.literal(" [${ModKeyMappings.MOVE_SPACE.boundKey.displayName.string}]")
-        )
+        var componentReady =
+            Component.translatable("tips.superbwarfare.hover_mode_off").append(
+                Component.literal(" [${ModKeyMappings.MOVE_SPACE.boundKey.displayName.string}]"),
+            )
 
         if (vehicle.hoverMode) {
-            componentReady = Component.translatable("tips.superbwarfare.hover_mode_on").append(
-                Component.literal(" [${ModKeyMappings.MOVE_SPACE.boundKey.displayName.string}]")
-            )
+            componentReady =
+                Component.translatable("tips.superbwarfare.hover_mode_on").append(
+                    Component.literal(" [${ModKeyMappings.MOVE_SPACE.boundKey.displayName.string}]"),
+                )
         }
 
         guiGraphics.drawString(
@@ -412,7 +425,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
             85,
             (h - 13 - compatHeight),
             -1,
-            false
+            false,
         )
     }
 
@@ -422,16 +435,17 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
         w: Int,
         h: Int,
         partialTick: Float,
-        compatHeight: Int
+        compatHeight: Int,
     ) {
         if (localPlayer != vehicle.firstPassenger) return
 
-        val componentReady = Component.literal(
-            FormatTool.format0D(
-                vehicle.absoluteSpeed * 72,
-                " KM/H"
+        val componentReady =
+            Component.literal(
+                FormatTool.format0D(
+                    vehicle.absoluteSpeed * 72,
+                    " KM/H",
+                ),
             )
-        )
 
         guiGraphics.drawString(
             Minecraft.getInstance().font,
@@ -439,11 +453,16 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
             85,
             (h - 22 - compatHeight),
             -1,
-            false
+            false,
         )
     }
 
-    private fun renderWeaponInfo(guiGraphics: GuiGraphics, vehicle: VehicleEntity, w: Int, h: Int) {
+    private fun renderWeaponInfo(
+        guiGraphics: GuiGraphics,
+        vehicle: VehicleEntity,
+        w: Int,
+        h: Int,
+    ) {
         val player = localPlayer
 
         if (!vehicle.banHand(player)) return
@@ -457,7 +476,12 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
         val index = vehicle.getSeatIndex(player)
         if (index == -1) return
 
-        val weapons = vehicle.computed().seats()[index].weapons().map { vehicle.getGunData(it) }
+        val weapons =
+            vehicle
+                .computed()
+                .seats()[index]
+                .weapons()
+                .map { vehicle.getGunData(it) }
         if (weapons.isEmpty()) return
 
         val weaponIndex = vehicle.getWeaponIndex(index)
@@ -528,7 +552,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 75f,
                 16f,
                 75f,
-                16f
+                16f,
             )
 
             val data = vehicle.getGunData(vehicle.getSeatIndex(player), i)
@@ -541,11 +565,12 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
             val selected = i == weaponIndex
             // 当前选中武器
             if (selected) {
-                val startY = Mth.lerp(
-                    progress,
-                    (h - (weapons.size - 1 - oldRenderWeaponIndex) * 18 - 16).toFloat(),
-                    (h - (weapons.size - 1 - weaponIndex) * 18 - 16).toFloat()
-                )
+                val startY =
+                    Mth.lerp(
+                        progress,
+                        (h - (weapons.size - 1 - oldRenderWeaponIndex) * 18 - 16).toFloat(),
+                        (h - (weapons.size - 1 - weaponIndex) * 18 - 16).toFloat(),
+                    )
 
                 RenderHelper.preciseBlit(
                     guiGraphics,
@@ -558,16 +583,18 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                     8f,
                     8f,
                     8f,
-                    8f
+                    8f,
                 )
 
                 var ammoCount = vehicle.getAmmoCount(player)
                 // Read the pre-computed, server-synced counter instead of scanning
                 // inventory directly — eliminates the 4-tick countBackupAmmo cache lag.
-                val backUpAmmoCount = if (data.backupAmmoCount.get() != 0 || data.useBackpackAmmo())
-                    data.backupAmmoCount.get()
-                else
-                    data.countBackupAmmo(vehicle)
+                val backUpAmmoCount =
+                    if (data.backupAmmoCount.get() != 0 || data.useBackpackAmmo()) {
+                        data.backupAmmoCount.get()
+                    } else {
+                        data.countBackupAmmo(vehicle)
+                    }
 
                 if (ammoCount == Int.MAX_VALUE) {
                     RenderHelper.preciseBlit(
@@ -581,7 +608,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                         10f,
                         7.5f,
                         75f,
-                        7.5f
+                        7.5f,
                     )
                 } else {
                     val percent = data.selectedAmmoConsumer().type == AmmoConsumer.AmmoConsumeType.ENERGY
@@ -610,7 +637,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                                 10f,
                                 7.5f,
                                 75f,
-                                7.5f
+                                7.5f,
                             )
                             lengthB = 14
                         } else {
@@ -621,7 +648,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                                     percent,
                                     w - 20 + xOffset,
                                     h - frameIndex * 18 - 12f,
-                                    0.125f
+                                    0.125f,
                                 )
                                 RenderHelper.preciseBlit(
                                     guiGraphics,
@@ -633,7 +660,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                                     4f,
                                     4f,
                                     4f,
-                                    4f
+                                    4f,
                                 )
                             } else {
                                 renderNumber(
@@ -642,7 +669,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                                     percent,
                                     w - 18 + xOffset,
                                     h - frameIndex * 18 - 12f,
-                                    0.125f
+                                    0.125f,
                                 )
                             }
                         }
@@ -657,7 +684,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                             8f,
                             8f,
                             8f,
-                            8f
+                            8f,
                         )
 
                         renderNumber(
@@ -666,9 +693,8 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                             percent,
                             w - 18 + xOffset - lengthB,
                             h - frameIndex * 18 - 15.5f,
-                            0.25f
+                            0.25f,
                         )
-
                     } else {
                         renderNumber(
                             guiGraphics,
@@ -676,7 +702,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                             percent,
                             w - 20 + xOffset,
                             h - frameIndex * 18 - 15.5f,
-                            0.25f
+                            0.25f,
                         )
                     }
                 }
@@ -693,15 +719,16 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 75f,
                 16f,
                 75f,
-                16f
+                16f,
             )
 
             // 这里不知道为什么不能合并，会导致上面那个渲染出错
             val size = data.get(GunProp.AMMO_CONSUMER).size
             if (selected && size > 1) {
-
-                val component = Component.literal("[" + ModKeyMappings.FIRE_MODE.boundKey.displayName.string + "] ")
-                    .append(Component.translatable("tips.superbwarfare.switch_ammo"))
+                val component =
+                    Component
+                        .literal("[" + ModKeyMappings.FIRE_MODE.boundKey.displayName.string + "] ")
+                        .append(Component.translatable("tips.superbwarfare.switch_ammo"))
 
                 pose.pushPose()
                 pose.scale(0.6f, 0.6f, 1.0f)
@@ -718,7 +745,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                     (w - 85 + xOffset) / 0.6f,
                     (h - frameIndex * 18 + height) / 0.6f,
                     0xFFFFFF,
-                    false
+                    false,
                 )
 
                 pose.popPose()
@@ -735,12 +762,14 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 if (currentReloadTime in 1..<totalReloadTime) {
                     RenderHelper.renderCircularRing(
                         guiGraphics,
-                        w - 102 + xOffset, (h - frameIndex * 18 - 12).toFloat(),
-                        0.014f, 0.010f,
+                        w - 102 + xOffset,
+                        (h - frameIndex * 18 - 12).toFloat(),
+                        0.014f,
+                        0.010f,
                         floatArrayOf(0f, 0f, 0f, 0.4f * alpha),
                         floatArrayOf(1f, 1f, 1f, alpha),
                         reloadProgress,
-                        true
+                        true,
                     )
                 }
             }
@@ -753,7 +782,7 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -779,31 +808,58 @@ object VehicleHudOverlay : CommonOverlay("vehicle_hud") {
         percent: Boolean,
         x: Float,
         y: Float,
-        scale: Float
+        scale: Float,
     ) {
         var number = number
         var pX = x
         if (percent) {
             pX -= 32 * scale
             RenderHelper.preciseBlit(
-                guiGraphics, NUMBER, pX + 20 * scale, y, 100f,
-                200 * scale, 0f, 32 * scale, 30 * scale, 300 * scale, 30 * scale
+                guiGraphics,
+                NUMBER,
+                pX + 20 * scale,
+                y,
+                100f,
+                200 * scale,
+                0f,
+                32 * scale,
+                30 * scale,
+                300 * scale,
+                30 * scale,
             )
         }
 
         var index = 0
         if (number == 0) {
             RenderHelper.preciseBlit(
-                guiGraphics, NUMBER, pX, y, 100f,
-                0f, 0f, 20 * scale, 30 * scale, 300 * scale, 30 * scale
+                guiGraphics,
+                NUMBER,
+                pX,
+                y,
+                100f,
+                0f,
+                0f,
+                20 * scale,
+                30 * scale,
+                300 * scale,
+                30 * scale,
             )
         }
 
         while (number > 0) {
             val digit = number % 10
             RenderHelper.preciseBlit(
-                guiGraphics, NUMBER, pX - index * 20 * scale, y, 100f,
-                digit * 20 * scale, 0f, 20 * scale, 30 * scale, 300 * scale, 30 * scale
+                guiGraphics,
+                NUMBER,
+                pX - index * 20 * scale,
+                y,
+                100f,
+                digit * 20 * scale,
+                0f,
+                20 * scale,
+                30 * scale,
+                300 * scale,
+                30 * scale,
             )
             number /= 10
             index++

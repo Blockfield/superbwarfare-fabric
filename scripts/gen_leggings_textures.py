@@ -10,13 +10,16 @@
 
 Запуск: python3 scripts/gen_leggings_textures.py
 """
+
 import os
 import random
 
 from PIL import Image, ImageDraw
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ARMOR_DIR = os.path.join(ROOT, "src/main/resources/assets/superbwarfare/textures/bedrock/armor")
+ARMOR_DIR = os.path.join(
+    ROOT, "src/main/resources/assets/superbwarfare/textures/bedrock/armor"
+)
 ITEM_DIR = os.path.join(ROOT, "src/main/resources/assets/superbwarfare/textures/item")
 
 PALETTES = {
@@ -66,9 +69,13 @@ def build_armor(name, p):
     img = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    fill_region(draw, rng, REGIONS["cloth"], p["cloth"], p["camo"], p["blob"], p["density"])
+    fill_region(
+        draw, rng, REGIONS["cloth"], p["cloth"], p["camo"], p["blob"], p["density"]
+    )
     fill_region(draw, rng, REGIONS["pad"], p["pad"], p["pad_camo"], (5, 11), 40)
-    fill_region(draw, rng, REGIONS["pocket"], p["pocket"], p["camo"], p["blob"], p["density"])
+    fill_region(
+        draw, rng, REGIONS["pocket"], p["pocket"], p["camo"], p["blob"], p["density"]
+    )
 
     # Наколенник: горизонтальные рёбра накладки.
     px, py = REGIONS["pad"]
@@ -78,7 +85,9 @@ def build_armor(name, p):
     # Карман: клапан сверху и шов по низу.
     ox, oy = REGIONS["pocket"]
     draw.rectangle([ox + 5, oy + 6, ox + SIZE - 6, oy + 20], fill=p["strap"])
-    draw.rectangle([ox + 5, oy + SIZE - 12, ox + SIZE - 6, oy + SIZE - 10], fill=p["strap"])
+    draw.rectangle(
+        [ox + 5, oy + SIZE - 12, ox + SIZE - 6, oy + SIZE - 10], fill=p["strap"]
+    )
 
     img.save(os.path.join(ARMOR_DIR, name + ".png"))
 

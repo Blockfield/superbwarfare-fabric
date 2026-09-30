@@ -8,8 +8,9 @@ import com.atsuishio.superbwarfare.tools.mc
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class FinishAssemblingVehicleMessage(val containerId: Int) : ClientPacketPayload() {
-
+data class FinishAssemblingVehicleMessage(
+    val containerId: Int,
+) : ClientPacketPayload() {
     override fun PayloadContext.handler() {
         val player = localPlayer ?: return
         if (player.containerMenu.containerId != containerId) return

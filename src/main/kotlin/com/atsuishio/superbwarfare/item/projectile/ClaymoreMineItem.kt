@@ -16,8 +16,14 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.DispenserBlock
 import net.minecraft.world.phys.Vec3
 
-open class ClaymoreMineItem : Item(Properties()), DispenserLaunchable {
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+open class ClaymoreMineItem :
+    Item(Properties()),
+    DispenserLaunchable {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
 
         if (!level.isClientSide) {
@@ -28,7 +34,7 @@ open class ClaymoreMineItem : Item(Properties()), DispenserLaunchable {
             entity.setDeltaMovement(
                 0.5 * player.lookAngle.x,
                 0.5 * player.lookAngle.y,
-                0.5 * player.lookAngle.z
+                0.5 * player.lookAngle.z,
             )
 
             level.addFreshEntity(entity)
@@ -45,7 +51,10 @@ open class ClaymoreMineItem : Item(Properties()), DispenserLaunchable {
 
     override fun getLaunchBehavior(): DispenseItemBehavior {
         return object : DefaultDispenseItemBehavior() {
-            public override fun execute(pSource: BlockSource, pStack: ItemStack): ItemStack {
+            public override fun execute(
+                pSource: BlockSource,
+                pStack: ItemStack,
+            ): ItemStack {
                 val level: Level = pSource.level
                 val position = DispenserBlock.getDispensePosition(pSource)
                 val direction = pSource.state.getValue(DispenserBlock.FACING)

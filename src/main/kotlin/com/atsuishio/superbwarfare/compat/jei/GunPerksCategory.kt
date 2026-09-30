@@ -21,10 +21,14 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
 
-class GunPerksCategory(helper: IGuiHelper) : IRecipeCategory<ItemStack> {
-    private val background: IDrawable = helper.drawableBuilder(TEXTURE, 0, 0, 144, 128)
-        .setTextureSize(144, 128)
-        .build()
+class GunPerksCategory(
+    helper: IGuiHelper,
+) : IRecipeCategory<ItemStack> {
+    private val background: IDrawable =
+        helper
+            .drawableBuilder(TEXTURE, 0, 0, 144, 128)
+            .setTextureSize(144, 128)
+            .build()
     private val icon: IDrawable =
         helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, ItemStack(ModItems.AP_BULLET!!.get()))
 
@@ -33,42 +37,38 @@ class GunPerksCategory(helper: IGuiHelper) : IRecipeCategory<ItemStack> {
         recipeSlotsView: IRecipeSlotsView,
         guiGraphics: GuiGraphics,
         mouseX: Double,
-        mouseY: Double
+        mouseY: Double,
     ) {
         val name = recipe.getHoverName()
         guiGraphics.drawString(
-            mc.font, name,
-            80 - mc.font.width(name) / 2, 5, 5592405, false
+            mc.font,
+            name,
+            80 - mc.font.width(name) / 2,
+            5,
+            5592405,
+            false,
         )
     }
 
     @Deprecated("Deprecated in Java")
     @Suppress("removal")
-    override fun getBackground(): IDrawable {
-        return this.background
-    }
+    override fun getBackground(): IDrawable = this.background
 
-    override fun getRecipeType(): RecipeType<ItemStack> {
-        return TYPE
-    }
+    override fun getRecipeType(): RecipeType<ItemStack> = TYPE
 
-    override fun getTitle(): Component {
-        return Component.translatable("jei.superbwarfare.gun_perks")
-    }
+    override fun getTitle(): Component = Component.translatable("jei.superbwarfare.gun_perks")
 
-    override fun getIcon(): IDrawable {
-        return this.icon
-    }
+    override fun getIcon(): IDrawable = this.icon
 
-    override fun getWidth(): Int {
-        return 144
-    }
+    override fun getWidth(): Int = 144
 
-    override fun getHeight(): Int {
-        return 128
-    }
+    override fun getHeight(): Int = 128
 
-    override fun setRecipe(builder: IRecipeLayoutBuilder, stack: ItemStack, focuses: IFocusGroup) {
+    override fun setRecipe(
+        builder: IRecipeLayoutBuilder,
+        stack: ItemStack,
+        focuses: IFocusGroup,
+    ) {
         if (stack.item !is GunItem) return
         val data = from(stack)
         val perks = data.availablePerks()
@@ -83,7 +83,8 @@ class GunPerksCategory(helper: IGuiHelper) : IRecipeCategory<ItemStack> {
 
         for (i in sortedPerks.indices) {
             val perkItem = sortedPerks[i].getItem().get()
-            builder.addSlot(RecipeIngredientRole.INPUT, 1 + (i % 8) * 18, 21 + i / 8 * 18)
+            builder
+                .addSlot(RecipeIngredientRole.INPUT, 1 + (i % 8) * 18, 21 + i / 8 * 18)
                 .addItemStack(perkItem.defaultInstance)
         }
     }
@@ -92,12 +93,11 @@ class GunPerksCategory(helper: IGuiHelper) : IRecipeCategory<ItemStack> {
         val TEXTURE: ResourceLocation = loc("textures/gui/jei_gun_perks.png")
         val TYPE: RecipeType<ItemStack> = RecipeType.create(Mod.MODID, "gun_perks", ItemStack::class.java)
 
-        private fun getIndex(perk: Perk): Int {
-            return when (perk.type) {
+        private fun getIndex(perk: Perk): Int =
+            when (perk.type) {
                 Perk.Type.AMMO -> 0
                 Perk.Type.FUNCTIONAL -> 1
                 Perk.Type.DAMAGE -> 2
             }
-        }
     }
 }

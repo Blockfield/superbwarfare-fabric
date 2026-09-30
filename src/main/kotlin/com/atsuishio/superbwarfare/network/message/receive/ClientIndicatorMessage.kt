@@ -10,7 +10,6 @@ data class ClientIndicatorMessage(
     val type: Int,
     val value: Int,
 ) : ClientPacketPayload() {
-
     override fun PayloadContext.handler() {
         when (type) {
             1 -> CrossHairOverlay.headIndicator = value

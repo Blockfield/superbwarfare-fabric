@@ -8,7 +8,7 @@ import net.minecraft.world.entity.Entity
 
 open class BasicProjectileAnimationInstance<T>(
     entity: T,
-    loop: Boolean = false
+    loop: Boolean = false,
 ) where T : Entity, T : BasicGeoProjectileEntity {
     val context = BasicProjectileContext(entity, getAnimationLocation(entity), loop)
     private val stateMachine: AnimationStateMachine<BasicProjectileContext<*>> =
@@ -19,12 +19,10 @@ open class BasicProjectileAnimationInstance<T>(
         stateMachine.tick()
     }
 
-    fun getPose(): Pose {
-        return stateMachine.getPose()
-    }
+    fun getPose(): Pose = stateMachine.getPose()
 
     open fun getAnimationLocation(entity: T): ResourceLocation {
-        val (_,  namespace, id) = entity.type.descriptionId.split(".")
+        val (_, namespace, id) = entity.type.descriptionId.split(".")
         return ResourceLocation.fromNamespaceAndPath(namespace, "animations/bedrock/projectile/$id.animation.json")
     }
 }

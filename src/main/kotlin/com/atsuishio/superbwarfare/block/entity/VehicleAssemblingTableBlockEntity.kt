@@ -14,22 +14,25 @@ import net.minecraft.world.inventory.ContainerLevelAccess
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 
-open class VehicleAssemblingTableBlockEntity(pPos: BlockPos, pBlockState: BlockState) :
-    BlockEntity(ModBlockEntities.VEHICLE_ASSEMBLING_TABLE.get(), pPos, pBlockState), MenuProvider {
-
+open class VehicleAssemblingTableBlockEntity(
+    pPos: BlockPos,
+    pBlockState: BlockState,
+) : BlockEntity(ModBlockEntities.VEHICLE_ASSEMBLING_TABLE.get(), pPos, pBlockState),
+    MenuProvider {
     open val modelInstance = BlockModelReloadListener.getModel(MODEL)?.createInstance()
 
-    override fun getDisplayName(): Component {
-        return Component.empty()
-    }
+    override fun getDisplayName(): Component = Component.empty()
 
-    override fun createMenu(pContainerId: Int, pPlayerInventory: Inventory, pPlayer: Player): AbstractContainerMenu {
-        return VehicleAssemblingMenu(
+    override fun createMenu(
+        pContainerId: Int,
+        pPlayerInventory: Inventory,
+        pPlayer: Player,
+    ): AbstractContainerMenu =
+        VehicleAssemblingMenu(
             pContainerId,
             pPlayerInventory,
-            ContainerLevelAccess.create(pPlayer.level(), this.worldPosition)
+            ContainerLevelAccess.create(pPlayer.level(), this.worldPosition),
         )
-    }
 
     companion object {
         val MODEL = loc("models/bedrock/block/vehicle_assembling_table.geo.json")

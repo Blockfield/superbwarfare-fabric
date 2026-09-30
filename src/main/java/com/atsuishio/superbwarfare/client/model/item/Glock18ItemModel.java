@@ -6,17 +6,20 @@ import com.atsuishio.superbwarfare.data.gun.FireMode;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.handgun.Glock18Item;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class Glock18ItemModel extends CustomGunModel<Glock18Item> {
 
     @Override
-    public void setCustomAnimations(Glock18Item animatable, long instanceId, AnimationState<Glock18Item> animationState) {
+    public void setCustomAnimations(
+            Glock18Item animatable, long instanceId, AnimationState<Glock18Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -49,7 +52,8 @@ public class Glock18ItemModel extends CustomGunModel<Glock18Item> {
 
         GeoBone body = getAnimationProcessor().getBone("gun");
 
-        ClientEventHandler.handleShootAnimation(body, 1.25f, -2f, 1.35f, 2.5f, 1.3f, 1f, 0.2f, 1.2f);
+        ClientEventHandler.handleShootAnimation(
+                body, 1.25f, -2f, 1.35f, 2.5f, 1.3f, 1f, 0.2f, 1.2f);
 
         CrossHairOverlay.gunRot = body.getRotZ();
 
@@ -79,7 +83,10 @@ public class Glock18ItemModel extends CustomGunModel<Glock18Item> {
             camera.setRotZ(numR * camera.getRotZ());
         }
 
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 0.7f, 1f);
 
         GeoBone shell = getAnimationProcessor().getBone("shell");

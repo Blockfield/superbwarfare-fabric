@@ -12,4 +12,6 @@ package com.atsuishio.superbwarfare.annotation
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FIELD)
-annotation class ExcludeBvrSync(val nbtKey: String)
+annotation class ExcludeBvrSync(
+    val nbtKey: String,
+)

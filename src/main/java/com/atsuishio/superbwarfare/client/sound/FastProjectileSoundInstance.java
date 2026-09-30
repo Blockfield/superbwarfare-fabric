@@ -1,13 +1,14 @@
 package com.atsuishio.superbwarfare.client.sound;
 
 import com.atsuishio.superbwarfare.entity.projectile.FastThrowableProjectile;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 public abstract class FastProjectileSoundInstance extends AbstractTickableSoundInstance {
@@ -18,7 +19,8 @@ public abstract class FastProjectileSoundInstance extends AbstractTickableSoundI
     private int fade = 0;
     private boolean die = false;
 
-    public FastProjectileSoundInstance(SoundEvent sound, Minecraft client, FastThrowableProjectile entity) {
+    public FastProjectileSoundInstance(
+            SoundEvent sound, Minecraft client, FastThrowableProjectile entity) {
         super(sound, SoundSource.AMBIENT, entity.getCommandSenderWorld().getRandom());
         this.client = client;
         this.entity = entity;
@@ -90,7 +92,8 @@ public abstract class FastProjectileSoundInstance extends AbstractTickableSoundI
 
         @Override
         protected float getVolume(FastThrowableProjectile entity) {
-            return (float) Math.min(entity.getVolume() * 0.1 * entity.getDeltaMovement().length(), 1.5);
+            return (float)
+                    Math.min(entity.getVolume() * 0.1 * entity.getDeltaMovement().length(), 1.5);
         }
     }
 }

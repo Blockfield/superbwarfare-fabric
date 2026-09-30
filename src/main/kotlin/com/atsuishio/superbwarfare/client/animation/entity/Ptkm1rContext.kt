@@ -5,7 +5,9 @@ import com.atsuishio.superbwarfare.entity.projectile.Ptkm1rEntity
 import com.atsuishio.superbwarfare.resource.model.ProjectileModelReloadListener
 import net.minecraft.resources.ResourceLocation
 
-open class Ptkm1rContext(entity: Ptkm1rEntity) : BasicEntityContext<Ptkm1rEntity>(entity, ANIM) {
+open class Ptkm1rContext(
+    entity: Ptkm1rEntity,
+) : BasicEntityContext<Ptkm1rEntity>(entity, ANIM) {
     override fun init(location: ResourceLocation) {
         val ani = ProjectileModelReloadListener.getAnimation(location)
         for (entry in ani!!) {

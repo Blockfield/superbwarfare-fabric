@@ -55,7 +55,7 @@ Refs netherg-io/blockfield-releases#4, in-game finding from 2026-09-15: `Vehicle
 `MouseMoveMessage` and `DroneFireMessage` were authorised only by the currently-held monitor/linked
 drone (the check this doc describes above), with no session/sequence binding. A packet queued
 while one activation was live could still be applied after the player switched drones or
-reactivated, because `resolve()`/`canUse()` only look at *current* state.
+reactivated, because `resolve()`/`canUse()` only look at _current_ state.
 
 This closes that gap **inside superbwarfare-fabric itself**, not by depending on
 blockfield-mod's `DroneControlSessions` (that class stays private-repo-only; this mod is the one
@@ -82,6 +82,8 @@ private mod). The model is a much smaller, purpose-built anti-replay counter:
   unaffected; the new packet fields default to `"none"`/`0` and are ignored on that path.
 
 ### Tests run
+
+Historical results below used Kotlin 2.1.21 and JDK 21. Current build commands:
 
 ```sh
 bash dev/test-drone-control.sh
@@ -132,7 +134,7 @@ risks a bogus explosion -- dimension-mismatch teardown is left entirely to the e
 cleanly (camera reset, `Using=false`) without a blast. The existing same-world out-of-range
 signal-loss explosion is unchanged.
 
-Chunk unload and reconnect were re-verified against the *existing* (unmodified this stage) code
+Chunk unload and reconnect were re-verified against the _existing_ (unmodified this stage) code
 and found already correct: `DroneControlEvents.ENTITY_UNLOAD` already calls
 `getController()?.let { stopMonitor(it, entity) }` + `resetInput(entity)` and drops the entity
 from the per-world `loaded` set; `ServerPlayConnectionEvents.DISCONNECT` already ends the session
@@ -142,9 +144,11 @@ added for them.
 
 ### Tests run
 
+Historical results below used Kotlin 2.1.21 and JDK 21. Current build commands:
+
 ```sh
-mise exec kotlin@2.1.21 -- bash dev/test-drone-control.sh
-JAVA_HOME=~/.local/share/mise/installs/java/temurin-21.0.12+101.0.LTS ./gradlew build --no-daemon -q
+just check
+just build
 ```
 
 - Policy checks: 198 passed (unchanged).

@@ -24,7 +24,8 @@ public class ItemHandlerHelper {
      * Кладёт стек в инвентарь, сначала добивая уже лежащие такие же стеки: так же, как это делает
      * подбор предмета игроком.
      */
-    public static ItemStack insertItemStacked(IItemHandler inventory, ItemStack stack, boolean simulate) {
+    public static ItemStack insertItemStacked(
+            IItemHandler inventory, ItemStack stack, boolean simulate) {
         if (inventory == null || stack.isEmpty()) return stack;
         if (!stack.isStackable()) return insertItem(inventory, stack, simulate);
 
@@ -50,10 +51,10 @@ public class ItemHandlerHelper {
     /**
      * Кладёт стек в инвентарь игрока, остаток выбрасывает в мир.
      *
-     * ponytail: вместо PlayerMainInvWrapper из NeoForge используется ванильный Inventory.add --
-     * это та же логика подбора (хотбар в приоритете, pop-анимация), только без своей обёртки над
-     * 36 слотами. Остаток летит через Player.drop, а не ItemEntity у ног с задержкой подбора 40
-     * тиков. Если понадобится точное поведение NeoForge, писать сюда обёртку RangedWrapper.
+     * <p>ponytail: вместо PlayerMainInvWrapper из NeoForge используется ванильный Inventory.add --
+     * это та же логика подбора (хотбар в приоритете, pop-анимация), только без своей обёртки над 36
+     * слотами. Остаток летит через Player.drop, а не ItemEntity у ног с задержкой подбора 40 тиков.
+     * Если понадобится точное поведение NeoForge, писать сюда обёртку RangedWrapper.
      */
     public static void giveItemToPlayer(Player player, ItemStack stack) {
         if (stack.isEmpty()) return;
@@ -65,8 +66,14 @@ public class ItemHandlerHelper {
         player.getInventory().add(remainder);
 
         if (remainder.getCount() != before) {
-            level.playSound(null, player.getX(), player.getY() + 0.5, player.getZ(),
-                    SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F,
+            level.playSound(
+                    null,
+                    player.getX(),
+                    player.getY() + 0.5,
+                    player.getZ(),
+                    SoundEvents.ITEM_PICKUP,
+                    SoundSource.PLAYERS,
+                    0.2F,
                     ((level.random.nextFloat() - level.random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
         }
 

@@ -14,18 +14,15 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.Vec3
 
-open class AerialBombEntity(type: EntityType<out AerialBombEntity>, level: Level) : DestroyableProjectile(type, level) {
-    override fun getDefaultItem(): Item {
-        return ModItems.MEDIUM_AERIAL_BOMB.get()
-    }
+open class AerialBombEntity(
+    type: EntityType<out AerialBombEntity>,
+    level: Level,
+) : DestroyableProjectile(type, level) {
+    override fun getDefaultItem(): Item = ModItems.MEDIUM_AERIAL_BOMB.get()
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.SHELL_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.SHELL_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.7f
-    }
+    override fun getVolume(): Float = 0.7f
 
     override fun canPassThroughFluid() = true
 
@@ -37,11 +34,16 @@ open class AerialBombEntity(type: EntityType<out AerialBombEntity>, level: Level
             if (ExplosionConfig.EXPLOSION_DESTROY.get() && ExplosionConfig.EXTRA_EXPLOSION_EFFECT.get() && this.explosionDestroyValue) {
                 val aabb = AABB(result.getLocation(), result.getLocation()).inflate(5.0)
                 BlockPos.betweenClosedStream(aabb).forEach {
-                    val hard = this.level().getBlockState(it).block.defaultDestroyTime()
+                    val hard =
+                        this
+                            .level()
+                            .getBlockState(it)
+                            .block
+                            .defaultDestroyTime()
                     if (hard != -1f && Vec3(
                             it.x.toDouble(),
                             it.y.toDouble(),
-                            it.z.toDouble()
+                            it.z.toDouble(),
                         ).distanceTo(result.getLocation()) < 3
                     ) {
                         this.level().destroyBlock(it, true)
@@ -59,11 +61,16 @@ open class AerialBombEntity(type: EntityType<out AerialBombEntity>, level: Level
             if (ExplosionConfig.EXPLOSION_DESTROY.get() && ExplosionConfig.EXTRA_EXPLOSION_EFFECT.get() && this.explosionDestroyValue) {
                 val aabb = AABB(result.getLocation(), result.getLocation()).inflate(5.0)
                 BlockPos.betweenClosedStream(aabb).forEach {
-                    val hard = this.level().getBlockState(it).block.defaultDestroyTime()
+                    val hard =
+                        this
+                            .level()
+                            .getBlockState(it)
+                            .block
+                            .defaultDestroyTime()
                     if (hard != -1f && Vec3(
                             it.x.toDouble(),
                             it.y.toDouble(),
-                            it.z.toDouble()
+                            it.z.toDouble(),
                         ).distanceTo(result.getLocation()) < 3
                     ) {
                         this.level().destroyBlock(it, true)

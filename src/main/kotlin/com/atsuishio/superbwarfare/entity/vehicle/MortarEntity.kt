@@ -38,7 +38,10 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 
-open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : ArtilleryEntity(type, level) {
+open class MortarEntity(
+    type: EntityType<MortarEntity>,
+    level: Level,
+) : ArtilleryEntity(type, level) {
     private var shooter: LivingEntity? = null
     var intelligent by INTELLIGENT
 
@@ -49,7 +52,8 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
 
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
         super.defineSynchedData(builder)
-        builder.define(INTELLIGENT, false)
+        builder
+            .define(INTELLIGENT, false)
             .define(TARGET_PITCH, -70f)
             .define(TARGET_YAW, this.yRot)
             .define(FIRE_TIME, 0)
@@ -76,7 +80,11 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
         }
     }
 
-    override fun vehicleShoot(living: LivingEntity?, weaponName: String, targetPos: Vec3?) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        weaponName: String,
+        targetPos: Vec3?,
+    ) {
         if (this.getItems().first().item !is MortarShellItem) return
         val gunData = getGunData(weaponName) ?: return
         if (entityData.get(FIRE_TIME) != 0) return
@@ -94,7 +102,7 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
                 soundInfo.vehicleReload,
                 SoundSource.PLAYERS,
                 1f,
-                1f
+                1f,
             )
         }
 
@@ -107,7 +115,7 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
                     position(),
                     (0.25f * gunData.get(GunProp.SOUND_RADIUS)).toFloat(),
                     random.nextFloat() * 0.1f + 1,
-                    null
+                    null,
                 )
             }
             if (soundInfo.fire3PFar != null) {
@@ -117,7 +125,7 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
                     position(),
                     gunData.get(GunProp.SOUND_RADIUS).toFloat(),
                     random.nextFloat() * 0.1f + 1,
-                    null
+                    null,
                 )
             }
         }
@@ -127,7 +135,10 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
         }
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val result = super.interact(player, hand)
         if (result != InteractionResult.PASS) return result
 
@@ -141,7 +152,8 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
         if (mainHandItem is MonitorItem && !this.entityData.get(INTELLIGENT)) {
             entityData.set(INTELLIGENT, true)
             if (player is ServerPlayer) {
-                player.level()
+                player
+                    .level()
                     .playSound(null, player.onPos, SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.5f, 1f)
             }
             if (!player.isCreative) {
@@ -151,16 +163,18 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
         }
 
         if (stack.`is`(ModTags.Items.TOOLS_CROWBAR)) {
-            if (this.getItems()
-                    .first().item is MortarShellItem && this.entityData.get(FIRE_TIME) == 0 && level() is ServerLevel
+            if (this
+                    .getItems()
+                    .first()
+                    .item is MortarShellItem && this.entityData.get(FIRE_TIME) == 0 && level() is ServerLevel
             ) {
                 vehicleShoot(player, "Main", targetPos.center)
             }
             return InteractionResult.SUCCESS
         }
 
-        if (mainHandItem is MortarShellItem && !player.isShiftKeyDown && this.entityData.get(FIRE_TIME) == 0
-            && this.getItems().first().isEmpty
+        if (mainHandItem is MortarShellItem && !player.isShiftKeyDown && this.entityData.get(FIRE_TIME) == 0 &&
+            this.getItems().first().isEmpty
         ) {
             this.getItems()[0] = stack.copyWithCount(1)
             if (!player.isCreative) {
@@ -210,22 +224,23 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
             val level = this.level()
             val gunData = getGunData("Main")
             if (level is ServerLevel && gunData != null) {
-                val entityToSpawn = MortarShellItem.createShell(
-                    shooter,
-                    level,
-                    this.getItems().first(),
-                    getProjectileGravity("Main"),
-                    gunData.get(GunProp.DAMAGE).toFloat(),
-                    gunData.get(GunProp.EXPLOSION_DAMAGE).toFloat(),
-                    gunData.get(GunProp.EXPLOSION_RADIUS).toFloat()
-                )
+                val entityToSpawn =
+                    MortarShellItem.createShell(
+                        shooter,
+                        level,
+                        this.getItems().first(),
+                        getProjectileGravity("Main"),
+                        gunData.get(GunProp.DAMAGE).toFloat(),
+                        gunData.get(GunProp.EXPLOSION_DAMAGE).toFloat(),
+                        gunData.get(GunProp.EXPLOSION_RADIUS).toFloat(),
+                    )
                 entityToSpawn.setPos(this.x, this.eyeY, this.z)
                 entityToSpawn.shoot(
                     this.lookAngle.x,
                     this.lookAngle.y,
                     this.lookAngle.z,
                     getProjectileVelocity("Main"),
-                    getProjectileSpread("Main")
+                    getProjectileSpread("Main"),
                 )
                 entityToSpawn.setLife(gunData.get(GunProp.PROJECTILE_LIFE))
                 level.addFreshEntity(entityToSpawn)
@@ -234,7 +249,7 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
                     lookAngle,
                     Vec3(this.x, this.eyeY, this.z).add(lookAngle.scale(1.5)),
                     level,
-                    this
+                    this,
                 )
 
                 this.clearContent()
@@ -252,7 +267,10 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
         var f = 0.98f
         if (this.onGround()) {
             val pos = this.blockPosBelowThatAffectsMyMovement
-            f = this.level().getBlockState(pos).block.friction * 0.98f
+            f = this
+                .level()
+                .getBlockState(pos)
+                .block.friction * 0.98f
         }
 
         this.deltaMovement = this.deltaMovement.multiply(f.toDouble(), 0.98, f.toDouble())
@@ -261,7 +279,11 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
         }
     }
 
-    override fun setTarget(stack: ItemStack, entity: Entity?, weaponName: String) {
+    override fun setTarget(
+        stack: ItemStack,
+        entity: Entity?,
+        weaponName: String,
+    ) {
         val parameters = stack.firingParameters
         var canAim = true
 
@@ -269,27 +291,30 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
         depressed = !parameters.isDepressed
         radius = parameters.radius
         val randomPos = targetPos.center.randomPos(radius).add(0.0, -1.0, 0.0)
-        val flatTrajectory = TrajectoryCalculator.calculateLaunchVector(
-            eyePosition,
-            randomPos,
-            getProjectileVelocity(weaponName).toDouble(),
-            getProjectileGravity(weaponName).toDouble(),
-            depressed
-        )
-        val highTrajectory = TrajectoryCalculator.calculateLaunchVector(
-            eyePosition,
-            randomPos,
-            getProjectileVelocity(weaponName).toDouble(),
-            getProjectileGravity(weaponName).toDouble(),
-            !depressed
-        )
+        val flatTrajectory =
+            TrajectoryCalculator.calculateLaunchVector(
+                eyePosition,
+                randomPos,
+                getProjectileVelocity(weaponName).toDouble(),
+                getProjectileGravity(weaponName).toDouble(),
+                depressed,
+            )
+        val highTrajectory =
+            TrajectoryCalculator.calculateLaunchVector(
+                eyePosition,
+                randomPos,
+                getProjectileVelocity(weaponName).toDouble(),
+                getProjectileGravity(weaponName).toDouble(),
+                !depressed,
+            )
 
         var component: Component = Component.literal("")
-        val location: Component = Component.translatable(
-            "tips.superbwarfare.mortar.position",
-            this.displayName,
-            "[${format0D(x)}, ${format0D(y)}, ${format0D(z)}]"
-        )
+        val location: Component =
+            Component.translatable(
+                "tips.superbwarfare.mortar.position",
+                this.displayName,
+                "[${format0D(x)}, ${format0D(y)}, ${format0D(z)}]",
+            )
         var angle = xRot
 
         if (flatTrajectory == null || highTrajectory == null) {
@@ -306,7 +331,7 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
                     if (entity is Player) {
                         entity.displayClientMessage(
                             location.copy().append(component).withStyle(ChatFormatting.RED),
-                            false
+                            false,
                         )
                     }
                     return
@@ -329,13 +354,14 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
 
     override fun resetTarget(weaponName: String) {
         val randomPos = targetPos.center.randomPos(radius).add(0.0, -1.0, 0.0)
-        val launchVector = TrajectoryCalculator.calculateLaunchVector(
-            eyePosition,
-            randomPos,
-            getProjectileVelocity(weaponName).toDouble(),
-            getProjectileGravity(weaponName).toDouble(),
-            depressed
-        )
+        val launchVector =
+            TrajectoryCalculator.calculateLaunchVector(
+                eyePosition,
+                randomPos,
+                getProjectileVelocity(weaponName).toDouble(),
+                getProjectileGravity(weaponName).toDouble(),
+                depressed,
+            )
         this.look(randomPos)
 
         if (launchVector == null) {
@@ -391,17 +417,14 @@ open class MortarEntity(type: EntityType<MortarEntity>, level: Level) : Artiller
         }
     }
 
-    override fun getPickResult(): ItemStack? {
-        return ItemStack(ModItems.MORTAR_DEPLOYER.get())
-    }
+    override fun getPickResult(): ItemStack? = ItemStack(ModItems.MORTAR_DEPLOYER.get())
 
-    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
-        return super.canPlaceItem(slot, stack) && this.entityData.get(FIRE_TIME) == 0 && stack.item is MortarShellItem
-    }
+    override fun canPlaceItem(
+        slot: Int,
+        stack: ItemStack,
+    ): Boolean = super.canPlaceItem(slot, stack) && this.entityData.get(FIRE_TIME) == 0 && stack.item is MortarShellItem
 
-    override fun canBind(): Boolean {
-        return this.entityData.get(INTELLIGENT)
-    }
+    override fun canBind(): Boolean = this.entityData.get(INTELLIGENT)
 
     companion object {
         @JvmField

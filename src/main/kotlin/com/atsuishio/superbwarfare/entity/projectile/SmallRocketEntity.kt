@@ -11,8 +11,11 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.BlockHitResult
 
-open class SmallRocketEntity(type: EntityType<out SmallRocketEntity>, level: Level) :
-    FastThrowableProjectile(type, level), BasicGeoProjectileEntity {
+open class SmallRocketEntity(
+    type: EntityType<out SmallRocketEntity>,
+    level: Level,
+) : FastThrowableProjectile(type, level),
+    BasicGeoProjectileEntity {
     init {
         this.noCulling = true
         this.damageValue = 140f
@@ -21,9 +24,7 @@ open class SmallRocketEntity(type: EntityType<out SmallRocketEntity>, level: Lev
         this.durability = 20
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.SMALL_ROCKET.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.SMALL_ROCKET.get()
 
     override fun afterHitBlock(result: BlockHitResult) {
         if (this.level() is ServerLevel) {
@@ -49,7 +50,7 @@ open class SmallRocketEntity(type: EntityType<out SmallRocketEntity>, level: Lev
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
                 ParticleTool.sendParticle(
                     level,
@@ -62,17 +63,13 @@ open class SmallRocketEntity(type: EntityType<out SmallRocketEntity>, level: Lev
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
             }
         }
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.2f
-    }
+    override fun getVolume(): Float = 0.2f
 }

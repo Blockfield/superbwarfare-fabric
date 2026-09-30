@@ -12,14 +12,16 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.Mth
 
-class Tm62Renderer(renderManager: EntityRendererProvider.Context) : EntityRenderer<Tm62Entity>(renderManager) {
+class Tm62Renderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<Tm62Entity>(renderManager) {
     override fun render(
         entityIn: Tm62Entity,
         entityYaw: Float,
         partialTicks: Float,
         poseStack: PoseStack,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         val instance = entityIn.modelInstance ?: return
 
@@ -34,19 +36,15 @@ class Tm62Renderer(renderManager: EntityRendererProvider.Context) : EntityRender
             poseStack,
             vertexConsumer,
             packedLightIn,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
     }
 
-    override fun getTextureLocation(pEntity: Tm62Entity): ResourceLocation {
-        return TEXTURE
-    }
+    override fun getTextureLocation(pEntity: Tm62Entity): ResourceLocation = TEXTURE
 
-    override fun shouldShowName(pEntity: Tm62Entity): Boolean {
-        return false
-    }
+    override fun shouldShowName(pEntity: Tm62Entity): Boolean = false
 
     companion object {
         val TEXTURE = loc("textures/bedrock/projectile/tm_62.png")

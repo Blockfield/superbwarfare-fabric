@@ -7,8 +7,6 @@ interface ExplosionAccess {
     fun `superbwarfare$getRadius`(): Float
 
     companion object {
-        fun of(explosion: Explosion): ExplosionAccess {
-            return explosion as ExplosionAccess
-        }
+        fun of(explosion: Explosion): ExplosionAccess = explosion as ExplosionAccess
     }
 }

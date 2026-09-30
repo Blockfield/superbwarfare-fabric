@@ -1,7 +1,10 @@
 package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.Mod.loc
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.event.ClientEventHandler
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.components.EditBox
@@ -9,9 +12,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 @Environment(EnvType.CLIENT)
 open class MissilePosInputScreen : Screen(Component.translatable("container.superbwarfare.missile_pos_input")) {
@@ -37,11 +37,14 @@ open class MissilePosInputScreen : Screen(Component.translatable("container.supe
         }
     }
 
-    override fun isPauseScreen(): Boolean {
-        return false
-    }
+    override fun isPauseScreen(): Boolean = false
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderBlurredBackground(pPartialTick)
 
         val i = (this.width - this.imageWidth) / 2
@@ -57,11 +60,16 @@ open class MissilePosInputScreen : Screen(Component.translatable("container.supe
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
     }
 
-    protected fun renderPositions(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    protected fun renderPositions(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         val poseStack = pGuiGraphics.pose()
 
         poseStack.pushPose()
@@ -104,8 +112,13 @@ open class MissilePosInputScreen : Screen(Component.translatable("container.supe
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class DoneButton(pX: Int, pY: Int, pWidth: Int, pHeight: Int) :
-        AbstractButton(pX, pY, pWidth, pHeight, Component.empty()), AccessoriesButtonStub {
+    internal inner class DoneButton(
+        pX: Int,
+        pY: Int,
+        pWidth: Int,
+        pHeight: Int,
+    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             if (!this@MissilePosInputScreen.init) return
             if (this@MissilePosInputScreen.minecraft != null) {
@@ -121,7 +134,12 @@ open class MissilePosInputScreen : Screen(Component.translatable("container.supe
         override fun updateWidgetNarration(pNarrationElementOutput: NarrationElementOutput) {
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             pGuiGraphics.blit(
                 TEXTURE,
                 this.x,
@@ -131,17 +149,16 @@ open class MissilePosInputScreen : Screen(Component.translatable("container.supe
                 48,
                 15,
                 128,
-                128
+                128,
             )
         }
 
-        fun getEditBoxValue(value: String): Int? {
-            return try {
+        fun getEditBoxValue(value: String): Int? =
+            try {
                 value.toInt()
             } catch (_: NumberFormatException) {
                 null
             }
-        }
     }
 
     companion object {

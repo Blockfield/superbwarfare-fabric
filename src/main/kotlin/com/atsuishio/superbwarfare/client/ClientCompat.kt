@@ -20,11 +20,23 @@ val KeyMapping.boundKey: InputConstants.Key
  * считает позиции во float. В ваниле есть только int, поэтому дробную часть кладём в матрицу --
  * позиция символов остаётся ровно той же, что была на NeoForge.
  */
-fun GuiGraphics.drawString(font: Font, text: String, x: Float, y: Float, color: Int, dropShadow: Boolean): Int =
-    withTranslation(x, y) { drawString(font, text, 0, 0, color, dropShadow) }
+fun GuiGraphics.drawString(
+    font: Font,
+    text: String,
+    x: Float,
+    y: Float,
+    color: Int,
+    dropShadow: Boolean,
+): Int = withTranslation(x, y) { drawString(font, text, 0, 0, color, dropShadow) }
 
-fun GuiGraphics.drawString(font: Font, text: Component, x: Float, y: Float, color: Int, dropShadow: Boolean): Int =
-    withTranslation(x, y) { drawString(font, text, 0, 0, color, dropShadow) }
+fun GuiGraphics.drawString(
+    font: Font,
+    text: Component,
+    x: Float,
+    y: Float,
+    color: Int,
+    dropShadow: Boolean,
+): Int = withTranslation(x, y) { drawString(font, text, 0, 0, color, dropShadow) }
 
 fun GuiGraphics.drawString(
     font: Font,
@@ -32,10 +44,14 @@ fun GuiGraphics.drawString(
     x: Float,
     y: Float,
     color: Int,
-    dropShadow: Boolean
+    dropShadow: Boolean,
 ): Int = withTranslation(x, y) { drawString(font, text, 0, 0, color, dropShadow) }
 
-private inline fun GuiGraphics.withTranslation(x: Float, y: Float, block: GuiGraphics.() -> Int): Int {
+private inline fun GuiGraphics.withTranslation(
+    x: Float,
+    y: Float,
+    block: GuiGraphics.() -> Int,
+): Int {
     pose().pushPose()
     pose().translate(x, y, 0f)
     val result = block()

@@ -1,5 +1,7 @@
 package com.atsuishio.superbwarfare.item.gun.special;
 
+import static com.atsuishio.superbwarfare.tools.ParticleTool.sendParticle;
+
 import com.atsuishio.superbwarfare.client.renderer.gun.RepairToolItemRenderer;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.GunProp;
@@ -15,6 +17,8 @@ import com.atsuishio.superbwarfare.tools.DamageHandler;
 import com.atsuishio.superbwarfare.tools.EntityFindUtil;
 import com.atsuishio.superbwarfare.tools.SeekTool;
 import com.atsuishio.superbwarfare.world.phys.EntityResult;
+
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,14 +33,13 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 import java.util.function.Supplier;
-
-import static com.atsuishio.superbwarfare.tools.ParticleTool.sendParticle;
 
 public class RepairToolItem extends GunGeoItem {
 
@@ -50,7 +53,14 @@ public class RepairToolItem extends GunGeoItem {
     }
 
     @Override
-    public void onRayHitBlock(Entity shooter, @NotNull ServerLevel level, @Nullable Entity target, @NotNull GunData data, Vec3 shootDirection, @NotNull BlockHitResult result, @NotNull Vec3 pos) {
+    public void onRayHitBlock(
+            Entity shooter,
+            @NotNull ServerLevel level,
+            @Nullable Entity target,
+            @NotNull GunData data,
+            Vec3 shootDirection,
+            @NotNull BlockHitResult result,
+            @NotNull Vec3 pos) {
         super.onRayHitBlock(shooter, level, target, data, shootDirection, result, pos);
         BlockPos blockPos = result.getBlockPos();
         BlockState state = level.getBlockState(blockPos);
@@ -68,24 +78,52 @@ public class RepairToolItem extends GunGeoItem {
     }
 
     @Override
-    public void onRayHitEntity(Entity shooter, ServerLevel level, @NotNull GunData data, EntityResult result, Vec3 shootPosition, Vec3 shootDirection) {
+    public void onRayHitEntity(
+            Entity shooter,
+            ServerLevel level,
+            @NotNull GunData data,
+            EntityResult result,
+            Vec3 shootPosition,
+            Vec3 shootDirection) {
         var target = result.getEntity();
         var pos = result.getHitPos();
-        level.playSound(null, result.getHitPos().x, result.getHitPos().y, result.getHitPos().z, this.getRayHitEntitySound(data), SoundSource.PLAYERS, 0.7F, (float) ((2 * Math.random() - 1) * 0.05f + 1.0f));
+        level.playSound(
+                null,
+                result.getHitPos().x,
+                result.getHitPos().y,
+                result.getHitPos().z,
+                this.getRayHitEntitySound(data),
+                SoundSource.PLAYERS,
+                0.7F,
+                (float) ((2 * Math.random() - 1) * 0.05f + 1.0f));
 
         // 修理实体（多重含义）
         if (target instanceof VehicleEntity vehicle) {
             Entity lastDriver = EntityFindUtil.findEntity(level, vehicle.getLastDriverUUID());
-            if ((lastDriver != null && !SeekTool.IN_SAME_TEAM.test(shooter, lastDriver) && lastDriver.getTeam() != null) || shooter.isShiftKeyDown()) {
-                vehicle.hurt(ModDamageTypes.causeRepairToolDamage(level.registryAccess(), shooter), 0.5f);
+            if ((lastDriver != null
+                            && !SeekTool.IN_SAME_TEAM.test(shooter, lastDriver)
+                            && lastDriver.getTeam() != null)
+                    || shooter.isShiftKeyDown()) {
+                vehicle.hurt(
+                        ModDamageTypes.causeRepairToolDamage(level.registryAccess(), shooter),
+                        0.5f);
                 if (shooter instanceof ServerPlayer player) {
-                    player.level().playSound(null, player.blockPosition(), ModSounds.INDICATION.get(), SoundSource.VOICE, 0.1f, 1);
+                    player.level()
+                            .playSound(
+                                    null,
+                                    player.blockPosition(),
+                                    ModSounds.INDICATION.get(),
+                                    SoundSource.VOICE,
+                                    0.1f,
+                                    1);
                     ServerPlayNetworking.send(player, new ClientIndicatorMessage(0, 5));
                 }
             } else if (!vehicle.isWreck()) {
                 vehicle.heal(0.5f + 0.0025f * vehicle.getMaxHealth());
             } else {
-                vehicle.hurt(ModDamageTypes.causeRepairToolDamage(level.registryAccess(), shooter), 0.5f + 0.0025f * vehicle.getMaxHealth());
+                vehicle.hurt(
+                        ModDamageTypes.causeRepairToolDamage(level.registryAccess(), shooter),
+                        0.5f + 0.0025f * vehicle.getMaxHealth());
             }
 
             this.summonRayHitParticle(level, null, pos, shootDirection.scale(-1).normalize());
@@ -97,24 +135,44 @@ public class RepairToolItem extends GunGeoItem {
                 iCustomKnockback.superbWarfare$setKnockbackStrength(0);
 
                 float damage = data.get(GunProp.DAMAGE).floatValue();
-                DamageHandler.doDamage(living, ModDamageTypes.causeRepairToolDamage(level.registryAccess(), shooter), damage);
+                DamageHandler.doDamage(
+                        living,
+                        ModDamageTypes.causeRepairToolDamage(level.registryAccess(), shooter),
+                        damage);
                 target.invulnerableTime = 0;
 
                 iCustomKnockback.superbWarfare$resetKnockbackStrength();
 
                 if (shooter instanceof ServerPlayer player) {
-                    player.level().playSound(null, player.blockPosition(), ModSounds.INDICATION.get(), SoundSource.VOICE, 0.1f, 1);
+                    player.level()
+                            .playSound(
+                                    null,
+                                    player.blockPosition(),
+                                    ModSounds.INDICATION.get(),
+                                    SoundSource.VOICE,
+                                    0.1f,
+                                    1);
                     ServerPlayNetworking.send(player, new ClientIndicatorMessage(0, 5));
                 }
             }
             this.summonRayHitParticle(level, null, pos, shootDirection.scale(-1).normalize());
         } else {
             float damage = data.get(GunProp.DAMAGE).floatValue();
-            DamageHandler.doDamage(target, ModDamageTypes.causeRepairToolDamage(level.registryAccess(), shooter), damage);
+            DamageHandler.doDamage(
+                    target,
+                    ModDamageTypes.causeRepairToolDamage(level.registryAccess(), shooter),
+                    damage);
             target.invulnerableTime = 0;
 
             if (shooter instanceof ServerPlayer player) {
-                player.level().playSound(null, player.blockPosition(), ModSounds.INDICATION.get(), SoundSource.VOICE, 0.1f, 1);
+                player.level()
+                        .playSound(
+                                null,
+                                player.blockPosition(),
+                                ModSounds.INDICATION.get(),
+                                SoundSource.VOICE,
+                                0.1f,
+                                1);
                 ServerPlayNetworking.send(player, new ClientIndicatorMessage(0, 5));
             }
 
@@ -122,22 +180,56 @@ public class RepairToolItem extends GunGeoItem {
         }
     }
 
-    public void summonRayHitParticle(ServerLevel serverLevel, @Nullable BlockState state, Vec3 pos, Vec3 dir) {
+    public void summonRayHitParticle(
+            ServerLevel serverLevel, @Nullable BlockState state, Vec3 pos, Vec3 dir) {
         if (state != null) {
             BlockParticleOption particleData = new BlockParticleOption(ParticleTypes.BLOCK, state);
             for (int i = 0; i < 1; i++) {
                 Vec3 vec3 = this.randomVec(dir, 40);
-                sendParticle(serverLevel, particleData, pos.x + 0.05 * i * dir.x, pos.y + 0.05 * i * dir.y, pos.z + 0.05 * i * dir.z, 0, vec3.x, vec3.y, vec3.z, 10, true);
+                sendParticle(
+                        serverLevel,
+                        particleData,
+                        pos.x + 0.05 * i * dir.x,
+                        pos.y + 0.05 * i * dir.y,
+                        pos.z + 0.05 * i * dir.z,
+                        0,
+                        vec3.x,
+                        vec3.y,
+                        vec3.z,
+                        10,
+                        true);
             }
         }
 
         for (int i = 0; i < 3; i++) {
             Vec3 vec3 = this.randomVec(dir, 20);
-            sendParticle(serverLevel, ParticleTypes.SMOKE, pos.x, pos.y, pos.z, 0, vec3.x, vec3.y, vec3.z, 0.05, true);
+            sendParticle(
+                    serverLevel,
+                    ParticleTypes.SMOKE,
+                    pos.x,
+                    pos.y,
+                    pos.z,
+                    0,
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                    0.05,
+                    true);
         }
         for (int i = 0; i < 2; i++) {
             Vec3 vec3 = this.randomVec(dir, 80);
-            sendParticle(serverLevel, ModParticleTypes.FIRE_STAR.get(), pos.x, pos.y, pos.z, 0, vec3.x, vec3.y, vec3.z, 0.2 + 0.1 * Math.random(), true);
+            sendParticle(
+                    serverLevel,
+                    ModParticleTypes.FIRE_STAR.get(),
+                    pos.x,
+                    pos.y,
+                    pos.z,
+                    0,
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                    0.2 + 0.1 * Math.random(),
+                    true);
         }
     }
 }

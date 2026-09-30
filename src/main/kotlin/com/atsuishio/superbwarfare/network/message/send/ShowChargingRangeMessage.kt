@@ -6,7 +6,9 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ShowChargingRangeMessage(val operation: Boolean) : ServerPacketPayload() {
+data class ShowChargingRangeMessage(
+    val operation: Boolean,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         val menu = player.containerMenu as? ChargingStationMenu ?: return

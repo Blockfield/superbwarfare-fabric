@@ -1,13 +1,14 @@
 package com.atsuishio.superbwarfare
 
-import com.atsuishio.superbwarfare.config.CLIENT_CONFIG
-import com.atsuishio.superbwarfare.config.COMMON_CONFIG
-import com.atsuishio.superbwarfare.config.SERVER_CONFIG
 import com.atsuishio.superbwarfare.api.event.RegisterContainersEvent
 import com.atsuishio.superbwarfare.block.VehicleAssemblingTableBlock
 import com.atsuishio.superbwarfare.capability.player.PlayerVariable
 import com.atsuishio.superbwarfare.command.CommandRegister
 import com.atsuishio.superbwarfare.compat.CompatHolder
+import com.atsuishio.superbwarfare.config.CLIENT_CONFIG
+import com.atsuishio.superbwarfare.config.COMMON_CONFIG
+import com.atsuishio.superbwarfare.config.SERVER_CONFIG
+import com.atsuishio.superbwarfare.data.CustomData
 import com.atsuishio.superbwarfare.data.DataLoader
 import com.atsuishio.superbwarfare.data.container.ContainerDataManager
 import com.atsuishio.superbwarfare.data.loot.WreckageLootDataManager
@@ -19,6 +20,8 @@ import com.atsuishio.superbwarfare.event.EntityUseGunEventHandler
 import com.atsuishio.superbwarfare.event.HitboxHelperEventHandler
 import com.atsuishio.superbwarfare.event.LivingEventHandler
 import com.atsuishio.superbwarfare.event.PlayerEventHandler
+import com.atsuishio.superbwarfare.fabric.EntityHooks
+import com.atsuishio.superbwarfare.init.*
 import com.atsuishio.superbwarfare.item.container.ContainerBlockItem
 import com.atsuishio.superbwarfare.item.curio.IffItem
 import com.atsuishio.superbwarfare.item.misc.TowBarItem
@@ -28,20 +31,17 @@ import com.atsuishio.superbwarfare.mobeffect.BurnMobEffect
 import com.atsuishio.superbwarfare.mobeffect.PhosphorusFireMobEffect
 import com.atsuishio.superbwarfare.mobeffect.ShockMobEffect
 import com.atsuishio.superbwarfare.mobeffect.TraumaMobEffect
+import com.atsuishio.superbwarfare.network.initializeNetwork
 import com.atsuishio.superbwarfare.perk.damage.BattleOfWits
 import com.atsuishio.superbwarfare.perk.functional.PowerfulAttraction
 import com.atsuishio.superbwarfare.procedures.WelcomeProcedure
 import com.atsuishio.superbwarfare.recipe.ModPotionRecipes
+import com.atsuishio.superbwarfare.tiers.ModArmorMaterial
 import com.atsuishio.superbwarfare.tools.ServerSyncedEntityHandler
+import com.atsuishio.superbwarfare.tools.postEvent
 import com.atsuishio.superbwarfare.world.saveddata.ChunkPosSavedData
 import com.atsuishio.superbwarfare.world.saveddata.ProjectileChunkSavedData
 import com.atsuishio.superbwarfare.world.saveddata.TDMSavedData
-import com.atsuishio.superbwarfare.data.CustomData
-import com.atsuishio.superbwarfare.fabric.EntityHooks
-import com.atsuishio.superbwarfare.tools.postEvent
-import com.atsuishio.superbwarfare.init.*
-import com.atsuishio.superbwarfare.network.initializeNetwork
-import com.atsuishio.superbwarfare.tiers.ModArmorMaterial
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
@@ -74,10 +74,16 @@ object Mod : ModInitializer {
     private val CLIENT_QUEUE: MutableCollection<Task> = ConcurrentLinkedQueue()
 
     @JvmStatic
-    fun queueServerWork(tick: Int, action: Runnable) = SERVER_QUEUE.add(AbstractMap.SimpleEntry(action, tick))
+    fun queueServerWork(
+        tick: Int,
+        action: Runnable,
+    ) = SERVER_QUEUE.add(AbstractMap.SimpleEntry(action, tick))
 
     @JvmStatic
-    fun queueClientWork(tick: Int, action: Runnable) = CLIENT_QUEUE.add(AbstractMap.SimpleEntry(action, tick))
+    fun queueClientWork(
+        tick: Int,
+        action: Runnable,
+    ) = CLIENT_QUEUE.add(AbstractMap.SimpleEntry(action, tick))
 
     @JvmStatic
     fun executeWork(queue: MutableCollection<Task>) {
@@ -86,7 +92,7 @@ object Mod : ModInitializer {
                 .onEach { it.setValue(it.value - 1) }
                 .filter { it.value <= 0 }
                 .onEach { it.key.run() }
-                .toSet()
+                .toSet(),
         )
     }
 
@@ -181,7 +187,7 @@ object Mod : ModInitializer {
             loc("sbw_legacy"),
             container,
             Component.translatable("pack.superbwarfare.sbw_legacy"),
-            ResourcePackActivationType.NORMAL
+            ResourcePackActivationType.NORMAL,
         )
     }
 }

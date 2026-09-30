@@ -9,13 +9,16 @@ object WelcomeProcedure {
     }
 
     fun execute() {
-        val version = FabricLoader.getInstance()
-            .getModContainer(Mod.MODID)
-            .map { it.metadata.version.friendlyString }
-            .orElse("unknown")
+        val version =
+            FabricLoader
+                .getInstance()
+                .getModContainer(Mod.MODID)
+                .map { it.metadata.version.friendlyString }
+                .orElse("unknown")
 
         Mod.LOGGER.info(
-            """Now Loading...
+            """
+            Now Loading...
 * This Mod used to be made by MCreator *
   _____  ______  __          __ 
  / ____| |  __ \ \ \        / / 
@@ -24,7 +27,7 @@ object WelcomeProcedure {
  ____) | | |__) |   \  /\  /    
 |_____/  |_____/     \/  \/
 * Superb Warfare - Version: $version *
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

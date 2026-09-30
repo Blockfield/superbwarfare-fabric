@@ -10,7 +10,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Serializable
-data class SensitivityMessage(val isAdd: Boolean) : ServerPacketPayload() {
+data class SensitivityMessage(
+    val isAdd: Boolean,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
 
@@ -26,7 +28,7 @@ data class SensitivityMessage(val isAdd: Boolean) : ServerPacketPayload() {
         data.save()
         player.displayClientMessage(
             Component.translatable("tips.superbwarfare.sensitivity", data.sensitivity.get()),
-            true
+            true,
         )
     }
 }

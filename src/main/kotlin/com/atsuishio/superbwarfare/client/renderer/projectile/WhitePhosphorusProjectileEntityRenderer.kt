@@ -13,11 +13,13 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
 
-class WhitePhosphorusProjectileEntityRenderer(pContext: EntityRendererProvider.Context) :
-    EntityRenderer<WhitePhosphorusProjectileEntity>(pContext) {
-    override fun getBlockLightLevel(pEntity: WhitePhosphorusProjectileEntity, pPos: BlockPos): Int {
-        return 15
-    }
+class WhitePhosphorusProjectileEntityRenderer(
+    pContext: EntityRendererProvider.Context,
+) : EntityRenderer<WhitePhosphorusProjectileEntity>(pContext) {
+    override fun getBlockLightLevel(
+        pEntity: WhitePhosphorusProjectileEntity,
+        pPos: BlockPos,
+    ): Int = 15
 
     override fun render(
         pEntity: WhitePhosphorusProjectileEntity,
@@ -25,7 +27,7 @@ class WhitePhosphorusProjectileEntityRenderer(pContext: EntityRendererProvider.C
         pPartialTicks: Float,
         pMatrixStack: PoseStack,
         pBuffer: MultiBufferSource,
-        pPackedLight: Int
+        pPackedLight: Int,
     ) {
         pMatrixStack.pushPose()
         pMatrixStack.mulPose(this.entityRenderDispatcher.cameraOrientation())
@@ -40,9 +42,7 @@ class WhitePhosphorusProjectileEntityRenderer(pContext: EntityRendererProvider.C
         super.render(pEntity, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight)
     }
 
-    override fun getTextureLocation(entity: WhitePhosphorusProjectileEntity): ResourceLocation {
-        return TEXTURES[entity.tickCount % 8]
-    }
+    override fun getTextureLocation(entity: WhitePhosphorusProjectileEntity): ResourceLocation = TEXTURES[entity.tickCount % 8]
 
     companion object {
         private fun vertex(
@@ -52,10 +52,14 @@ class WhitePhosphorusProjectileEntityRenderer(pContext: EntityRendererProvider.C
             pX: Float,
             pY: Float,
             pU: Int,
-            pV: Int
+            pV: Int,
         ) {
-            pConsumer.addVertex(pose, pX - 0.5f, pY - 0.25f, 0f).setColor(255, 255, 255, 255)
-                .setUv(pU.toFloat(), pV.toFloat()).setOverlay(OverlayTexture.NO_OVERLAY).setLight(pLightmapUV)
+            pConsumer
+                .addVertex(pose, pX - 0.5f, pY - 0.25f, 0f)
+                .setColor(255, 255, 255, 255)
+                .setUv(pU.toFloat(), pV.toFloat())
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(pLightmapUV)
                 .setNormal(pose, 0f, 1f, 0f)
         }
 

@@ -16,14 +16,14 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 
-class SenpaiRenderer(renderManager: EntityRendererProvider.Context) : EntityRenderer<SenpaiEntity>(renderManager) {
+class SenpaiRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<SenpaiEntity>(renderManager) {
     init {
         this.shadowRadius = 0.5f
     }
 
-    override fun getTextureLocation(pEntity: SenpaiEntity): ResourceLocation {
-        return TEXTURE
-    }
+    override fun getTextureLocation(pEntity: SenpaiEntity): ResourceLocation = TEXTURE
 
     override fun render(
         pEntity: SenpaiEntity,
@@ -31,7 +31,7 @@ class SenpaiRenderer(renderManager: EntityRendererProvider.Context) : EntityRend
         pPartialTick: Float,
         pPoseStack: PoseStack,
         pBuffer: MultiBufferSource,
-        pPackedLight: Int
+        pPackedLight: Int,
     ) {
         val ani = pEntity.animationInstance ?: return
         val instance = pEntity.modelInstance ?: return
@@ -50,7 +50,7 @@ class SenpaiRenderer(renderManager: EntityRendererProvider.Context) : EntityRend
             RenderType.entityCutout(getTextureLocation(pEntity)),
             BedrockModelRenderTypes.polyMeshCutout(getTextureLocation(pEntity)),
             pPackedLight,
-            OverlayTexture.pack(0f, pEntity.hurtTime > 0 || pEntity.deathTime > 0)
+            OverlayTexture.pack(0f, pEntity.hurtTime > 0 || pEntity.deathTime > 0),
         )
         pPoseStack.popPose()
     }

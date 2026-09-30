@@ -14,11 +14,11 @@ import com.atsuishio.superbwarfare.tools.seekQuery
 import com.atsuishio.superbwarfare.tools.worldToScreen
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.util.Mth
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -58,19 +58,29 @@ object JavelinHudOverlay : CommonOverlay("javelin_hud") {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
             val moveX =
-                (-32 * ClientEventHandler.turnRot[1] - (if (player.isSprinting) 100 else 67) * ClientEventHandler.movePosX + 3 * ClientEventHandler.cameraRot[2]).toFloat()
+                (
+                    -32 * ClientEventHandler.turnRot[1] - (if (player.isSprinting) 100 else 67) * ClientEventHandler.movePosX +
+                        3 * ClientEventHandler.cameraRot[2]
+                ).toFloat()
             val moveY =
-                (-32 * ClientEventHandler.turnRot[0] + 100 * ClientEventHandler.velocityY.toFloat() - (if (player.isSprinting) 100 else 67) * ClientEventHandler.movePosY - 12 * ClientEventHandler.boltMove + 3 * ClientEventHandler.cameraRot[1]).toFloat()
-            scopeScale = Mth.lerp(
-                (0.5f * deltaFrame).toDouble(),
-                scopeScale.toDouble(),
-                1.35f + (0.2f * ClientEventHandler.boltMove)
-            ).toFloat()
+                (
+                    -32 * ClientEventHandler.turnRot[0] + 100 * ClientEventHandler.velocityY.toFloat() -
+                        (if (player.isSprinting) 100 else 67) * ClientEventHandler.movePosY -
+                        12 * ClientEventHandler.boltMove +
+                        3 * ClientEventHandler.cameraRot[1]
+                ).toFloat()
+            scopeScale =
+                Mth
+                    .lerp(
+                        (0.5f * deltaFrame).toDouble(),
+                        scopeScale.toDouble(),
+                        1.35f + (0.2f * ClientEventHandler.boltMove),
+                    ).toFloat()
             val f = min(w, h).toFloat()
             val f1: Float = min(w.toFloat() / f, h.toFloat() / f) * scopeScale
             val i = Mth.floor(f * f1).toFloat()
@@ -90,7 +100,7 @@ object JavelinHudOverlay : CommonOverlay("javelin_hud") {
                 i,
                 j,
                 i,
-                j
+                j,
             )
             RenderHelper.preciseBlit(
                 guiGraphics,
@@ -102,7 +112,7 @@ object JavelinHudOverlay : CommonOverlay("javelin_hud") {
                 i,
                 j,
                 i,
-                j
+                j,
             )
             if (tag.getInt("SeekTime") in 2..<20) {
                 RenderHelper.preciseBlit(guiGraphics, SEEK, k, l, 0f, 0f, i, j, i, j)
@@ -116,30 +126,33 @@ object JavelinHudOverlay : CommonOverlay("javelin_hud") {
             RenderSystem.disableBlend()
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
-            val decoy = TraceTool.findLookDecoy(
-                player,
-                cameraPos,
-                player.getViewVector(deltaTracker.getGameTimeDeltaPartialTick(true)),
-                512.0
-            )
+            val decoy =
+                TraceTool.findLookDecoy(
+                    player,
+                    cameraPos,
+                    player.getViewVector(deltaTracker.getGameTimeDeltaPartialTick(true)),
+                    512.0,
+                )
 
             if (decoy == null) {
                 val targetEntity = ClientEventHandler.lockingEntity
-                val entities = player.seekQuery {
-                    withinRangeSeekWeapon(
-                        data.get(GunProp.SEEK_RANGE),
-                        data.get(GunProp.MAX_GUIDED_RANGE),
-                        data.get(GunProp.AFFECTED_BY_STEALTH_TARGET),
-                        data.get(GunProp.CAN_GUIDED_BY_RADAR)
-                    )
-                    withinAngle(data.get(GunProp.SEEK_ANGLE))
-                    baseFilter()
-                    heightRange(data.get(GunProp.MIN_TARGET_HEIGHT), data.get(GunProp.MAX_TARGET_HEIGHT))
-                    smokeFilter()
-                    noVehicle()
-                    noClip()
-                    notFriendly()
-                }.buildSeekWeapon(data.get(GunProp.CAN_GUIDED_BY_RADAR))
+                val entities =
+                    player
+                        .seekQuery {
+                            withinRangeSeekWeapon(
+                                data.get(GunProp.SEEK_RANGE),
+                                data.get(GunProp.MAX_GUIDED_RANGE),
+                                data.get(GunProp.AFFECTED_BY_STEALTH_TARGET),
+                                data.get(GunProp.CAN_GUIDED_BY_RADAR),
+                            )
+                            withinAngle(data.get(GunProp.SEEK_ANGLE))
+                            baseFilter()
+                            heightRange(data.get(GunProp.MIN_TARGET_HEIGHT), data.get(GunProp.MAX_TARGET_HEIGHT))
+                            smokeFilter()
+                            noVehicle()
+                            noClip()
+                            notFriendly()
+                        }.buildSeekWeapon(data.get(GunProp.CAN_GUIDED_BY_RADAR))
                 val nearestEntity = ClientEventHandler.nearestEntity
 
                 if (ClientEventHandler.guideType == 0) {
@@ -155,7 +168,13 @@ object JavelinHudOverlay : CommonOverlay("javelin_hud") {
 
                         RenderHelper.preciseBlitWithColor(
                             guiGraphics,
-                            if (lockOn) FRAME_LOCK else if (nearest) FRAME_TARGET else FRAME,
+                            if (lockOn) {
+                                FRAME_LOCK
+                            } else if (nearest) {
+                                FRAME_TARGET
+                            } else {
+                                FRAME
+                            },
                             x - 12,
                             y - 12,
                             0f,
@@ -164,7 +183,7 @@ object JavelinHudOverlay : CommonOverlay("javelin_hud") {
                             24f,
                             24f,
                             24f,
-                            -0x1
+                            -0x1,
                         )
                         poseStack.popPose()
                     }
@@ -189,7 +208,7 @@ object JavelinHudOverlay : CommonOverlay("javelin_hud") {
                                 24f,
                                 24f,
                                 24f,
-                                -0x1
+                                -0x1,
                             )
                             poseStack.popPose()
                         }

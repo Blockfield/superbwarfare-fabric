@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import it.unimi.dsi.fastutil.longs.LongSet
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.SectionPos
@@ -15,7 +16,6 @@ import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.chunk.LevelChunk
 import net.minecraft.world.level.chunk.ProtoChunk
 import net.minecraft.world.level.chunk.status.ChunkStatus
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.world.level.saveddata.SavedData
 
 /**
@@ -29,8 +29,9 @@ import net.minecraft.world.level.saveddata.SavedData
  *
  * @param chunks the persisted set of chunk positions to keep loaded (survives server restart)
  */
-class ProjectileChunkSavedData private constructor(private val chunks: LongOpenHashSet) : SavedData() {
-
+class ProjectileChunkSavedData private constructor(
+    private val chunks: LongOpenHashSet,
+) : SavedData() {
     /** Pending chunks to process (not persisted) */
     private val queue: LongArrayFIFOQueue = LongArrayFIFOQueue()
 
@@ -52,7 +53,10 @@ class ProjectileChunkSavedData private constructor(private val chunks: LongOpenH
     //  NBT Persistence
     // ──────────────────────────────────────────────
 
-    override fun save(tag: CompoundTag, registry: HolderLookup.Provider): CompoundTag {
+    override fun save(
+        tag: CompoundTag,
+        registry: HolderLookup.Provider,
+    ): CompoundTag {
         tag.putLongArray(KEY_LOADED_CHUNKS, chunks.toLongArray())
         return tag
     }
@@ -80,9 +84,10 @@ class ProjectileChunkSavedData private constructor(private val chunks: LongOpenH
     fun tick(level: ServerLevel) {
         val forcedChunks: LongSet = level.forcedChunks
 
-        val maxForceLoaded = ProjectileConfig.PROJECTILE_MAX_CHUNKS_FORCE_LOADED.get().let {
-            if (it <= 0) Int.MAX_VALUE else it
-        }
+        val maxForceLoaded =
+            ProjectileConfig.PROJECTILE_MAX_CHUNKS_FORCE_LOADED.get().let {
+                if (it <= 0) Int.MAX_VALUE else it
+            }
         val maxEachTick = ProjectileConfig.PROJECTILE_MAX_CHUNKS_LOADED_EACH_TICK.get()
         val chunkAge = ProjectileConfig.PROJECTILE_CHUNK_AGE.get()
         val entityLoadTimeout = -chunkAge - 1
@@ -98,11 +103,12 @@ class ProjectileChunkSavedData private constructor(private val chunks: LongOpenH
             // Chunk was just loaded (TTL = -1): check if entities are active in it
             if (value <= -1) {
                 val chunkPos = ChunkPos(chunkLong)
-                val blockPos = BlockPos(
-                    SectionPos.sectionToBlockCoord(chunkPos.x),
-                    0,
-                    SectionPos.sectionToBlockCoord(chunkPos.z)
-                )
+                val blockPos =
+                    BlockPos(
+                        SectionPos.sectionToBlockCoord(chunkPos.x),
+                        0,
+                        SectionPos.sectionToBlockCoord(chunkPos.z),
+                    )
                 if (level.isPositionEntityTicking(blockPos)) {
                     value = chunkAge // Reset TTL — entities are still here
                 }
@@ -178,7 +184,10 @@ class ProjectileChunkSavedData private constructor(private val chunks: LongOpenH
      * Try to load a chunk without generating new terrain.
      * Returns true only if the chunk already exists as a [LevelChunk].
      */
-    private fun loadChunkNoGenerate(level: ServerLevel, chunkPos: ChunkPos): Boolean {
+    private fun loadChunkNoGenerate(
+        level: ServerLevel,
+        chunkPos: ChunkPos,
+    ): Boolean {
         val source = level.chunkSource
 
         // Fast path: already loaded
@@ -210,21 +219,24 @@ class ProjectileChunkSavedData private constructor(private val chunks: LongOpenH
          * Get or create the per-dimension [ProjectileChunkSavedData].
          */
         @JvmStatic
-        fun get(level: ServerLevel): ProjectileChunkSavedData {
-            return level.dataStorage.computeIfAbsent(
+        fun get(level: ServerLevel): ProjectileChunkSavedData =
+            level.dataStorage.computeIfAbsent(
                 Factory(
                     { ProjectileChunkSavedData(LongOpenHashSet()) },
                     { tag, _ -> load(tag) },
-                    null
-                ), FILE_ID
+                    null,
+                ),
+                FILE_ID,
             )
-        }
 
         /**
          * Convenience: enqueue a chunk for force-loading on the given level.
          */
         @JvmStatic
-        fun queueForceLoad(level: ServerLevel, chunkPos: ChunkPos) {
+        fun queueForceLoad(
+            level: ServerLevel,
+            chunkPos: ChunkPos,
+        ) {
             get(level).queueForceLoad(chunkPos)
         }
 

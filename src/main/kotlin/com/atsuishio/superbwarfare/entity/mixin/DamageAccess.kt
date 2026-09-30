@@ -12,9 +12,15 @@ interface DamageAccess {
 
     fun `superbWarfare$playHurtSound`(pSource: DamageSource?)
 
-    fun `superbWarfare$actuallyHurt`(pDamageSource: DamageSource?, pDamageAmount: Float)
+    fun `superbWarfare$actuallyHurt`(
+        pDamageSource: DamageSource?,
+        pDamageAmount: Float,
+    )
 
-    fun `superbWarfare$hurtHelmet`(pDamageSource: DamageSource?, pDamageAmount: Float)
+    fun `superbWarfare$hurtHelmet`(
+        pDamageSource: DamageSource?,
+        pDamageAmount: Float,
+    )
 
     fun `superbWarfare$checkTotemDeathProtection`(pDamageSource: DamageSource?): Boolean
 
@@ -24,8 +30,6 @@ interface DamageAccess {
     fun `superbWarfare$setLastHurt`(value: Float)
 
     companion object {
-        fun of(living: LivingEntity): DamageAccess {
-            return living as DamageAccess
-        }
+        fun of(living: LivingEntity): DamageAccess = living as DamageAccess
     }
 }

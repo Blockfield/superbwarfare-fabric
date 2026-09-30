@@ -36,12 +36,20 @@ import net.minecraft.world.phys.shapes.VoxelShape
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 open class SmallContainerBlock :
-    BaseEntityBlock(Properties.of().sound(SoundType.METAL).strength(3.0f).noOcclusion().requiresCorrectToolForDrops()) {
+    BaseEntityBlock(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .noOcclusion()
+            .requiresCorrectToolForDrops(),
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(OPENED, false)
+                .setValue(OPENED, false),
         )
     }
 
@@ -52,10 +60,12 @@ open class SmallContainerBlock :
         pos: BlockPos,
         player: Player,
         hand: InteractionHand,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): ItemInteractionResult {
         val blockEntity = level.getBlockEntity(pos)
-        if (level.isClientSide || state.getValue(OPENED) || (blockEntity !is SmallContainerBlockEntity || hand == InteractionHand.OFF_HAND)) {
+        if (level.isClientSide || state.getValue(OPENED) ||
+            (blockEntity !is SmallContainerBlockEntity || hand == InteractionHand.OFF_HAND)
+        ) {
             return ItemInteractionResult.FAIL
         }
 
@@ -73,7 +83,7 @@ open class SmallContainerBlock :
             ModSounds.OPEN.get(),
             SoundSource.BLOCKS,
             1f,
-            1f
+            1f,
         )
 
         return ItemInteractionResult.SUCCESS
@@ -82,13 +92,13 @@ open class SmallContainerBlock :
     override fun <T : BlockEntity?> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T?>
+        pBlockEntityType: BlockEntityType<T?>,
     ): BlockEntityTicker<T?>? {
         if (!pLevel.isClientSide) {
             return createTickerHelper<SmallContainerBlockEntity?, T?>(
                 pBlockEntityType,
                 ModBlockEntities.SMALL_CONTAINER.get(),
-                SmallContainerBlockEntity::serverTick
+                SmallContainerBlockEntity::serverTick,
             )
         }
         return null
@@ -98,7 +108,7 @@ open class SmallContainerBlock :
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag)
 
@@ -106,80 +116,93 @@ open class SmallContainerBlock :
         if (data != null) {
             var lootTable = data.lootTable().location().toString()
             if (lootTable.startsWith(Mod.MODID + ":containers/")) {
-                val split = lootTable.split((Mod.MODID + ":containers/").toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()
+                val split =
+                    lootTable
+                        .split((Mod.MODID + ":containers/").toRegex())
+                        .dropLastWhile { it.isEmpty() }
+                        .toTypedArray()
                 if (split.size == 2) {
                     lootTable = "loot." + split[1]
                 }
                 tooltipComponents.add(
-                    Component.translatable("des.superbwarfare.small_container.$lootTable")
-                        .withStyle(ChatFormatting.GRAY)
+                    Component
+                        .translatable("des.superbwarfare.small_container.$lootTable")
+                        .withStyle(ChatFormatting.GRAY),
                 )
             } else {
                 val seed = data.seed()
                 if (seed != 0L && seed % 205 == 0L) {
                     tooltipComponents.add(
-                        Component.translatable("des.superbwarfare.small_container.special")
-                            .withStyle(ChatFormatting.GRAY)
+                        Component
+                            .translatable("des.superbwarfare.small_container.special")
+                            .withStyle(ChatFormatting.GRAY),
                     )
                 } else {
                     tooltipComponents.add(
-                        Component.translatable("des.superbwarfare.small_container.random")
-                            .withStyle(ChatFormatting.GRAY)
+                        Component
+                            .translatable("des.superbwarfare.small_container.random")
+                            .withStyle(ChatFormatting.GRAY),
                     )
                 }
             }
         } else {
             tooltipComponents.add(
-                Component.translatable("des.superbwarfare.small_container").withStyle(ChatFormatting.GRAY)
+                Component.translatable("des.superbwarfare.small_container").withStyle(ChatFormatting.GRAY),
             )
         }
     }
 
-    override fun getShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
-        return if (state.getValue(FACING) == Direction.NORTH || state.getValue(FACING) == Direction.SOUTH) {
-            if (state.getValue(OPENED)) box(1.0, 0.0, 2.0, 15.0, 12.0, 14.0)
-            else box(0.0, 0.0, 1.0, 16.0, 13.5, 15.0)
-        } else if (state.getValue(OPENED)) box(2.0, 0.0, 1.0, 14.0, 12.0, 15.0)
-        else box(1.0, 0.0, 0.0, 15.0, 13.5, 16.0)
-    }
+    override fun getShape(
+        state: BlockState,
+        world: BlockGetter,
+        pos: BlockPos,
+        context: CollisionContext,
+    ): VoxelShape =
+        if (state.getValue(FACING) == Direction.NORTH || state.getValue(FACING) == Direction.SOUTH) {
+            if (state.getValue(OPENED)) {
+                box(1.0, 0.0, 2.0, 15.0, 12.0, 14.0)
+            } else {
+                box(0.0, 0.0, 1.0, 16.0, 13.5, 15.0)
+            }
+        } else if (state.getValue(OPENED)) {
+            box(2.0, 0.0, 1.0, 14.0, 12.0, 15.0)
+        } else {
+            box(1.0, 0.0, 0.0, 15.0, 13.5, 16.0)
+        }
 
-    override fun getRenderShape(state: BlockState): RenderShape {
-        return RenderShape.ENTITYBLOCK_ANIMATED
-    }
+    override fun getRenderShape(state: BlockState): RenderShape = RenderShape.ENTITYBLOCK_ANIMATED
 
-    override fun newBlockEntity(blockPos: BlockPos, blockState: BlockState): BlockEntity? {
-        return SmallContainerBlockEntity(blockPos, blockState)
-    }
+    override fun newBlockEntity(
+        blockPos: BlockPos,
+        blockState: BlockState,
+    ): BlockEntity? = SmallContainerBlockEntity(blockPos, blockState)
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block?, BlockState?>) {
         builder.add(FACING).add(OPENED)
     }
 
-    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? =
+        this
+            .defaultBlockState()
             .setValue(FACING, context.horizontalDirection.opposite)
             .setValue(OPENED, false)
-    }
 
     override fun getCloneItemStack(
         level: LevelReader,
         pos: BlockPos,
-        state: BlockState
+        state: BlockState,
     ): ItemStack {
         val stack = super.getCloneItemStack(level, pos, state)
 
-        level.getBlockEntity(pos, ModBlockEntities.SMALL_CONTAINER.get())
+        level
+            .getBlockEntity(pos, ModBlockEntities.SMALL_CONTAINER.get())
             .ifPresent { blockEntity ->
                 blockEntity.saveToItem(stack, level.registryAccess())
             }
         return stack
     }
 
-
-    override fun codec(): MapCodec<out BaseEntityBlock?> {
-        return CODEC
-    }
+    override fun codec(): MapCodec<out BaseEntityBlock?> = CODEC
 
     companion object {
         @JvmField
@@ -192,4 +215,3 @@ open class SmallContainerBlock :
         val CODEC: MapCodec<SmallContainerBlock> = simpleCodec { _ -> SmallContainerBlock() }
     }
 }
-

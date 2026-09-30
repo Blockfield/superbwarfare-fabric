@@ -4,11 +4,11 @@ import com.atsuishio.superbwarfare.api.event.ClientVehicleFireEvent
 import com.atsuishio.superbwarfare.data.gun.GunProp
 import com.atsuishio.superbwarfare.entity.vehicle.TurretWreckEntity
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import java.util.concurrent.ThreadLocalRandom
 
 /**
@@ -20,7 +20,6 @@ import java.util.concurrent.ThreadLocalRandom
  */
 @Environment(EnvType.CLIENT)
 object VehicleLightingHandler {
-
     /**
      * Subscribed to [ClientVehicleFireEvent] on the Forge event bus.
      * Generates punchy, high-visibility muzzle flashes tailored specifically for vehicles.
@@ -35,13 +34,14 @@ object VehicleLightingHandler {
         val weaponName = event.weaponName
         val shooter = event.shooter
 
-        val gunData = if (!weaponName.isNullOrEmpty()) {
-            vehicle.getGunData(weaponName)
-        } else {
-            vehicle.getGunData(event.index)
-        } ?: run {
-            return
-        }
+        val gunData =
+            if (!weaponName.isNullOrEmpty()) {
+                vehicle.getGunData(weaponName)
+            } else {
+                vehicle.getGunData(event.index)
+            } ?: run {
+                return
+            }
 
         val shootPos = vehicle.getShootPos(shooter, 1f)
         var shootVec = vehicle.getShootVec(shooter, 1f)
@@ -61,9 +61,23 @@ object VehicleLightingHandler {
         val duration: Int
 
         when {
-            damage >= 30.0 -> { maxLevel = 15; minLevel = 11; duration = 4 }
-            damage >= 12.0 -> { maxLevel = 14; minLevel = 9;  duration = 4 }
-            else           -> { maxLevel = 13; minLevel = 8;  duration = 3 }
+            damage >= 30.0 -> {
+                maxLevel = 15
+                minLevel = 11
+                duration = 4
+            }
+
+            damage >= 12.0 -> {
+                maxLevel = 14
+                minLevel = 9
+                duration = 4
+            }
+
+            else -> {
+                maxLevel = 13
+                minLevel = 8
+                duration = 3
+            }
         }
 
         val params = MuzzleFlashHelper.FlashParams(maxLevel, minLevel, duration)
@@ -144,11 +158,12 @@ object VehicleLightingHandler {
                 val ttl = 6
 
                 val isRear = random.nextBoolean()
-                val pos = if (isRear) {
-                    vehicle.position().subtract(forward.scale(halfLen * 0.5)).add(0.0, vehicle.bbHeight * 0.5, 0.0)
-                } else {
-                    vehicle.position().add(0.0, vehicle.bbHeight * 0.5, 0.0)
-                }
+                val pos =
+                    if (isRear) {
+                        vehicle.position().subtract(forward.scale(halfLen * 0.5)).add(0.0, vehicle.bbHeight * 0.5, 0.0)
+                    } else {
+                        vehicle.position().add(0.0, vehicle.bbHeight * 0.5, 0.0)
+                    }
 
                 val bp = BlockPos.containing(pos.x, pos.y, pos.z)
                 LightPositionRegistry.putSparkRadius(bp, maxLvl, minLvl, ttlTicks = ttl, radius = 1)
@@ -163,9 +178,11 @@ object VehicleLightingHandler {
             val minLvl = 3
             val ttl = 5
 
-            val enginePos = vehicle.position()
-                .subtract(forward.scale(halfLen * 0.4))
-                .add(0.0, vehicle.bbHeight * 0.6, 0.0)
+            val enginePos =
+                vehicle
+                    .position()
+                    .subtract(forward.scale(halfLen * 0.4))
+                    .add(0.0, vehicle.bbHeight * 0.6, 0.0)
             val bp = BlockPos.containing(enginePos.x, enginePos.y, enginePos.z)
             LightPositionRegistry.putSpark(bp.asLong(), maxLvl, minLvl, ttlTicks = ttl)
             engine.checkBlock(bp)
@@ -221,12 +238,22 @@ object VehicleLightingHandler {
      * @param customRadius optional explosion radius override in blocks
      */
     @JvmStatic
-    fun emitVehicleExplosionLight(vehicle: VehicleEntity, customRadius: Float = 0f) {
+    fun emitVehicleExplosionLight(
+        vehicle: VehicleEntity,
+        customRadius: Float = 0f,
+    ) {
         val level = vehicle.level()
         if (!level.isClientSide) return
 
         val destroyRadius = vehicle.computed().destroyInfo.explosionRadius
-        val baseRadius = if (customRadius > 0f) customRadius else if (destroyRadius > 0f) destroyRadius else 6f
+        val baseRadius =
+            if (customRadius > 0f) {
+                customRadius
+            } else if (destroyRadius > 0f) {
+                destroyRadius
+            } else {
+                6f
+            }
 
         val sizeFactor = ((vehicle.bbWidth * vehicle.bbHeight) / 3.0f).coerceIn(1.0f, 2.5f)
         val center = Vec3(vehicle.x, vehicle.y + vehicle.bbHeight * 0.5, vehicle.z)

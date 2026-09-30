@@ -28,16 +28,16 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer
 import software.bernie.geckolib.util.RenderUtil
 
 @Deprecated("Geckolib will be removed since 0.8.10", replaceWith = ReplaceWith("SbmVehicleRenderer"))
-abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context, model: GeoModel<T>) :
-    GeoEntityRenderer<T>(renderManager, model) where T : VehicleEntity, T : GeoAnimatable {
-
+abstract class VehicleRenderer<T>(
+    renderManager: EntityRendererProvider.Context,
+    model: GeoModel<T>,
+) : GeoEntityRenderer<T>(renderManager, model) where T : VehicleEntity, T : GeoAnimatable {
     override fun getRenderType(
         vehicle: T,
         texture: ResourceLocation,
         bufferSource: MultiBufferSource?,
-        partialTick: Float
+        partialTick: Float,
     ): RenderType? = RenderType.entityTranslucent(getTextureLocation(vehicle))
-
 
     override fun render(
         entity: T,
@@ -45,7 +45,7 @@ abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context,
         partialTick: Float,
         poseStack: PoseStack,
         bufferSource: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         poseStack.pushPose()
         vehicleAxis(entity, poseStack, entityYaw, partialTick)
@@ -65,7 +65,7 @@ abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context,
         partialTick: Float,
         packedLight: Int,
         packedOverlay: Int,
-        color: Int
+        color: Int,
     ) {
         val name = bone.name
         if (name.endsWith("_dogTag")) {
@@ -113,11 +113,14 @@ abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context,
             partialTick,
             packedLight,
             packedOverlay,
-            color
+            color,
         )
     }
 
-    private fun rotateMatrixAroundBone(poseStack: PoseStack, bone: GeoBone) {
+    private fun rotateMatrixAroundBone(
+        poseStack: PoseStack,
+        bone: GeoBone,
+    ) {
         if (bone.rotZ != 0f || bone.rotY != 0f || bone.rotX != 0f) {
             poseStack.mulPose(Quaternionf().rotationZYX(bone.rotZ, bone.rotY, bone.rotX))
         }
@@ -131,9 +134,10 @@ abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context,
         pX: Float,
         pZ: Float,
         pU: Int,
-        pV: Int
+        pV: Int,
     ) {
-        pConsumer.addVertex(pPose, pX, 0f, -pZ)
+        pConsumer
+            .addVertex(pPose, pX, 0f, -pZ)
             .setColor(255, 255, 255, 255)
             .setUv(pU.toFloat(), pV.toFloat())
             .setOverlay(OverlayTexture.NO_OVERLAY)
@@ -141,25 +145,30 @@ abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context,
             .setNormal(pNormal, 0f, 1f, 0f)
     }
 
-    open fun vehicleAxis(entityIn: T, poseStack: PoseStack, entityYaw: Float, partialTicks: Float) {
+    open fun vehicleAxis(
+        entityIn: T,
+        poseStack: PoseStack,
+        entityYaw: Float,
+        partialTicks: Float,
+    ) {
         val root = Vec3(0.0, entityIn.rotateOffsetHeight, 0.0)
         poseStack.rotateAround(
             Axis.YP.rotationDegrees(-entityYaw),
             root.x.toFloat(),
             root.y.toFloat(),
-            root.z.toFloat()
+            root.z.toFloat(),
         )
         poseStack.rotateAround(
             Axis.XP.rotationDegrees(Mth.lerp(partialTicks, entityIn.xRotO + entityIn.fakePitchO, entityIn.xRot + entityIn.fakePitch)),
             root.x.toFloat(),
             root.y.toFloat(),
-            root.z.toFloat()
+            root.z.toFloat(),
         )
         poseStack.rotateAround(
             Axis.ZP.rotationDegrees(Mth.lerp(partialTicks, entityIn.prevRoll + entityIn.fakeRollO, entityIn.roll + entityIn.fakeRoll)),
             root.x.toFloat(),
             root.y.toFloat(),
-            root.z.toFloat()
+            root.z.toFloat(),
         )
     }
 
@@ -169,11 +178,17 @@ abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context,
         partialTicks: Float,
         poseStack: PoseStack?,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
     }
 
-    override fun shouldRender(vehicle: T, pCamera: Frustum, pCamX: Double, pCamY: Double, pCamZ: Double): Boolean {
+    override fun shouldRender(
+        vehicle: T,
+        pCamera: Frustum,
+        pCamX: Double,
+        pCamY: Double,
+        pCamZ: Double,
+    ): Boolean {
         if (!vehicle.shouldRender(pCamX, pCamY, pCamZ)) {
             return false
         } else if (vehicle.noCulling) {
@@ -181,14 +196,15 @@ abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context,
         } else {
             var aabb = vehicle.boundingBoxForCulling.inflate(5.0)
             if (aabb.hasNaN() || aabb.getSize() == 0.0) {
-                aabb = AABB(
-                    vehicle.x - 8.0,
-                    vehicle.y - 6.0,
-                    vehicle.z - 8.0,
-                    vehicle.x + 8.0,
-                    vehicle.y + 6.0,
-                    vehicle.z + 8.0
-                )
+                aabb =
+                    AABB(
+                        vehicle.x - 8.0,
+                        vehicle.y - 6.0,
+                        vehicle.z - 8.0,
+                        vehicle.x + 8.0,
+                        vehicle.y + 6.0,
+                        vehicle.z + 8.0,
+                    )
             }
 
             return pCamera.isVisible(aabb)
@@ -200,7 +216,11 @@ abstract class VehicleRenderer<T>(renderManager: EntityRendererProvider.Context,
         if (ClientEventHandler.activeThermalImaging) {
             return SmartTextureBrightener.getSmartBrightenedTexture(res, 3f)
         } else if (animatable.isWreck) {
-            return if ((animatable.vehicleType == VehicleType.AIRPLANE || animatable.vehicleType == VehicleType.HELICOPTER || animatable.vehicleType == VehicleType.AIRSHIP)) {
+            return if ((
+                    animatable.vehicleType == VehicleType.AIRPLANE || animatable.vehicleType == VehicleType.HELICOPTER ||
+                        animatable.vehicleType == VehicleType.AIRSHIP
+                )
+            ) {
                 if (animatable.sympatheticDetonated) {
                     TextureBrightnessHandler.getBrightenedTexture(res, 0.3f)
                 } else {

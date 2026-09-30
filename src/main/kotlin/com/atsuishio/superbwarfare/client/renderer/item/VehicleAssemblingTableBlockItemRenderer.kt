@@ -12,9 +12,10 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
 
-class VehicleAssemblingTableBlockItemRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityModelSet) :
-    BlockEntityWithoutLevelRenderer(dispatcher, set) {
-
+class VehicleAssemblingTableBlockItemRenderer(
+    dispatcher: BlockEntityRenderDispatcher,
+    set: EntityModelSet,
+) : BlockEntityWithoutLevelRenderer(dispatcher, set) {
     private val modelInstance by lazy { BlockModelReloadListener.getModel(MODEL)?.createInstance() }
 
     override fun renderByItem(
@@ -23,7 +24,7 @@ class VehicleAssemblingTableBlockItemRenderer(dispatcher: BlockEntityRenderDispa
         poseStack: PoseStack,
         bufferSource: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         if (stack.item !is VehicleAssemblingTableBlockItem) return
 
@@ -39,7 +40,7 @@ class VehicleAssemblingTableBlockItemRenderer(dispatcher: BlockEntityRenderDispa
             poseStack,
             bufferSource.getBuffer(RenderType.entityCutout(TEXTURE)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         poseStack.popPose()

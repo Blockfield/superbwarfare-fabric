@@ -5,6 +5,7 @@ import com.atsuishio.superbwarfare.annotation.ServerOnly
 import com.atsuishio.superbwarfare.data.*
 import com.atsuishio.superbwarfare.data.gun.ammo_consumer_strategy.AmmoConsumeStrategy
 import com.atsuishio.superbwarfare.data.gun.ammo_consumer_strategy.InvalidAmmoStrategy
+import com.atsuishio.superbwarfare.fabric.IItemHandler
 import com.atsuishio.superbwarfare.serialization.kserializer.SerializedGsonObject
 import com.atsuishio.superbwarfare.tools.isSameItemStack
 import com.google.gson.annotations.SerializedName
@@ -13,11 +14,12 @@ import kotlinx.serialization.Serializable
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import com.atsuishio.superbwarfare.fabric.IItemHandler
 
 @STOFactory(AmmoConsumer.AmmoConsumerInstanceBuilder::class)
 @Serializable
-class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGunData> {
+class AmmoConsumer :
+    DeserializeFromString,
+    PropertyModifier<GunData, DefaultGunData> {
     @SerializedName("Ammo")
     @SerialName("Ammo")
     var ammo: String? = null
@@ -67,13 +69,9 @@ class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGun
     @kotlinx.serialization.Transient
     var stack: ItemStack = ItemStack.EMPTY
 
-    fun stack(): ItemStack {
-        return this.stack
-    }
+    fun stack(): ItemStack = this.stack
 
-    fun initialized(): Boolean {
-        return this.initialized
-    }
+    fun initialized(): Boolean = this.initialized
 
     // TODO 是否可以考虑移除这玩意了？
     enum class AmmoConsumeType {
@@ -86,14 +84,16 @@ class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGun
         ENERGY,
     }
 
-    fun isAmmoItem(stack: ItemStack): Boolean {
-        return isSameItemStack(stack, this.stack)
-    }
+    fun isAmmoItem(stack: ItemStack): Boolean = isSameItemStack(stack, this.stack)
 
     /**
      * 消耗指定弹药数量（原始数量，不包括虚拟弹药，不考虑count）
      */
-    fun consume(data: GunData, shooter: Entity, count: Int): Int {
+    fun consume(
+        data: GunData,
+        shooter: Entity,
+        count: Int,
+    ): Int {
         if (!initialized) init()
         if (count <= 0 || shooter is Player && shooter.isCreative) return 0
         return strategy.consume(data, this, shooter, count)
@@ -102,7 +102,11 @@ class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGun
     /**
      * 消耗指定弹药数量（原始数量，不包括虚拟弹药，不考虑count）
      */
-    fun consume(data: GunData, handler: IItemHandler, count: Int): Int {
+    fun consume(
+        data: GunData,
+        handler: IItemHandler,
+        count: Int,
+    ): Int {
         if (!initialized) init()
         if (count <= 0) return 0
         return strategy.consume(data, this, handler, count)
@@ -111,7 +115,10 @@ class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGun
     /**
      * 清点不包括虚拟弹药在内的原始弹药数量
      */
-    fun count(data: GunData, entity: Entity?): Int {
+    fun count(
+        data: GunData,
+        entity: Entity?,
+    ): Int {
         if (!initialized) init()
         if (entity == null) return 0
         return strategy.count(data, this, entity).coerceAtLeast(0)
@@ -120,7 +127,10 @@ class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGun
     /**
      * 清点不包括虚拟弹药在内的原始弹药数量
      */
-    fun count(data: GunData, handler: IItemHandler?): Int {
+    fun count(
+        data: GunData,
+        handler: IItemHandler?,
+    ): Int {
         if (!initialized) init()
         if (handler == null) return 0
         return strategy.count(data, this, handler).coerceAtLeast(0)
@@ -133,13 +143,19 @@ class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGun
      *
      * @return 成功返还的弹药数量
      */
-    fun withdraw(ammoSupplier: Entity, count: Int): Int {
+    fun withdraw(
+        ammoSupplier: Entity,
+        count: Int,
+    ): Int {
         if (!initialized) init()
         if (count <= 0) return 0
         return strategy.withdraw(this, ammoSupplier, count)
     }
 
-    fun withdraw(handler: IItemHandler, count: Int): Int {
+    fun withdraw(
+        handler: IItemHandler,
+        count: Int,
+    ): Int {
         if (!initialized) init()
         if (count <= 0) return 0
         return strategy.withdraw(this, handler, count)
@@ -157,7 +173,6 @@ class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGun
         jsonPropModifier.update(override)
         jsonPropModifier.modifyProperty(modifier)
     }
-
 
     fun init() {
         if (ammo == null) return
@@ -192,10 +207,11 @@ class AmmoConsumer : DeserializeFromString, PropertyModifier<GunData, DefaultGun
     }
 
     object AmmoConsumerInstanceBuilder : StringInstanceBuilder<AmmoConsumer> {
-        override fun fromString(value: String) = AmmoConsumer().apply {
-            this.ammo = value
-            init()
-        }
+        override fun fromString(value: String) =
+            AmmoConsumer().apply {
+                this.ammo = value
+                init()
+            }
     }
 
     companion object {

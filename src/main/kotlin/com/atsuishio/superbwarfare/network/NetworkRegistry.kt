@@ -7,23 +7,24 @@ import com.atsuishio.superbwarfare.serialization.ByteBufDecoder
 import com.atsuishio.superbwarfare.serialization.ByteBufEncoder
 import com.atsuishio.superbwarfare.tools.createStreamCodec
 import kotlinx.serialization.serializer
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 
 val payloadTypeMap = mutableMapOf<Class<*>, CustomPacketPayload.Type<*>>()
 
-inline fun <reified T> encodeTo(output: FriendlyByteBuf, value: T) {
+inline fun <reified T> encodeTo(
+    output: FriendlyByteBuf,
+    value: T,
+) {
     ByteBufEncoder(output).encodeSerializableValue(serializer(), value)
 }
 
-inline fun <reified T> decodeFrom(input: FriendlyByteBuf): T {
-    return ByteBufDecoder(input).decodeSerializableValue(serializer())
-}
+inline fun <reified T> decodeFrom(input: FriendlyByteBuf): T = ByteBufDecoder(input).decodeSerializableValue(serializer())
 
 /** Регистрация приёмников на клиенте откладывается: ClientPlayNetworking доступен только там. */
 private val clientReceivers = mutableListOf<() -> Unit>()
@@ -31,17 +32,18 @@ private val clientReceivers = mutableListOf<() -> Unit>()
 private inline fun <reified T : PacketPayload> payloadType(): CustomPacketPayload.Type<T> {
     val className = T::class.java.simpleName.substringBefore("Message")
 
-    val name = buildString {
-        append(className[0].lowercase())
+    val name =
+        buildString {
+            append(className[0].lowercase())
 
-        for (i in 1 until className.length) {
-            val c = className[i]
-            if (c.isUpperCase()) {
-                append("_")
+            for (i in 1 until className.length) {
+                val c = className[i]
+                if (c.isUpperCase()) {
+                    append("_")
+                }
+                append(className[i].lowercase())
             }
-            append(className[i].lowercase())
         }
-    }
 
     val type = CustomPacketPayload.Type<T>(loc(name))
     payloadTypeMap[T::class.java] = type

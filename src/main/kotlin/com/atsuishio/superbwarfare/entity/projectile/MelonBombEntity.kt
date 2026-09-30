@@ -14,15 +14,16 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.Vec3
 
-open class MelonBombEntity(type: EntityType<out MelonBombEntity>, level: Level) : DestroyableProjectile(type, level) {
+open class MelonBombEntity(
+    type: EntityType<out MelonBombEntity>,
+    level: Level,
+) : DestroyableProjectile(type, level) {
     init {
         this.explosionRadiusValue = 10f
         this.explosionDamageValue = 500f
     }
 
-    override fun getDefaultItem(): Item {
-        return Items.MELON
-    }
+    override fun getDefaultItem(): Item = Items.MELON
 
     override fun canPassThroughFluid() = true
 
@@ -38,7 +39,7 @@ open class MelonBombEntity(type: EntityType<out MelonBombEntity>, level: Level) 
                     if (hard != -1f && Vec3(
                             it.x.toDouble(),
                             it.y.toDouble(),
-                            it.z.toDouble()
+                            it.z.toDouble(),
                         ).distanceTo(result.location) < 3
                     ) {
                         level.destroyBlock(it, true)
@@ -60,7 +61,7 @@ open class MelonBombEntity(type: EntityType<out MelonBombEntity>, level: Level) 
                     if (hard != -1f && Vec3(
                             it.x.toDouble(),
                             it.y.toDouble(),
-                            it.z.toDouble()
+                            it.z.toDouble(),
                         ).distanceTo(result.location) < 3
                     ) {
                         level.destroyBlock(it, true)
@@ -75,11 +76,7 @@ open class MelonBombEntity(type: EntityType<out MelonBombEntity>, level: Level) 
     override val maxHealth: Float
         get() = 15f
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.SHELL_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.SHELL_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.7f
-    }
+    override fun getVolume(): Float = 0.7f
 }

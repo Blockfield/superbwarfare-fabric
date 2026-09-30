@@ -49,9 +49,9 @@ import net.minecraft.world.phys.Vec3
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 
-open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
-    EntityRenderer<T>(manager) where T : VehicleEntity, T : BasicGeoVehicleEntity {
-
+open class GeoVehicleRenderer<T>(
+    manager: EntityRendererProvider.Context,
+) : EntityRenderer<T>(manager) where T : VehicleEntity, T : BasicGeoVehicleEntity {
     var pitch = 0f
     var yaw = 0f
     var roll = 0f
@@ -76,17 +76,14 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         return ResourceLocation.fromNamespaceAndPath(namespace, "textures/bedrock/vehicle/$id.png")
     }
 
-    open fun getEmissiveTextureLocation(poseStack: PoseStack, entity: T): ResourceLocation? {
-        return getCurrentModelEntry(poseStack, entity)?.emissiveTexture
-    }
+    open fun getEmissiveTextureLocation(
+        poseStack: PoseStack,
+        entity: T,
+    ): ResourceLocation? = getCurrentModelEntry(poseStack, entity)?.emissiveTexture
 
-    open fun renderScale(): Float {
-        return 1f
-    }
+    open fun renderScale(): Float = 1f
 
-    override fun shouldShowName(pEntity: T): Boolean {
-        return false
-    }
+    override fun shouldShowName(pEntity: T): Boolean = false
 
     override fun render(
         entity: T,
@@ -94,7 +91,7 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val entry = getCurrentModelEntry(poseStack, entity) ?: return
         val instance = entry.instance
@@ -112,21 +109,26 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
             }
         }
 
-        texture = if (ClientEventHandler.activeThermalImaging) {
-            SmartTextureBrightener.getSmartBrightenedTexture(texture, 3f)
-        } else if (entity.isWreck) {
-            if ((entity.vehicleType == VehicleType.AIRPLANE || entity.vehicleType == VehicleType.HELICOPTER || entity.vehicleType == VehicleType.AIRSHIP)) {
-                if (entity.sympatheticDetonated) {
-                    TextureBrightnessHandler.getBrightenedTexture(texture, 0.3f)
+        texture =
+            if (ClientEventHandler.activeThermalImaging) {
+                SmartTextureBrightener.getSmartBrightenedTexture(texture, 3f)
+            } else if (entity.isWreck) {
+                if ((
+                        entity.vehicleType == VehicleType.AIRPLANE || entity.vehicleType == VehicleType.HELICOPTER ||
+                            entity.vehicleType == VehicleType.AIRSHIP
+                    )
+                ) {
+                    if (entity.sympatheticDetonated) {
+                        TextureBrightnessHandler.getBrightenedTexture(texture, 0.3f)
+                    } else {
+                        texture
+                    }
                 } else {
-                    texture
+                    TextureBrightnessHandler.getBrightenedTexture(texture, 0.3f)
                 }
             } else {
-                TextureBrightnessHandler.getBrightenedTexture(texture, 0.3f)
+                texture
             }
-        } else {
-            texture
-        }
 
         poseStack.pushPose()
 
@@ -174,7 +176,7 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
             RenderType.entityTranslucent(texture),
             BedrockModelRenderTypes.polyMeshCutout(texture),
             packedLight,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         this.renderEmissive(entity, instance, yaw, partialTick, poseStack, buffer, packedLight)
@@ -188,13 +190,18 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                 buffer.getBuffer(RenderType.waterMask()),
                 packedLight,
                 OverlayTexture.NO_OVERLAY,
-                1f, 1f, 1f, 1f,
+                1f,
+                1f,
+                1f,
+                1f,
                 true,
-                false
+                false,
             )
         }
 
-        if (!isLOD && !hideFlare && !entity.sympatheticDetonated && flareFlag && !(ClientEventHandler.zoomVehicle && (hideForTurretControllerWhileZooming || hideForPassengerWeaponStationControllerWhileZooming))) {
+        if (!isLOD && !hideFlare && !entity.sympatheticDetonated && flareFlag &&
+            !(ClientEventHandler.zoomVehicle && (hideForTurretControllerWhileZooming || hideForPassengerWeaponStationControllerWhileZooming))
+        ) {
             val flareModel = flareModelInstance
 
             if (flareModel != null) {
@@ -203,13 +210,15 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                     poseStack.mulPoseMatrix(flare.getGlobalTransform(instance))
                     val flareDef = flare.definition()
                     poseStack.translate(
-                        flareDef.pivotX(), flareDef.pivotY(), flareDef.pivotZ()
+                        flareDef.pivotX(),
+                        flareDef.pivotY(),
+                        flareDef.pivotZ(),
                     )
                     poseStack.translate(0f, 0f, (0.01 * (Math.random() - 0.5)).toFloat())
                     poseStack.scale(
                         1 + (0.02 * (Math.random() - 0.5)).toFloat(),
                         1 + (0.02 * (Math.random() - 0.5)).toFloat(),
-                        1 + (0.02 * (Math.random() - 0.5)).toFloat()
+                        1 + (0.02 * (Math.random() - 0.5)).toFloat(),
                     )
                     flareModel.renderToBuffer(
                         poseStack,
@@ -221,7 +230,7 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                         1f,
                         1f,
                         1f,
-                        1f
+                        1f,
                     )
 
                     poseStack.popPose()
@@ -241,7 +250,9 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                 poseStack.mulPoseMatrix(laser.getGlobalTransform(instance))
                 val laserDef = laser.definition()
                 poseStack.translate(
-                    laserDef.pivotX(), laserDef.pivotY(), laserDef.pivotZ()
+                    laserDef.pivotX(),
+                    laserDef.pivotY(),
+                    laserDef.pivotZ(),
                 )
 
                 val lastPose = poseStack.last()
@@ -249,12 +260,13 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
 
                 val c = entity.laserColor
 
-                val color = Quaternionf(
-                    ((c shr 16) and 0xFF).toFloat(),
-                    ((c shr 8) and 0xFF).toFloat(),
-                    (c and 0xFF).toFloat(),
-                    255f
-                )
+                val color =
+                    Quaternionf(
+                        ((c shr 16) and 0xFF).toFloat(),
+                        ((c shr 8) and 0xFF).toFloat(),
+                        (c and 0xFF).toFloat(),
+                        255f,
+                    )
                 val colorW = Quaternionf(255f, 255f, 255f, 255f)
 
                 val scale = entity.laserBaseScale.toFloat()
@@ -320,7 +332,7 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val emissiveTexture = this.getEmissiveTextureLocation(poseStack, entity)
         if (emissiveTexture != null) {
@@ -330,21 +342,27 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                 RenderType.eyes(emissiveTexture),
                 BedrockModelRenderTypes.polyMeshCutout(emissiveTexture),
                 packedLight,
-                OverlayTexture.NO_OVERLAY
+                OverlayTexture.NO_OVERLAY,
             )
         }
     }
 
-    open fun customLaserLength(laserBones: List<BoneState>, entity: T, partialTicks: Float) {
+    open fun customLaserLength(
+        laserBones: List<BoneState>,
+        entity: T,
+        partialTicks: Float,
+    ) {
         for (laser in laserBones) {
             laser.visible = false
 
             laser.zScale = 10 * entity.laserLength
-            val scale = Mth.lerp(
-                partialTicks,
-                entity.laserScaleO,
-                entity.laserScale
-            ).coerceAtMost(1.2f)
+            val scale =
+                Mth
+                    .lerp(
+                        partialTicks,
+                        entity.laserScaleO,
+                        entity.laserScale,
+                    ).coerceAtMost(1.2f)
 
             laser.xScale = scale
             laser.yScale = scale
@@ -356,7 +374,7 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         pose: Matrix4f,
         normal: PoseStack.Pose,
         pX: Float,
-        color: Quaternionf
+        color: Quaternionf,
     ) {
         vertex(consumer, pose, normal, -pX, 0f, 0, 1, color)
         vertex(consumer, pose, normal, pX, 0f, 1, 1, color)
@@ -364,7 +382,11 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         vertex(consumer, pose, normal, -pX, 0.1f, 0, 0, color)
     }
 
-    open fun tickVariables(entity: T, entityYaw: Float, partialTicks: Float) {
+    open fun tickVariables(
+        entity: T,
+        entityYaw: Float,
+        partialTicks: Float,
+    ) {
         pitch = entity.getPitch(partialTicks)
         yaw = entity.getYaw(partialTicks)
         roll = entity.getRoll(partialTicks)
@@ -395,9 +417,8 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         entityYaw: Float,
         partialTicks: Float,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
-
         if (entity.health >= 0) {
             val seats = this.seatsCache ?: entity.computed().seats().also { this.seatsCache = it }
             for ((index, seat) in seats.withIndex()) {
@@ -436,10 +457,11 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                             poseStack.mulPose(Axis.YP.rotationDegrees(180f))
 
                             val rotate = dummyInfo.rotate
-                            val quaternion = Quaternionf()
-                                .rotateZ(rotate.z.toFloat() * Mth.DEG_TO_RAD)
-                                .rotateX(rotate.x.toFloat() * Mth.DEG_TO_RAD)
-                                .rotateY(rotate.y.toFloat() * Mth.DEG_TO_RAD)
+                            val quaternion =
+                                Quaternionf()
+                                    .rotateZ(rotate.z.toFloat() * Mth.DEG_TO_RAD)
+                                    .rotateX(rotate.x.toFloat() * Mth.DEG_TO_RAD)
+                                    .rotateY(rotate.y.toFloat() * Mth.DEG_TO_RAD)
                             poseStack.mulPose(quaternion)
 
                             val offset = dummyInfo.offset
@@ -456,7 +478,7 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                                     partialTicks,
                                     poseStack,
                                     buffer,
-                                    packedLight
+                                    packedLight,
                                 )
                             }
 
@@ -473,7 +495,7 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         val boneGroups = instance.boneGroups
 
@@ -536,15 +558,16 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
             val a = entity.yawWhileShoot
             val r = (Mth.abs(a) - 90f) / 90f
 
-            val r2 = if (Mth.abs(a) <= 90f) {
-                a / 90f
-            } else {
-                if (a < 0) {
-                    -(180f + a) / 90f
+            val r2 =
+                if (Mth.abs(a) <= 90f) {
+                    a / 90f
                 } else {
-                    (180f - a) / 90f
+                    if (a < 0) {
+                        -(180f + a) / 90f
+                    } else {
+                        (180f - a) / 90f
+                    }
                 }
-            }
 
             base.x = -r2 * recoilShake * 0.5f
             base.z = r * recoilShake
@@ -575,8 +598,8 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
             Mth.lerp(
                 partialTicks,
                 entity.gunYRotO,
-                entity.gunYRot
-            ) * Mth.DEG_TO_RAD - turretYRot * Mth.DEG_TO_RAD
+                entity.gunYRot,
+            ) * Mth.DEG_TO_RAD - turretYRot * Mth.DEG_TO_RAD,
         )
 
         val passengerWeaponStationPitch = instance.getBone("passengerWeaponStationPitch")
@@ -585,11 +608,11 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                 -Mth.lerp(
                     partialTicks,
                     entity.gunXRotO,
-                    entity.gunXRot
+                    entity.gunXRot,
                 ) * Mth.DEG_TO_RAD,
                 entity.passengerWeaponMinPitch * Mth.DEG_TO_RAD,
-                entity.passengerWeaponMaxPitch * Mth.DEG_TO_RAD
-            )
+                entity.passengerWeaponMaxPitch * Mth.DEG_TO_RAD,
+            ),
         )
 
         // 武器绑定骨骼
@@ -610,16 +633,22 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                         val bone = instance.getBone(name)
                         if (bone != null) {
                             // TODO 期待后人智慧，万一哪天正确实现了获取骨骼朝向
-                            val diffY = Mth.wrapDegrees(
-                                -VehicleVecUtils.getYRotFromVector(targetVec) + VehicleVecUtils.getYRotFromVector(
-                                    defaultVec
-                                )
-                            ).toFloat()
-                            val diffX = Mth.wrapDegrees(
-                                -VehicleVecUtils.getXRotFromVector(targetVec) + VehicleVecUtils.getXRotFromVector(
-                                    defaultVec
-                                )
-                            ).toFloat()
+                            val diffY =
+                                Mth
+                                    .wrapDegrees(
+                                        -VehicleVecUtils.getYRotFromVector(targetVec) +
+                                            VehicleVecUtils.getYRotFromVector(
+                                                defaultVec,
+                                            ),
+                                    ).toFloat()
+                            val diffX =
+                                Mth
+                                    .wrapDegrees(
+                                        -VehicleVecUtils.getXRotFromVector(targetVec) +
+                                            VehicleVecUtils.getXRotFromVector(
+                                                defaultVec,
+                                            ),
+                                    ).toFloat()
 
                             bone.rotation.rotateY(-diffY * Mth.DEG_TO_RAD)
                             bone.rotation.rotateX(-diffX * Mth.DEG_TO_RAD)
@@ -631,11 +660,14 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                     for (name in boundBonesYaw) {
                         val bone = instance.getBone(name)
                         if (bone != null) {
-                            val diffY = Mth.wrapDegrees(
-                                -VehicleVecUtils.getYRotFromVector(targetVec) + VehicleVecUtils.getYRotFromVector(
-                                    defaultVec
-                                )
-                            ).toFloat()
+                            val diffY =
+                                Mth
+                                    .wrapDegrees(
+                                        -VehicleVecUtils.getYRotFromVector(targetVec) +
+                                            VehicleVecUtils.getYRotFromVector(
+                                                defaultVec,
+                                            ),
+                                    ).toFloat()
 
                             bone.rotation.rotateY(-diffY * Mth.DEG_TO_RAD)
                         }
@@ -646,11 +678,14 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
                     for (name in boundBonesPitch) {
                         val bone = instance.getBone(name)
                         if (bone != null) {
-                            val diffX = Mth.wrapDegrees(
-                                -VehicleVecUtils.getXRotFromVector(targetVec) + VehicleVecUtils.getXRotFromVector(
-                                    defaultVec
-                                )
-                            ).toFloat()
+                            val diffX =
+                                Mth
+                                    .wrapDegrees(
+                                        -VehicleVecUtils.getXRotFromVector(targetVec) +
+                                            VehicleVecUtils.getXRotFromVector(
+                                                defaultVec,
+                                            ),
+                                    ).toFloat()
 
                             bone.rotation.rotationX(-diffX * Mth.DEG_TO_RAD)
                         }
@@ -667,54 +702,68 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         model: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         val func = VehicleResource.getDefault(entity).getScript() ?: return
         VehicleScriptManager.invokeTransform(func, entity, model, poseStack, entityYaw, partialTicks, this)
     }
 
-    open fun rotateVehicleAxis(entity: T, poseStack: PoseStack, entityYaw: Float, partialTicks: Float) {
+    open fun rotateVehicleAxis(
+        entity: T,
+        poseStack: PoseStack,
+        entityYaw: Float,
+        partialTicks: Float,
+    ) {
         val root = Vec3(0.0, entity.rotateOffsetHeight, 0.0)
         poseStack.rotateAround(
             Axis.YP.rotationDegrees(-entityYaw + 180),
             root.x.toFloat(),
             root.y.toFloat(),
-            root.z.toFloat()
+            root.z.toFloat(),
         )
         poseStack.rotateAround(
             Axis.XP.rotationDegrees(
                 -Mth.lerp(
                     partialTicks,
                     entity.xRotO + entity.fakePitchO,
-                    entity.xRot + entity.fakePitch
-                )
+                    entity.xRot + entity.fakePitch,
+                ),
             ),
             root.x.toFloat(),
             root.y.toFloat(),
-            root.z.toFloat()
+            root.z.toFloat(),
         )
         poseStack.rotateAround(
             Axis.ZP.rotationDegrees(
                 -Mth.lerp(
                     partialTicks,
                     entity.prevRoll + entity.fakeRollO,
-                    entity.roll + entity.fakeRoll
-                )
+                    entity.roll + entity.fakeRoll,
+                ),
             ),
             root.x.toFloat(),
             root.y.toFloat(),
-            root.z.toFloat()
+            root.z.toFloat(),
         )
     }
 
     open fun hideForTurretControllerWhileZooming() = false
 
-    open fun getCurrentModelEntry(poseStack: PoseStack, entity: T): VehicleModelEntry? {
+    open fun getCurrentModelEntry(
+        poseStack: PoseStack,
+        entity: T,
+    ): VehicleModelEntry? {
         val entries = entity.getModelEntries()
         return selectModelEntry(entity, entries, poseStack)
     }
 
-    override fun shouldRender(entity: T, pCamera: Frustum, pCamX: Double, pCamY: Double, pCamZ: Double): Boolean {
+    override fun shouldRender(
+        entity: T,
+        pCamera: Frustum,
+        pCamX: Double,
+        pCamY: Double,
+        pCamZ: Double,
+    ): Boolean {
         if (!entity.shouldRender(pCamX, pCamY, pCamZ)) {
             return false
         } else if (entity.noCulling) {
@@ -723,14 +772,15 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
             var aabb = VehicleMotionUtils.calculateCombinedAABBOptimized(entity).inflate(3.0)
 
             if (aabb.hasNaN() || aabb.size == 0.0) {
-                aabb = AABB(
-                    entity.x - 8.0,
-                    entity.y - 6.0,
-                    entity.z - 8.0,
-                    entity.x + 8.0,
-                    entity.y + 6.0,
-                    entity.z + 8.0
-                )
+                aabb =
+                    AABB(
+                        entity.x - 8.0,
+                        entity.y - 6.0,
+                        entity.z - 8.0,
+                        entity.x + 8.0,
+                        entity.y + 6.0,
+                        entity.z + 8.0,
+                    )
             }
 
             return pCamera.isVisible(aabb)
@@ -745,9 +795,15 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
 
     open fun getTrackDistance() = 2f
 
-    open fun wrap(value: Float, range: Int) = ((value % range) + range) % range
+    open fun wrap(
+        value: Float,
+        range: Int,
+    ) = ((value % range) + range) % range
 
-    open fun wrap(value: Float, entity: T) = wrap(value, getDefaultWrapRange(entity))
+    open fun wrap(
+        value: Float,
+        entity: T,
+    ) = wrap(value, getDefaultWrapRange(entity))
 
     fun getDefaultWrapRange(entity: T) = entity.getTrackAnimationLength()
 
@@ -763,10 +819,14 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
         }
 
         @JvmStatic
-        fun selectModelEntry(entity: VehicleEntity, entries: List<VehicleModelEntry>, poseStack: PoseStack): VehicleModelEntry? {
+        fun selectModelEntry(
+            entity: VehicleEntity,
+            entries: List<VehicleModelEntry>,
+            poseStack: PoseStack,
+        ): VehicleModelEntry? {
             if (entries.isEmpty()) return null
             entries.forEachIndexed { index, entry ->
-                if (index == 0) return@forEachIndexed  // skip main model (distance = 0)
+                if (index == 0) return@forEachIndexed // skip main model (distance = 0)
                 if (RenderDistanceHelper.shouldRenderLOD(entity, poseStack, entry.lodDistance.toDouble())) {
                     return entry
                 }
@@ -782,9 +842,10 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
             pX: Float,
             pZ: Float,
             pU: Int,
-            pV: Int
+            pV: Int,
         ) {
-            pConsumer.addVertex(pPose, pX, 0f, -pZ)
+            pConsumer
+                .addVertex(pPose, pX, 0f, -pZ)
                 .setColor(255, 255, 255, 255)
                 .setUv(pU.toFloat(), pV.toFloat())
                 .setOverlay(OverlayTexture.NO_OVERLAY)
@@ -801,9 +862,10 @@ open class GeoVehicleRenderer<T>(manager: EntityRendererProvider.Context) :
             pZ: Float,
             pU: Int,
             pV: Int,
-            color: Quaternionf
+            color: Quaternionf,
         ) {
-            pConsumer.addVertex(pPose, pX, 0f, -pZ)
+            pConsumer
+                .addVertex(pPose, pX, 0f, -pZ)
                 .setColor(color.x.toInt(), color.y.toInt(), color.z.toInt(), color.w.toInt())
                 .setUv(pU.toFloat(), pV.toFloat())
                 .setOverlay(OverlayTexture.NO_OVERLAY)

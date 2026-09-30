@@ -11,7 +11,11 @@ import net.minecraft.world.entity.OwnableEntity
 import net.minecraft.world.entity.player.Player
 
 object HealClip : Perk("heal_clip", Type.FUNCTIONAL) {
-    override fun tick(data: GunData, instance: PerkInstance, entity: Entity?) {
+    override fun tick(
+        data: GunData,
+        instance: PerkInstance,
+        entity: Entity?,
+    ) {
         data.perk.reduceCooldown(this, "HealClipTime")
     }
 
@@ -19,7 +23,7 @@ object HealClip : Perk("heal_clip", Type.FUNCTIONAL) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (DamageTypeTool.isGunDamage(source)) {
@@ -33,7 +37,7 @@ object HealClip : Perk("heal_clip", Type.FUNCTIONAL) {
     override fun preReload(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         val tag = data.perk.getTag(this) ?: return
         val time = tag.getInt("HealClipTime")
@@ -48,7 +52,7 @@ object HealClip : Perk("heal_clip", Type.FUNCTIONAL) {
     override fun postReload(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         if (entity !is LivingEntity) return
 
@@ -69,7 +73,9 @@ object HealClip : Perk("heal_clip", Type.FUNCTIONAL) {
             entity.absorptionAmount = absorption * 0.3f
         }
 
-        entity.level().getEntitiesOfClass(Player::class.java, entity.boundingBox.inflate(5.toDouble()))
+        entity
+            .level()
+            .getEntitiesOfClass(Player::class.java, entity.boundingBox.inflate(5.toDouble()))
             .filter { it.isAlliedTo(entity) || (entity is OwnableEntity && entity.owner == it) }
             .forEach { it.heal(6.0f * (0.8f + 0.2f * healClipLevel)) }
     }

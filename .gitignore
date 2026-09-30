@@ -108,8 +108,6 @@ $RECYCLE.BIN/
 
 .gradle
 build/*
-!build/generated/ksp/main
-!build/generated/ksp/main/**
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -132,3 +130,6 @@ run/
 
 bin/
 .api-classpath
+
+.cache/quality/
+__pycache__/

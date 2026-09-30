@@ -23,13 +23,13 @@ object MagnificentHowl : Perk("magnificent_howl", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (DamageTypeTool.isHeadshotDamage(source)) {
             tag.putInt(
                 "MagnificentHowlCount",
-                (tag.getInt("MagnificentHowlCount") + 1 + instance.level / 5).coerceAtMost(9 + instance.level)
+                (tag.getInt("MagnificentHowlCount") + 1 + instance.level / 5).coerceAtMost(9 + instance.level),
             )
         }
     }
@@ -37,7 +37,7 @@ object MagnificentHowl : Perk("magnificent_howl", Type.DAMAGE) {
     override fun preReload(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         val tag = data.perk.getTag(this) ?: return
         tag.putInt("MagnificentHowlDamageCount", tag.getInt("MagnificentHowlCount"))
@@ -49,7 +49,7 @@ object MagnificentHowl : Perk("magnificent_howl", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (tag.getInt("MagnificentHowlDamageCount") > 0) {

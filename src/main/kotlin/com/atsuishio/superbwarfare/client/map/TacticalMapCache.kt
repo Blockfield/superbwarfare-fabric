@@ -16,6 +16,8 @@ import com.atsuishio.superbwarfare.client.map.TacticalMapCache.queueChunkUpdate
 import com.atsuishio.superbwarfare.client.map.TacticalMapCache.uploadDirtyTextures
 import com.atsuishio.superbwarfare.tools.mc
 import com.mojang.blaze3d.platform.NativeImage
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.core.BlockPos
@@ -25,8 +27,6 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.chunk.LevelChunk
 import net.minecraft.world.level.levelgen.Heightmap
 import net.minecraft.world.level.material.MapColor
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -63,8 +63,8 @@ object TacticalMapCache {
     // A tile is 256×256 blocks = 16×16 = 256 chunks.
     // GPU upload is deferred until the tile reaches its expected chunk count
     // (or the very first chunk for immediate visual feedback).
-    private val tileLoadedChunks = ConcurrentHashMap<RegionPos, Int>()     // chunks loaded so far
-    private val tileExpectedChunks = ConcurrentHashMap<RegionPos, Int>()   // total chunks expected (from disk)
+    private val tileLoadedChunks = ConcurrentHashMap<RegionPos, Int>() // chunks loaded so far
+    private val tileExpectedChunks = ConcurrentHashMap<RegionPos, Int>() // total chunks expected (from disk)
 
     // LOD tile storage — lazily downsampled from base tiles at low zoom
     private val lodTileImages = ConcurrentHashMap<LodTileKey, NativeImage>()
@@ -107,8 +107,8 @@ object TacticalMapCache {
 
     // Periodic rescan
     private var lastRescanTick = 0L
-    private var lastCloseRefresh = 0L       // timestamp of last 3x3 rapid refresh
-    private var refreshWaveIndex = 0        // progress through spiral offsets, wraps around
+    private var lastCloseRefresh = 0L // timestamp of last 3x3 rapid refresh
+    private var refreshWaveIndex = 0 // progress through spiral offsets, wraps around
     private var cachedViewDist = -1
     private var cachedOffsets: List<Pair<Int, Int>> = emptyList()
     private const val RESCAN_INTERVAL = 5L
@@ -168,7 +168,10 @@ object TacticalMapCache {
     //  Lifecycle
     // ========================
 
-    fun initForDimension(dimension: String, worldId: String) {
+    fun initForDimension(
+        dimension: String,
+        worldId: String,
+    ) {
         if (worldId == currentWorldId && dimension == currentDimension) return
         currentWorldId = worldId
         currentDimension = dimension
@@ -240,7 +243,11 @@ object TacticalMapCache {
      * [queueChunkUpdate], so this method only needs to drain the queue — no
      * O(viewDist²) ring scan is needed.
      */
-    fun processChunkUpdates(level: Level, playerX: Double, playerZ: Double) {
+    fun processChunkUpdates(
+        level: Level,
+        playerX: Double,
+        playerZ: Double,
+    ) {
         ensureInit(level)
         if (level !is ClientLevel) return
 
@@ -249,11 +256,12 @@ object TacticalMapCache {
         val pcx = (playerX / CHUNK_SIZE).toInt()
         val pcz = (playerZ / CHUNK_SIZE).toInt()
 
-        val sorted = chunkUpdateQueue.entries.sortedBy { (key, _) ->
-            val cx = (key shr 32).toInt()
-            val cz = key.toInt()
-            maxOf(kotlin.math.abs(cx - pcx), kotlin.math.abs(cz - pcz))
-        }
+        val sorted =
+            chunkUpdateQueue.entries.sortedBy { (key, _) ->
+                val cx = (key shr 32).toInt()
+                val cz = key.toInt()
+                maxOf(kotlin.math.abs(cx - pcx), kotlin.math.abs(cz - pcz))
+            }
         var processed = 0
         for ((key, chunk) in sorted) {
             if (processed >= MAX_UPDATES_PER_FRAME) break
@@ -270,7 +278,11 @@ object TacticalMapCache {
     //  Periodic rescan
     // ========================
 
-    fun periodicRescan(level: Level, playerX: Double, playerZ: Double) {
+    fun periodicRescan(
+        level: Level,
+        playerX: Double,
+        playerZ: Double,
+    ) {
         if (level !is ClientLevel) return
         ensureInit(level)
         val now = System.currentTimeMillis()
@@ -284,13 +296,18 @@ object TacticalMapCache {
         // Rebuild spiral offsets only when render distance changes
         if (viewDist != cachedViewDist || cachedOffsets.isEmpty()) {
             cachedViewDist = viewDist
-            cachedOffsets = buildList {
-                for (r in 0..viewDist) {
-                    for (dx in -r..r) for (dz in -r..r)
-                        if (dx == r || dx == -r || dz == r || dz == -r)
-                            add(dx to dz)
+            cachedOffsets =
+                buildList {
+                    for (r in 0..viewDist) {
+                        for (dx in -r..r) {
+                            for (dz in -r..r) {
+                                if (dx == r || dx == -r || dz == r || dz == -r) {
+                                    add(dx to dz)
+                                }
+                            }
+                        }
+                    }
                 }
-            }
         }
         val offsets = cachedOffsets
         if (offsets.isEmpty()) return
@@ -367,7 +384,10 @@ object TacticalMapCache {
     //  Core: block sampling
     // ========================
 
-    private fun updateChunk(chunk: LevelChunk, level: Level) {
+    private fun updateChunk(
+        chunk: LevelChunk,
+        level: Level,
+    ) {
         ensureInit(level)
         val minX = chunk.pos.minBlockX
         val minZ = chunk.pos.minBlockZ
@@ -411,8 +431,12 @@ object TacticalMapCache {
                     actualY = surfaceY
                 }
 
-                val brightness = if (!prevSet) MapColor.Brightness.NORMAL
-                else computeBrightness(actualY, prevHeight, worldX, worldZ)
+                val brightness =
+                    if (!prevSet) {
+                        MapColor.Brightness.NORMAL
+                    } else {
+                        computeBrightness(actualY, prevHeight, worldX, worldZ)
+                    }
 
                 prevHeight = actualY
                 prevSet = true
@@ -432,15 +456,23 @@ object TacticalMapCache {
 
         // Store heights for this chunk
         val heights = ShortArray(CHUNK_SIZE * CHUNK_SIZE)
-        for (z in 0..15) for (x in 0..15)
-            heights[z * CHUNK_SIZE + x] = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z).toShort()
+        for (z in 0..15) {
+            for (x in 0..15) {
+                heights[z * CHUNK_SIZE + x] = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z).toShort()
+            }
+        }
         chunkHeights[chunkPosKey(chunk.pos.x, chunk.pos.z)] = heights
 
         // Save to disk
         saveChunkToDisk(chunk.pos.x, chunk.pos.z)
     }
 
-    private fun computeBrightness(currentY: Int, prevY: Int, worldX: Int, worldZ: Int): MapColor.Brightness {
+    private fun computeBrightness(
+        currentY: Int,
+        prevY: Int,
+        worldX: Int,
+        worldZ: Int,
+    ): MapColor.Brightness {
         val d3 = (currentY - prevY).toDouble() * 0.8 + (((worldX + worldZ) and 1) - 0.5) * 0.4
         return when {
             d3 > 0.6 -> MapColor.Brightness.HIGH
@@ -449,7 +481,10 @@ object TacticalMapCache {
         }
     }
 
-    private fun calculateABGR(mapColor: MapColor, brightness: MapColor.Brightness): Int {
+    private fun calculateABGR(
+        mapColor: MapColor,
+        brightness: MapColor.Brightness,
+    ): Int {
         if (mapColor == MapColor.NONE) return 0
         val mod = BRIGHTNESS_MODIFIERS[brightness.id]
         val col = mapColor.col
@@ -468,7 +503,7 @@ object TacticalMapCache {
     // ========================
 
     private const val HEIGHT_BYTES = CHUNK_SIZE * CHUNK_SIZE * 2 // 512
-    private const val TOTAL_BYTES = CHUNK_BYTES + HEIGHT_BYTES   // 1536
+    private const val TOTAL_BYTES = CHUNK_BYTES + HEIGHT_BYTES // 1536
 
     // Chunks per tile edge: TILE_SIZE / CHUNK_SIZE = 256 / 16 = 16
     private const val CHUNKS_PER_TILE_BITS = 4
@@ -478,23 +513,30 @@ object TacticalMapCache {
         val worldId = currentWorldId ?: return null
         // Reuse cached directory if still valid
         cacheDir?.let { if (it.exists()) return it }
-        val dir = File(
-            mc.gameDirectory,
-            "superbwarfare/tactical_map_cache/$worldId/${dim.replace(":", "_")}"
-        )
+        val dir =
+            File(
+                mc.gameDirectory,
+                "superbwarfare/tactical_map_cache/$worldId/${dim.replace(":", "_")}",
+            )
         dir.mkdirs()
         cacheDir = dir
         return dir
     }
 
     /** Storage tile file: groups all chunks within a 256x256 tile. */
-    private fun tileFile(tileRX: Int, tileRZ: Int): File? {
+    private fun tileFile(
+        tileRX: Int,
+        tileRZ: Int,
+    ): File? {
         val dir = getCacheDir() ?: return null
-        return File(dir, "${tileRX}_${tileRZ}.bin")
+        return File(dir, "${tileRX}_$tileRZ.bin")
     }
 
     /** Read all chunk entries from a tile file -> (chunkKey -> compressed data). */
-    private fun readTileFile(tileRX: Int, tileRZ: Int): Map<Long, ByteArray> {
+    private fun readTileFile(
+        tileRX: Int,
+        tileRZ: Int,
+    ): Map<Long, ByteArray> {
         val file = tileFile(tileRX, tileRZ) ?: return emptyMap()
         if (!file.exists()) return emptyMap()
         val result = mutableMapOf<Long, ByteArray>()
@@ -519,7 +561,11 @@ object TacticalMapCache {
     }
 
     /** Write chunk entries to a tile file (atomic via temp file). */
-    private fun writeTileFile(tileRX: Int, tileRZ: Int, chunks: Map<Long, ByteArray>) {
+    private fun writeTileFile(
+        tileRX: Int,
+        tileRZ: Int,
+        chunks: Map<Long, ByteArray>,
+    ) {
         val file = tileFile(tileRX, tileRZ) ?: return
         try {
             val totalSize = 4 + chunks.entries.sumOf { 8 + 4 + it.value.size }
@@ -545,7 +591,10 @@ object TacticalMapCache {
      * Compression is done immediately, but the actual disk write is deferred
      * to [flushPendingDiskWrites] to avoid blocking the render thread.
      */
-    private fun saveChunkToDisk(cx: Int, cz: Int) {
+    private fun saveChunkToDisk(
+        cx: Int,
+        cz: Int,
+    ) {
         // Compress pixel + height data for this chunk
         val minBlockX = cx * CHUNK_SIZE
         val minBlockZ = cz * CHUNK_SIZE
@@ -557,13 +606,17 @@ object TacticalMapCache {
         val tileZ = minBlockZ and (TILE_SIZE - 1)
         val raw = ByteArray(TOTAL_BYTES)
         val buf = ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN)
-        for (z in 0 until CHUNK_SIZE)
-            for (x in 0 until CHUNK_SIZE)
+        for (z in 0 until CHUNK_SIZE) {
+            for (x in 0 until CHUNK_SIZE) {
                 buf.putInt(tile.getPixelRGBA(tileX + x, tileZ + z))
+            }
+        }
         val heights = chunkHeights[chunkPosKey(cx, cz)]
-        for (z in 0 until CHUNK_SIZE)
-            for (x in 0 until CHUNK_SIZE)
+        for (z in 0 until CHUNK_SIZE) {
+            for (x in 0 until CHUNK_SIZE) {
                 buf.putShort(heights?.get(z * CHUNK_SIZE + x) ?: 0)
+            }
+        }
 
         val compressed: ByteArray
         try {
@@ -630,7 +683,10 @@ object TacticalMapCache {
      * [loadAllChunks]), falling back to disk only for chunks saved after the
      * initial preload.
      */
-    private fun loadChunkFromDisk(cx: Int, cz: Int): RegionPos? {
+    private fun loadChunkFromDisk(
+        cx: Int,
+        cz: Int,
+    ): RegionPos? {
         val key = chunkPosKey(cx, cz)
 
         // Fast path: data was already decompressed by loadAllChunks()
@@ -654,7 +710,11 @@ object TacticalMapCache {
      * Caller is responsible for calling [invalidateLodTilesForBaseTile]
      * or [invalidateLodTilesBatch] after all chunks are written.
      */
-    private fun applyChunkData(cx: Int, cz: Int, raw: ByteArray): RegionPos {
+    private fun applyChunkData(
+        cx: Int,
+        cz: Int,
+        raw: ByteArray,
+    ): RegionPos {
         val minBlockX = cx * CHUNK_SIZE
         val minBlockZ = cz * CHUNK_SIZE
         val imgTileRX = minBlockX shr TILE_SIZE_BITS
@@ -673,9 +733,11 @@ object TacticalMapCache {
             }
         }
         if (raw.size >= TOTAL_BYTES) {
-            for (z in 0 until CHUNK_SIZE)
-                for (x in 0 until CHUNK_SIZE)
+            for (z in 0 until CHUNK_SIZE) {
+                for (x in 0 until CHUNK_SIZE) {
                     heights[z * CHUNK_SIZE + x] = buf.getShort()
+                }
+            }
             chunkHeights[chunkPosKey(cx, cz)] = heights
         }
         // Deferred GPU upload: only mark dirty when tile is complete or this is
@@ -731,8 +793,8 @@ object TacticalMapCache {
     }
 
     /** Decompress a single chunk's compressed data, or null if corrupted. */
-    private fun decompressChunkData(compressed: ByteArray): ByteArray? {
-        return try {
+    private fun decompressChunkData(compressed: ByteArray): ByteArray? =
+        try {
             val inflater = Inflater()
             inflater.setInput(compressed)
             val tmp = ByteArray(TOTAL_BYTES)
@@ -747,7 +809,6 @@ object TacticalMapCache {
         } catch (_: Exception) {
             null
         }
-    }
 
     /**
      * Process a batch of pending chunk keys: select the nearest chunks using a
@@ -759,16 +820,21 @@ object TacticalMapCache {
      *   - >  500 queued → 2× base rate  (48/tick)
      *   - otherwise      → 1× base rate  (24/tick)
      */
-    fun processPendingChunks(px: Double, pz: Double, maxCount: Int) {
+    fun processPendingChunks(
+        px: Double,
+        pz: Double,
+        maxCount: Int,
+    ) {
         if (pendingChunkQueue.isEmpty()) return
 
         // Adaptive batch size: large backlog → more chunks per tick
         val queueSize = pendingChunkQueue.size
-        val adaptiveMax = when {
-            queueSize > 2000 -> maxCount * 4
-            queueSize > 500 -> maxCount * 2
-            else -> maxCount
-        }
+        val adaptiveMax =
+            when {
+                queueSize > 2000 -> maxCount * 4
+                queueSize > 500 -> maxCount * 2
+                else -> maxCount
+            }
 
         val pcx = (px / CHUNK_SIZE).toInt()
         val pcz = (pz / CHUNK_SIZE).toInt()
@@ -810,7 +876,11 @@ object TacticalMapCache {
      * [rx] and [rz] are LOD tile grid coordinates; each LOD tile covers
      * (factor * TILE_SIZE) x (factor * TILE_SIZE) world blocks.
      */
-    data class LodTileKey(val factor: Int, val rx: Int, val rz: Int)
+    data class LodTileKey(
+        val factor: Int,
+        val rx: Int,
+        val rz: Int,
+    )
 
     /**
      * Create an LOD tile by sampling at [LOD_SAMPLE_SIZE]² (128×128)
@@ -824,7 +894,11 @@ object TacticalMapCache {
      * Because every LOD tile uses the same consistent quality, there is
      * no draft→full flicker — tiles are created once at final quality.
      */
-    private fun createLodTile(factor: Int, lodRX: Int, lodRZ: Int): NativeImage {
+    private fun createLodTile(
+        factor: Int,
+        lodRX: Int,
+        lodRZ: Int,
+    ): NativeImage {
         val sample = NativeImage(LOD_SAMPLE_SIZE, LOD_SAMPLE_SIZE, true)
         val subStep = TILE_SIZE / factor
         val sampleStep = TILE_SIZE / LOD_SAMPLE_SIZE
@@ -858,17 +932,22 @@ object TacticalMapCache {
     }
 
     /** Get or create a GPU texture for an LOD tile. */
-    fun getLodTileTexture(factor: Int, lodRX: Int, lodRZ: Int): ResourceLocation {
+    fun getLodTileTexture(
+        factor: Int,
+        lodRX: Int,
+        lodRZ: Int,
+    ): ResourceLocation {
         val key = LodTileKey(factor, lodRX, lodRZ)
-        val loc = loc("map_lod_${factor}_${lodRX}_${lodRZ}")
+        val loc = loc("map_lod_${factor}_${lodRX}_$lodRZ")
 
         // Fast path: already on GPU
         lodTileTextures[key]?.let { return loc }
 
         // Create the downsampled tile (cached in image map)
-        val image = lodTileImages.computeIfAbsent(key) {
-            createLodTile(factor, lodRX, lodRZ)
-        }
+        val image =
+            lodTileImages.computeIfAbsent(key) {
+                createLodTile(factor, lodRX, lodRZ)
+            }
 
         // Register texture
         try {
@@ -890,7 +969,7 @@ object TacticalMapCache {
         centerBlockX: Int,
         centerBlockZ: Int,
         blockRadius: Int,
-        factor: Int
+        factor: Int,
     ): List<LodTileKey> {
         val lodSize = TILE_SIZE * factor
         val halfSize = lodSize / 2
@@ -916,7 +995,10 @@ object TacticalMapCache {
      * The actual clear happens later in [processDirtyLodTiles] so that
      * multiple chunk updates within the same frame only trigger one
      * LOD rebuild pass instead of one per chunk. */
-    private fun invalidateLodTilesForBaseTile(rx: Int, rz: Int) {
+    private fun invalidateLodTilesForBaseTile(
+        rx: Int,
+        rz: Int,
+    ) {
         lodDirtyBaseTiles.add(RegionPos(rx, rz))
     }
 
@@ -944,7 +1026,7 @@ object TacticalMapCache {
 
                 lodTileTextures.remove(key)?.let {
                     try {
-                        val loc = loc("map_lod_${factor}_${lodRX}_${lodRZ}")
+                        val loc = loc("map_lod_${factor}_${lodRX}_$lodRZ")
                         mc.textureManager.release(loc)
                     } catch (_: Exception) {
                     }
@@ -958,16 +1040,21 @@ object TacticalMapCache {
     //  Tile management
     // ========================
 
-    private fun getOrCreateTile(rx: Int, rz: Int): NativeImage {
-        return tileImages.computeIfAbsent(RegionPos(rx, rz)) {
+    private fun getOrCreateTile(
+        rx: Int,
+        rz: Int,
+    ): NativeImage =
+        tileImages.computeIfAbsent(RegionPos(rx, rz)) {
             NativeImage(TILE_SIZE, TILE_SIZE, true)
         }
-    }
 
-    fun getTileTexture(rx: Int, rz: Int): ResourceLocation? {
+    fun getTileTexture(
+        rx: Int,
+        rz: Int,
+    ): ResourceLocation? {
         if (!tileImages.containsKey(RegionPos(rx, rz))) return null
         tileTextures.computeIfAbsent(RegionPos(rx, rz)) {
-            val loc = loc("map_tile_${rx}_${rz}")
+            val loc = loc("map_tile_${rx}_$rz")
             try {
                 mc.textureManager.release(loc)
             } catch (_: Exception) {
@@ -976,7 +1063,7 @@ object TacticalMapCache {
                 mc.textureManager.register(loc, it)
             }
         }
-        return loc("map_tile_${rx}_${rz}")
+        return loc("map_tile_${rx}_$rz")
     }
 
     fun uploadDirtyTextures() {
@@ -990,7 +1077,11 @@ object TacticalMapCache {
         dirtyTiles.clear()
     }
 
-    fun getVisibleTiles(centerBlockX: Int, centerBlockZ: Int, blockRadius: Int): List<RegionPos> {
+    fun getVisibleTiles(
+        centerBlockX: Int,
+        centerBlockZ: Int,
+        blockRadius: Int,
+    ): List<RegionPos> {
         val minRX = (centerBlockX - blockRadius) shr TILE_SIZE_BITS
         val maxRX = (centerBlockX + blockRadius) shr TILE_SIZE_BITS
         val minRZ = (centerBlockZ - blockRadius) shr TILE_SIZE_BITS
@@ -1007,14 +1098,23 @@ object TacticalMapCache {
         }
     }
 
-    private fun chunkPosKey(cx: Int, cz: Int) = (cx.toLong() shl 32) or (cz.toLong() and 0xFFFFFFFFL)
+    private fun chunkPosKey(
+        cx: Int,
+        cz: Int,
+    ) = (cx.toLong() shl 32) or (cz.toLong() and 0xFFFFFFFFL)
 
-    fun getCachedHeight(worldX: Int, worldZ: Int): Short? {
+    fun getCachedHeight(
+        worldX: Int,
+        worldZ: Int,
+    ): Short? {
         val cx = worldX shr 4
         val cz = worldZ shr 4
         val h = chunkHeights[chunkPosKey(cx, cz)] ?: return null
         return h[(worldZ and 15) * CHUNK_SIZE + (worldX and 15)]
     }
 
-    data class RegionPos(val rx: Int, val rz: Int)
+    data class RegionPos(
+        val rx: Int,
+        val rz: Int,
+    )
 }

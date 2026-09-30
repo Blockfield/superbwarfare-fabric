@@ -8,8 +8,12 @@ import net.minecraft.world.phys.AABB
 
 @Serializable
 data class EntityAreaClearMessage(
-    val minX: Double, val minY: Double, val minZ: Double,
-    val maxX: Double, val maxY: Double, val maxZ: Double,
+    val minX: Double,
+    val minY: Double,
+    val minZ: Double,
+    val maxX: Double,
+    val maxY: Double,
+    val maxZ: Double,
 ) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()

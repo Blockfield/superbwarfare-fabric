@@ -5,15 +5,16 @@ import net.minecraft.nbt.CompoundTag
 /**
  * 标记某种状态是否应该开始
  */
-class Starter(private val tag: CompoundTag, name: String) {
+class Starter(
+    private val tag: CompoundTag,
+    name: String,
+) {
     private val name: String = "Start$name"
 
     /**
      * 检测当前状态是否应该开始
      */
-    fun shouldStart(): Boolean {
-        return tag.getBoolean(name)
-    }
+    fun shouldStart(): Boolean = tag.getBoolean(name)
 
     /**
      * 将当前状态设置为开始

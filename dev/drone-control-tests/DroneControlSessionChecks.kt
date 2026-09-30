@@ -4,7 +4,14 @@ import com.atsuishio.superbwarfare.control.DroneControlSession
 
 fun main() {
     var count = 0
-    fun expect(value: Boolean, label: String) { check(value) { label }; count++ }
+
+    fun expect(
+        value: Boolean,
+        label: String,
+    ) {
+        check(value) { label }
+        count++
+    }
 
     val session = DroneControlSession("session-a")
     expect(!session.accept("session-b", 1), "wrong session id rejected")

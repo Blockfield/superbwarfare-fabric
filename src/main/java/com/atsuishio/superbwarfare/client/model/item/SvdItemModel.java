@@ -1,25 +1,28 @@
 package com.atsuishio.superbwarfare.client.model.item;
 
+import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
+
 import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.sniper.SvdItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
 
 public class SvdItemModel extends CustomGunModel<SvdItem> {
     public static float rotXBipod = 0f;
 
     @Override
-    public void setCustomAnimations(SvdItem animatable, long instanceId, AnimationState<SvdItem> animationState) {
+    public void setCustomAnimations(
+            SvdItem animatable, long instanceId, AnimationState<SvdItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -28,7 +31,14 @@ public class SvdItemModel extends CustomGunModel<SvdItem> {
         GeoBone gun = getAnimationProcessor().getBone("bone");
         GeoBone bolt = getAnimationProcessor().getBone("bolt");
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
@@ -38,33 +48,37 @@ public class SvdItemModel extends CustomGunModel<SvdItem> {
         var data = GunData.from(stack);
         int type = data.attachment.get(AttachmentType.SCOPE);
 
-        float posX = switch (type) {
-            case 0, 1 -> 1.701f;
-            case 2 -> 1.531f;
-            case 3 -> 1.708f;
-            default -> 0f;
-        };
-        float posY = switch (type) {
-            case 0 -> 1.02f;
-            case 1 -> 0.04f;
-            case 2 -> 0.12f;
-            case 3 -> -0.13f;
-            default -> 0f;
-        };
-        float scaleZ = switch (type) {
-            case 0 -> 0.4f;
-            case 1 -> 0.45f;
-            case 2 -> 0.85f;
-            case 3 -> 0.95f;
-            default -> 0f;
-        };
-        float posZ = switch (type) {
-            case 0 -> 7f;
-            case 1 -> 7.5f;
-            case 2 -> 12.85f;
-            case 3 -> 14.08f;
-            default -> 0f;
-        };
+        float posX =
+                switch (type) {
+                    case 0, 1 -> 1.701f;
+                    case 2 -> 1.531f;
+                    case 3 -> 1.708f;
+                    default -> 0f;
+                };
+        float posY =
+                switch (type) {
+                    case 0 -> 1.02f;
+                    case 1 -> 0.04f;
+                    case 2 -> 0.12f;
+                    case 3 -> -0.13f;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (type) {
+                    case 0 -> 0.4f;
+                    case 1 -> 0.45f;
+                    case 2 -> 0.85f;
+                    case 3 -> 0.95f;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (type) {
+                    case 0 -> 7f;
+                    case 1 -> 7.5f;
+                    case 2 -> 12.85f;
+                    case 3 -> 14.08f;
+                    default -> 0f;
+                };
 
         gun.setPosX(posX * (float) zp);
         gun.setPosY(posY * (float) zp - (float) (0.2f * zpz));
@@ -76,13 +90,14 @@ public class SvdItemModel extends CustomGunModel<SvdItem> {
         if (zt < 0.5) {
             shen = getAnimationProcessor().getBone("fireRootNormal");
         } else {
-            shen = switch (type) {
-                case 0 -> getAnimationProcessor().getBone("fireRoot0");
-                case 1 -> getAnimationProcessor().getBone("fireRoot1");
-                case 2 -> getAnimationProcessor().getBone("fireRoot2");
-                case 3 -> getAnimationProcessor().getBone("fireRoot3");
-                default -> getAnimationProcessor().getBone("fireRootNormal");
-            };
+            shen =
+                    switch (type) {
+                        case 0 -> getAnimationProcessor().getBone("fireRoot0");
+                        case 1 -> getAnimationProcessor().getBone("fireRoot1");
+                        case 2 -> getAnimationProcessor().getBone("fireRoot2");
+                        case 3 -> getAnimationProcessor().getBone("fireRoot3");
+                        default -> getAnimationProcessor().getBone("fireRootNormal");
+                    };
         }
 
         ClientEventHandler.handleShootAnimation(shen, 0.8f, 0.5f, 2f, 1.5f, 2f, 1.4f, 0.4f, 0.7f);
@@ -110,7 +125,10 @@ public class SvdItemModel extends CustomGunModel<SvdItem> {
         float numP = (float) (1 - 0.9 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 1f, 0.65f);
     }
 }

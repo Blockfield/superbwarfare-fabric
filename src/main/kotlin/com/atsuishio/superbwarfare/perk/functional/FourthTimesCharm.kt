@@ -13,7 +13,7 @@ object FourthTimesCharm : Perk("fourth_times_charm", Type.FUNCTIONAL) {
     override fun tick(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         data.perk.reduceCooldown(this, "FourthTimesCharmTick")
         val tag = data.perk.getTag(this) ?: return
@@ -37,7 +37,7 @@ object FourthTimesCharm : Perk("fourth_times_charm", Type.FUNCTIONAL) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         super.onHurtEntity(damage, data, instance, target, source)
         val projectile = source.directEntity
@@ -51,7 +51,10 @@ object FourthTimesCharm : Perk("fourth_times_charm", Type.FUNCTIONAL) {
         }
     }
 
-    fun handleFourthTimesCharm(data: GunData, instance: PerkInstance) {
+    fun handleFourthTimesCharm(
+        data: GunData,
+        instance: PerkInstance,
+    ) {
         val tag = data.perk.getTag(this) ?: return
         val fourthTimesCharmTick = tag.getInt("FourthTimesCharmTick")
         if (fourthTimesCharmTick <= 0) {

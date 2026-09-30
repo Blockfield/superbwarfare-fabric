@@ -15,10 +15,10 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
+import io.github.fabricators_of_create.porting_lib.entity.events.OnDatapackSyncCallback
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import io.github.fabricators_of_create.porting_lib.entity.events.OnDatapackSyncCallback
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.minecraft.resources.ResourceLocation
@@ -36,27 +36,29 @@ import java.util.concurrent.Executor
 import java.util.function.Consumer
 
 object DataLoader {
-
     @JvmField
     val GSON: Gson = createCommonBuilder().create()
 
     @OptIn(ExperimentalSerializationApi::class)
-    val JSON = Json {
-        isLenient = true
-        ignoreUnknownKeys = true
-        serializersModule = com.atsuishio.superbwarfare.serialization.serializersModule
-        allowTrailingComma = true
-        allowSpecialFloatingPointValues = true
-    }
+    val JSON =
+        Json {
+            isLenient = true
+            ignoreUnknownKeys = true
+            serializersModule = com.atsuishio.superbwarfare.serialization.serializersModule
+            allowTrailingComma = true
+            allowSpecialFloatingPointValues = true
+        }
 
     @JvmField
-    val JSON_OBJECT_CACHE: LoadingCache<Any, JsonObject> = CacheBuilder.newBuilder()
-        .weakKeys()
-        .build(object : CacheLoader<Any, JsonObject>() {
-            override fun load(obj: Any): JsonObject {
-                return GSON.toJsonTree(obj).getAsJsonObject()
-            }
-        })
+    val JSON_OBJECT_CACHE: LoadingCache<Any, JsonObject> =
+        CacheBuilder
+            .newBuilder()
+            .weakKeys()
+            .build(
+                object : CacheLoader<Any, JsonObject>() {
+                    override fun load(obj: Any): JsonObject = GSON.toJsonTree(obj).getAsJsonObject()
+                },
+            )
 
     val LOADED_DATA = mutableMapOf<String, GeneralData<*>>()
     val LOADED_RESOURCE = mutableMapOf<String, GeneralData<*>>()
@@ -65,7 +67,8 @@ object DataLoader {
     val CLIENT_LISTENER: ComplexJsonResourceReloadListener = ComplexJsonResourceReloadListener(LOADED_RESOURCE)
 
     fun init() {
-        ResourceManagerHelper.get(PackType.SERVER_DATA)
+        ResourceManagerHelper
+            .get(PackType.SERVER_DATA)
             .registerReloadListener(Identified("data", SERVER_LISTENER))
         OnDatapackSyncCallback.EVENT.register { playerList, player -> onDataPackSync(playerList, player) }
     }
@@ -77,7 +80,7 @@ object DataLoader {
         clazz: Class<T>,
         synced: Boolean = false,
         isKtData: Boolean = false,
-        onReload: Consumer<Map<String, Any>>? = null
+        onReload: Consumer<Map<String, Any>>? = null,
     ): DataMap<T> {
         val data = LOADED_DATA[directory]
 
@@ -96,7 +99,7 @@ object DataLoader {
         directory: String,
         clazz: Class<T>,
         isKtData: Boolean = false,
-        onReload: Consumer<Map<String, Any>>? = null
+        onReload: Consumer<Map<String, Any>>? = null,
     ): DataMap<T> {
         val resource = LOADED_RESOURCE[directory]
 
@@ -111,8 +114,8 @@ object DataLoader {
 
     // 务必在所有需要序列化GSON数据的地方调用，避免报错
     @JvmStatic
-    fun createCommonBuilder(): GsonBuilder {
-        return GsonBuilder()
+    fun createCommonBuilder(): GsonBuilder =
+        GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
             .setLenient()
             .serializeSpecialFloatingPointValues()
@@ -125,20 +128,17 @@ object DataLoader {
             .registerTypeAdapter(CollisionLevel.Limit::class.java, LimitAdapter())
             .registerTypeAdapterFactory(ObjectToList.AdapterFactory())
             .registerTypeAdapterFactory(StringToObject.AdapterFactory())
-    }
-
 
     /**
      * 将StringToObject和ObjectToList转换为原始值
      */
     @JvmStatic
-    fun processValue(value: Any?): Any? {
-        return when (value) {
+    fun processValue(value: Any?): Any? =
+        when (value) {
             is ObjectToList<*> -> value.list.map { value -> processValue(value) }
             is StringToObject<*> -> processValue(value.value)
             else -> value
         }
-    }
 
     data class GeneralData<T>(
         val type: Class<*>,
@@ -146,23 +146,25 @@ object DataLoader {
         val dataMap: HashMap<String, Any>,
         val synced: Boolean,
         val isKtData: Boolean = false,
-        val onReload: Consumer<Map<String, Any>>?
+        val onReload: Consumer<Map<String, Any>>?,
     ) {
         val mapType by lazy {
             TypeToken.getParameterized(HashMap::class.java, String::class.java, type)!!
         }
 
-        fun serializeToString(): String {
-            return if (isKtData) {
+        fun serializeToString(): String =
+            if (isKtData) {
                 JSON.encodeToString(serializer(mapType.type), dataMap)
             } else {
                 GSON.toJson(dataMap)!!
             }
-        }
     }
 
     /** player == null означает перезагрузку датапаков: рассылаем всем, как делал NeoForge. */
-    private fun onDataPackSync(playerList: PlayerList, player: ServerPlayer?) {
+    private fun onDataPackSync(
+        playerList: PlayerList,
+        player: ServerPlayer?,
+    ) {
         val server = playerList.server
         val relevantPlayers: List<ServerPlayer> = player?.let { listOf(it) } ?: playerList.players
 
@@ -179,7 +181,8 @@ object DataLoader {
 
     internal object ClientReloadListener {
         fun init() {
-            ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
+            ResourceManagerHelper
+                .get(PackType.CLIENT_RESOURCES)
                 .registerReloadListener(Identified("resource", CLIENT_LISTENER))
         }
     }
@@ -189,8 +192,10 @@ object DataLoader {
      * ComplexJsonResourceReloadListener наследуется от ванильного SimplePreparableReloadListener.
      * Обёртка добавляет недостающий id, не трогая сам слушатель.
      */
-    private class Identified(name: String, private val delegate: PreparableReloadListener) :
-        IdentifiableResourceReloadListener {
+    private class Identified(
+        name: String,
+        private val delegate: PreparableReloadListener,
+    ) : IdentifiableResourceReloadListener {
         private val id: ResourceLocation = Mod.loc(name)
 
         override fun getFabricId(): ResourceLocation = id
@@ -201,8 +206,7 @@ object DataLoader {
             prepareProfiler: ProfilerFiller,
             applyProfiler: ProfilerFiller,
             prepareExecutor: Executor,
-            applyExecutor: Executor
-        ): CompletableFuture<Void> =
-            delegate.reload(barrier, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor)
+            applyExecutor: Executor,
+        ): CompletableFuture<Void> = delegate.reload(barrier, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor)
     }
 }

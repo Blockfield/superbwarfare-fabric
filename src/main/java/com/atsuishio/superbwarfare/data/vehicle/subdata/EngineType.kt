@@ -33,5 +33,5 @@ enum class EngineType {
     TOM6,
 
     @SerialName("AirShip")
-    AIRSHIP
+    AIRSHIP,
 }

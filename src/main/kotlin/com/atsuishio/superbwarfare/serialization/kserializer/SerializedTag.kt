@@ -12,20 +12,28 @@ import net.minecraft.nbt.NbtAccounter
 import net.minecraft.nbt.Tag
 import net.minecraft.nbt.TagTypes
 
-typealias SerializedTag = @Serializable(TagSerializer::class) Tag
+typealias SerializedTag =
+    @Serializable(TagSerializer::class)
+    Tag
 
 object TagSerializer : KSerializer<Tag> {
-    override val descriptor = buildClassSerialDescriptor("Tag") {
-        element<Byte>("type")
-        element<ByteArray>("data")
-    }
+    override val descriptor =
+        buildClassSerialDescriptor("Tag") {
+            element<Byte>("type")
+            element<ByteArray>("data")
+        }
 
     private val byteArraySerializer = ByteArraySerializer()
 
-    override fun serialize(encoder: Encoder, value: Tag) {
-        val byteArray = ByteStreams.newDataOutput()
-            .apply { value.write(this) }
-            .toByteArray()
+    override fun serialize(
+        encoder: Encoder,
+        value: Tag,
+    ) {
+        val byteArray =
+            ByteStreams
+                .newDataOutput()
+                .apply { value.write(this) }
+                .toByteArray()
 
         encoder.encodeByte(value.id)
         encoder.encodeSerializableValue(byteArraySerializer, byteArray)

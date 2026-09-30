@@ -1,10 +1,10 @@
 package com.atsuishio.superbwarfare.client.particle
 
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.*
 import net.minecraft.core.particles.SimpleParticleType
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -16,9 +16,11 @@ class RisingSmokeParticle protected constructor(
     vx: Double,
     vy: Double,
     vz: Double,
-    private val spriteSet: SpriteSet
+    private val spriteSet: SpriteSet,
 ) : TextureSheetParticle(world, x, y, z) {
-    class RisingSmokeParticleProvider(private val spriteSet: SpriteSet) : ParticleProvider<SimpleParticleType> {
+    class RisingSmokeParticleProvider(
+        private val spriteSet: SpriteSet,
+    ) : ParticleProvider<SimpleParticleType> {
         override fun createParticle(
             typeIn: SimpleParticleType,
             worldIn: ClientLevel,
@@ -27,10 +29,8 @@ class RisingSmokeParticle protected constructor(
             z: Double,
             xSpeed: Double,
             ySpeed: Double,
-            zSpeed: Double
-        ): Particle {
-            return RisingSmokeParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet)
-        }
+            zSpeed: Double,
+        ): Particle = RisingSmokeParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet)
     }
 
     init {
@@ -45,9 +45,7 @@ class RisingSmokeParticle protected constructor(
         this.setSpriteFromAge(spriteSet)
     }
 
-    override fun getRenderType(): ParticleRenderType {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-    }
+    override fun getRenderType(): ParticleRenderType = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
 
     override fun tick() {
         super.tick()
@@ -58,8 +56,6 @@ class RisingSmokeParticle protected constructor(
     }
 
     companion object {
-        fun provider(spriteSet: SpriteSet): RisingSmokeParticleProvider {
-            return RisingSmokeParticleProvider(spriteSet)
-        }
+        fun provider(spriteSet: SpriteSet): RisingSmokeParticleProvider = RisingSmokeParticleProvider(spriteSet)
     }
 }

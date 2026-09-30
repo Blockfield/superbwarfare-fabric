@@ -25,9 +25,13 @@ import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
 
-open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntity {
+open class MediumRocketEntity :
+    FastThrowableProjectile,
+    BasicGeoProjectileEntity {
     enum class Type {
-        AP, HE, CM
+        AP,
+        HE,
+        CM,
     }
 
     private var type: Type? = Type.AP
@@ -51,7 +55,7 @@ open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntit
         fireTime: Int,
         type: Type?,
         spreadAmount: Int,
-        spreadAngle: Int
+        spreadAngle: Int,
     ) : super(pEntityType, pX, pY, pZ, pLevel) {
         this.damageValue = damage
         this.explosionRadiusValue = radius
@@ -63,18 +67,17 @@ open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntit
         this.spreadAngle = spreadAngle
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.SMALL_ROCKET.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.SMALL_ROCKET.get()
 
     fun durability(durability: Int): MediumRocketEntity {
         this.durability = durability
         return this
     }
 
-    override fun isColliding(pPos: BlockPos, pState: BlockState): Boolean {
-        return true
-    }
+    override fun isColliding(
+        pPos: BlockPos,
+        pState: BlockState,
+    ): Boolean = true
 
     override fun addAdditionalSaveData(compound: CompoundTag) {
         super.addAdditionalSaveData(compound)
@@ -146,7 +149,9 @@ open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntit
                     if (blockState.soundType == SoundType.STONE) {
                         cost += 5
                     }
-                    if (blockState.soundType == SoundType.METAL || blockState.soundType == SoundType.COPPER || blockState.soundType == SoundType.NETHERITE_BLOCK) {
+                    if (blockState.soundType == SoundType.METAL || blockState.soundType == SoundType.COPPER ||
+                        blockState.soundType == SoundType.NETHERITE_BLOCK
+                    ) {
                         cost += 25
                     }
 
@@ -213,7 +218,7 @@ open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntit
                     if (rayTraceResultEntity.entity !== entity) {
                         target.forceHurt(
                             causeProjectileHitDamage(level.registryAccess(), this, owner),
-                            (this.damageValue * resistance).toFloat()
+                            (this.damageValue * resistance).toFloat(),
                         )
                         if (target is LivingEntity) {
                             target.invulnerableTime = 0
@@ -238,15 +243,16 @@ open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntit
 
         if (type == Type.CM) {
             // 使用Minecraft内置的光线追踪进行碰撞检测
-            val hitResult = level().clip(
-                ClipContext(
-                    position(),
-                    position().add(deltaMovement.scale(8.0)),
-                    ClipContext.Block.OUTLINE,
-                    ClipContext.Fluid.ANY,
-                    this
+            val hitResult =
+                level().clip(
+                    ClipContext(
+                        position(),
+                        position().add(deltaMovement.scale(8.0)),
+                        ClipContext.Block.OUTLINE,
+                        ClipContext.Fluid.ANY,
+                        this,
+                    ),
                 )
-            )
 
             if (hitResult.type == HitResult.Type.BLOCK) {
                 releaseClusterMunitions(owner)
@@ -254,25 +260,23 @@ open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntit
         }
     }
 
-    override fun discardAfterExplode(): Boolean {
-        return true
-    }
+    override fun discardAfterExplode(): Boolean = true
 
-    override fun forceLoadChunk(): Boolean {
-        return true
-    }
+    override fun forceLoadChunk(): Boolean = true
 
     open fun releaseClusterMunitions(shooter: Entity?) {
         val level = this.level()
         if (level is ServerLevel) {
             ParticleTool.spawnMediumExplosionParticles(level, position())
             repeat(spreadAmount) {
-                val gunGrenadeEntity = GunGrenadeEntity(
-                    shooter, level,
-                    6 * damageValue / spreadAmount,
-                    5 * explosionDamageValue / spreadAmount,
-                    explosionRadiusValue / 2
-                )
+                val gunGrenadeEntity =
+                    GunGrenadeEntity(
+                        shooter,
+                        level,
+                        6 * damageValue / spreadAmount,
+                        5 * explosionDamageValue / spreadAmount,
+                        explosionRadiusValue / 2,
+                    )
 
                 gunGrenadeEntity.setPos(position().x, position().y, position().z)
                 gunGrenadeEntity.shoot(
@@ -280,7 +284,7 @@ open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntit
                     deltaMovement.y,
                     deltaMovement.z,
                     (random.nextFloat() * 0.2f + 0.4f * deltaMovement.length()).toFloat(),
-                    spreadAngle.toFloat()
+                    spreadAngle.toFloat(),
                 )
                 level.addFreshEntity(gunGrenadeEntity)
             }
@@ -288,13 +292,9 @@ open class MediumRocketEntity : FastThrowableProjectile, BasicGeoProjectileEntit
         }
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.7f
-    }
+    override fun getVolume(): Float = 0.7f
 
     fun setType(type: Type?) {
         this.type = type

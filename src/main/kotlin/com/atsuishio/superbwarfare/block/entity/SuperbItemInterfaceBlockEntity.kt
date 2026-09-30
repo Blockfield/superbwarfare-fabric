@@ -1,6 +1,8 @@
 package com.atsuishio.superbwarfare.block.entity
 
 import com.atsuishio.superbwarfare.block.SuperbItemInterfaceBlock
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModBlockEntities
 import com.atsuishio.superbwarfare.inventory.menu.SuperbItemInterfaceMenu
 import com.atsuishio.superbwarfare.tools.isSameItemStack
@@ -21,26 +23,30 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
 import javax.annotation.ParametersAreNonnullByDefault
 
-open class SuperbItemInterfaceBlockEntity(type: BlockEntityType<*>, pPos: BlockPos, pBlockState: BlockState) :
-    BaseContainerBlockEntity(type, pPos, pBlockState) {
+open class SuperbItemInterfaceBlockEntity(
+    type: BlockEntityType<*>,
+    pPos: BlockPos,
+    pBlockState: BlockState,
+) : BaseContainerBlockEntity(type, pPos, pBlockState) {
     private var items: NonNullList<ItemStack> = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY)
     private var cooldownTime = -1
 
     constructor(pPos: BlockPos, pBlockState: BlockState) : this(
         ModBlockEntities.SUPERB_ITEM_INTERFACE.get(),
         pPos,
-        pBlockState
+        pBlockState,
     )
 
     protected open val isCreative: Boolean
         get() = false
 
     @ParametersAreNonnullByDefault
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun loadAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.loadAdditional(tag, registries)
 
         this.items = NonNullList.withSize(this.containerSize, ItemStack.EMPTY)
@@ -49,59 +55,53 @@ open class SuperbItemInterfaceBlockEntity(type: BlockEntityType<*>, pPos: BlockP
     }
 
     @ParametersAreNonnullByDefault
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun saveAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveAdditional(tag, registries)
 
         ContainerHelper.saveAllItems(tag, this.items, registries)
         tag.putInt("TransferCooldown", this.cooldownTime)
     }
 
-    override fun getDefaultName(): Component {
-        return Component.translatable("container.superbwarfare.superb_item_interface")
-    }
+    override fun getDefaultName(): Component = Component.translatable("container.superbwarfare.superb_item_interface")
 
-    override fun getItems(): NonNullList<ItemStack> {
-        return this.items
-    }
+    override fun getItems(): NonNullList<ItemStack> = this.items
 
     override fun setItems(items: NonNullList<ItemStack>) {
         this.items = items
     }
 
-    override fun createMenu(pContainerId: Int, pInventory: Inventory): AbstractContainerMenu {
-        return SuperbItemInterfaceMenu(pContainerId, pInventory, this)
-    }
+    override fun createMenu(
+        pContainerId: Int,
+        pInventory: Inventory,
+    ): AbstractContainerMenu = SuperbItemInterfaceMenu(pContainerId, pInventory, this)
 
-    override fun getContainerSize(): Int {
-        return this.items.size
-    }
+    override fun getContainerSize(): Int = this.items.size
 
-    override fun isEmpty(): Boolean {
-        return this.items.stream().allMatch { it.isEmpty }
-    }
+    override fun isEmpty(): Boolean = this.items.stream().allMatch { it.isEmpty }
 
-    override fun getItem(pSlot: Int): ItemStack {
-        return this.items[pSlot]
-    }
+    override fun getItem(pSlot: Int): ItemStack = this.items[pSlot]
 
-    override fun removeItem(pSlot: Int, pAmount: Int): ItemStack {
-        return ContainerHelper.removeItem(this.items, pSlot, pAmount)
-    }
+    override fun removeItem(
+        pSlot: Int,
+        pAmount: Int,
+    ): ItemStack = ContainerHelper.removeItem(this.items, pSlot, pAmount)
 
-    override fun removeItemNoUpdate(pSlot: Int): ItemStack {
-        return ContainerHelper.takeItem(this.items, pSlot)
-    }
+    override fun removeItemNoUpdate(pSlot: Int): ItemStack = ContainerHelper.takeItem(this.items, pSlot)
 
-    override fun setItem(pSlot: Int, pStack: ItemStack) {
+    override fun setItem(
+        pSlot: Int,
+        pStack: ItemStack,
+    ) {
         this.items[pSlot] = pStack
         if (pStack.count > this.maxStackSize) {
             pStack.count = this.maxStackSize
         }
     }
 
-    override fun stillValid(pPlayer: Player): Boolean {
-        return Container.stillValidBlockEntity(this, pPlayer)
-    }
+    override fun stillValid(pPlayer: Player): Boolean = Container.stillValidBlockEntity(this, pPlayer)
 
     override fun clearContent() {
         this.items.clear()
@@ -118,7 +118,12 @@ open class SuperbItemInterfaceBlockEntity(type: BlockEntityType<*>, pPos: BlockP
         const val TRANSFER_COOLDOWN: Int = 20
         const val CONTAINER_SIZE: Int = 5
 
-        fun serverTick(level: Level, pos: BlockPos, state: BlockState, blockEntity: SuperbItemInterfaceBlockEntity) {
+        fun serverTick(
+            level: Level,
+            pos: BlockPos,
+            state: BlockState,
+            blockEntity: SuperbItemInterfaceBlockEntity,
+        ) {
             --blockEntity.cooldownTime
             if (blockEntity.isOnCooldown) return
             blockEntity.setCooldown(TRANSFER_COOLDOWN)
@@ -133,10 +138,11 @@ open class SuperbItemInterfaceBlockEntity(type: BlockEntityType<*>, pPos: BlockP
             val y = pos.y + facing.stepY
             val z = pos.z + facing.stepZ
 
-            val list = level.getEntities(
-                null as Entity?,
-                AABB(x - 0.5, y - 0.5, z - 0.5, x + 0.5, y + 0.5, z + 0.5)
-            ) { entity -> entity?.getCapability(Capabilities.ItemHandler.ENTITY) != null }
+            val list =
+                level.getEntities(
+                    null as Entity?,
+                    AABB(x - 0.5, y - 0.5, z - 0.5, x + 0.5, y + 0.5, z + 0.5),
+                ) { entity -> entity?.getCapability(Capabilities.ItemHandler.ENTITY) != null }
 
             if (list.isEmpty()) return
             val target = list[level.random.nextInt(list.size)]

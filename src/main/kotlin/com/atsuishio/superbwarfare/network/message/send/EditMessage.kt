@@ -13,7 +13,11 @@ import com.atsuishio.superbwarfare.tools.playLocalSound
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EditMessage(val type: Int, val add: Boolean, val isVehicle: Boolean) : ServerPacketPayload() {
+data class EditMessage(
+    val type: Int,
+    val add: Boolean,
+    val isVehicle: Boolean,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         val vehicle = player.vehicle
@@ -26,7 +30,7 @@ data class EditMessage(val type: Int, val add: Boolean, val isVehicle: Boolean) 
                 LivingEventHandler.stopGunReloadSound(player, data)
                 data.changeAmmoConsumer(
                     (data.selectedAmmoType.get() + (if (add) 1 else -1) + size) % size,
-                    vehicle.ammoSupplier
+                    vehicle.ammoSupplier,
                 )
 
                 val sound = data.get(GunProp.SOUND_INFO).change ?: return@modifyGunData
@@ -74,7 +78,7 @@ data class EditMessage(val type: Int, val add: Boolean, val isVehicle: Boolean) 
                     val size = data.get(GunProp.AMMO_CONSUMER).size
                     data.changeAmmoConsumer(
                         (data.selectedAmmoType.get() + (if (add) 1 else -1) + size) % size,
-                        player
+                        player,
                     )
                 }
             }
@@ -83,7 +87,11 @@ data class EditMessage(val type: Int, val add: Boolean, val isVehicle: Boolean) 
         }
     }
 
-    private fun setAttachment(arr: IntArray, value: Int, add: Boolean): Int {
+    private fun setAttachment(
+        arr: IntArray,
+        value: Int,
+        add: Boolean,
+    ): Int {
         if (arr.isEmpty()) return 0
 
         val sorted = arr.copyOf(arr.size).sorted()
@@ -94,5 +102,3 @@ data class EditMessage(val type: Int, val add: Boolean, val isVehicle: Boolean) 
         return sorted[index]
     }
 }
-
-

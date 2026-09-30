@@ -2,8 +2,10 @@ package com.atsuishio.superbwarfare.mixins;
 
 import com.atsuishio.superbwarfare.config.server.MiscConfig;
 import com.atsuishio.superbwarfare.tools.SeekTool;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,9 +17,7 @@ import javax.annotation.Nullable;
 @Mixin(Mob.class)
 public class MobMixin {
 
-    @Shadow
-    @Nullable
-    private LivingEntity target;
+    @Shadow @Nullable private LivingEntity target;
 
     @Inject(method = "getTarget", at = @At("RETURN"), cancellable = true)
     public void getTarget(CallbackInfoReturnable<LivingEntity> cir) {

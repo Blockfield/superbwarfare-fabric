@@ -21,7 +21,7 @@ class IntValue(
     private val tag: CompoundTag,
     private val name: String,
     var defaultValue: Int = 0,
-    private val onSet: (() -> Unit)? = null
+    private val onSet: (() -> Unit)? = null,
 ) {
     /** Returns the stored value, or [defaultValue] if the key is absent. */
     fun get(): Int = if (tag.contains(name)) tag.getInt(name) else defaultValue

@@ -5,6 +5,7 @@ import com.atsuishio.superbwarfare.init.ModCriteriaTriggers
 import com.atsuishio.superbwarfare.init.ModEntities
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.DispenserLaunchable
+import com.atsuishio.superbwarfare.item.StackAttributeItem
 import com.atsuishio.superbwarfare.tools.ParticleTool
 import net.minecraft.core.Position
 import net.minecraft.core.dispenser.BlockSource
@@ -20,9 +21,11 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.level.Level
-import com.atsuishio.superbwarfare.item.StackAttributeItem
 
-open class RpgRocketStandardItem : Item(Properties().stacksTo(16)), DispenserLaunchable, StackAttributeItem {
+open class RpgRocketStandardItem :
+    Item(Properties().stacksTo(16)),
+    DispenserLaunchable,
+    StackAttributeItem {
     override fun getDefaultAttributeModifiers(stack: ItemStack): ItemAttributeModifiers {
         val list = ArrayList(baseAttributeModifiers(stack).modifiers())
 
@@ -31,20 +34,24 @@ open class RpgRocketStandardItem : Item(Properties().stacksTo(16)), DispenserLau
                 ItemAttributeModifiers.Entry(
                     Attributes.ATTACK_DAMAGE,
                     AttributeModifier(BASE_ATTACK_DAMAGE_ID, 5.0, AttributeModifier.Operation.ADD_VALUE),
-                    EquipmentSlotGroup.MAINHAND
+                    EquipmentSlotGroup.MAINHAND,
                 ),
                 ItemAttributeModifiers.Entry(
                     Attributes.ATTACK_SPEED,
                     AttributeModifier(BASE_ATTACK_SPEED_ID, -2.4, AttributeModifier.Operation.ADD_VALUE),
-                    EquipmentSlotGroup.MAINHAND
-                )
-            )
+                    EquipmentSlotGroup.MAINHAND,
+                ),
+            ),
         )
 
         return ItemAttributeModifiers(list, true)
     }
 
-    override fun hurtEnemy(stack: ItemStack, entity: LivingEntity, source: LivingEntity): Boolean {
+    override fun hurtEnemy(
+        stack: ItemStack,
+        entity: LivingEntity,
+        source: LivingEntity,
+    ): Boolean {
         val level = entity.level()
         if (level is ServerLevel && Math.random() < 0.25) {
             level.explode(source, source.x, source.y + 1, source.z, 5f, Level.ExplosionInteraction.NONE)
@@ -67,14 +74,16 @@ open class RpgRocketStandardItem : Item(Properties().stacksTo(16)), DispenserLau
         return super.hurtEnemy(stack, entity, source)
     }
 
-    override fun getLaunchBehavior(): AbstractProjectileDispenseBehavior {
-        return object : AbstractProjectileDispenseBehavior() {
-            override fun getPower(): Float {
-                return 2f
-            }
+    override fun getLaunchBehavior(): AbstractProjectileDispenseBehavior =
+        object : AbstractProjectileDispenseBehavior() {
+            override fun getPower(): Float = 2f
 
-            override fun getProjectile(level: Level, position: Position, stack: ItemStack): Projectile {
-                return RpgRocketStandardEntity(
+            override fun getProjectile(
+                level: Level,
+                position: Position,
+                stack: ItemStack,
+            ): Projectile =
+                RpgRocketStandardEntity(
                     ModEntities.RPG_ROCKET_STANDARD.get(),
                     position.x(),
                     position.y(),
@@ -82,13 +91,11 @@ open class RpgRocketStandardItem : Item(Properties().stacksTo(16)), DispenserLau
                     level,
                     340f,
                     80f,
-                    5f
+                    5f,
                 )
-            }
 
             override fun playSound(source: BlockSource) {
                 source.level.playSound(null, source.pos, ModSounds.RPG_FIRE_3P.get(), SoundSource.BLOCKS, 1f, 1f)
             }
         }
-    }
 }

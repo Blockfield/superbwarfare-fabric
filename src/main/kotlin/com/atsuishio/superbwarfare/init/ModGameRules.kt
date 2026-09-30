@@ -9,7 +9,7 @@ object ModGameRules {
         GameRuleRegistry.register(
             "sbwDoGenerateLoots",
             GameRules.Category.SPAWNING,
-            GameRuleFactory.createBooleanRule(true)
+            GameRuleFactory.createBooleanRule(true),
         )
 
     fun bootstrap() {}

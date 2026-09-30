@@ -16,6 +16,9 @@ import com.atsuishio.superbwarfare.tools.worldToScreen
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.CameraType
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.GameRenderer
@@ -23,9 +26,6 @@ import net.minecraft.util.Mth
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import org.joml.Math
 
 @Environment(EnvType.CLIENT)
@@ -50,11 +50,12 @@ object OldAircraftHud {
 
     private var dis = 512.0
 
-    private val compassHud = CompassHud().apply {
-        x = 130f
-        y = -76f  // 距底部 72+4 = 76 像素
-        size = 72f
-    }
+    private val compassHud =
+        CompassHud().apply {
+            x = 130f
+            y = -76f // 距底部 72+4 = 76 像素
+            size = 72f
+        }
 
     fun init() {
         ClientTickEvents.END_CLIENT_TICK.register { onOldAircraftHudClientTick() }
@@ -68,12 +69,16 @@ object OldAircraftHud {
 
         val shootPos = vehicle.getShootPosForHud(player, 1f)
 
-        val result = player.level().clip(
-            ClipContext(
-                shootPos, shootPos.add(vehicle.getShootDirectionForHud(player, 1f).scale(512.0)),
-                ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, player
+        val result =
+            player.level().clip(
+                ClipContext(
+                    shootPos,
+                    shootPos.add(vehicle.getShootDirectionForHud(player, 1f).scale(512.0)),
+                    ClipContext.Block.VISUAL,
+                    ClipContext.Fluid.NONE,
+                    player,
+                ),
             )
-        )
         val hitPos = result.location
 
         dis = shootPos.distanceTo(hitPos)
@@ -91,7 +96,7 @@ object OldAircraftHud {
         guiGraphics: GuiGraphics,
         partialTick: Float,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         if (player !== vehicle.getFirstPassenger()) return
         val camera = mc.gameRenderer.mainCamera
@@ -112,12 +117,14 @@ object OldAircraftHud {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
-        lerpVy = Mth.lerp((0.021f * partialTick).toDouble(), lerpVy.toDouble(), vehicle.deltaMovement.y() * 20)
-            .toFloat()
+        lerpVy =
+            Mth
+                .lerp((0.021f * partialTick).toDouble(), lerpVy.toDouble(), vehicle.deltaMovement.y() * 20)
+                .toFloat()
         diffY = Mth.lerp(partialTick.toDouble(), diffY.toDouble(), ClientMouseHandler.lerpSpeedX).toFloat()
         diffX = Mth.lerp(partialTick.toDouble(), diffX.toDouble(), ClientMouseHandler.lerpSpeedY).toFloat()
 
@@ -165,7 +172,7 @@ object OldAircraftHud {
                     (3 * i).toFloat(),
                     (3 * j).toFloat(),
                     (3 * i).toFloat(),
-                    (3 * j).toFloat()
+                    (3 * j).toFloat(),
                 )
 
                 poseStack.pushPose()
@@ -180,12 +187,12 @@ object OldAircraftHud {
                     (3 * i).toFloat(),
                     (3 * j).toFloat(),
                     (3 * i).toFloat(),
-                    (3 * j).toFloat()
+                    (3 * j).toFloat(),
                 )
                 renderKillIndicatorDynamic(
                     guiGraphics,
                     x - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
                 )
                 poseStack.popPose()
                 return
@@ -209,7 +216,7 @@ object OldAircraftHud {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -218,7 +225,7 @@ object OldAircraftHud {
             renderKillIndicatorDynamic(
                 guiGraphics,
                 x - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                y - 1.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                y - 1.5f + (2 * (Math.random() - 0.5f)).toFloat(),
             )
         }
 
@@ -258,7 +265,7 @@ object OldAircraftHud {
                         16f,
                         16f,
                         16f,
-                        16f
+                        16f,
                     )
                 }
 
@@ -288,7 +295,7 @@ object OldAircraftHud {
                         size,
                         size,
                         size,
-                        size
+                        size,
                     )
                 } else {
                     RenderHelper.preciseBlit(
@@ -301,14 +308,14 @@ object OldAircraftHud {
                         size,
                         size,
                         size,
-                        size
+                        size,
                     )
                 }
 
                 renderKillIndicatorDynamic(
                     guiGraphics,
                     xCross - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                    yCross - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                    yCross - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
                 )
                 poseStack.popPose()
             }

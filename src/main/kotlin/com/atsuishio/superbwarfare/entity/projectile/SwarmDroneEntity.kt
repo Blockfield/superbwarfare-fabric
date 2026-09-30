@@ -18,7 +18,10 @@ import net.minecraft.world.phys.Vec3
 import kotlin.math.abs
 import kotlin.math.cos
 
-open class SwarmDroneEntity(type: EntityType<out SwarmDroneEntity>, level: Level) : MissileProjectile(type, level),
+open class SwarmDroneEntity(
+    type: EntityType<out SwarmDroneEntity>,
+    level: Level,
+) : MissileProjectile(type, level),
     BasicGeoProjectileEntity {
     val anim: BasicProjectileAnimationInstance<*>? =
         if (this.level().isClientSide) BasicProjectileAnimationInstance(this, true) else null
@@ -32,14 +35,12 @@ open class SwarmDroneEntity(type: EntityType<out SwarmDroneEntity>, level: Level
         randomFloat = random.nextFloat()
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.SWARM_DRONE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.SWARM_DRONE.get()
 
     override fun performDamage(
         entity: Entity,
         damage: Float,
-        isHeadshot: Boolean
+        isHeadshot: Boolean,
     ) {
     }
 
@@ -60,7 +61,7 @@ open class SwarmDroneEntity(type: EntityType<out SwarmDroneEntity>, level: Level
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
                 ParticleTool.sendParticle(
                     level,
@@ -73,7 +74,7 @@ open class SwarmDroneEntity(type: EntityType<out SwarmDroneEntity>, level: Level
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
             }
         }
@@ -88,15 +89,16 @@ open class SwarmDroneEntity(type: EntityType<out SwarmDroneEntity>, level: Level
             } else if (this.getTargetPos() != null) {
                 targetPos = this.getTargetPos()
             } else {
-                val result = owner.level().clip(
-                    ClipContext(
-                        owner.eyePosition,
-                        owner.eyePosition.add(owner.lookAngle.scale(512.0)),
-                        ClipContext.Block.OUTLINE,
-                        ClipContext.Fluid.ANY,
-                        owner
+                val result =
+                    owner.level().clip(
+                        ClipContext(
+                            owner.eyePosition,
+                            owner.eyePosition.add(owner.lookAngle.scale(512.0)),
+                            ClipContext.Block.OUTLINE,
+                            ClipContext.Fluid.ANY,
+                            owner,
+                        ),
                     )
-                )
                 targetPos = result.getLocation()
             }
 
@@ -109,13 +111,17 @@ open class SwarmDroneEntity(type: EntityType<out SwarmDroneEntity>, level: Level
             val disShooter = owner.position().vectorTo(targetPos).horizontalDistance()
             val randomPos = cos((dis / disShooter).coerceIn(0.0, 1.0).toFloat() * 1.5f * Mth.PI) * dis * 4 * randomFloat
 
-            val toVec = this.position().vectorTo(targetPos).add(
-                Vec3(
-                    -randomPos,
-                    abs(randomPos.toFloat()) * 0.02,
-                    randomPos
-                ).scale(1 - Mth.clamp(0.02 * (tickCount - 20), 0.0, 1.0))
-            ).normalize()
+            val toVec =
+                this
+                    .position()
+                    .vectorTo(targetPos)
+                    .add(
+                        Vec3(
+                            -randomPos,
+                            abs(randomPos.toFloat()) * 0.02,
+                            randomPos,
+                        ).scale(1 - Mth.clamp(0.02 * (tickCount - 20), 0.0, 1.0)),
+                    ).normalize()
             turn(toVec, 90f)
             this.deltaMovement = this.deltaMovement.add(position().vectorTo(targetPos).normalize().scale(0.1))
 
@@ -136,13 +142,9 @@ open class SwarmDroneEntity(type: EntityType<out SwarmDroneEntity>, level: Level
         }
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.DRONE_ENGINE.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.DRONE_ENGINE.get()
 
-    override fun getVolume(): Float {
-        return 0.6f
-    }
+    override fun getVolume(): Float = 0.6f
 
     override val maxHealth: Float
         get() = 4f
@@ -155,12 +157,21 @@ open class SwarmDroneEntity(type: EntityType<out SwarmDroneEntity>, level: Level
         this.xRotO = this.xRot
     }
 
-    override fun shoot(pX: Double, pY: Double, pZ: Double, pVelocity: Float, pInaccuracy: Float) {
-        val vec3 = Vec3(pX, pY, pZ).normalize().add(
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble())
-        ).scale(pVelocity.toDouble())
+    override fun shoot(
+        pX: Double,
+        pY: Double,
+        pZ: Double,
+        pVelocity: Float,
+        pInaccuracy: Float,
+    ) {
+        val vec3 =
+            Vec3(pX, pY, pZ)
+                .normalize()
+                .add(
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                ).scale(pVelocity.toDouble())
         this.deltaMovement = vec3
     }
 

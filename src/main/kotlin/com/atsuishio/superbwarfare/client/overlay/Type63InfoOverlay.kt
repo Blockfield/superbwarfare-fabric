@@ -12,6 +12,8 @@ import com.atsuishio.superbwarfare.tools.OBB
 import com.atsuishio.superbwarfare.tools.RangeTool.getRange
 import com.atsuishio.superbwarfare.tools.TrajectoryCalculator.calculateLaunchVector
 import com.atsuishio.superbwarfare.tools.worldToScreen
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.commands.arguments.EntityAnchorArgument
@@ -19,8 +21,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
@@ -35,29 +35,43 @@ object Type63InfoOverlay : CommonOverlay("type_63_info") {
         val poseStack = guiGraphics.pose()
 
         guiGraphics.drawString(
-            Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.mortar.pitch")
+            Minecraft.getInstance().font,
+            Component
+                .translatable("tips.superbwarfare.mortar.pitch")
                 .append(
                     Component.literal(
                         format2D(
-                            lookingEntity.getEntityData().get(Type63Entity.SHOOT_PITCH).toDouble(), "°"
-                        )
-                    )
+                            lookingEntity.getEntityData().get(Type63Entity.SHOOT_PITCH).toDouble(),
+                            "°",
+                        ),
+                    ),
                 ),
-            screenWidth / 2 - 130, screenHeight / 2 - 26, -1, false
+            screenWidth / 2 - 130,
+            screenHeight / 2 - 26,
+            -1,
+            false,
         )
         guiGraphics.drawString(
-            Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.mortar.yaw")
+            Minecraft.getInstance().font,
+            Component
+                .translatable("tips.superbwarfare.mortar.yaw")
                 .append(
                     Component.literal(
                         format2D(
-                            lookingEntity.getEntityData().get(Type63Entity.SHOOT_YAW).toDouble(), "°"
-                        )
-                    )
+                            lookingEntity.getEntityData().get(Type63Entity.SHOOT_YAW).toDouble(),
+                            "°",
+                        ),
+                    ),
                 ),
-            screenWidth / 2 - 130, screenHeight / 2 - 16, -1, false
+            screenWidth / 2 - 130,
+            screenHeight / 2 - 16,
+            -1,
+            false,
         )
         guiGraphics.drawString(
-            Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.mortar.range")
+            Minecraft.getInstance().font,
+            Component
+                .translatable("tips.superbwarfare.mortar.range")
                 .append(
                     Component.literal(
                         format1D(
@@ -65,13 +79,18 @@ object Type63InfoOverlay : CommonOverlay("type_63_info") {
                                 getRange(
                                     lookingEntity.getEntityData().get(Type63Entity.SHOOT_PITCH).toDouble(),
                                     lookingEntity.getProjectileVelocity("Main").toDouble(),
-                                    lookingEntity.getProjectileGravity("Main").toDouble()
-                                ).toInt(), 0
-                            ).toDouble(), "m"
-                        )
-                    )
+                                    lookingEntity.getProjectileGravity("Main").toDouble(),
+                                ).toInt(),
+                                0,
+                            ).toDouble(),
+                            "m",
+                        ),
+                    ),
                 ),
-            screenWidth / 2 - 130, screenHeight / 2 - 6, -1, false
+            screenWidth / 2 - 130,
+            screenHeight / 2 - 6,
+            -1,
+            false,
         )
 
         val items = lookingEntity.getEntityData().get(Type63Entity.LOADED_AMMO)
@@ -79,12 +98,13 @@ object Type63InfoOverlay : CommonOverlay("type_63_info") {
             if (OBB.getLookingObb(player, player.entityInteractionRange()) === lookingEntity.barrelObbs[i]) {
                 val type: Int = items[i]
 
-                val stack = when (type) {
-                    0 -> AP
-                    1 -> HE
-                    2 -> CM
-                    else -> ItemStack.EMPTY
-                }
+                val stack =
+                    when (type) {
+                        0 -> AP
+                        1 -> HE
+                        2 -> CM
+                        else -> ItemStack.EMPTY
+                    }
 
                 val pos = OBB.vector3dToVec3(lookingEntity.barrelObbs[i].center)
                 val point = pos.worldToScreen()
@@ -132,10 +152,11 @@ object Type63InfoOverlay : CommonOverlay("type_63_info") {
             val targetPos = Vec3(targetX, targetY, targetZ)
             val launchVector =
                 calculateLaunchVector(
-                    lookingEntity.getShootPos(partialTick), targetPos,
+                    lookingEntity.getShootPos(partialTick),
+                    targetPos,
                     lookingEntity.getProjectileVelocity("Main").toDouble(),
                     lookingEntity.getProjectileGravity("Main").toDouble(),
-                    isDepressed
+                    isDepressed,
                 )
 
             val vec3 = EntityAnchorArgument.Anchor.EYES.apply(lookingEntity)
@@ -154,36 +175,52 @@ object Type63InfoOverlay : CommonOverlay("type_63_info") {
                     screenWidth / 2 + 90,
                     screenHeight / 2 - 26,
                     -1,
-                    false
+                    false,
                 )
                 return
             }
 
             guiGraphics.drawString(
-                Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.target.pitch")
+                Minecraft.getInstance().font,
+                Component
+                    .translatable("tips.superbwarfare.target.pitch")
                     .append(Component.literal(format2D(angle.toDouble(), "°"))),
-                screenWidth / 2 + 90, screenHeight / 2 - 26, -1, false
+                screenWidth / 2 + 90,
+                screenHeight / 2 - 26,
+                -1,
+                false,
             )
             guiGraphics.drawString(
-                Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.target.yaw")
+                Minecraft.getInstance().font,
+                Component
+                    .translatable("tips.superbwarfare.target.yaw")
                     .append(Component.literal(format2D(targetYaw, "°"))),
-                screenWidth / 2 + 90, screenHeight / 2 - 16, -1, false
+                screenWidth / 2 + 90,
+                screenHeight / 2 - 16,
+                -1,
+                false,
             )
             guiGraphics.drawString(
-                Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.mortar.target_pos")
+                Minecraft.getInstance().font,
+                Component
+                    .translatable("tips.superbwarfare.mortar.target_pos")
                     .append(Component.literal(format0D(targetX) + " " + format0D(targetY) + " " + format0D(targetZ))),
-                screenWidth / 2 + 90, screenHeight / 2 - 6, -1, false
+                screenWidth / 2 + 90,
+                screenHeight / 2 - 6,
+                -1,
+                false,
             )
 
             if (angle < -5 || angle > 60) {
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    Component.translatable("tips.superbwarfare.mortar.warn", lookingEntity.displayName)
+                    Component
+                        .translatable("tips.superbwarfare.mortar.warn", lookingEntity.displayName)
                         .withStyle(ChatFormatting.RED),
                     screenWidth / 2 + 90,
                     screenHeight / 2 + 4,
                     -1,
-                    false
+                    false,
                 )
                 if (angle > 60 && !isDepressed) {
                     guiGraphics.drawString(
@@ -192,7 +229,7 @@ object Type63InfoOverlay : CommonOverlay("type_63_info") {
                         screenWidth / 2 + 90,
                         screenHeight / 2 + 14,
                         -1,
-                        false
+                        false,
                     )
                 }
             }

@@ -6,6 +6,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.item.gun.launcher.SuperStarShooterItem;
 import com.atsuishio.superbwarfare.tools.OBB;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
 import org.jetbrains.annotations.NotNull;
 import org.joml.Math;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,18 +37,14 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
     @Nullable
     public abstract Entity getVehicle();
 
-    @Shadow
-    private AABB bb;
-    @Shadow
-    private float eyeHeight;
+    @Shadow private AABB bb;
+    @Shadow private float eyeHeight;
 
     @Shadow
     public abstract Vec3 position();
 
-    @Shadow
-    private Vec3 position;
-    @Unique
-    public OBB.Part sbw$currentHitPart;
+    @Shadow private Vec3 position;
+    @Unique public OBB.Part sbw$currentHitPart;
 
     @Shadow
     public abstract EntityDimensions getDimensions(Pose pose);
@@ -61,8 +59,7 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
         this.sbw$currentHitPart = part;
     }
 
-    @Unique
-    private CompoundTag sbw$persistentData;
+    @Unique private CompoundTag sbw$persistentData;
 
     @Override
     public @NotNull CompoundTag sbw$getPersistentData() {
@@ -72,7 +69,10 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
         return this.sbw$persistentData;
     }
 
-    @Inject(method = "saveWithoutId(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;", at = @At("HEAD"))
+    @Inject(
+            method =
+                    "saveWithoutId(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;",
+            at = @At("HEAD"))
     private void sbw$savePersistentData(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
         if (this.sbw$persistentData != null && !this.sbw$persistentData.isEmpty()) {
             tag.put("SbwPersistentData", this.sbw$persistentData);
@@ -89,14 +89,24 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
     @Inject(method = "turn(DD)V", at = @At("HEAD"), cancellable = true)
     public void turn(double pYRot, double pXRot, CallbackInfo ci) {
         var entity = (Entity) (Object) this;
-        if (entity instanceof Player player && player.getMainHandItem().getItem() instanceof GunItem && player.getPose() == Pose.SWIMMING && !player.isSwimming()) {
+        if (entity instanceof Player player
+                && player.getMainHandItem().getItem() instanceof GunItem
+                && player.getPose() == Pose.SWIMMING
+                && !player.isSwimming()) {
             ci.cancel();
             float f = (float) pXRot * 0.15F;
             float f1 = (float) pYRot * 0.15F;
             player.setXRot(player.getXRot() + f);
             player.setYRot(player.getYRot() + f1);
-            Vec3 forward = new Vec3(player.getLookAngle().x, 0, player.getLookAngle().z).normalize();
-            if (player.level().getBlockState(BlockPos.containing(player.getX() + 0.25 * forward.x, player.getY() - 0.1, player.getZ() + 0.25 * forward.z)).canOcclude()) {
+            Vec3 forward =
+                    new Vec3(player.getLookAngle().x, 0, player.getLookAngle().z).normalize();
+            if (player.level()
+                    .getBlockState(
+                            BlockPos.containing(
+                                    player.getX() + 0.25 * forward.x,
+                                    player.getY() - 0.1,
+                                    player.getZ() + 0.25 * forward.z))
+                    .canOcclude()) {
                 player.setXRot(Mth.clamp(player.getXRot(), -45F, 30F));
             } else {
                 player.setXRot(Mth.clamp(player.getXRot(), -45F, 89F));
@@ -105,14 +115,16 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
             player.yRotO += f1;
             player.xRotO = Mth.clamp(player.xRotO, -90F, 90F);
 
-            float diffY = Math.clamp(-90f, 90f, Mth.wrapDegrees(player.getYHeadRot() - player.yBodyRot));
+            float diffY =
+                    Math.clamp(-90f, 90f, Mth.wrapDegrees(player.getYHeadRot() - player.yBodyRot));
             player.setYBodyRot(player.yBodyRot + 0.5f * diffY);
 
             if (player.getVehicle() != null) {
                 player.getVehicle().onPassengerTurned(player);
             }
         }
-        if (entity instanceof Player player && player.getMainHandItem().getItem() instanceof SuperStarShooterItem) {
+        if (entity instanceof Player player
+                && player.getMainHandItem().getItem() instanceof SuperStarShooterItem) {
             ci.cancel();
             float f = (float) pXRot * 0.15F;
             float f1 = (float) pYRot * 0.15F;
@@ -125,13 +137,16 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
             if (player.getVehicle() != null) {
                 player.getVehicle().onPassengerTurned(player);
             }
-            float diffY = Math.clamp(-90f, 90f, Mth.wrapDegrees(player.getYHeadRot() - player.yBodyRot));
+            float diffY =
+                    Math.clamp(-90f, 90f, Mth.wrapDegrees(player.getYHeadRot() - player.yBodyRot));
             player.setYBodyRot(player.yBodyRot + 0.5f * diffY);
         }
     }
 
-    @Inject(method = "getBoundingBox()Lnet/minecraft/world/phys/AABB;",
-            at = @At("RETURN"), cancellable = true)
+    @Inject(
+            method = "getBoundingBox()Lnet/minecraft/world/phys/AABB;",
+            at = @At("RETURN"),
+            cancellable = true)
     private void getBoundingBox(CallbackInfoReturnable<AABB> cir) {
         if (this.getVehicle() instanceof VehicleEntity vehicle) {
             cir.cancel();
@@ -143,8 +158,7 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
         }
     }
 
-    @Inject(method = "getEyeY()D",
-            at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getEyeY()D", at = @At("RETURN"), cancellable = true)
     private void getEyeY(CallbackInfoReturnable<Double> cir) {
         if (this.getVehicle() instanceof VehicleEntity vehicle) {
             cir.cancel();
@@ -153,8 +167,7 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
         }
     }
 
-    @Inject(method = "getEyeHeight()F",
-            at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getEyeHeight()F", at = @At("RETURN"), cancellable = true)
     private void getEyeHeight(CallbackInfoReturnable<Float> cir) {
         if (this.getVehicle() instanceof VehicleEntity vehicle) {
             cir.cancel();
@@ -163,8 +176,10 @@ public abstract class EntityMixin implements OBBHitter, PersistentDataHolder {
         }
     }
 
-    @Inject(method = "getEyeHeight(Lnet/minecraft/world/entity/Pose;)F",
-            at = @At("RETURN"), cancellable = true)
+    @Inject(
+            method = "getEyeHeight(Lnet/minecraft/world/entity/Pose;)F",
+            at = @At("RETURN"),
+            cancellable = true)
     private void getEyeHeightDimensions(Pose pose, CallbackInfoReturnable<Float> cir) {
         if (this.getVehicle() instanceof VehicleEntity vehicle) {
             cir.cancel();

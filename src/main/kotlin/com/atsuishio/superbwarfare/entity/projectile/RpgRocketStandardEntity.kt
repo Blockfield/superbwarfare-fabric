@@ -11,7 +11,9 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.BlockHitResult
 
-open class RpgRocketStandardEntity : FastThrowableProjectile, BasicGeoProjectileEntity {
+open class RpgRocketStandardEntity :
+    FastThrowableProjectile,
+    BasicGeoProjectileEntity {
     init {
         this.durability = 50
         this.gravityValue = 0.015f
@@ -31,7 +33,7 @@ open class RpgRocketStandardEntity : FastThrowableProjectile, BasicGeoProjectile
         pLevel: Level,
         damage: Float,
         explosionDamage: Float,
-        explosionRadius: Float
+        explosionRadius: Float,
     ) : super(pEntityType, pX, pY, pZ, pLevel) {
         this.damageValue = damage
         this.explosionDamageValue = explosionDamage
@@ -44,9 +46,7 @@ open class RpgRocketStandardEntity : FastThrowableProjectile, BasicGeoProjectile
         }
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.RPG_ROCKET_STANDARD.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.RPG_ROCKET_STANDARD.get()
 
     override fun tick() {
         super.tick()
@@ -66,7 +66,7 @@ open class RpgRocketStandardEntity : FastThrowableProjectile, BasicGeoProjectile
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
                 ParticleTool.sendParticle(
                     level,
@@ -79,7 +79,7 @@ open class RpgRocketStandardEntity : FastThrowableProjectile, BasicGeoProjectile
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
             }
         }
@@ -88,13 +88,9 @@ open class RpgRocketStandardEntity : FastThrowableProjectile, BasicGeoProjectile
         }
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.2f
-    }
+    override fun getVolume(): Float = 0.2f
 
     override fun getHiddenTicks() = 1
 }

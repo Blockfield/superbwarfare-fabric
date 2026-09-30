@@ -3,6 +3,7 @@ package com.atsuishio.superbwarfare.mixins;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.init.ModPerks;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
+
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.EnchantedCountIncreaseFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,23 +25,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EnchantedCountIncreaseFunction.class)
 public abstract class EnchantedCountIncreaseFunctionMixin {
 
-    @Final
-    @Shadow
-    private NumberProvider value;
+    @Final @Shadow private NumberProvider value;
 
-    @Final
-    @Shadow
-    private int limit;
+    @Final @Shadow private int limit;
 
-    @Final
-    @Shadow
-    private Holder<Enchantment> enchantment;
+    @Final @Shadow private Holder<Enchantment> enchantment;
 
     @Shadow
     protected abstract boolean hasLimit();
 
-    @Inject(method = "run(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/storage/loot/LootContext;)Lnet/minecraft/world/item/ItemStack;",
-            at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method =
+                    "run(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/storage/loot/LootContext;)Lnet/minecraft/world/item/ItemStack;",
+            at = @At("HEAD"),
+            cancellable = true)
     private void run(ItemStack stack, LootContext context, CallbackInfoReturnable<ItemStack> cir) {
         Entity entity = context.getParamOrNull(LootContextParams.ATTACKING_ENTITY);
         if (entity instanceof LivingEntity living && this.enchantment.is(Enchantments.LOOTING)) {

@@ -25,7 +25,10 @@ class TDMSavedData : SavedData {
         this.entities.addAll(entities)
     }
 
-    override fun save(tag: CompoundTag, registries: HolderLookup.Provider): CompoundTag {
+    override fun save(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ): CompoundTag {
         tag.put("Entities", this.saveEntities())
         return tag
     }
@@ -44,17 +47,11 @@ class TDMSavedData : SavedData {
         }
     }
 
-    fun addEntity(entity: String?): Boolean {
-        return this.entities.add(entity!!)
-    }
+    fun addEntity(entity: String?): Boolean = this.entities.add(entity!!)
 
-    fun removeEntity(entity: String?): Boolean {
-        return this.entities.remove(entity)
-    }
+    fun removeEntity(entity: String?): Boolean = this.entities.remove(entity)
 
-    fun containsEntity(entity: String?): Boolean {
-        return this.entities.contains(entity)
-    }
+    fun containsEntity(entity: String?): Boolean = this.entities.contains(entity)
 
     fun sync() {
         this.setDirty()
@@ -80,13 +77,15 @@ class TDMSavedData : SavedData {
         fun enabledTDM(entity: Entity): Boolean {
             val level = entity.level()
             return if (level is ServerLevel) {
-                level.dataStorage.computeIfAbsent(
-                    Factory(
-                        { TDMSavedData() },
-                        { tag, _ -> load(tag) },
-                        null
-                    ), FILE_ID
-                ).containsEntity(entity.getStringUUID())
+                level.dataStorage
+                    .computeIfAbsent(
+                        Factory(
+                            { TDMSavedData() },
+                            { tag, _ -> load(tag) },
+                            null,
+                        ),
+                        FILE_ID,
+                    ).containsEntity(entity.getStringUUID())
             } else {
                 ClientEventHandler.tdmSavedData.containsEntity(entity.getStringUUID())
             }
@@ -96,13 +95,15 @@ class TDMSavedData : SavedData {
             val level = player.level()
             if (level !is ServerLevel) return
 
-            val data = level.dataStorage.get(
-                Factory(
-                    { TDMSavedData() },
-                    { tag, _ -> load(tag) },
-                    null
-                ), FILE_ID
-            )
+            val data =
+                level.dataStorage.get(
+                    Factory(
+                        { TDMSavedData() },
+                        { tag, _ -> load(tag) },
+                        null,
+                    ),
+                    FILE_ID,
+                )
             if (data == null) return
             sendPacketTo(player, TDMSyncMessage(data.entities))
         }

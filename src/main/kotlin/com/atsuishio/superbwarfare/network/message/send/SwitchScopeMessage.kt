@@ -7,7 +7,9 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SwitchScopeMessage(val scroll: Double) : ServerPacketPayload() {
+data class SwitchScopeMessage(
+    val scroll: Double,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
 

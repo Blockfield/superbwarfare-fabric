@@ -3,6 +3,7 @@ package com.atsuishio.superbwarfare.client.screens
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.block.entity.FuMO25BlockEntity
 import com.atsuishio.superbwarfare.client.RenderHelper
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.inventory.menu.FuMO25Menu
 import com.atsuishio.superbwarfare.network.message.send.RadarChangeModeMessage
@@ -14,6 +15,8 @@ import com.atsuishio.superbwarfare.tools.sendPacketToServer
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.narration.NarrationElementOutput
@@ -24,14 +27,14 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Inventory
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import java.util.*
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 @Environment(EnvType.CLIENT)
-class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Component) :
-    AbstractContainerScreen<FuMO25Menu>(pMenu, pPlayerInventory, pTitle) {
+class FuMO25Screen(
+    pMenu: FuMO25Menu,
+    pPlayerInventory: Inventory,
+    pTitle: Component,
+) : AbstractContainerScreen<FuMO25Menu>(pMenu, pPlayerInventory, pTitle) {
     private var currentPos: BlockPos? = null
     private var currentTarget: Entity? = null
 
@@ -40,7 +43,12 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
         imageHeight = 166
     }
 
-    override fun renderBg(pGuiGraphics: GuiGraphics, pPartialTick: Float, pMouseX: Int, pMouseY: Int) {
+    override fun renderBg(
+        pGuiGraphics: GuiGraphics,
+        pPartialTick: Float,
+        pMouseX: Int,
+        pMouseY: Int,
+    ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
         pGuiGraphics.blit(TEXTURE, i, j, 0f, 0f, this.imageWidth, this.imageHeight, 358, 328)
@@ -69,7 +77,11 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
     }
 
-    private fun renderXLine(guiGraphics: GuiGraphics, i: Int, j: Int) {
+    private fun renderXLine(
+        guiGraphics: GuiGraphics,
+        i: Int,
+        j: Int,
+    ) {
         val poseStack = guiGraphics.pose()
         poseStack.pushPose()
 
@@ -89,7 +101,7 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
 
         poseStack.popPose()
@@ -118,8 +130,16 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
             val moveZ = (entity.z - pos.z) / range * 74
 
             RenderHelper.preciseBlit(
-                guiGraphics, TEXTURE, (centerX + moveX).toFloat(), (centerY + moveZ).toFloat(),
-                233f, 167f, 4f, 4f, 358f, 328f
+                guiGraphics,
+                TEXTURE,
+                (centerX + moveX).toFloat(),
+                (centerY + moveZ).toFloat(),
+                233f,
+                167f,
+                4f,
+                4f,
+                358f,
+                328f,
             )
         }
 
@@ -141,7 +161,7 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
 
         val i = (this.width - this.imageWidth) / 2
@@ -151,7 +171,7 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
             Axis.ZP.rotationDegrees(System.currentTimeMillis() % 36000000 / 30f),
             i + 9 + 145 / 2f,
             j + 12 + 145 / 2f,
-            0f
+            0f,
         )
 
         guiGraphics.blit(SCAN, i + 9, j + 12, 0f, 0f, 145, 145, 145, 145)
@@ -165,10 +185,14 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
 
         if (this.currentPos != null) {
             guiGraphics.drawString(
-                this.font, Component.translatable(
+                this.font,
+                Component.translatable(
                     "des.superbwarfare.fumo_25.current_pos",
-                    "[${currentPos!!.x}, ${currentPos!!.y}, ${currentPos!!.z}]"
-                ), i + 173, j + 13, 0xffffff
+                    "[${currentPos!!.x}, ${currentPos!!.y}, ${currentPos!!.z}]",
+                ),
+                i + 173,
+                j + 13,
+                0xffffff,
             )
         }
 
@@ -183,22 +207,30 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
             }
 
             guiGraphics.drawString(
-                this.font, Component.translatable("des.superbwarfare.fumo_25.current_target", sb),
-                i + 173, j + 24, 0xffffff
+                this.font,
+                Component.translatable("des.superbwarfare.fumo_25.current_target", sb),
+                i + 173,
+                j + 24,
+                0xffffff,
             )
         }
 
         val type = this.menu.funcType.toInt()
-        val component = when (type) {
-            1 -> Component.translatable("des.superbwarfare.fumo_25.type_1")
-            2 -> Component.translatable("des.superbwarfare.fumo_25.type_2")
-            3 -> Component.translatable("des.superbwarfare.fumo_25.type_3")
-            else -> Component.translatable("des.superbwarfare.fumo_25.type_0")
-        }
+        val component =
+            when (type) {
+                1 -> Component.translatable("des.superbwarfare.fumo_25.type_1")
+                2 -> Component.translatable("des.superbwarfare.fumo_25.type_2")
+                3 -> Component.translatable("des.superbwarfare.fumo_25.type_3")
+                else -> Component.translatable("des.superbwarfare.fumo_25.type_0")
+            }
         guiGraphics.drawString(this.font, component, i + 173, j + 43, 0xffffff)
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
+    override fun mouseClicked(
+        pMouseX: Double,
+        pMouseY: Double,
+        pButton: Int,
+    ): Boolean {
         val entities = FuMO25ScreenHelper.entities
         if (entities.isNullOrEmpty()) return super.mouseClicked(pMouseX, pMouseY, pButton)
         val pos = FuMO25ScreenHelper.pos ?: return super.mouseClicked(pMouseX, pMouseY, pButton)
@@ -229,7 +261,12 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
         return super.mouseClicked(pMouseX, pMouseY, pButton)
     }
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
         pGuiGraphics.pose().pushPose()
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
@@ -237,7 +274,11 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
         this.renderTooltip(pGuiGraphics, pMouseX, pMouseY)
     }
 
-    override fun renderTooltip(pGuiGraphics: GuiGraphics, pX: Int, pY: Int) {
+    override fun renderTooltip(
+        pGuiGraphics: GuiGraphics,
+        pX: Int,
+        pY: Int,
+    ) {
         super.renderTooltip(pGuiGraphics, pX, pY)
 
         val i = (this.width - this.imageWidth) / 2
@@ -246,9 +287,10 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
         val tooltip: MutableList<Component> = ArrayList()
         tooltip.add(
             Component.translatable(
-                "des.superbwarfare.charging_station.energy", this.menu.energy,
-                FuMO25BlockEntity.MAX_ENERGY
-            )
+                "des.superbwarfare.charging_station.energy",
+                this.menu.energy,
+                FuMO25BlockEntity.MAX_ENERGY,
+            ),
         )
 
         if (pX - i in 278..332 && pY - j in 39..55) {
@@ -257,7 +299,11 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
     }
 
     // 本方法留空
-    override fun renderLabels(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
+    override fun renderLabels(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+    ) {
     }
 
     override fun init() {
@@ -287,9 +333,18 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class LockButton(pX: Int, pY: Int) : AbstractButton(pX, pY, 29, 15, Component.empty()), AccessoriesButtonStub {
+    internal inner class LockButton(
+        pX: Int,
+        pY: Int,
+    ) : AbstractButton(pX, pY, 29, 15, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
-            if (this@FuMO25Screen.menu.funcType == 3L && this@FuMO25Screen.menu.getSlot(0).item.isEmpty) {
+            if (this@FuMO25Screen.menu.funcType == 3L &&
+                this@FuMO25Screen
+                    .menu
+                    .getSlot(0)
+                    .item.isEmpty
+            ) {
                 if (this@FuMO25Screen.currentTarget == null) return
                 sendPacketToServer(RadarSetTargetMessage(this@FuMO25Screen.currentTarget!!.getUUID()))
             } else {
@@ -297,8 +352,18 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
             }
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
-            if (this@FuMO25Screen.menu.funcType == 3L && this@FuMO25Screen.menu.getSlot(0).item.isEmpty) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
+            if (this@FuMO25Screen.menu.funcType == 3L &&
+                this@FuMO25Screen
+                    .menu
+                    .getSlot(0)
+                    .item.isEmpty
+            ) {
                 pGuiGraphics.blit(
                     TEXTURE,
                     this.x,
@@ -308,7 +373,7 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
                     29,
                     15,
                     358,
-                    328
+                    328,
                 )
             } else {
                 pGuiGraphics.blit(
@@ -320,7 +385,7 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
                     29,
                     15,
                     358,
-                    328
+                    328,
                 )
             }
         }
@@ -330,13 +395,22 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
     }
 
     @Environment(EnvType.CLIENT)
-    internal class ModeButton(pX: Int, pY: Int, private val mode: Int) :
-        AbstractButton(pX, pY, 29, 15, Component.empty()), AccessoriesButtonStub {
+    internal class ModeButton(
+        pX: Int,
+        pY: Int,
+        private val mode: Int,
+    ) : AbstractButton(pX, pY, 29, 15, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             sendPacketToServer(RadarChangeModeMessage(this.mode.toByte()))
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             pGuiGraphics.blit(
                 TEXTURE,
                 this.x,
@@ -346,7 +420,7 @@ class FuMO25Screen(pMenu: FuMO25Menu, pPlayerInventory: Inventory, pTitle: Compo
                 29,
                 15,
                 358,
-                328
+                328,
             )
         }
 

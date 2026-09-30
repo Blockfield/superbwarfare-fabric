@@ -7,6 +7,8 @@ import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.network.message.receive.ClientIndicatorMessage
 import com.atsuishio.superbwarfare.tools.forceHurt
 import com.atsuishio.superbwarfare.tools.sendPacket
+import io.github.fabricators_of_create.porting_lib.entity.events.living.MobEffectEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.tick.EntityTickEvent
 import net.minecraft.core.registries.Registries
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
@@ -16,8 +18,6 @@ import net.minecraft.world.damagesource.DamageTypes
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.effect.MobEffectCategory
 import net.minecraft.world.entity.LivingEntity
-import io.github.fabricators_of_create.porting_lib.entity.events.living.MobEffectEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.tick.EntityTickEvent
 
 object BurnMobEffect : MobEffect(MobEffectCategory.HARMFUL, -12708330) {
     const val TAG_ATTACKER = "BurnAttacker"
@@ -29,16 +29,20 @@ object BurnMobEffect : MobEffect(MobEffectCategory.HARMFUL, -12708330) {
         EntityTickEvent.Post.EVENT.register { onLivingTick(it) }
     }
 
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
-        val attacker = if (!entity.persistentData.contains(TAG_ATTACKER)) {
-            null
-        } else {
-            entity.level().getEntity(entity.persistentData.getInt(TAG_ATTACKER))
-        }
+    override fun applyEffectTick(
+        entity: LivingEntity,
+        amplifier: Int,
+    ): Boolean {
+        val attacker =
+            if (!entity.persistentData.contains(TAG_ATTACKER)) {
+                null
+            } else {
+                entity.level().getEntity(entity.persistentData.getInt(TAG_ATTACKER))
+            }
 
         entity.forceHurt(
             ModDamageTypes.causeBurnDamage(entity.level().registryAccess(), attacker),
-            0.6f + (0.3f * amplifier)
+            0.6f + (0.3f * amplifier),
         )
         entity.invulnerableTime = 0
 
@@ -52,9 +56,10 @@ object BurnMobEffect : MobEffect(MobEffectCategory.HARMFUL, -12708330) {
         return true
     }
 
-    override fun shouldApplyEffectTickThisTick(pDuration: Int, pAmplifier: Int): Boolean {
-        return pDuration % 20 == 0
-    }
+    override fun shouldApplyEffectTickThisTick(
+        pDuration: Int,
+        pAmplifier: Int,
+    ): Boolean = pDuration % 20 == 0
 
     private fun onEffectAdded(event: MobEffectEvent.Added) {
         val living = event.entity
@@ -65,10 +70,14 @@ object BurnMobEffect : MobEffect(MobEffectCategory.HARMFUL, -12708330) {
 
         living.forceHurt(
             DamageSource(
-                living.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
+                living
+                    .level()
+                    .registryAccess()
+                    .registryOrThrow(Registries.DAMAGE_TYPE)
                     .getHolderOrThrow(DamageTypes.IN_FIRE),
-                event.effectSource
-            ), 0.6f + (0.3f * instance.amplifier)
+                event.effectSource,
+            ),
+            0.6f + (0.3f * instance.amplifier),
         )
         living.invulnerableTime = 0
 

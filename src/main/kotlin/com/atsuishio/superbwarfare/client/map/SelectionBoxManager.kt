@@ -11,21 +11,33 @@ import kotlin.math.abs
  * 处理选择框渲染、命中测试、右键菜单和鼠标释放时的框创建。
  */
 object SelectionBoxManager {
-
-    data class Rect4f(val minX: Float, val minY: Float, val maxX: Float, val maxY: Float)
+    data class Rect4f(
+        val minX: Float,
+        val minY: Float,
+        val maxX: Float,
+        val maxY: Float,
+    )
 
     // ── Rendering ──
 
     fun render(
         guiGraphics: GuiGraphics,
         selBoxes: List<SelBox>,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, zoom: Double,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        zoom: Double,
         selectionDragging: Boolean,
-        selDragStartX: Float, selDragStartY: Float,
-        selDragEndX: Float, selDragEndY: Float,
+        selDragStartX: Float,
+        selDragStartY: Float,
+        selDragEndX: Float,
+        selDragEndY: Float,
         font: Font,
-        mapLeft: Int, mapTop: Int, mapAreaW: Int, mapAreaH: Int,
+        mapLeft: Int,
+        mapTop: Int,
+        mapAreaW: Int,
+        mapAreaH: Int,
     ) {
         val scale = CoordinateConverter.scaleFromZoom(zoom)
 
@@ -52,7 +64,7 @@ object SelectionBoxManager {
                 ((minSX + maxSX) / 2 - lw / 2).toInt(),
                 minSY.toInt() - 10,
                 0xFFFFFFFF.toInt(),
-                true
+                true,
             )
             guiGraphics.drawString(
                 font,
@@ -60,7 +72,7 @@ object SelectionBoxManager {
                 maxSX.toInt() + 3,
                 ((minSY + maxSY) / 2 - font.lineHeight / 2).toInt(),
                 0xFFFFFFFF.toInt(),
-                true
+                true,
             )
         }
 
@@ -80,14 +92,22 @@ object SelectionBoxManager {
                 mapLeft,
                 mapTop,
                 mapAreaW,
-                mapAreaH
+                mapAreaH,
             )
         }
     }
 
     fun renderDashedRect(
-        guiGraphics: GuiGraphics, minSX: Float, minSY: Float, maxSX: Float, maxSY: Float, color: Int,
-        mapLeft: Int, mapTop: Int, mapAreaW: Int, mapAreaH: Int
+        guiGraphics: GuiGraphics,
+        minSX: Float,
+        minSY: Float,
+        maxSX: Float,
+        maxSY: Float,
+        color: Int,
+        mapLeft: Int,
+        mapTop: Int,
+        mapAreaW: Int,
+        mapAreaH: Int,
     ) {
         val cx2 = mapLeft + mapAreaW
         val cy2 = mapTop + mapAreaH
@@ -106,7 +126,7 @@ object SelectionBoxManager {
                     minSY.toInt(),
                     ex,
                     minSY.toInt() + 1,
-                    color
+                    color,
                 )
                 x += dashLen
             }
@@ -123,7 +143,7 @@ object SelectionBoxManager {
                     maxSY.toInt(),
                     ex,
                     maxSY.toInt() + 1,
-                    color
+                    color,
                 )
                 x += dashLen
             }
@@ -140,7 +160,7 @@ object SelectionBoxManager {
                     y,
                     minSX.toInt() + 1,
                     ey,
-                    color
+                    color,
                 )
                 y += dashLen
             }
@@ -157,7 +177,7 @@ object SelectionBoxManager {
                     y,
                     maxSX.toInt() + 1,
                     ey,
-                    color
+                    color,
                 )
                 y += dashLen
             }
@@ -168,8 +188,11 @@ object SelectionBoxManager {
 
     fun screenRectFromBox(
         box: SelBox,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, zoom: Double
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        zoom: Double,
     ): Rect4f {
         val scale = CoordinateConverter.scaleFromZoom(zoom)
         val sx = CoordinateConverter.worldToScreenX(box.worldMinX, mapCenterX, viewBlockX, scale).toFloat()
@@ -180,16 +203,22 @@ object SelectionBoxManager {
     }
 
     fun hitTestBox(
-        mouseX: Double, mouseY: Double,
+        mouseX: Double,
+        mouseY: Double,
         selBoxes: List<SelBox>,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, zoom: Double
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        zoom: Double,
     ): SelBox? {
         for (box in selBoxes) {
             val r = screenRectFromBox(box, viewBlockX, viewBlockZ, mapCenterX, mapCenterY, zoom)
             if (mouseX in r.minX.toDouble()..r.maxX.toDouble() &&
                 mouseY in r.minY.toDouble()..r.maxY.toDouble()
-            ) return box
+            ) {
+                return box
+            }
         }
         return null
     }
@@ -197,9 +226,16 @@ object SelectionBoxManager {
     // ── Context menu ──
 
     fun renderContextMenu(
-        guiGraphics: GuiGraphics, font: Font, mouseX: Int, mouseY: Int,
-        selMenuX: Int, selMenuY: Int, screenWidth: Int, screenHeight: Int,
-        isAdmin: Boolean, confirmClear: Boolean
+        guiGraphics: GuiGraphics,
+        font: Font,
+        mouseX: Int,
+        mouseY: Int,
+        selMenuX: Int,
+        selMenuY: Int,
+        screenWidth: Int,
+        screenHeight: Int,
+        isAdmin: Boolean,
+        confirmClear: Boolean,
     ) {
         val removeLabel = Component.translatable("context.superbwarfare.tactical_map.sel_menu.remove").string
         val clearLabel = Component.translatable("context.superbwarfare.tactical_map.sel_menu.clear").string
@@ -228,8 +264,12 @@ object SelectionBoxManager {
         val hovered0 = mouseX in mx..mx + menuW && mouseY in ty0..ty0 + itemHeight
         if (hovered0) guiGraphics.fill(mx + 1, ty0, mx + menuW - 1, ty0 + itemHeight, 0x664444FF)
         guiGraphics.drawString(
-            font, removeLabel, mx + 8, ty0 + 3,
-            if (hovered0) 0xFFFFFFFF.toInt() else 0xFFCCCCCC.toInt(), false
+            font,
+            removeLabel,
+            mx + 8,
+            ty0 + 3,
+            if (hovered0) 0xFFFFFFFF.toInt() else 0xFFCCCCCC.toInt(),
+            false,
         )
 
         // Item 1: Clear area (admin only)
@@ -239,12 +279,13 @@ object SelectionBoxManager {
             val confirmBg = if (confirmClear) 0x66AA2222 else 0x66444444
             if (hovered1) guiGraphics.fill(mx + 1, ty1, mx + menuW - 1, ty1 + itemHeight, confirmBg)
             val label = if (confirmClear) confirmClearLabel else clearLabel
-            val labelColor = when {
-                confirmClear && hovered1 -> 0xFFFF2222.toInt()
-                confirmClear -> 0xFFFF4444.toInt()
-                hovered1 -> 0xFFFF5555.toInt()
-                else -> 0xFFCC6666.toInt()
-            }
+            val labelColor =
+                when {
+                    confirmClear && hovered1 -> 0xFFFF2222.toInt()
+                    confirmClear -> 0xFFFF4444.toInt()
+                    hovered1 -> 0xFFFF5555.toInt()
+                    else -> 0xFFCC6666.toInt()
+                }
             guiGraphics.drawString(font, label, mx + 8, ty1 + 3, labelColor, false)
         }
     }
@@ -254,9 +295,15 @@ object SelectionBoxManager {
      * @return Pair(clickConsumed, shouldToggleConfirmClear) — caller manages confirmClear state
      */
     fun handleMenuClick(
-        mouseX: Double, mouseY: Double,
-        selMenuX: Int, selMenuY: Int, screenWidth: Int, screenHeight: Int,
-        isAdmin: Boolean, confirmClear: Boolean, font: Font
+        mouseX: Double,
+        mouseY: Double,
+        selMenuX: Int,
+        selMenuY: Int,
+        screenWidth: Int,
+        screenHeight: Int,
+        isAdmin: Boolean,
+        confirmClear: Boolean,
+        font: Font,
     ): Int { // 0=none, 1=remove, 2=clear
         val removeLabel = Component.translatable("context.superbwarfare.tactical_map.sel_menu.remove").string
         val clearLabel = Component.translatable("context.superbwarfare.tactical_map.sel_menu.clear").string
@@ -274,13 +321,15 @@ object SelectionBoxManager {
         if (my + menuH > screenHeight) my = screenHeight - menuH
 
         val ty0 = my + 2
-        if (mouseX in mx.toDouble()..(mx + menuW).toDouble() && mouseY in ty0.toDouble()..(ty0 + itemHeight).toDouble())
+        if (mouseX in mx.toDouble()..(mx + menuW).toDouble() && mouseY in ty0.toDouble()..(ty0 + itemHeight).toDouble()) {
             return 1
+        }
 
         if (isAdmin) {
             val ty1 = my + 2 + itemHeight
-            if (mouseX in mx.toDouble()..(mx + menuW).toDouble() && mouseY in ty1.toDouble()..(ty1 + itemHeight).toDouble())
+            if (mouseX in mx.toDouble()..(mx + menuW).toDouble() && mouseY in ty1.toDouble()..(ty1 + itemHeight).toDouble()) {
                 return 2
+            }
         }
         return 0
     }

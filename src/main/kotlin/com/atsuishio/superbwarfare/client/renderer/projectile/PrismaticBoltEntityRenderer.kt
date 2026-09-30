@@ -14,11 +14,13 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
 
-class PrismaticBoltEntityRenderer(pContext: EntityRendererProvider.Context) :
-    EntityRenderer<PrismaticBoltEntity>(pContext) {
-    override fun getBlockLightLevel(pEntity: PrismaticBoltEntity, pPos: BlockPos): Int {
-        return 15
-    }
+class PrismaticBoltEntityRenderer(
+    pContext: EntityRendererProvider.Context,
+) : EntityRenderer<PrismaticBoltEntity>(pContext) {
+    override fun getBlockLightLevel(
+        pEntity: PrismaticBoltEntity,
+        pPos: BlockPos,
+    ): Int = 15
 
     override fun render(
         pEntity: PrismaticBoltEntity,
@@ -26,7 +28,7 @@ class PrismaticBoltEntityRenderer(pContext: EntityRendererProvider.Context) :
         pPartialTicks: Float,
         pMatrixStack: PoseStack,
         pBuffer: MultiBufferSource,
-        pPackedLight: Int
+        pPackedLight: Int,
     ) {
         pMatrixStack.pushPose()
         pMatrixStack.mulPose(this.entityRenderDispatcher.cameraOrientation())
@@ -49,14 +51,10 @@ class PrismaticBoltEntityRenderer(pContext: EntityRendererProvider.Context) :
         pCamera: Frustum,
         pCamX: Double,
         pCamY: Double,
-        pCamZ: Double
-    ): Boolean {
-        return true
-    }
+        pCamZ: Double,
+    ): Boolean = true
 
-    override fun getTextureLocation(pEntity: PrismaticBoltEntity): ResourceLocation {
-        return TEXTURE
-    }
+    override fun getTextureLocation(pEntity: PrismaticBoltEntity): ResourceLocation = TEXTURE
 
     companion object {
         private fun vertex(
@@ -66,9 +64,10 @@ class PrismaticBoltEntityRenderer(pContext: EntityRendererProvider.Context) :
             pX: Float,
             pY: Float,
             pU: Int,
-            pV: Int
+            pV: Int,
         ) {
-            pConsumer.addVertex(pPose, pX, pY, 0f)
+            pConsumer
+                .addVertex(pPose, pX, pY, 0f)
                 .setColor(255, 255, 255, 255)
                 .setUv(pU.toFloat(), pV.toFloat())
                 .setOverlay(OverlayTexture.NO_OVERLAY)

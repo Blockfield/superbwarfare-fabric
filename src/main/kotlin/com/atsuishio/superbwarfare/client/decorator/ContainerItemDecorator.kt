@@ -5,6 +5,8 @@ import com.atsuishio.superbwarfare.client.RenderHelper
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.item.container.ContainerBlockItem
 import com.atsuishio.superbwarfare.tools.clientLevel
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
@@ -13,13 +15,16 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 class ContainerItemDecorator : ItemDecorator {
-
-    override fun render(guiGraphics: GuiGraphics, font: Font, stack: ItemStack, xOffset: Int, yOffset: Int): Boolean {
+    override fun render(
+        guiGraphics: GuiGraphics,
+        font: Font,
+        stack: ItemStack,
+        xOffset: Int,
+        yOffset: Int,
+    ): Boolean {
         if (stack.item !is ContainerBlockItem) return false
         val tag = stack.get(DataComponents.BLOCK_ENTITY_DATA)?.copyTag() ?: return false
         if (!tag.contains("EntityType")) return false

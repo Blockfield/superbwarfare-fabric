@@ -16,18 +16,21 @@ object RenderDistanceHelper {
     }
 
     @JvmStatic
-    fun isInGui(): Boolean {
-        return System.currentTimeMillis() - GUI_RENDER_TIMESTAMP < 100L
-    }
+    fun isInGui(): Boolean = System.currentTimeMillis() - GUI_RENDER_TIMESTAMP < 100L
 
     @JvmStatic
-    fun shouldRenderLOD(entity: VehicleEntity, poseStack: PoseStack, distance: Double): Boolean {
+    fun shouldRenderLOD(
+        entity: VehicleEntity,
+        poseStack: PoseStack,
+        distance: Double,
+    ): Boolean {
         if (isInGui()) return false
-        val globalLODDistance = try {
-            DisplayConfig.VEHICLE_LOD_DISTANCE.get()
-        } catch (_: Exception) {
-            -1
-        }
+        val globalLODDistance =
+            try {
+                DisplayConfig.VEHICLE_LOD_DISTANCE.get()
+            } catch (_: Exception) {
+                -1
+            }
         if (globalLODDistance < 0) return false
         if (distance < globalLODDistance) return false
         val matrix = poseStack.last().pose()

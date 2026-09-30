@@ -1,10 +1,13 @@
 package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.Mod.loc
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.item.misc.firingParameters
 import com.atsuishio.superbwarfare.network.message.send.FiringParametersEditMessage
 import com.atsuishio.superbwarfare.tools.sendPacketToServer
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.ChatFormatting
 import net.minecraft.client.GameNarrator
 import net.minecraft.client.gui.GuiGraphics
@@ -15,14 +18,13 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 @Environment(EnvType.CLIENT)
-open class FiringParametersScreen(private val stack: ItemStack, private val hand: InteractionHand) :
-    Screen(GameNarrator.NO_TITLE) {
+open class FiringParametersScreen(
+    private val stack: ItemStack,
+    private val hand: InteractionHand,
+) : Screen(GameNarrator.NO_TITLE) {
     lateinit var posX: EditBox
     lateinit var posY: EditBox
     lateinit var posZ: EditBox
@@ -41,9 +43,7 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
         }
     }
 
-    override fun isPauseScreen(): Boolean {
-        return false
-    }
+    override fun isPauseScreen(): Boolean = false
 
     override fun tick() {
         super.tick()
@@ -60,7 +60,12 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
         }
     }
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderBlurredBackground(pPartialTick)
         this.renderBg(pGuiGraphics, pMouseX, pMouseY)
         this.renderPositions(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
@@ -71,11 +76,16 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
     }
 
-    protected fun renderPositions(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    protected fun renderPositions(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         val poseStack = pGuiGraphics.pose()
 
         poseStack.pushPose()
@@ -93,7 +103,11 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
         poseStack.popPose()
     }
 
-    protected fun renderBg(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
+    protected fun renderBg(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+    ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
         pGuiGraphics.blit(TEXTURE, i, j, 0f, 0f, this.imageWidth, this.imageHeight, 140, 140)
@@ -101,10 +115,17 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
         if (pMouseX >= i + 12 && pMouseX <= i + 47 && pMouseY >= j + 89 && pMouseY <= j + 109) {
             pGuiGraphics.renderTooltip(
                 this.font,
-                if (this.isDepressed) Component.translatable("tips.superbwarfare.mortar.target_pos.depressed_trajectory")
-                    .withStyle(ChatFormatting.WHITE) else Component.translatable("tips.superbwarfare.mortar.target_pos.lofted_trajectory")
-                    .withStyle(ChatFormatting.WHITE),
-                pMouseX, pMouseY
+                if (this.isDepressed) {
+                    Component
+                        .translatable("tips.superbwarfare.mortar.target_pos.depressed_trajectory")
+                        .withStyle(ChatFormatting.WHITE)
+                } else {
+                    Component
+                        .translatable("tips.superbwarfare.mortar.target_pos.lofted_trajectory")
+                        .withStyle(ChatFormatting.WHITE)
+                },
+                pMouseX,
+                pMouseY,
             )
         }
     }
@@ -154,13 +175,23 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class ModeButton(pX: Int, pY: Int, pWidth: Int, pHeight: Int) :
-        AbstractButton(pX, pY, pWidth, pHeight, Component.empty()), AccessoriesButtonStub {
+    internal inner class ModeButton(
+        pX: Int,
+        pY: Int,
+        pWidth: Int,
+        pHeight: Int,
+    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             this@FiringParametersScreen.isDepressed = !this@FiringParametersScreen.isDepressed
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             val isDepressed = this@FiringParametersScreen.isDepressed
             pGuiGraphics.blit(
                 TEXTURE,
@@ -171,7 +202,7 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
                 35,
                 if (isDepressed) 10 else 20,
                 140,
-                140
+                140,
             )
         }
 
@@ -180,8 +211,13 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class DoneButton(pX: Int, pY: Int, pWidth: Int, pHeight: Int) :
-        AbstractButton(pX, pY, pWidth, pHeight, Component.empty()), AccessoriesButtonStub {
+    internal inner class DoneButton(
+        pX: Int,
+        pY: Int,
+        pWidth: Int,
+        pHeight: Int,
+    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             if (!this@FiringParametersScreen.init) return
             if (this@FiringParametersScreen.minecraft != null) {
@@ -194,12 +230,17 @@ open class FiringParametersScreen(private val stack: ItemStack, private val hand
                     getEditBoxValue(this@FiringParametersScreen.posZ.value),
                     max(0, getEditBoxValue(this@FiringParametersScreen.radius.value)),
                     this@FiringParametersScreen.isDepressed,
-                    this@FiringParametersScreen.hand == InteractionHand.MAIN_HAND
-                )
+                    this@FiringParametersScreen.hand == InteractionHand.MAIN_HAND,
+                ),
             )
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             if (this.isHovered) {
                 pGuiGraphics.blit(TEXTURE, this.x, this.y, 95f, 1f, 23, 14, 140, 140)
             }

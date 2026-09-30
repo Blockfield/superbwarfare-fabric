@@ -15,8 +15,10 @@ import net.minecraft.world.level.Level
  * дальность связи 200 блоков против 150 у FPV (предупреждение оператору со 150).
  * Прочность задаётся данными (`sbw/vehicles/scout_drone.json`).
  */
-class ScoutDroneEntity(type: EntityType<out DroneEntity>, world: Level) : DroneEntity(type, world) {
-
+class ScoutDroneEntity(
+    type: EntityType<out DroneEntity>,
+    world: Level,
+) : DroneEntity(type, world) {
     override val maxControlDistance: Double get() = 200.0
 
     override val weakSignalDistance: Double get() = 150.0
@@ -28,7 +30,10 @@ class ScoutDroneEntity(type: EntityType<out DroneEntity>, world: Level) : DroneE
         get() = false
         set(_) {}
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val stack = player.mainHandItem
         // Всё, кроме монитора и разборки шифтом, отбрасываем -- иначе базовый interact
         // навесил бы боеприпас из sbw/drone_attachments.

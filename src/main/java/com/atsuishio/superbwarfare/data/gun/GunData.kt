@@ -20,6 +20,8 @@ import com.atsuishio.superbwarfare.data.gun.GunProp.Companion.SHOOT_SHAKE
 import com.atsuishio.superbwarfare.data.gun.subdata.*
 import com.atsuishio.superbwarfare.data.gun.value.*
 import com.atsuishio.superbwarfare.event.GunEventHandler
+import com.atsuishio.superbwarfare.fabric.IEnergyStorage
+import com.atsuishio.superbwarfare.fabric.IItemHandler
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.item.gun.EmptyGunItem
 import com.atsuishio.superbwarfare.item.gun.GunItem
@@ -42,8 +44,6 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.IEnergyStorage
-import com.atsuishio.superbwarfare.fabric.IItemHandler
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
 import java.util.function.Function
@@ -75,9 +75,9 @@ fun ItemStack.toGunData(): GunData? = if (isGunItem()) GunData.from(this) else n
  * @since 0.8.9.1
  */
 class GunData private constructor(
-    stack: ItemStack, initialDefaultDataSupplier: (() -> DefaultGunData)? = null
+    stack: ItemStack,
+    initialDefaultDataSupplier: (() -> DefaultGunData)? = null,
 ) : DefaultDataSupplier<DefaultGunData> {
-
     /** The target weapon item stack wrapped by this data object. */
     @JvmField
     val stack: ItemStack
@@ -155,9 +155,7 @@ class GunData private constructor(
      *
      * @return `true` if initialization has occurred.
      */
-    fun initialized(): Boolean {
-        return item.isInitialized(this)
-    }
+    fun initialized(): Boolean = item.isInitialized(this)
 
     /**
      * Executes initial setup logic for this weapon item.
@@ -331,21 +329,18 @@ class GunData private constructor(
      * @param shooter the entity attempting to fire or reload.
      * @return `true` if creative mode, infinite consumer, or creative ammo box is present.
      */
-    fun hasInfiniteBackupAmmo(shooter: Entity?): Boolean {
-        return shooter is Player && shooter.isCreative
-                || selectedAmmoConsumer().type == AmmoConsumer.AmmoConsumeType.INFINITE
-                || meleeOnly()
-                || InventoryTool.hasCreativeAmmoBox(shooter)
-    }
+    fun hasInfiniteBackupAmmo(shooter: Entity?): Boolean =
+        shooter is Player && shooter.isCreative ||
+            selectedAmmoConsumer().type == AmmoConsumer.AmmoConsumeType.INFINITE ||
+            meleeOnly() ||
+            InventoryTool.hasCreativeAmmoBox(shooter)
 
     /**
      * Determines whether the weapon directly consumes ammo from the inventory without reloading.
      *
      * @return `true` if magazine capacity is zero or less.
      */
-    fun useBackpackAmmo(): Boolean {
-        return get(MAGAZINE) <= 0
-    }
+    fun useBackpackAmmo(): Boolean = get(MAGAZINE) <= 0
 
     /**
      * Calculates minimum scope zoom ratio.
@@ -397,7 +392,10 @@ class GunData private constructor(
      * @param index index of the target ammo consumer in the available list.
      * @param ammoSupplier entity supplying ammo for inventory operations.
      */
-    fun changeAmmoConsumer(index: Int, ammoSupplier: Entity?) {
+    fun changeAmmoConsumer(
+        index: Int,
+        ammoSupplier: Entity?,
+    ) {
         val consumers = get(AMMO_CONSUMER)
         val targetIndex = index.coerceIn(consumers.indices)
         if (targetIndex == selectedAmmoType.get()) return
@@ -495,18 +493,14 @@ class GunData private constructor(
      * @param entity the entity holding the weapon.
      * @return `true` if weapon is empty and backup ammo is available.
      */
-    fun shouldStartReloading(entity: Entity?): Boolean {
-        return !reloading() && !useBackpackAmmo() && !hasEnoughAmmoToShoot(entity) && hasBackupAmmo(entity)
-    }
+    fun shouldStartReloading(entity: Entity?): Boolean = !reloading() && !useBackpackAmmo() && !hasEnoughAmmoToShoot(entity) && hasBackupAmmo(entity)
 
     /**
      * Checks if bolt action process should start.
      *
      * @return `true` if bolt timer is zero and bolt is flagged as needed.
      */
-    fun shouldStartBolt(): Boolean {
-        return this.bolt.actionTimer.get() == 0 && this.bolt.needed.get()
-    }
+    fun shouldStartBolt(): Boolean = this.bolt.actionTimer.get() == 0 && this.bolt.needed.get()
 
     /** Starts reload sequence in next tick update. */
     fun startReload() {
@@ -528,9 +522,7 @@ class GunData private constructor(
      * @param entity the ammo source entity.
      * @return `true` if backup ammo count > 0.
      */
-    fun hasBackupAmmo(entity: Entity?): Boolean {
-        return countBackupAmmo(entity) > 0
-    }
+    fun hasBackupAmmo(entity: Entity?): Boolean = countBackupAmmo(entity) > 0
 
     /**
      * Calculates total backup ammo quantity available from an entity source.
@@ -549,12 +541,13 @@ class GunData private constructor(
             return cachedBackupAmmo
         }
 
-        val computed = Math.toIntExact(
-            min(
-                countBackupAmmoItem(entity).toLong() * this.selectedAmmoConsumer().loadAmount + this.virtualAmmo.get(),
-                Int.MAX_VALUE.toLong()
+        val computed =
+            Math.toIntExact(
+                min(
+                    countBackupAmmoItem(entity).toLong() * this.selectedAmmoConsumer().loadAmount + this.virtualAmmo.get(),
+                    Int.MAX_VALUE.toLong(),
+                ),
             )
-        )
         cachedBackupAmmo = computed
         cachedBackupAmmoTick = currentTick
         return computed
@@ -573,20 +566,16 @@ class GunData private constructor(
         return Math.toIntExact(
             min(
                 countBackupAmmoItem(handler).toLong() * this.selectedAmmoConsumer().loadAmount + this.virtualAmmo.get(),
-                Int.MAX_VALUE.toLong()
-            )
+                Int.MAX_VALUE.toLong(),
+            ),
         )
     }
 
     /** Counts raw backup ammo item stacks for entity source. */
-    fun countBackupAmmoItem(entity: Entity?): Int {
-        return this.selectedAmmoConsumer().count(this, entity)
-    }
+    fun countBackupAmmoItem(entity: Entity?): Int = this.selectedAmmoConsumer().count(this, entity)
 
     /** Counts raw backup ammo item stacks for item handler source. */
-    fun countBackupAmmoItem(handler: IItemHandler?): Int {
-        return this.selectedAmmoConsumer().count(this, handler)
-    }
+    fun countBackupAmmoItem(handler: IItemHandler?): Int = this.selectedAmmoConsumer().count(this, handler)
 
     /**
      * Consumes backup ammunition without reducing loaded magazine rounds.
@@ -594,7 +583,10 @@ class GunData private constructor(
      * @param entity ammo source entity.
      * @param count required ammo count.
      */
-    fun consumeBackupAmmo(entity: Entity?, count: Int) {
+    fun consumeBackupAmmo(
+        entity: Entity?,
+        count: Int,
+    ) {
         var remaining = count
         if (remaining <= 0 || entity is Player && entity.isCreative || InventoryTool.hasCreativeAmmoBox(entity)) return
 
@@ -636,7 +628,10 @@ class GunData private constructor(
      * @param handler ammo container item handler.
      * @param count required ammo count.
      */
-    fun consumeBackupAmmo(handler: IItemHandler?, count: Int) {
+    fun consumeBackupAmmo(
+        handler: IItemHandler?,
+        count: Int,
+    ) {
         var remaining = count
         if (remaining <= 0 || InventoryTool.hasCreativeAmmoBox(handler)) return
 
@@ -690,9 +685,7 @@ class GunData private constructor(
      * @param entity shooter entity.
      * @return current available ammo quantity.
      */
-    fun currentAvailableAmmo(entity: Entity?): Int {
-        return if (useBackpackAmmo()) countBackupAmmo(entity) else this.ammo.get()
-    }
+    fun currentAvailableAmmo(entity: Entity?): Int = if (useBackpackAmmo()) countBackupAmmo(entity) else this.ammo.get()
 
     /**
      * Checks whether weapon has sufficient magazine/inventory ammo to execute one shot.
@@ -700,9 +693,7 @@ class GunData private constructor(
      * @param entity shooter entity.
      * @return `true` if available ammo >= cost per shot.
      */
-    fun hasEnoughAmmoToShoot(entity: Entity?): Boolean {
-        return get(AMMO_COST_PER_SHOOT) <= currentAvailableAmmo(entity)
-    }
+    fun hasEnoughAmmoToShoot(entity: Entity?): Boolean = get(AMMO_COST_PER_SHOOT) <= currentAvailableAmmo(entity)
 
     /**
      * Refills magazine upon completion of reload sequence.
@@ -711,7 +702,10 @@ class GunData private constructor(
      * @param extraOne whether to add +1 round in chamber for open-bolt/chambered designs.
      */
     @JvmOverloads
-    fun reloadAmmo(entity: Entity?, extraOne: Boolean = false) {
+    fun reloadAmmo(
+        entity: Entity?,
+        extraOne: Boolean = false,
+    ) {
         if (useBackpackAmmo()) return
 
         val mag = get(MAGAZINE)
@@ -741,22 +735,37 @@ class GunData private constructor(
      * @param shooter entity firing weapon.
      * @return `true` if weapon can fire.
      */
-    fun canShoot(shooter: Entity?): Boolean {
-        return item.canShoot(this, shooter)
-    }
+    fun canShoot(shooter: Entity?): Boolean = item.canShoot(this, shooter)
 
     /** Fires projectile without entity shooter context. */
-    fun shoot(level: ServerLevel, shootPosition: Vec3, shootDirection: Vec3, spread: Double, zoom: Boolean) {
+    fun shoot(
+        level: ServerLevel,
+        shootPosition: Vec3,
+        shootDirection: Vec3,
+        spread: Double,
+        zoom: Boolean,
+    ) {
         this.item.shoot(level, shootPosition, shootDirection, this, spread, zoom, null)
     }
 
     /** Fires projectile with entity shooter context. */
-    fun shoot(entity: Entity, spread: Double, zoom: Boolean, uuid: UUID?) {
+    fun shoot(
+        entity: Entity,
+        spread: Double,
+        zoom: Boolean,
+        uuid: UUID?,
+    ) {
         this.item.shoot(this, entity, spread, zoom, uuid)
     }
 
     /** Fires projectile targeting specific world position. */
-    fun shoot(entity: Entity, spread: Double, zoom: Boolean, uuid: UUID?, targetPos: Vec3?) {
+    fun shoot(
+        entity: Entity,
+        spread: Double,
+        zoom: Boolean,
+        uuid: UUID?,
+        targetPos: Vec3?,
+    ) {
         this.item.shoot(this, entity, spread, zoom, uuid, targetPos)
     }
 
@@ -773,7 +782,10 @@ class GunData private constructor(
      * @param shooter entity holding weapon.
      * @param inMainHand whether weapon is currently held in main hand.
      */
-    fun tick(shooter: Entity?, inMainHand: Boolean) {
+    fun tick(
+        shooter: Entity?,
+        inMainHand: Boolean,
+    ) {
         GunEventHandler.gunTick(shooter, this, inMainHand)
     }
 
@@ -794,9 +806,7 @@ class GunData private constructor(
     }
 
     /** Calculates item count returned upon ammo withdrawal. */
-    fun withdrawAmmoCount(): Int {
-        return (this.virtualAmmo.get() + this.ammo.get()) / selectedAmmoConsumer().loadAmount
-    }
+    fun withdrawAmmoCount(): Int = (this.virtualAmmo.get() + this.ammo.get()) / selectedAmmoConsumer().loadAmount
 
     /**
      * Withdraws loaded rounds back to item handler container during reload or attachment modification.
@@ -827,7 +837,8 @@ class GunData private constructor(
     val damageReduceRate: Double
         get() {
             for (type in PERK_TYPES) {
-                return this.perk.getInstances(type)
+                return this.perk
+                    .getInstances(type)
                     .minOfOrNull { it.perk.getModifiedDamageReduceRate(this.rawDamageReduce) } ?: continue
             }
             return this.rawDamageReduce.rate
@@ -837,16 +848,15 @@ class GunData private constructor(
     val damageReduceMinDistance: Double
         get() {
             for (type in PERK_TYPES) {
-                return this.perk.getInstances(type)
+                return this.perk
+                    .getInstances(type)
                     .minOfOrNull { it.perk.getModifiedDamageReduceMinDistance(this.rawDamageReduce) } ?: continue
             }
             return this.rawDamageReduce.minDistance
         }
 
     /** Checks if weapon is configured strictly for melee attacks. */
-    fun meleeOnly(): Boolean {
-        return get(PROJECTILE_AMOUNT) <= 0 && get(MELEE_DAMAGE) > 0
-    }
+    fun meleeOnly(): Boolean = get(PROJECTILE_AMOUNT) <= 0 && get(MELEE_DAMAGE) > 0
 
     /** Checks if weapon is a shotgun (projectile count > 1). */
     val isShotgun: Boolean
@@ -868,9 +878,7 @@ class GunData private constructor(
     }
 
     /** Returns current HUD aiming position override or fire position. */
-    fun firePositionForHud(): Vec3 {
-        return get(SHOOT_POS).shootPositionForHud ?: firePosition()
-    }
+    fun firePositionForHud(): Vec3 = get(SHOOT_POS).shootPositionForHud ?: firePosition()
 
     /** Returns fire direction vector definition. */
     fun fireDirection(): StringOrVec3 {
@@ -884,14 +892,10 @@ class GunData private constructor(
     }
 
     /** Returns HUD fire direction vector override. */
-    fun fireDirectionForHud(): StringOrVec3? {
-        return get(SHOOT_POS).shootDirectionForHud
-    }
+    fun fireDirectionForHud(): StringOrVec3? = get(SHOOT_POS).shootDirectionForHud
 
     /** Returns energy capability provider for energy-based weapons. */
-    fun getEnergyProvider(ammoSupplier: Entity?): IEnergyStorage? {
-        return this.item.getEnergyProvider(this, ammoSupplier)
-    }
+    fun getEnergyProvider(ammoSupplier: Entity?): IEnergyStorage? = this.item.getEnergyProvider(this, ammoSupplier)
 
     /** Triggers camera shake packet to surrounding players upon firing. */
     fun shakePlayers(source: Entity?) {
@@ -1064,24 +1068,21 @@ class GunData private constructor(
     }
 
     /** Creates duplicate copy of this [GunData]. */
-    fun copy(): GunData {
-        return GunData(this.stack.copy(), this.defaultDataSupplier)
-    }
+    fun copy(): GunData = GunData(this.stack.copy(), this.defaultDataSupplier)
 
     // TODO Deprecated: temporary adaptation for Touhou Little Maid mod
     @Deprecated("use selectedFireModeInfo() instead", ReplaceWith("selectedFireModeInfo()"))
     @Suppress("unused")
     @JvmField
-    val fireMode: StringEnumValue<FireMode> = object : StringEnumValue<FireMode>(
-        CompoundTag(),
-        "DeprecatedFireMode",
-        FireMode.SEMI,
-        { _ -> FireMode.SEMI }) {
-
-        override fun get(): FireMode {
-            return this@GunData.selectedFireModeInfo().mode ?: FireMode.SEMI
+    val fireMode: StringEnumValue<FireMode> =
+        object : StringEnumValue<FireMode>(
+            CompoundTag(),
+            "DeprecatedFireMode",
+            FireMode.SEMI,
+            { _ -> FireMode.SEMI },
+        ) {
+            override fun get(): FireMode = this@GunData.selectedFireModeInfo().mode ?: FireMode.SEMI
         }
-    }
 
     init {
         val realGunItem = stack.item as? GunItem
@@ -1091,11 +1092,12 @@ class GunData private constructor(
         this.stack = stack
         this.id = if (useEmptyGunData) EmptyGunItem.EMPTY_GUN_ID else getRegistryId(stack.item)
 
-        this.defaultDataSupplier = if (useEmptyGunData) {
-            { EmptyGunItem.EMPTY_GUN_DATA }
-        } else {
-            initialDefaultDataSupplier ?: { gunItem.getDefaultData(this) }
-        }
+        this.defaultDataSupplier =
+            if (useEmptyGunData) {
+                { EmptyGunItem.EMPTY_GUN_DATA }
+            } else {
+                initialDefaultDataSupplier ?: { gunItem.getDefaultData(this) }
+            }
 
         if (useEmptyGunData) {
             this.tag = CompoundTag()
@@ -1173,24 +1175,27 @@ class GunData private constructor(
 
         /** Weak LoadingCache for resolving GunData instances from ItemStack references. */
         @JvmField
-        val DATA_CACHE: LoadingCache<ItemStack, GunData> = CacheBuilder.newBuilder()
-            .weakKeys()
-            .weakValues()
-            .build(object : CacheLoader<ItemStack, GunData>() {
-                override fun load(stack: ItemStack): GunData {
-                    return GunData(stack)
-                }
-            })
+        val DATA_CACHE: LoadingCache<ItemStack, GunData> =
+            CacheBuilder
+                .newBuilder()
+                .weakKeys()
+                .weakValues()
+                .build(
+                    object : CacheLoader<ItemStack, GunData>() {
+                        override fun load(stack: ItemStack): GunData = GunData(stack)
+                    },
+                )
 
         /** Creates a new [GunData] instance from an item definition. */
-        fun create(item: Item): GunData {
-            return from(ItemStack(item))
-        }
+        fun create(item: Item): GunData = from(ItemStack(item))
 
         /** Retrieves cached or new [GunData] for an [ItemStack]. */
         @JvmStatic
         @JvmOverloads
-        fun from(stack: ItemStack, defaultDataSupplier: (() -> DefaultGunData)? = null): GunData {
+        fun from(
+            stack: ItemStack,
+            defaultDataSupplier: (() -> DefaultGunData)? = null,
+        ): GunData {
             if (defaultDataSupplier != null) {
                 return GunData(stack, defaultDataSupplier)
             }
@@ -1200,28 +1205,30 @@ class GunData private constructor(
         /** Resolves computed property for given item stack directly. */
         @JvmOverloads
         @JvmStatic
-        fun <T> get(stack: ItemStack, prop: GunProp<*, T>, useCache: Boolean = true): T {
-            return from(stack).get(prop)
-        }
+        fun <T> get(
+            stack: ItemStack,
+            prop: GunProp<*, T>,
+            useCache: Boolean = true,
+        ): T = from(stack).get(prop)
 
         /** Retrieves default un-modified properties by item registry identifier. */
         @JvmStatic
         fun getDefault(id: String): DefaultGunData {
-            val isDefault = !com.atsuishio.superbwarfare.data.CustomData.GUN_DATA.containsKey(id)
-            val data = com.atsuishio.superbwarfare.data.CustomData.GUN_DATA.getOrElseGet(id) { DefaultGunData() }
+            val isDefault =
+                !com.atsuishio.superbwarfare.data.CustomData.GUN_DATA
+                    .containsKey(id)
+            val data =
+                com.atsuishio.superbwarfare.data.CustomData.GUN_DATA
+                    .getOrElseGet(id) { DefaultGunData() }
             data.isDefaultData = isDefault
             return data
         }
 
         /** Retrieves default un-modified properties for item stack. */
-        fun getDefault(stack: ItemStack): DefaultGunData {
-            return getDefault(stack.item)
-        }
+        fun getDefault(stack: ItemStack): DefaultGunData = getDefault(stack.item)
 
         /** Retrieves default un-modified properties for item definition. */
-        fun getDefault(item: Item): DefaultGunData {
-            return getDefault(getRegistryId(item))
-        }
+        fun getDefault(item: Item): DefaultGunData = getDefault(getRegistryId(item))
 
         /** Extracts formatted registry ID from item. */
         fun getRegistryId(item: Item): String {
@@ -1252,11 +1259,12 @@ class GunData private constructor(
         @JvmField
         var VEHICLE_GUN_STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, GunData> =
             object : StreamCodec<RegistryFriendlyByteBuf, GunData> {
-                override fun decode(buf: RegistryFriendlyByteBuf): GunData {
-                    return from(ItemStack(ModItems.VEHICLE_GUN, 1, DataComponentPatch.STREAM_CODEC.decode(buf)))
-                }
+                override fun decode(buf: RegistryFriendlyByteBuf): GunData = from(ItemStack(ModItems.VEHICLE_GUN, 1, DataComponentPatch.STREAM_CODEC.decode(buf)))
 
-                override fun encode(buf: RegistryFriendlyByteBuf, data: GunData) {
+                override fun encode(
+                    buf: RegistryFriendlyByteBuf,
+                    data: GunData,
+                ) {
                     val newData = data.copy()
                     newData.save()
                     DataComponentPatch.STREAM_CODEC.encode(buf, newData.stack.componentsPatch)

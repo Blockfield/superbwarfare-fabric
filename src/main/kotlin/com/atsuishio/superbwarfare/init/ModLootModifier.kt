@@ -27,55 +27,51 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType
  * читать те же JSON через ResourceManager.
  */
 object ModLootModifier {
-    private fun vanilla(path: String) =
-        ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.withDefaultNamespace("chests/$path"))
+    private fun vanilla(path: String) = ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.withDefaultNamespace("chests/$path"))
 
-    private fun mod(path: String) =
-        ResourceKey.create(Registries.LOOT_TABLE, Mod.loc("chests/$path"))
+    private fun mod(path: String) = ResourceKey.create(Registries.LOOT_TABLE, Mod.loc("chests/$path"))
 
     private val COMMON = mod("blue_print_common")
     private val RARE = mod("blue_print_rare")
     private val EPIC = mod("blue_print_epic")
     private val ANCIENT_CPU = mod("ancient_cpu")
 
-    private val EXTRA_LOOT: List<Pair<ResourceKey<LootTable>, ResourceKey<LootTable>>> = listOf(
-        vanilla("simple_dungeon") to COMMON,
-        vanilla("abandoned_mineshaft") to COMMON,
-        vanilla("shipwreck_map") to COMMON,
-        vanilla("shipwreck_supply") to COMMON,
-        vanilla("shipwreck_treasure") to COMMON,
-        vanilla("ruined_portal") to COMMON,
-
-        vanilla("ancient_city") to RARE,
-        vanilla("ancient_city_ice_box") to RARE,
-        vanilla("bastion_bridge") to RARE,
-        vanilla("bastion_hoglin_stable") to RARE,
-        vanilla("bastion_other") to RARE,
-        vanilla("buried_treasure") to RARE,
-        vanilla("desert_pyramid") to RARE,
-        vanilla("igloo") to RARE,
-        vanilla("jungle_temple") to RARE,
-
-        vanilla("pillager_outpost") to EPIC,
-        vanilla("stronghold_library") to EPIC,
-        vanilla("woodland_mansion") to EPIC,
-        vanilla("end_city_treasure") to EPIC,
-
-        vanilla("ancient_city") to ANCIENT_CPU,
-    )
+    private val EXTRA_LOOT: List<Pair<ResourceKey<LootTable>, ResourceKey<LootTable>>> =
+        listOf(
+            vanilla("simple_dungeon") to COMMON,
+            vanilla("abandoned_mineshaft") to COMMON,
+            vanilla("shipwreck_map") to COMMON,
+            vanilla("shipwreck_supply") to COMMON,
+            vanilla("shipwreck_treasure") to COMMON,
+            vanilla("ruined_portal") to COMMON,
+            vanilla("ancient_city") to RARE,
+            vanilla("ancient_city_ice_box") to RARE,
+            vanilla("bastion_bridge") to RARE,
+            vanilla("bastion_hoglin_stable") to RARE,
+            vanilla("bastion_other") to RARE,
+            vanilla("buried_treasure") to RARE,
+            vanilla("desert_pyramid") to RARE,
+            vanilla("igloo") to RARE,
+            vanilla("jungle_temple") to RARE,
+            vanilla("pillager_outpost") to EPIC,
+            vanilla("stronghold_library") to EPIC,
+            vanilla("woodland_mansion") to EPIC,
+            vanilla("end_city_treasure") to EPIC,
+            vanilla("ancient_city") to ANCIENT_CPU,
+        )
 
     /** Тот же геймрул, что проверял TargetModLootTableModifier.doApply у апстрима. */
-    private val DO_GENERATE_LOOTS_TYPE: LootItemConditionType = Registry.register(
-        BuiltInRegistries.LOOT_CONDITION_TYPE,
-        Mod.loc("do_generate_loots"),
-        LootItemConditionType(MapCodec.unit(DoGenerateLoots))
-    )
+    private val DO_GENERATE_LOOTS_TYPE: LootItemConditionType =
+        Registry.register(
+            BuiltInRegistries.LOOT_CONDITION_TYPE,
+            Mod.loc("do_generate_loots"),
+            LootItemConditionType(MapCodec.unit(DoGenerateLoots)),
+        )
 
     private object DoGenerateLoots : LootItemCondition {
         override fun getType(): LootItemConditionType = DO_GENERATE_LOOTS_TYPE
 
-        override fun test(context: LootContext): Boolean =
-            context.level.gameRules.getBoolean(ModGameRules.MOD_RULE_DO_GENERATE_LOOTS)
+        override fun test(context: LootContext): Boolean = context.level.gameRules.getBoolean(ModGameRules.MOD_RULE_DO_GENERATE_LOOTS)
     }
 
     fun init() {
@@ -83,9 +79,10 @@ object ModLootModifier {
             EXTRA_LOOT.forEach { (target, extra) ->
                 if (target == key) {
                     tableBuilder.withPool(
-                        LootPool.lootPool()
+                        LootPool
+                            .lootPool()
                             .add(NestedLootTable.lootTableReference(extra))
-                            .`when` { DoGenerateLoots }
+                            .`when` { DoGenerateLoots },
                     )
                 }
             }

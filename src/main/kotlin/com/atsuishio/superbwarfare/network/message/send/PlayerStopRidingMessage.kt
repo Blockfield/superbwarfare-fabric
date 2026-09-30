@@ -16,8 +16,9 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.world.effect.MobEffectInstance
 
 @Serializable
-data class PlayerStopRidingMessage(val ejection: Boolean) : ServerPacketPayload() {
-
+data class PlayerStopRidingMessage(
+    val ejection: Boolean,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         val vehicle = player.vehicle as? VehicleEntity ?: return
@@ -28,27 +29,55 @@ data class PlayerStopRidingMessage(val ejection: Boolean) : ServerPacketPayload(
             val level = player.level()
             level.playSound(
                 null,
-                player.x, player.y, player.z,
-                ModSounds.MEDIUM_ROCKET_FIRE.get(), SoundSource.PLAYERS,
-                4f, 1f
+                player.x,
+                player.y,
+                player.z,
+                ModSounds.MEDIUM_ROCKET_FIRE.get(),
+                SoundSource.PLAYERS,
+                4f,
+                1f,
             )
             if (level is ServerLevel) {
                 for (p in 0..7) {
                     val pPos = player.position().add(vec.scale(p * 0.5))
                     ParticleTool.sendParticle(
-                        level, ParticleTypes.CLOUD,
-                        pPos.x, pPos.y, pPos.z,
-                        10, 0.5, 0.5, 0.5, 0.05, true
+                        level,
+                        ParticleTypes.CLOUD,
+                        pPos.x,
+                        pPos.y,
+                        pPos.z,
+                        10,
+                        0.5,
+                        0.5,
+                        0.5,
+                        0.05,
+                        true,
                     )
                     ParticleTool.sendParticle(
-                        level, ParticleTypes.FLAME,
-                        pPos.x, pPos.y, pPos.z,
-                        20, 0.5, 0.5, 0.5, 0.05, true
+                        level,
+                        ParticleTypes.FLAME,
+                        pPos.x,
+                        pPos.y,
+                        pPos.z,
+                        20,
+                        0.5,
+                        0.5,
+                        0.5,
+                        0.05,
+                        true,
                     )
                     ParticleTool.sendParticle(
-                        level, ParticleTypes.CAMPFIRE_COSY_SMOKE,
-                        pPos.x, pPos.y, pPos.z,
-                        15, 0.5, 0.5, 0.5, 0.05, true
+                        level,
+                        ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                        pPos.x,
+                        pPos.y,
+                        pPos.z,
+                        15,
+                        0.5,
+                        0.5,
+                        0.5,
+                        0.05,
+                        true,
                     )
                 }
             }

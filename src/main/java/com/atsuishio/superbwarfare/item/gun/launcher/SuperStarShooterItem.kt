@@ -20,11 +20,13 @@ import software.bernie.geckolib.renderer.GeoItemRenderer
 import java.util.function.Supplier
 
 class SuperStarShooterItem : GunGeoItem(Properties().rarity(ModRarities.SUPERB)) {
+    override fun getRenderer(): Supplier<out GeoItemRenderer<*>> = GunRendererBuilder.simple { SuperStarShooterItemModel() }
 
-    override fun getRenderer(): Supplier<out GeoItemRenderer<*>> =
-        GunRendererBuilder.simple { SuperStarShooterItemModel() }
-
-    override fun tick(shooter: Entity?, data: GunData, inMainHand: Boolean) {
+    override fun tick(
+        shooter: Entity?,
+        data: GunData,
+        inMainHand: Boolean,
+    ) {
         val level = shooter?.level() ?: return
 
         if (level.isNight && level.gameTime % 84L == 0L && data.ammo.get() < data.get(GunProp.MAGAZINE)) {
@@ -36,7 +38,11 @@ class SuperStarShooterItem : GunGeoItem(Properties().rarity(ModRarities.SUPERB))
         }
     }
 
-    override fun getArmPose(entityLiving: LivingEntity, hand: InteractionHand, stack: ItemStack): ArmPose {
+    override fun getArmPose(
+        entityLiving: LivingEntity,
+        hand: InteractionHand,
+        stack: ItemStack,
+    ): ArmPose {
         if (!stack.isEmpty && entityLiving.usedItemHand == hand) {
             return ModEnumExtensions.Client.superStarShooterPose
         }

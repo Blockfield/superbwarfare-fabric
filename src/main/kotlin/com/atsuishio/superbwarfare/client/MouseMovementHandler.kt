@@ -46,22 +46,20 @@ object MouseMovementHandler {
     }
 
     @JvmStatic
-    fun getX(useVelocity: Boolean): Float {
-        return if (useVelocity) {
+    fun getX(useVelocity: Boolean): Float =
+        if (useVelocity) {
             vel.x
         } else {
             delta.x
         }
-    }
 
     @JvmStatic
-    fun getY(useVelocity: Boolean): Float {
-        return if (useVelocity) {
+    fun getY(useVelocity: Boolean): Float =
+        if (useVelocity) {
             vel.y
         } else {
             delta.y
         }
-    }
 
     @JvmStatic
     fun activateMouseLock() {

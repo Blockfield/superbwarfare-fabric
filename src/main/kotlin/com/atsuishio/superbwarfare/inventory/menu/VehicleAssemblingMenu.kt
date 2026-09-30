@@ -1,6 +1,8 @@
 package com.atsuishio.superbwarfare.inventory.menu
 
 import com.atsuishio.superbwarfare.entity.vehicle.VehicleAssemblingTableVehicleEntity
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModBlocks
 import com.atsuishio.superbwarfare.init.ModMenuTypes
 import com.atsuishio.superbwarfare.network.message.receive.FinishAssemblingVehicleMessage
@@ -16,94 +18,103 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.ContainerLevelAccess
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.RecipeManager
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
 
-open class VehicleAssemblingMenu @JvmOverloads constructor(
-    pContainerId: Int,
-    inventory: Inventory,
-    protected val access: ContainerLevelAccess = ContainerLevelAccess.NULL,
-    private val isVehicleMenu: Boolean = false
-) : AbstractContainerMenu(ModMenuTypes.VEHICLE_ASSEMBLING_MENU.get(), pContainerId) {
-    override fun quickMoveStack(pPlayer: Player, pIndex: Int): ItemStack {
-        return ItemStack.EMPTY
-    }
+open class VehicleAssemblingMenu
+    @JvmOverloads
+    constructor(
+        pContainerId: Int,
+        inventory: Inventory,
+        protected val access: ContainerLevelAccess = ContainerLevelAccess.NULL,
+        private val isVehicleMenu: Boolean = false,
+    ) : AbstractContainerMenu(ModMenuTypes.VEHICLE_ASSEMBLING_MENU.get(), pContainerId) {
+        override fun quickMoveStack(
+            pPlayer: Player,
+            pIndex: Int,
+        ): ItemStack = ItemStack.EMPTY
 
-    override fun stillValid(pPlayer: Player): Boolean {
-        return (pPlayer.isAlive && !this.isVehicleMenu &&
-                this.access.evaluate({ level, pos ->
-                    level.getBlockState(pos).`is`(ModBlocks.VEHICLE_ASSEMBLING_TABLE.get())
-                            && pPlayer.distanceToSqr(
-                        pos.x.toDouble() + 0.5,
-                        pos.y.toDouble() + 0.5,
-                        pos.z.toDouble() + 0.5
-                    ) <= 64
-                }, true))
-                || (this.isVehicleMenu && pPlayer.vehicle is VehicleAssemblingTableVehicleEntity)
-    }
+        override fun stillValid(pPlayer: Player): Boolean =
+            (
+                pPlayer.isAlive && !this.isVehicleMenu &&
+                    this.access.evaluate({ level, pos ->
+                        level.getBlockState(pos).`is`(ModBlocks.VEHICLE_ASSEMBLING_TABLE.get()) &&
+                            pPlayer.distanceToSqr(
+                                pos.x.toDouble() + 0.5,
+                                pos.y.toDouble() + 0.5,
+                                pos.z.toDouble() + 0.5,
+                            ) <= 64
+                    }, true)
+            ) ||
+                (this.isVehicleMenu && pPlayer.vehicle is VehicleAssemblingTableVehicleEntity)
 
-    /**
-     * Code based on TaC-Z
-     */
-    fun assembleVehicle(id: ResourceLocation, player: ServerPlayer) {
-        val recipe = this.getRecipeById(id, player.level().recipeManager) ?: return
-        val handler = player.getCapability(Capabilities.ItemHandler.ENTITY)
-        if (handler != null) {
-            if (!player.isCreative) {
-                val recordCount = Int2IntArrayMap()
-                val ingredients = recipe.inputs
+        /**
+         * Code based on TaC-Z
+         */
+        fun assembleVehicle(
+            id: ResourceLocation,
+            player: ServerPlayer,
+        ) {
+            val recipe = this.getRecipeById(id, player.level().recipeManager) ?: return
+            val handler = player.getCapability(Capabilities.ItemHandler.ENTITY)
+            if (handler != null) {
+                if (!player.isCreative) {
+                    val recordCount = Int2IntArrayMap()
+                    val ingredients = recipe.inputs
 
-                for (ingredient in ingredients) {
-                    var count = 0
+                    for (ingredient in ingredients) {
+                        var count = 0
 
-                    for (i in 0..<handler.slots) {
-                        val stack = handler.getStackInSlot(i)
-                        val stackCount = stack.count
-                        if (!stack.isEmpty && ingredient.ingredient.test(stack)) {
-                            count += stackCount
-                            if (count > ingredient.count) {
-                                val remaining = count - ingredient.count
-                                recordCount.put(i, stackCount - remaining)
-                                break
+                        for (i in 0..<handler.slots) {
+                            val stack = handler.getStackInSlot(i)
+                            val stackCount = stack.count
+                            if (!stack.isEmpty && ingredient.ingredient.test(stack)) {
+                                count += stackCount
+                                if (count > ingredient.count) {
+                                    val remaining = count - ingredient.count
+                                    recordCount.put(i, stackCount - remaining)
+                                    break
+                                }
+                                recordCount.put(i, stackCount)
                             }
-                            recordCount.put(i, stackCount)
+                        }
+
+                        if (count < ingredient.count) {
+                            return
                         }
                     }
 
-                    if (count < ingredient.count) {
-                        return
+                    for (slotIndex in recordCount.keys) {
+                        handler.extractItem(slotIndex, recordCount.get(slotIndex), false)
                     }
                 }
 
-                for (slotIndex in recordCount.keys) {
-                    handler.extractItem(slotIndex, recordCount.get(slotIndex), false)
+                val level = player.level()
+                if (!level.isClientSide) {
+                    val itemEntity =
+                        ItemEntity(
+                            level,
+                            player.x,
+                            player.y + 0.5,
+                            player.z,
+                            recipe.getResultItem(player.level().registryAccess()).copy(),
+                        )
+                    itemEntity.setPickUpDelay(0)
+                    level.addFreshEntity(itemEntity)
                 }
-            }
 
-            val level = player.level()
-            if (!level.isClientSide) {
-                val itemEntity = ItemEntity(
-                    level,
-                    player.x,
-                    player.y + 0.5,
-                    player.z,
-                    recipe.getResultItem(player.level().registryAccess()).copy()
-                )
-                itemEntity.setPickUpDelay(0)
-                level.addFreshEntity(itemEntity)
+                player.inventoryMenu.broadcastFullState()
+                player.sendPacket(FinishAssemblingVehicleMessage(this.containerId))
             }
+        }
 
-            player.inventoryMenu.broadcastFullState()
-            player.sendPacket(FinishAssemblingVehicleMessage(this.containerId))
+        fun getRecipeById(
+            id: ResourceLocation,
+            recipeManager: RecipeManager,
+        ): VehicleAssemblingRecipe? {
+            val recipe = recipeManager.byKey(id).orElse(null) ?: return null
+            val recipeValue = recipe.value()
+            if (recipeValue is VehicleAssemblingRecipe) {
+                return recipeValue
+            }
+            return null
         }
     }
-
-    fun getRecipeById(id: ResourceLocation, recipeManager: RecipeManager): VehicleAssemblingRecipe? {
-        val recipe = recipeManager.byKey(id).orElse(null) ?: return null
-        val recipeValue = recipe.value()
-        if (recipeValue is VehicleAssemblingRecipe) {
-            return recipeValue
-        }
-        return null
-    }
-}

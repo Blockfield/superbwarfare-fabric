@@ -8,7 +8,10 @@ import com.atsuishio.superbwarfare.perk.Perk
 
 object HighImpactReserves : Perk("high_impact_reserves", Type.DAMAGE) {
     override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) {
-        val rate = modifier.data.ammo.get().toDouble() / 1.coerceAtLeast(modifier[GunProp.MAGAZINE])
+        val rate =
+            modifier.data.ammo
+                .get()
+                .toDouble() / 1.coerceAtLeast(modifier[GunProp.MAGAZINE])
         val level = modifier.data.perk.getLevel(this)
         val limit = 0.5 + (level - 1) * 0.02
 

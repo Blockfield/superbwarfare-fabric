@@ -4,8 +4,8 @@ import com.atsuishio.superbwarfare.block.entity.FuMO25BlockEntity
 import com.atsuishio.superbwarfare.inventory.menu.FuMO25Menu
 import com.atsuishio.superbwarfare.tools.SeekTool
 import com.atsuishio.superbwarfare.tools.mc
-import net.minecraft.core.BlockPos
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.Entity
 
 object FuMO25ScreenHelper {
@@ -39,10 +39,12 @@ object FuMO25ScreenHelper {
         }
 
         val funcType = menu.funcType
-        entities = SeekTool.getEntitiesWithinRange(
-            pos, player.level(),
-            if (funcType == 1.toLong()) FuMO25BlockEntity.MAX_RANGE.toDouble() else FuMO25BlockEntity.DEFAULT_RANGE.toDouble()
-        )
+        entities =
+            SeekTool.getEntitiesWithinRange(
+                pos,
+                player.level(),
+                if (funcType == 1.toLong()) FuMO25BlockEntity.MAX_RANGE.toDouble() else FuMO25BlockEntity.DEFAULT_RANGE.toDouble(),
+            )
     }
 
     @JvmStatic

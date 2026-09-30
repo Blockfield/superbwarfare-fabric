@@ -22,7 +22,7 @@ open class ResearchingRecipeBuilder private constructor(
     var resultItem: Item? = null,
     val resultTag: TagKey<Item>? = null,
     val count: Int = 1,
-    val input: Ingredient
+    val input: Ingredient,
 ) : RecipeBuilder {
     private val criteria: MutableMap<String, Criterion<*>> = LinkedHashMap()
     private var base = Ingredient.EMPTY
@@ -34,8 +34,11 @@ open class ResearchingRecipeBuilder private constructor(
 
     init {
         if (this.resultItem == null && this.resultTag != null) {
-            val itemTag = BuiltInRegistries.ITEM.getTag(this.resultTag)
-                .map { items -> items.map { it.value() } }.getOrNull() ?: mutableListOf()
+            val itemTag =
+                BuiltInRegistries.ITEM
+                    .getTag(this.resultTag)
+                    .map { items -> items.map { it.value() } }
+                    .getOrNull() ?: mutableListOf()
 
             val list = mutableListOf<Item>()
             itemTag.forEach { list.add(it) }
@@ -46,40 +49,43 @@ open class ResearchingRecipeBuilder private constructor(
         }
     }
 
-    override fun unlockedBy(s: String, criterion: Criterion<*>): RecipeBuilder {
+    override fun unlockedBy(
+        s: String,
+        criterion: Criterion<*>,
+    ): RecipeBuilder {
         this.criteria[s] = criterion
         return this
     }
 
-    override fun group(pGroupName: String?): RecipeBuilder {
-        return this
-    }
+    override fun group(pGroupName: String?): RecipeBuilder = this
 
-    override fun getResult(): Item {
-        return this.resultItem ?: Items.AIR
-    }
+    override fun getResult(): Item = this.resultItem ?: Items.AIR
 
     override fun save(
         recipeOutput: RecipeOutput,
-        id: ResourceLocation
+        id: ResourceLocation,
     ) {
         this.ensureValid(id)
         val builder =
-            recipeOutput.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
-                .rewards(AdvancementRewards.Builder.recipe(id)).requirements(AdvancementRequirements.Strategy.OR)
+            recipeOutput
+                .advancement()
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
+                .rewards(AdvancementRewards.Builder.recipe(id))
+                .requirements(AdvancementRequirements.Strategy.OR)
         Objects.requireNonNull(builder)
         this.criteria.forEach { (key, criterion) -> builder.addCriterion(key, criterion) }
 
-        val recipe = if (this.resultTag != null) {
-            ResearchingRecipe.create(input, base, addition, special, selectable, color, time, count, resultTag)
-        } else {
-            ResearchingRecipe.create(input, base, addition, special, selectable, color, time, count, resultItem!!)
-        }
+        val recipe =
+            if (this.resultTag != null) {
+                ResearchingRecipe.create(input, base, addition, special, selectable, color, time, count, resultTag)
+            } else {
+                ResearchingRecipe.create(input, base, addition, special, selectable, color, time, count, resultItem!!)
+            }
 
         recipeOutput.accept(
             id,
             recipe,
-            builder.build(id.withPrefix("recipes/" + RecipeCategory.MISC.folderName + "/"))
+            builder.build(id.withPrefix("recipes/" + RecipeCategory.MISC.folderName + "/")),
         )
     }
 
@@ -132,23 +138,35 @@ open class ResearchingRecipeBuilder private constructor(
     companion object {
         @JvmStatic
         @JvmOverloads
-        fun item(result: Item, count: Int = 1, input: ItemLike) =
-            ResearchingRecipeBuilder(resultItem = result, count = count, input = Ingredient.of(input))
+        fun item(
+            result: Item,
+            count: Int = 1,
+            input: ItemLike,
+        ) = ResearchingRecipeBuilder(resultItem = result, count = count, input = Ingredient.of(input))
 
         @JvmStatic
         @JvmOverloads
-        fun item(result: Item, count: Int = 1, input: TagKey<Item>) =
-            ResearchingRecipeBuilder(resultItem = result, count = count, input = Ingredient.of(input))
+        fun item(
+            result: Item,
+            count: Int = 1,
+            input: TagKey<Item>,
+        ) = ResearchingRecipeBuilder(resultItem = result, count = count, input = Ingredient.of(input))
 
         @JvmStatic
         @JvmOverloads
-        fun tag(resultTag: TagKey<Item>, count: Int = 1, input: ItemLike) =
-            ResearchingRecipeBuilder(resultTag = resultTag, count = count, input = Ingredient.of(input))
+        fun tag(
+            resultTag: TagKey<Item>,
+            count: Int = 1,
+            input: ItemLike,
+        ) = ResearchingRecipeBuilder(resultTag = resultTag, count = count, input = Ingredient.of(input))
 
         @JvmStatic
         @JvmOverloads
-        fun tag(resultTag: TagKey<Item>, count: Int = 1, input: TagKey<Item>) =
-            ResearchingRecipeBuilder(resultTag = resultTag, count = count, input = Ingredient.of(input))
+        fun tag(
+            resultTag: TagKey<Item>,
+            count: Int = 1,
+            input: TagKey<Item>,
+        ) = ResearchingRecipeBuilder(resultTag = resultTag, count = count, input = Ingredient.of(input))
     }
 
 //    class Result(

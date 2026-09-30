@@ -38,7 +38,11 @@ import net.minecraft.world.phys.Vec3
 import java.util.*
 import java.util.function.Consumer
 
-open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : PathfinderMob(type, level), NeutralMob {
+open class SteelCoilEntity(
+    type: EntityType<SteelCoilEntity>,
+    level: Level,
+) : PathfinderMob(type, level),
+    NeutralMob {
     open val modelInstance = EntityModelReloadListener.getModel(MODEL)?.createInstance()
     var wheelRot = 0f
     var wheelRotO = 0f
@@ -60,9 +64,10 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
         this.readPersistentAngerSaveData(this.level(), pCompound)
     }
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
-        return super.hurt(source, DAMAGE_MODIFIER.compute(this, source, amount))
-    }
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean = super.hurt(source, DAMAGE_MODIFIER.compute(this, source, amount))
 
     override fun registerGoals() {
         this.goalSelector.addGoal(0, SteelCoilCrushGoal(this))
@@ -71,17 +76,11 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
     }
 
     @Deprecated("Deprecated in Java")
-    override fun canBeAffected(pEffectInstance: MobEffectInstance): Boolean {
-        return false
-    }
+    override fun canBeAffected(pEffectInstance: MobEffectInstance): Boolean = false
 
-    override fun getHurtSound(pDamageSource: DamageSource): SoundEvent {
-        return ModSounds.INDICATION_VEHICLE.get()
-    }
+    override fun getHurtSound(pDamageSource: DamageSource): SoundEvent = ModSounds.INDICATION_VEHICLE.get()
 
-    override fun getDeathSound(): SoundEvent {
-        return ModSounds.STEEL_PIPE_DROP.get()
-    }
+    override fun getDeathSound(): SoundEvent = ModSounds.STEEL_PIPE_DROP.get()
 
     override fun aiStep() {
         super.aiStep()
@@ -92,31 +91,26 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
         }
     }
 
-    override fun canCollideWith(entity: Entity): Boolean {
-        return entity is SteelCoilEntity
-    }
+    override fun canCollideWith(entity: Entity): Boolean = entity is SteelCoilEntity
 
-    override fun canBeCollidedWith(): Boolean {
-        return true
-    }
+    override fun canBeCollidedWith(): Boolean = true
 
-    override fun isPushable(): Boolean {
-        return false
-    }
+    override fun isPushable(): Boolean = false
 
-    override fun getArmorSlots(): Iterable<ItemStack> {
-        return NonNullList.withSize(1, ItemStack.EMPTY)
-    }
+    override fun getArmorSlots(): Iterable<ItemStack> = NonNullList.withSize(1, ItemStack.EMPTY)
 
-    override fun getItemBySlot(pSlot: EquipmentSlot): ItemStack {
-        return ItemStack.EMPTY
-    }
+    override fun getItemBySlot(pSlot: EquipmentSlot): ItemStack = ItemStack.EMPTY
 
-    override fun setItemSlot(pSlot: EquipmentSlot, pStack: ItemStack) {}
+    override fun setItemSlot(
+        pSlot: EquipmentSlot,
+        pStack: ItemStack,
+    ) {}
 
-    override fun causeFallDamage(l: Float, d: Float, source: DamageSource): Boolean {
-        return false
-    }
+    override fun causeFallDamage(
+        l: Float,
+        d: Float,
+        source: DamageSource,
+    ): Boolean = false
 
     override fun getMainArm(): HumanoidArm = HumanoidArm.RIGHT
 
@@ -139,10 +133,14 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
         }
 
         if (this.target != null && this.tickCount % 20 == 0) {
-            val targetPos = target!!.position().add(
-                this.position().vectorTo(target!!.position()).normalize()
-                    .scale(this.position().distanceTo(target!!.position()).coerceAtLeast(1.0))
-            )
+            val targetPos =
+                target!!.position().add(
+                    this
+                        .position()
+                        .vectorTo(target!!.position())
+                        .normalize()
+                        .scale(this.position().distanceTo(target!!.position()).coerceAtLeast(1.0)),
+                )
 
             this.targetPosition = targetPos
         }
@@ -152,11 +150,13 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
 
     open fun moving() = deltaMovement.lengthSqr() > 0.0001 && onGround()
 
-    fun isAttackableEntity(entity: Entity): Boolean {
-        return entity.isAlive || (entity is Player && (!entity.isCreative && !entity.isSpectator))
-    }
+    fun isAttackableEntity(entity: Entity): Boolean = entity.isAlive || (entity is Player && (!entity.isCreative && !entity.isSpectator))
 
-    protected fun lerpRot(pSourceAngle: Float, pTargetAngle: Float, pMaximumChange: Float): Float {
+    protected fun lerpRot(
+        pSourceAngle: Float,
+        pTargetAngle: Float,
+        pMaximumChange: Float,
+    ): Float {
         var f = Mth.wrapDegrees(pTargetAngle - pSourceAngle)
         if (f > pMaximumChange) {
             f = pMaximumChange
@@ -176,13 +176,11 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
         return f1
     }
 
-    fun getRotation(ticks: Float): Float {
-        return Mth.lerp(ticks, wheelRotO, wheelRot)
-    }
+    fun getRotation(ticks: Float): Float = Mth.lerp(ticks, wheelRotO, wheelRot)
 
     companion object {
-        fun createAttributes(): AttributeSupplier.Builder {
-            return createMobAttributes()
+        fun createAttributes(): AttributeSupplier.Builder =
+            createMobAttributes()
                 .add(Attributes.MOVEMENT_SPEED, 0.25)
                 .add(Attributes.MAX_HEALTH, 200.0)
                 .add(Attributes.ARMOR, 30.0)
@@ -191,23 +189,23 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
                 .add(Attributes.FOLLOW_RANGE, 64.0)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
                 .add(Attributes.STEP_HEIGHT, 2.0)
-        }
 
         val MODEL = loc("models/bedrock/entity/steel_coil.geo.json")
 
-        private val DAMAGE_MODIFIER = createDefaultModifier()
-            .immuneTo(DamageTypes.IN_WALL)
-            .immuneTo(DamageTypes.DROWN)
-            .immuneTo(DamageTypes.FALL)
-            .immuneTo(DamageTypes.IN_FIRE)
-            .immuneTo(DamageTypes.ON_FIRE)
-            .immuneTo(DamageTypes.CACTUS)
-            .immuneTo(DamageTypes.MAGIC)
-            .multiply(0.5f, DamageTypes.EXPLOSION)
-            .multiply(0.5f, DamageTypes.PLAYER_EXPLOSION)
-            .multiply(0.25f, ModTags.DamageTypes.PROJECTILE)
-            .multiply(0.5f, DamageTypes.PLAYER_ATTACK)
-            .multiply(2f, ModDamageTypes.REPAIR_TOOL)
+        private val DAMAGE_MODIFIER =
+            createDefaultModifier()
+                .immuneTo(DamageTypes.IN_WALL)
+                .immuneTo(DamageTypes.DROWN)
+                .immuneTo(DamageTypes.FALL)
+                .immuneTo(DamageTypes.IN_FIRE)
+                .immuneTo(DamageTypes.ON_FIRE)
+                .immuneTo(DamageTypes.CACTUS)
+                .immuneTo(DamageTypes.MAGIC)
+                .multiply(0.5f, DamageTypes.EXPLOSION)
+                .multiply(0.5f, DamageTypes.PLAYER_EXPLOSION)
+                .multiply(0.25f, ModTags.DamageTypes.PROJECTILE)
+                .multiply(0.5f, DamageTypes.PLAYER_ATTACK)
+                .multiply(2f, ModDamageTypes.REPAIR_TOOL)
 
         var playMoveSound: Consumer<SteelCoilEntity> = Consumer { }
     }
@@ -218,20 +216,26 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
         val vec3 = this.deltaMovement
         if (vec3.lengthSqr() <= 0.0001) return
         val frontBox = this.boundingBox.move(vec3)
-        val entities = this.level().getEntities(
-            EntityTypeTest.forClass(Entity::class.java),
-            frontBox
-        ) { entity -> entity !== this && entity!!.vehicle == null && entity !is SteelCoilEntity }
-            .asSequence().filter { entity ->
-                if (entity.isAlive) {
-                    val type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)
-                    return@filter (entity is VehicleEntity || entity is Boat || entity is Minecart || (entity is TurretWreckEntity && entity.tickCount > 5)
-                            || (entity is LivingEntity && !(entity is Player && entity.isSpectator)))
-                            || VehicleConfig.COLLISION_ENTITY_WHITELIST.get().contains(type.toString())
-                }
-                false
-            }
-            .toList()
+        val entities =
+            this
+                .level()
+                .getEntities(
+                    EntityTypeTest.forClass(Entity::class.java),
+                    frontBox,
+                ) { entity -> entity !== this && entity!!.vehicle == null && entity !is SteelCoilEntity }
+                .asSequence()
+                .filter { entity ->
+                    if (entity.isAlive) {
+                        val type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)
+                        return@filter (
+                            entity is VehicleEntity || entity is Boat || entity is Minecart ||
+                                (entity is TurretWreckEntity && entity.tickCount > 5) ||
+                                (entity is LivingEntity && !(entity is Player && entity.isSpectator))
+                        ) ||
+                            VehicleConfig.COLLISION_ENTITY_WHITELIST.get().contains(type.toString())
+                    }
+                    false
+                }.toList()
 
         for (entity in entities) {
             val entitySize = entity.boundingBox.size
@@ -268,11 +272,16 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
             entity.forceHurt(
                 ModDamageTypes.causeVehicleStrikeDamage(
                     this.level().registryAccess(),
-                    this, this
+                    this,
+                    this,
                 ),
-                (this.attributes.getValue(Attributes.ATTACK_DAMAGE) + f1 * 240 * (Mth.abs(length) - 0.01) * (Mth.abs(
-                    length
-                ) - 0.01)).toFloat()
+                (
+                    this.attributes.getValue(Attributes.ATTACK_DAMAGE) + f1 * 240 * (Mth.abs(length) - 0.01) * (
+                        Mth.abs(
+                            length,
+                        ) - 0.01
+                    )
+                ).toFloat(),
             )
 
             this.pushNew(-0.3f * f * velAdd.x, -0.3f * f * velAdd.y, -0.3f * f * velAdd.z)
@@ -287,21 +296,21 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
         }
     }
 
-    open fun pushNew(pX: Double, pY: Double, pZ: Double) {
+    open fun pushNew(
+        pX: Double,
+        pY: Double,
+        pZ: Double,
+    ) {
         this.deltaMovement = this.deltaMovement.add(pX, pY, pZ)
     }
 
-    override fun getRemainingPersistentAngerTime(): Int {
-        return this.remainingPersistentAngerTime
-    }
+    override fun getRemainingPersistentAngerTime(): Int = this.remainingPersistentAngerTime
 
     override fun setRemainingPersistentAngerTime(pRemainingPersistentAngerTime: Int) {
         this.remainingPersistentAngerTime = pRemainingPersistentAngerTime
     }
 
-    override fun getPersistentAngerTarget(): UUID? {
-        return this.persistentAngerTarget
-    }
+    override fun getPersistentAngerTarget(): UUID? = this.persistentAngerTarget
 
     override fun setPersistentAngerTarget(pPersistentAngerTarget: UUID?) {
         this.persistentAngerTarget = pPersistentAngerTarget
@@ -311,7 +320,9 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
         this.remainingPersistentAngerTime = this.random.nextIntBetweenInclusive(20, 30)
     }
 
-    class SteelCoilCrushGoal(val entity: SteelCoilEntity) : Goal() {
+    class SteelCoilCrushGoal(
+        val entity: SteelCoilEntity,
+    ) : Goal() {
         init {
             this.flags = EnumSet.of(Flag.MOVE)
         }
@@ -349,9 +360,7 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
             entity.target = null
         }
 
-        override fun canContinueToUse(): Boolean {
-            return entity.target?.isAlive ?: false
-        }
+        override fun canContinueToUse(): Boolean = entity.target?.isAlive ?: false
 
         override fun tick() {
             super.tick()
@@ -375,7 +384,7 @@ open class SteelCoilEntity(type: EntityType<SteelCoilEntity>, level: Level) : Pa
                     entity.targetPosition.x,
                     entity.targetPosition.y,
                     entity.targetPosition.z,
-                    speed
+                    speed,
                 )
 
                 if (entity.position().distanceToSqr(entity.targetPosition) < 2 || entity.restartCrushTimer > 100) {

@@ -13,10 +13,13 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
 
-class FlareDecoyEntityRenderer(pContext: EntityRendererProvider.Context) : EntityRenderer<FlareDecoyEntity>(pContext) {
-    override fun getBlockLightLevel(pEntity: FlareDecoyEntity, pPos: BlockPos): Int {
-        return 15
-    }
+class FlareDecoyEntityRenderer(
+    pContext: EntityRendererProvider.Context,
+) : EntityRenderer<FlareDecoyEntity>(pContext) {
+    override fun getBlockLightLevel(
+        pEntity: FlareDecoyEntity,
+        pPos: BlockPos,
+    ): Int = 15
 
     override fun render(
         pEntity: FlareDecoyEntity,
@@ -24,7 +27,7 @@ class FlareDecoyEntityRenderer(pContext: EntityRendererProvider.Context) : Entit
         pPartialTicks: Float,
         pMatrixStack: PoseStack,
         pBuffer: MultiBufferSource,
-        pPackedLight: Int
+        pPackedLight: Int,
     ) {
         pMatrixStack.pushPose()
         pMatrixStack.mulPose(this.entityRenderDispatcher.cameraOrientation())
@@ -39,9 +42,7 @@ class FlareDecoyEntityRenderer(pContext: EntityRendererProvider.Context) : Entit
         super.render(pEntity, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight)
     }
 
-    override fun getTextureLocation(entity: FlareDecoyEntity): ResourceLocation {
-        return TEXTURES[entity.tickCount % 8]
-    }
+    override fun getTextureLocation(entity: FlareDecoyEntity): ResourceLocation = TEXTURES[entity.tickCount % 8]
 
     companion object {
         private fun vertex(
@@ -51,9 +52,10 @@ class FlareDecoyEntityRenderer(pContext: EntityRendererProvider.Context) : Entit
             pX: Float,
             pY: Float,
             pU: Int,
-            pV: Int
+            pV: Int,
         ) {
-            pConsumer.addVertex(pPose, pX - 0.5f, pY - 0.25f, 0f)
+            pConsumer
+                .addVertex(pPose, pX - 0.5f, pY - 0.25f, 0f)
                 .setColor(255, 255, 255, 255)
                 .setUv(pU.toFloat(), pV.toFloat())
                 .setOverlay(OverlayTexture.NO_OVERLAY)

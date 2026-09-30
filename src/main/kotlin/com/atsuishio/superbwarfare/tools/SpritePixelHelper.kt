@@ -15,12 +15,15 @@ object SpritePixelHelper {
 
     /**
      * 从 TextureAtlasSprite 中随机抽取一个像素，返回 RGB 颜色值
-     * 
+     *
      * @param sprite 纹理精灵
      * @param frame  帧索引（动画纹理时使用，通常为 0）
      * @return RGB 颜色值，格式为 0xRRGGBB
      */
-    fun getRandomPixelRGB(sprite: TextureAtlasSprite, frame: Int): Int {
+    fun getRandomPixelRGB(
+        sprite: TextureAtlasSprite,
+        frame: Int,
+    ): Int {
         // 获取纹理尺寸
         val width = sprite.contents().width()
         val height = sprite.contents().height()
@@ -43,13 +46,16 @@ object SpritePixelHelper {
         return (red shl 16) or (green shl 8) or blue
     }
 
-    fun getDogTagIcon(list: List<List<Short>>, path: String): ResourceLocation {
+    fun getDogTagIcon(
+        list: List<List<Short>>,
+        path: String,
+    ): ResourceLocation {
         val newDogTagIcon = createDogTagImage(list)
         val newTextureLoc = loc("${path.lowercase(Locale.ROOT)}_dog_tag.png")
 
         mc.textureManager.register(
             newTextureLoc,
-            DynamicTexture(newDogTagIcon)
+            DynamicTexture(newDogTagIcon),
         )
 
         return newTextureLoc

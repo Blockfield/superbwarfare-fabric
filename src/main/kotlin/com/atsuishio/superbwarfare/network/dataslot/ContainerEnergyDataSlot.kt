@@ -8,17 +8,17 @@ abstract class ContainerEnergyDataSlot {
 
     companion object {
         @JvmStatic
-        fun forContainer(data: ContainerEnergyData, index: Int): ContainerEnergyDataSlot {
-            return object : ContainerEnergyDataSlot() {
-                override fun get(): Long {
-                    return data[index]
-                }
+        fun forContainer(
+            data: ContainerEnergyData,
+            index: Int,
+        ): ContainerEnergyDataSlot =
+            object : ContainerEnergyDataSlot() {
+                override fun get(): Long = data[index]
 
                 override fun set(value: Long) {
                     data[index] = value
                 }
             }
-        }
     }
 
     abstract fun get(): Long

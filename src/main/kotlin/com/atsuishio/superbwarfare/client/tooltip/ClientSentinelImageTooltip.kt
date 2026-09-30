@@ -2,13 +2,15 @@ package com.atsuishio.superbwarfare.client.tooltip
 
 import com.atsuishio.superbwarfare.client.tooltip.component.GunImageComponent
 import com.atsuishio.superbwarfare.data.gun.GunProp
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.tools.FormatTool.format1D
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
 
-class ClientSentinelImageTooltip(tooltip: GunImageComponent) : ClientGunImageTooltip(tooltip) {
+class ClientSentinelImageTooltip(
+    tooltip: GunImageComponent,
+) : ClientGunImageTooltip(tooltip) {
     override val damageComponent: Component
         get() {
             val cap = stack.getCapability(Capabilities.EnergyStorage.ITEM)
@@ -23,11 +25,12 @@ class ClientSentinelImageTooltip(tooltip: GunImageComponent) : ClientGunImageToo
                 }
 
                 var component =
-                    Component.translatable("des.superbwarfare.guns.damage")
+                    Component
+                        .translatable("des.superbwarfare.guns.damage")
                         .withStyle(ChatFormatting.GRAY)
                         .append(Component.empty().withStyle(ChatFormatting.RESET))
                         .append(
-                            Component.literal(dmgStr).withStyle(ChatFormatting.AQUA).withStyle(ChatFormatting.BOLD)
+                            Component.literal(dmgStr).withStyle(ChatFormatting.AQUA).withStyle(ChatFormatting.BOLD),
                         )
 
                 if (explosionDamage > 0) {
@@ -35,12 +38,15 @@ class ClientSentinelImageTooltip(tooltip: GunImageComponent) : ClientGunImageToo
                     if (data.get(GunProp.PROJECTILE_AMOUNT) > 1) {
                         expDmgStr = expDmgStr + " * " + data.get(GunProp.PROJECTILE_AMOUNT)
                     }
-                    component = component
-                        .append(Component.empty().withStyle(ChatFormatting.RESET))
-                        .append(
-                            Component.literal(" + $expDmgStr")
-                                .withStyle(ChatFormatting.AQUA).withStyle(ChatFormatting.BOLD)
-                        )
+                    component =
+                        component
+                            .append(Component.empty().withStyle(ChatFormatting.RESET))
+                            .append(
+                                Component
+                                    .literal(" + $expDmgStr")
+                                    .withStyle(ChatFormatting.AQUA)
+                                    .withStyle(ChatFormatting.BOLD),
+                            )
                 }
                 return component
             } else {

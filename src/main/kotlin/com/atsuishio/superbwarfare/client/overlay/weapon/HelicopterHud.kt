@@ -21,6 +21,9 @@ import com.atsuishio.superbwarfare.tools.worldToScreen
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -30,9 +33,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import org.joml.Math
 
 @Environment(EnvType.CLIENT)
@@ -76,12 +76,16 @@ object HelicopterHud {
         if (player == vehicle.firstPassenger) {
             val shootPos = vehicle.getShootPosForHud(player, 1f)
 
-            val result = player.level().clip(
-                ClipContext(
-                    shootPos, shootPos.add(vehicle.getShootDirectionForHud(player, 1f).scale(512.0)),
-                    ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, player
+            val result =
+                player.level().clip(
+                    ClipContext(
+                        shootPos,
+                        shootPos.add(vehicle.getShootDirectionForHud(player, 1f).scale(512.0)),
+                        ClipContext.Block.VISUAL,
+                        ClipContext.Fluid.NONE,
+                        player,
+                    ),
                 )
-            )
             val hitPos = result.location
 
             dis = shootPos.distanceTo(hitPos)
@@ -100,7 +104,7 @@ object HelicopterHud {
         guiGraphics: GuiGraphics,
         partialTick: Float,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         val mc = mc
         val poseStack = guiGraphics.pose()
@@ -124,7 +128,7 @@ object HelicopterHud {
                     mc.font,
                     screenWidth,
                     screenHeight,
-                    color
+                    color,
                 )
 
                 RenderSystem.disableDepthTest()
@@ -135,7 +139,7 @@ object HelicopterHud {
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                     GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ZERO
+                    GlStateManager.DestFactor.ZERO,
                 )
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -153,7 +157,7 @@ object HelicopterHud {
                     (screenWidth + addW).toFloat(),
                     (screenHeight + addH).toFloat(),
                     (screenWidth + addW).toFloat(),
-                    (screenHeight + addH).toFloat()
+                    (screenHeight + addH).toFloat(),
                 )
                 RenderHelper.preciseBlitWithColor(
                     guiGraphics,
@@ -166,7 +170,7 @@ object HelicopterHud {
                     1f,
                     128f,
                     1f,
-                    color
+                    color,
                 )
 
                 // 指南针
@@ -175,14 +179,18 @@ object HelicopterHud {
                     COMPASS,
                     screenWidth.toFloat() / 2 - 128,
                     10f,
-                    128 - (64f / 45 * VehicleVecUtils.getYRotFromVector(Vec3(mc.gameRenderer.mainCamera.lookVector))
-                        .toFloat()),
+                    128 - (
+                        64f / 45 *
+                            VehicleVecUtils
+                                .getYRotFromVector(Vec3(mc.gameRenderer.mainCamera.lookVector))
+                                .toFloat()
+                    ),
                     0f,
                     256f,
                     16f,
                     512f,
                     16f,
-                    color
+                    color,
                 )
                 RenderHelper.preciseBlitWithColor(
                     guiGraphics,
@@ -195,7 +203,7 @@ object HelicopterHud {
                     16f,
                     16f,
                     16f,
-                    color
+                    color,
                 )
 
                 // 时速
@@ -204,17 +212,21 @@ object HelicopterHud {
                     Component.literal(
                         format0D(
                             vehicle.absoluteSpeed * 72,
-                            " km/h"
-                        )
+                            " km/h",
+                        ),
                     ),
                     screenWidth / 2 + 160,
                     screenHeight / 2 - 48,
                     color,
-                    false
+                    false,
                 )
                 guiGraphics.drawString(
-                    Minecraft.getInstance().font, Component.literal(format0D(vehicle.y, " m")),
-                    screenWidth / 2 + 160, screenHeight / 2 - 39, color, false
+                    Minecraft.getInstance().font,
+                    Component.literal(format0D(vehicle.y, " m")),
+                    screenWidth / 2 + 160,
+                    screenHeight / 2 - 39,
+                    color,
+                    false,
                 )
 
                 // 低电量警告
@@ -223,16 +235,18 @@ object HelicopterHud {
                 // 测距
                 var lookAtEntity = false
 
-                val result = player.level().clip(
-                    ClipContext(
-                        vehicle.getShootPosForHud(player, partialTick),
-                        vehicle.getShootPosForHud(player, partialTick)
-                            .add(vehicle.getShootDirectionForHud(player, partialTick).scale(512.0)),
-                        ClipContext.Block.VISUAL,
-                        ClipContext.Fluid.NONE,
-                        player
+                val result =
+                    player.level().clip(
+                        ClipContext(
+                            vehicle.getShootPosForHud(player, partialTick),
+                            vehicle
+                                .getShootPosForHud(player, partialTick)
+                                .add(vehicle.getShootDirectionForHud(player, partialTick).scale(512.0)),
+                            ClipContext.Block.VISUAL,
+                            ClipContext.Fluid.NONE,
+                            player,
+                        ),
                     )
-                )
                 val hitPos = result.getLocation()
 
                 val blockRange = player.getEyePosition(1f).distanceTo(hitPos)
@@ -252,7 +266,7 @@ object HelicopterHud {
                         screenWidth / 2 - width / 2,
                         screenHeight - 53,
                         color,
-                        false
+                        false,
                     )
                 } else {
                     if (blockRange > 500) {
@@ -263,7 +277,7 @@ object HelicopterHud {
                             screenWidth / 2 - width / 2,
                             screenHeight - 53,
                             color,
-                            false
+                            false,
                         )
                     } else {
                         val width = Minecraft.getInstance().font.width(format0D(blockRange, " m"))
@@ -273,7 +287,7 @@ object HelicopterHud {
                             screenWidth / 2 - width / 2,
                             screenHeight - 53,
                             color,
-                            false
+                            false,
                         )
                     }
                 }
@@ -288,7 +302,7 @@ object HelicopterHud {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -314,13 +328,17 @@ object HelicopterHud {
                 RenderHelper.preciseBlitWithColor(guiGraphics, HELI_BASE, k, l, 0f, 0f, i, j, i, j, color)
 
                 val diffY = -Mth.lerp(partialTick, vehicle.turretYRotO, vehicle.turretYRot) * 0.3f
-                val diffX = (Mth.wrapDegrees(
-                    -getXRotFromVector(vehicle.getBarrelVector(partialTick)) - Mth.lerp(
-                        partialTick,
-                        vehicle.xRotO,
-                        vehicle.xRot
-                    )
-                ) * 0.072f).toFloat()
+                val diffX =
+                    (
+                        Mth.wrapDegrees(
+                            -getXRotFromVector(vehicle.getBarrelVector(partialTick)) -
+                                Mth.lerp(
+                                    partialTick,
+                                    vehicle.xRotO,
+                                    vehicle.xRot,
+                                ),
+                        ) * 0.072f
+                    ).toFloat()
                 RenderHelper.preciseBlitWithColor(
                     guiGraphics,
                     HELI_DRIVER_ANGLE,
@@ -332,7 +350,7 @@ object HelicopterHud {
                     j,
                     i,
                     j,
-                    color
+                    color,
                 )
 
                 RenderHelper.preciseBlitWithColor(
@@ -346,7 +364,7 @@ object HelicopterHud {
                     16f,
                     512f,
                     16f,
-                    color
+                    color,
                 )
 
                 poseStack.pushPose()
@@ -354,7 +372,7 @@ object HelicopterHud {
                     Axis.ZP.rotationDegrees(-vehicle.getRoll(partialTick)),
                     screenWidth / 2f,
                     screenHeight / 2f,
-                    0f
+                    0f,
                 )
                 val pitch = vehicle.getPitch(partialTick)
                 RenderHelper.preciseBlitWithColor(
@@ -368,7 +386,7 @@ object HelicopterHud {
                     256f,
                     288f,
                     1701f,
-                    color
+                    color,
                 )
                 poseStack.popPose()
 
@@ -377,7 +395,7 @@ object HelicopterHud {
                     Axis.ZP.rotationDegrees(vehicle.getRoll(partialTick)),
                     screenWidth / 2f,
                     screenHeight / 2f - 56,
-                    0f
+                    0f,
                 )
                 RenderHelper.preciseBlitWithColor(
                     guiGraphics,
@@ -390,7 +408,7 @@ object HelicopterHud {
                     16f,
                     16f,
                     16f,
-                    color
+                    color,
                 )
                 poseStack.popPose()
 
@@ -405,7 +423,7 @@ object HelicopterHud {
                     128f,
                     64f,
                     128f,
-                    color
+                    color,
                 )
 
                 val power = vehicle.power
@@ -421,7 +439,7 @@ object HelicopterHud {
                     lerpPower * 980,
                     4f,
                     lerpPower * 980,
-                    color
+                    color,
                 )
 
                 RenderHelper.preciseBlitWithColor(
@@ -435,7 +453,7 @@ object HelicopterHud {
                     8f,
                     8f,
                     8f,
-                    color
+                    color,
                 )
 
                 guiGraphics.drawString(
@@ -444,11 +462,15 @@ object HelicopterHud {
                     screenWidth / 2 + 146,
                     (screenHeight / 2f - 3 - Mth.clamp(lerpVy * 3, -24f, 24f) * 2.5).toInt(),
                     (if (lerpVy < -12) -65536 else color),
-                    false
+                    false,
                 )
                 guiGraphics.drawString(
-                    Minecraft.getInstance().font, Component.literal(format0D(vehicle.y)),
-                    screenWidth / 2 + 104, screenHeight / 2, color, false
+                    Minecraft.getInstance().font,
+                    Component.literal(format0D(vehicle.y)),
+                    screenWidth / 2 + 104,
+                    screenHeight / 2,
+                    color,
+                    false,
                 )
                 RenderHelper.preciseBlitWithColor(
                     guiGraphics,
@@ -461,11 +483,15 @@ object HelicopterHud {
                     18f,
                     50f,
                     18f,
-                    color
+                    color,
                 )
                 guiGraphics.drawString(
-                    Minecraft.getInstance().font, Component.literal(format0D(speed, "km/h")),
-                    screenWidth / 2 - 140, screenHeight / 2, color, false
+                    Minecraft.getInstance().font,
+                    Component.literal(format0D(speed, "km/h")),
+                    screenWidth / 2 - 140,
+                    screenHeight / 2,
+                    color,
+                    false,
                 )
 
                 DecoyOverlayHelper.renderThirdPersonDecoyInfo(
@@ -473,15 +499,19 @@ object HelicopterHud {
                     guiGraphics,
                     screenWidth / 2 - 160,
                     screenHeight / 2 - 50,
-                    color
+                    color,
                 )
 
                 val component = vehicle.firstPersonAmmoComponent(data, player)
 
                 val heat = vehicle.getWeaponHeat(player)
                 guiGraphics.drawString(
-                    mc.font, component, screenWidth / 2 - 160, screenHeight / 2 - 59,
-                    getGradientColor(color, 0xFF0000, heat, 2), false
+                    mc.font,
+                    component,
+                    screenWidth / 2 - 160,
+                    screenHeight / 2 - 59,
+                    getGradientColor(color, 0xFF0000, heat, 2),
+                    false,
                 )
 
                 renderEnergyInfo(vehicle, guiGraphics, screenWidth, screenHeight, mc.font)
@@ -497,12 +527,12 @@ object HelicopterHud {
                     16f,
                     16f,
                     16f,
-                    color
+                    color,
                 )
                 renderKillIndicatorDynamic(
                     guiGraphics,
                     x - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
                 )
             } else if (pos.canBeSeen()) {
                 mouseX = Mth.lerp(0.1f * partialTick, mouseX, ClientMouseHandler.lerpSpeedX.toFloat())
@@ -528,7 +558,7 @@ object HelicopterHud {
                         0.5f,
                         0.5f,
                         0.5f,
-                        -1
+                        -1,
                     )
                     i += 3
                 }
@@ -545,7 +575,7 @@ object HelicopterHud {
                     96f,
                     192f,
                     486f,
-                    -1
+                    -1,
                 )
 
                 RenderHelper.preciseBlitWithColor(
@@ -559,7 +589,7 @@ object HelicopterHud {
                     96f,
                     96f,
                     96f,
-                    -1
+                    -1,
                 )
 
                 poseStack.pushPose()
@@ -568,7 +598,7 @@ object HelicopterHud {
                 renderKillIndicatorDynamic(
                     guiGraphics,
                     x - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
                 )
 
                 //
@@ -581,7 +611,7 @@ object HelicopterHud {
                     -42,
                     -9,
                     -1,
-                    false
+                    false,
                 )
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
@@ -589,7 +619,7 @@ object HelicopterHud {
                     -42,
                     2,
                     -1,
-                    false
+                    false,
                 )
 
                 poseStack.popPose()
@@ -608,7 +638,7 @@ object HelicopterHud {
                     -60,
                     -52,
                     -1,
-                    false
+                    false,
                 )
 
                 val component = Component.literal(format0D(lerpVy.toDouble()) + "m/s")

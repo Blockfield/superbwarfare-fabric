@@ -38,16 +38,15 @@ object ClothConfigHelper {
     fun registerScreen() {
     }
 
-    fun getConfigScreen(parent: Screen?): Screen {
-        return configBuilder.setParentScreen(parent).build()
-    }
+    fun getConfigScreen(parent: Screen?): Screen = configBuilder.setParentScreen(parent).build()
 
-    fun <T : Any> setAndSave(spec: ModConfigSpec.ConfigValue<T>, value: T) {
+    fun <T : Any> setAndSave(
+        spec: ModConfigSpec.ConfigValue<T>,
+        value: T,
+    ) {
         spec.set(value)
         spec.save()
     }
 
-    fun <T : Any> save(spec: ModConfigSpec.ConfigValue<T>): Consumer<T> {
-        return Consumer { value -> setAndSave(spec, value) }
-    }
+    fun <T : Any> save(spec: ModConfigSpec.ConfigValue<T>): Consumer<T> = Consumer { value -> setAndSave(spec, value) }
 }

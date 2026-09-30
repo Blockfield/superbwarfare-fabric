@@ -20,16 +20,21 @@ import net.minecraft.world.level.block.state.BlockState
 
 @Suppress("OVERRIDE_DEPRECATION")
 open class BiogasGeneratorBlock :
-    BaseEntityBlock(Properties.of().sound(SoundType.METAL).strength(3.0f).requiresCorrectToolForDrops()) {
-
+    BaseEntityBlock(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .requiresCorrectToolForDrops(),
+    ) {
     override fun appendHoverText(
         stack: ItemStack,
         context: Item.TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.biogas_generator").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.biogas_generator").withStyle(ChatFormatting.GRAY),
         )
     }
 
@@ -37,23 +42,23 @@ open class BiogasGeneratorBlock :
 
     override fun codec(): MapCodec<out BaseEntityBlock> = codec
 
-    override fun getRenderShape(pState: BlockState): RenderShape {
-        return RenderShape.MODEL
-    }
+    override fun getRenderShape(pState: BlockState): RenderShape = RenderShape.MODEL
 
-    override fun newBlockEntity(pPos: BlockPos, pState: BlockState): BlockEntity? {
-        return BiogasGeneratorBlockEntity(pPos, pState)
-    }
+    override fun newBlockEntity(
+        pPos: BlockPos,
+        pState: BlockState,
+    ): BlockEntity? = BiogasGeneratorBlockEntity(pPos, pState)
 
     override fun <T : BlockEntity?> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T?>
+        pBlockEntityType: BlockEntityType<T?>,
     ): BlockEntityTicker<T?>? {
         if (!pLevel.isClientSide) {
             return createTickerHelper(
-                pBlockEntityType, ModBlockEntities.BIOGAS_GENERATOR.get(),
-                BiogasGeneratorBlockEntity::serverTick
+                pBlockEntityType,
+                ModBlockEntities.BIOGAS_GENERATOR.get(),
+                BiogasGeneratorBlockEntity::serverTick,
             )
         }
         return null

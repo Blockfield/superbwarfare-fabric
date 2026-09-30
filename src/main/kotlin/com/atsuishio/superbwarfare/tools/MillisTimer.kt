@@ -11,9 +11,7 @@ class MillisTimer {
         }
     }
 
-    fun started(): Boolean {
-        return started
-    }
+    fun started(): Boolean = started
 
     fun stop() {
         started = false

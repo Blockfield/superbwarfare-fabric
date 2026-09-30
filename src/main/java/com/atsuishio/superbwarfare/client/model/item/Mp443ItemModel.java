@@ -5,17 +5,20 @@ import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.handgun.Mp443Item;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class Mp443ItemModel extends CustomGunModel<Mp443Item> {
 
     @Override
-    public void setCustomAnimations(Mp443Item animatable, long instanceId, AnimationState<Mp443Item> animationState) {
+    public void setCustomAnimations(
+            Mp443Item animatable, long instanceId, AnimationState<Mp443Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -37,7 +40,8 @@ public class Mp443ItemModel extends CustomGunModel<Mp443Item> {
 
         GeoBone body = getAnimationProcessor().getBone("gun");
 
-        ClientEventHandler.handleShootAnimation(body, 1.25f, -2f, 1.35f, 2.5f, 1.3f, 1f, 0.2f, 1.2f);
+        ClientEventHandler.handleShootAnimation(
+                body, 1.25f, -2f, 1.35f, 2.5f, 1.3f, 1f, 0.2f, 1.2f);
 
         CrossHairOverlay.gunRot = body.getRotZ();
         hammer.setRotX((120 * Mth.DEG_TO_RAD * (float) fp));
@@ -69,7 +73,10 @@ public class Mp443ItemModel extends CustomGunModel<Mp443Item> {
             camera.setRotZ(numR * camera.getRotZ());
         }
 
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 0.7f, 1f);
 
         GeoBone shell = getAnimationProcessor().getBone("shell");

@@ -17,9 +17,10 @@ object DroneControlEvents : ModInitializer {
     override fun onInitialize() {
         ServerEntityEvents.ENTITY_LOAD.register { entity, world ->
             if (entity is DroneEntity) {
-                loaded.getOrPut(world) {
-                    Collections.newSetFromMap(IdentityHashMap<DroneEntity, Boolean>())
-                }.add(entity)
+                loaded
+                    .getOrPut(world) {
+                        Collections.newSetFromMap(IdentityHashMap<DroneEntity, Boolean>())
+                    }.add(entity)
                 // Inputs saved before an unload/restart must not replay when the entity loads.
                 DroneControlAccess.resetInput(entity)
             }

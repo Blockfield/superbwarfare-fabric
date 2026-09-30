@@ -8,7 +8,14 @@ import net.minecraft.world.level.Level
 class TestServer {
     val players = mutableMapOf<String, Player>()
 }
-class ServerLevel(val server: TestServer) : Level()
-class ServerPlayer(world: Level, id: String) : Player(world, id) {
+
+class ServerLevel(
+    val server: TestServer,
+) : Level()
+
+class ServerPlayer(
+    world: Level,
+    id: String,
+) : Player(world, id) {
     var resetPackets = 0
 }

@@ -10,14 +10,14 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 import java.util.*
 
-open class WireGuideMissileEntity(type: EntityType<out WireGuideMissileEntity>, level: Level) :
-    MissileProjectile(type, level), BasicGeoProjectileEntity {
-
+open class WireGuideMissileEntity(
+    type: EntityType<out WireGuideMissileEntity>,
+    level: Level,
+) : MissileProjectile(type, level),
+    BasicGeoProjectileEntity {
     var launcherVehicleUUID: UUID? = null
 
-    override fun getDefaultItem(): Item {
-        return ModItems.MEDIUM_ANTI_GROUND_MISSILE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.MEDIUM_ANTI_GROUND_MISSILE.get()
 
     override fun tick() {
         super.tick()
@@ -31,8 +31,8 @@ open class WireGuideMissileEntity(type: EntityType<out WireGuideMissileEntity>, 
 
             if (launcherVehicleUUID == vehicle.uuid) {
                 val lookVec =
-                    if ((vehicle.vehicleType == VehicleType.AIRPLANE || vehicle.vehicleType == VehicleType.HELICOPTER)
-                        && owner == vehicle.getFirstPassenger()
+                    if ((vehicle.vehicleType == VehicleType.AIRPLANE || vehicle.vehicleType == VehicleType.HELICOPTER) &&
+                        owner == vehicle.getFirstPassenger()
                     ) {
                         vehicle.getViewVector(1f).scale(1.6)
                     } else {
@@ -46,13 +46,9 @@ open class WireGuideMissileEntity(type: EntityType<out WireGuideMissileEntity>, 
         }
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.4f
-    }
+    override fun getVolume(): Float = 0.4f
 
     fun setLauncherVehicle(uuid: UUID?) {
         this.launcherVehicleUUID = uuid

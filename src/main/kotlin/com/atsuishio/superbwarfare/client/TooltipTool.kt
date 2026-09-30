@@ -1,14 +1,17 @@
 package com.atsuishio.superbwarfare.client
 
+import com.atsuishio.superbwarfare.client.boundKey
 import com.atsuishio.superbwarfare.init.ModKeyMappings
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
-import com.atsuishio.superbwarfare.client.boundKey
 
 object TooltipTool {
     @JvmStatic
-    fun addHideText(tooltip: MutableList<Component>, text: Component) {
+    fun addHideText(
+        tooltip: MutableList<Component>,
+        text: Component,
+    ) {
         if (Screen.hasShiftDown()) {
             tooltip += text
         }
@@ -16,16 +19,20 @@ object TooltipTool {
 
     @JvmStatic
     fun addDevelopingText(tooltip: MutableList<Component>) {
-        tooltip += Component.translatable("des.superbwarfare.developing")
-            .withStyle(ChatFormatting.LIGHT_PURPLE)
-            .withStyle(ChatFormatting.BOLD)
+        tooltip +=
+            Component
+                .translatable("des.superbwarfare.developing")
+                .withStyle(ChatFormatting.LIGHT_PURPLE)
+                .withStyle(ChatFormatting.BOLD)
     }
 
     @JvmStatic
     fun addScreenProviderText(tooltip: MutableList<Component>) {
-        tooltip += Component.translatable(
-            "des.superbwarfare.item_screen_provider",
-            "[${ModKeyMappings.EDIT_MODE.boundKey.displayName.string}]"
-        ).withStyle(ChatFormatting.AQUA)
+        tooltip +=
+            Component
+                .translatable(
+                    "des.superbwarfare.item_screen_provider",
+                    "[${ModKeyMappings.EDIT_MODE.boundKey.displayName.string}]",
+                ).withStyle(ChatFormatting.AQUA)
     }
 }

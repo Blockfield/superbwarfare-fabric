@@ -9,7 +9,9 @@ import com.atsuishio.superbwarfare.tools.EntityFindUtil
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RadarSetTargetMessage(val target: SerializedUUID) : ServerPacketPayload() {
+data class RadarSetTargetMessage(
+    val target: SerializedUUID,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
 
@@ -18,7 +20,8 @@ data class RadarSetTargetMessage(val target: SerializedUUID) : ServerPacketPaylo
         val entities = EntityFindUtil.getEntities(player.level()) ?: return
 
         menu.selfPos.ifPresent {
-            entities.getAll()
+            entities
+                .getAll()
                 .asSequence()
                 .filterIsInstance<AutoAimableEntity>()
                 .filter { it.getOwner() === player && it.distanceTo(player) <= 24 }

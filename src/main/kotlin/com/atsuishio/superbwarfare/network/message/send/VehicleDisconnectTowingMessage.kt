@@ -10,7 +10,6 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
  * 由客户端在检测到 0.5s 内双击断开牵引键时发送。
  */
 object VehicleDisconnectTowingMessage : ServerPacketPayload() {
-
     override fun PayloadContext.handler() {
         val player = sender()
         val vehicle = player.vehicle as? VehicleEntity ?: return

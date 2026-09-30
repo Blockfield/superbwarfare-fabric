@@ -7,8 +7,9 @@ import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
 import net.minecraft.world.entity.EntityType
 
-class VehicleSkin private constructor(val vehicleId: String) {
-
+class VehicleSkin private constructor(
+    val vehicleId: String,
+) {
     private var cache: VehicleSkinData? = null
 
     fun compute(): VehicleSkinData {
@@ -35,42 +36,37 @@ class VehicleSkin private constructor(val vehicleId: String) {
         }
 
         @JvmStatic
-        fun getSkin(entityType: EntityType<*>, skinId: String): SkinInfo? {
+        fun getSkin(
+            entityType: EntityType<*>,
+            skinId: String,
+        ): SkinInfo? {
             if (skinId.isBlank()) return null
             return from(entityType).getSkin(skinId)
         }
 
         @JvmStatic
-        fun getSkins(entityType: EntityType<*>): VehicleSkinData {
-            return from(entityType).compute()
-        }
+        fun getSkins(entityType: EntityType<*>): VehicleSkinData = from(entityType).compute()
 
         @JvmStatic
-        fun getSkins(vehicleId: String): VehicleSkinData {
-            return from(vehicleId).compute()
-        }
+        fun getSkins(vehicleId: String): VehicleSkinData = from(vehicleId).compute()
 
         @JvmStatic
-        fun from(entityType: EntityType<*>): VehicleSkin {
-            return from(EntityType.getKey(entityType).toString())
-        }
+        fun from(entityType: EntityType<*>): VehicleSkin = from(EntityType.getKey(entityType).toString())
 
         @JvmStatic
-        fun from(entity: VehicleEntity): VehicleSkin {
-            return from(entity.type)
-        }
+        fun from(entity: VehicleEntity): VehicleSkin = from(entity.type)
 
         @JvmField
-        val DATA_CACHE: LoadingCache<String, VehicleSkin> = CacheBuilder.newBuilder()
-            .build(object : CacheLoader<String, VehicleSkin>() {
-                override fun load(id: String): VehicleSkin {
-                    return VehicleSkin(id)
-                }
-            })
+        val DATA_CACHE: LoadingCache<String, VehicleSkin> =
+            CacheBuilder
+                .newBuilder()
+                .build(
+                    object : CacheLoader<String, VehicleSkin>() {
+                        override fun load(id: String): VehicleSkin = VehicleSkin(id)
+                    },
+                )
 
         @JvmStatic
-        fun from(vehicleId: String): VehicleSkin {
-            return DATA_CACHE.getUnchecked(vehicleId)
-        }
+        fun from(vehicleId: String): VehicleSkin = DATA_CACHE.getUnchecked(vehicleId)
     }
 }

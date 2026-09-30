@@ -6,6 +6,9 @@ import com.atsuishio.superbwarfare.client.renderer.item.VehicleAssemblingTableBl
 import com.atsuishio.superbwarfare.init.ModBlocks
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -14,14 +17,13 @@ import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.shapes.CollisionContext
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 
 class VehicleAssemblingTableBlockItem : BlockItem(ModBlocks.VEHICLE_ASSEMBLING_TABLE.get(), Properties()) {
-
     // 多方块额外碰撞检测
-    override fun canPlace(context: BlockPlaceContext, state: BlockState): Boolean {
+    override fun canPlace(
+        context: BlockPlaceContext,
+        state: BlockState,
+    ): Boolean {
         val facing = state.getValue(VehicleAssemblingTableBlock.FACING)
         val initialPos = findInitialPos(context, context.clickedPos, facing) ?: return false
 
@@ -53,13 +55,16 @@ class VehicleAssemblingTableBlockItem : BlockItem(ModBlocks.VEHICLE_ASSEMBLING_T
                             VehicleAssemblingTableBlockItemRenderer(mc.blockEntityRenderDispatcher, mc.entityModels)
                     }
                     renderer!!.renderByItem(stack, mode, poseStack, buffer, light, overlay)
-                }
+                },
             )
         }
 
-
         // 根据当前状态尝试找到合适的初始放置位置
-        fun findInitialPos(context: BlockPlaceContext, currentPos: BlockPos, facing: Direction): BlockPos? {
+        fun findInitialPos(
+            context: BlockPlaceContext,
+            currentPos: BlockPos,
+            facing: Direction,
+        ): BlockPos? {
             var availablePart: BlockPart? = null
             for (part in BlockPart.entries) {
                 val placePos = part.relativeNegative(currentPos, facing)
@@ -73,7 +78,11 @@ class VehicleAssemblingTableBlockItem : BlockItem(ModBlocks.VEHICLE_ASSEMBLING_T
             return availablePart.relativeNegative(currentPos, facing)
         }
 
-        fun canPlace(context: BlockPlaceContext, pos: BlockPos, direction: Direction): Boolean {
+        fun canPlace(
+            context: BlockPlaceContext,
+            pos: BlockPos,
+            direction: Direction,
+        ): Boolean {
             for (part in BlockPart.entries) {
                 val detectPos = part.relative(pos, direction)
                 if (!context.level.getBlockState(detectPos).canBeReplaced(context)) {
@@ -83,7 +92,12 @@ class VehicleAssemblingTableBlockItem : BlockItem(ModBlocks.VEHICLE_ASSEMBLING_T
             return true
         }
 
-        fun canPlace(level: Level, pos: BlockPos, direction: Direction, skipPos: BlockPos?): Boolean {
+        fun canPlace(
+            level: Level,
+            pos: BlockPos,
+            direction: Direction,
+            skipPos: BlockPos?,
+        ): Boolean {
             for (part in BlockPart.entries) {
                 val detectPos = part.relative(pos, direction)
                 if (detectPos == skipPos) continue

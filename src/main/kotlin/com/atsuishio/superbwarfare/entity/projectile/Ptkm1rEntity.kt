@@ -6,6 +6,7 @@ import com.atsuishio.superbwarfare.config.server.ExplosionConfig
 import com.atsuishio.superbwarfare.entity.living.SenpaiEntity
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier.Companion.createDefaultModifier
+import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModEntities
 import com.atsuishio.superbwarfare.init.ModItems
@@ -35,10 +36,11 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import java.util.*
 
-open class Ptkm1rEntity : Entity, OwnableEntity {
+open class Ptkm1rEntity :
+    Entity,
+    OwnableEntity {
     var aimingTime: Int = 0
     var target: String? = "none"
     open val animationInstance: Ptkm1rAnimationInstance? =
@@ -62,11 +64,12 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
         }
     }
 
-    override fun isPickable(): Boolean {
-        return !this.isRemoved
-    }
+    override fun isPickable(): Boolean = !this.isRemoved
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         val damage = DAMAGE_MODIFIER.compute(this, source, amount)
         if (source.entity != null) {
             this.entityData.set(LAST_ATTACKER_UUID, source.entity!!.getStringUUID())
@@ -79,13 +82,9 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
         this.entityData.set(OWNER_UUID, Optional.ofNullable(pUuid))
     }
 
-    override fun getOwnerUUID(): UUID? {
-        return this.entityData.get(OWNER_UUID).orElse(null)
-    }
+    override fun getOwnerUUID(): UUID? = this.entityData.get(OWNER_UUID).orElse(null)
 
-    fun isOwnedBy(pEntity: LivingEntity?): Boolean {
-        return pEntity === this.owner
-    }
+    fun isOwnedBy(pEntity: LivingEntity?): Boolean = pEntity === this.owner
 
     public override fun addAdditionalSaveData(compound: CompoundTag) {
         compound.putFloat("Health", this.entityData.get(HEALTH))
@@ -115,15 +114,16 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
             val s = compound.getString("Owner")
             val server = this.server
 
-            uuid = if (server == null) {
-                try {
-                    UUID.fromString(s)
-                } catch (_: Exception) {
-                    null
+            uuid =
+                if (server == null) {
+                    try {
+                        UUID.fromString(s)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } else {
+                    OldUsersConverter.convertMobOwnerIfNecessary(server, s)
                 }
-            } else {
-                OldUsersConverter.convertMobOwnerIfNecessary(server, s)
-            }
         }
 
         if (uuid != null) {
@@ -134,7 +134,10 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
         }
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (this.isOwnedBy(player) && player.isShiftKeyDown) {
             if (!this.level().isClientSide()) {
                 this.discard()
@@ -157,7 +160,7 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
             this.moveTowardsClosestSpace(
                 this.x,
                 (this.boundingBox.minY + this.boundingBox.maxY) / 2.0,
-                this.z
+                this.z,
             )
         }
 
@@ -165,7 +168,10 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
         var f = 0.98f
         if (this.onGround()) {
             val pos = this.blockPosBelowThatAffectsMyMovement
-            f = this.level().getBlockState(pos).block.friction * 0.98f
+            f = this
+                .level()
+                .getBlockState(pos)
+                .block.friction * 0.98f
         }
 
         this.deltaMovement = this.deltaMovement.multiply(f.toDouble(), 0.98, f.toDouble())
@@ -184,7 +190,7 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
                 ModSounds.PTKM_1R_DEPLOY.get(),
                 SoundSource.PLAYERS,
                 1f,
-                1f
+                1f,
             )
         }
 
@@ -198,18 +204,23 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
     open fun findTarget() {
         val range = 40
         if (target.equals("none") && tickCount % 10 == 0) {
-            val list = SeekTool.Builder(this)
-                .withinRange(range.toDouble())
-                .build()
+            val list =
+                SeekTool
+                    .Builder(this)
+                    .withinRange(range.toDouble())
+                    .build()
             for (entity in list) {
                 val condition =
-                    entity.onGround()
-                            && this.owner !== entity
-                            && !(entity is Player && (entity.isCreative || entity.isSpectator))
-                            && !entity.isShiftKeyDown
-                            && ((entity.boundingBox.size > 1.5 || entity is VehicleEntity || entity is SenpaiEntity) && entity.deltaMovement.lengthSqr() > 0.009)
-                            && this.owner?.vehicle !== entity
-                            && (!ExplosionConfig.FRIENDLY_MINES.get() || !SeekTool.IS_FRIENDLY.test(this.owner, entity))
+                    entity.onGround() &&
+                        this.owner !== entity &&
+                        !(entity is Player && (entity.isCreative || entity.isSpectator)) &&
+                        !entity.isShiftKeyDown &&
+                        (
+                            (entity.boundingBox.size > 1.5 || entity is VehicleEntity || entity is SenpaiEntity) &&
+                                entity.deltaMovement.lengthSqr() > 0.009
+                        ) &&
+                        this.owner?.vehicle !== entity &&
+                        (!ExplosionConfig.FRIENDLY_MINES.get() || !SeekTool.IS_FRIENDLY.test(this.owner, entity))
                 if (!condition) continue
 
                 target = entity.stringUUID
@@ -250,7 +261,10 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
         }
     }
 
-    private fun shoot(entity: Entity?, distance: Double) {
+    private fun shoot(
+        entity: Entity?,
+        distance: Double,
+    ) {
         val level = this.level()
         if (level is ServerLevel) {
             val ptkmProjectile = PtkmProjectileEntity(this.owner, level)
@@ -272,7 +286,11 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
                     position().x + i * lookAngle.x,
                     eyePosition.y + i * lookAngle.y,
                     position().z + i * lookAngle.z,
-                    Mth.clamp(count--, 1, 3), 0.15, 0.15, 0.15, 0.0025
+                    Mth.clamp(count--, 1, 3),
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.0025,
                 )
                 i += .5f
             }
@@ -292,7 +310,8 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
     }
 
     private fun triggerExplode() {
-        CustomExplosion.Builder(this)
+        CustomExplosion
+            .Builder(this)
             .damage(ExplosionConfig.PTKM_1R_EXPLOSION_DAMAGE.get().toFloat())
             .radius(ExplosionConfig.PTKM_1R_EXPLOSION_RADIUS.get().toFloat())
             .attacker(this.owner)
@@ -320,10 +339,11 @@ open class Ptkm1rEntity : Entity, OwnableEntity {
         protected val TARGET_UUID: EntityDataAccessor<String> =
             SynchedEntityData.defineId(Ptkm1rEntity::class.java, EntityDataSerializers.STRING)
 
-        private val DAMAGE_MODIFIER = createDefaultModifier()
-            .multiply(0.02f, ModDamageTypes.CUSTOM_EXPLOSION)
-            .multiply(0.02f, ModDamageTypes.MINE)
-            .multiply(0.02f, ModDamageTypes.PROJECTILE_EXPLOSION)
-            .multiply(0.02f, DamageTypes.EXPLOSION)
+        private val DAMAGE_MODIFIER =
+            createDefaultModifier()
+                .multiply(0.02f, ModDamageTypes.CUSTOM_EXPLOSION)
+                .multiply(0.02f, ModDamageTypes.MINE)
+                .multiply(0.02f, ModDamageTypes.PROJECTILE_EXPLOSION)
+                .multiply(0.02f, DamageTypes.EXPLOSION)
     }
 }

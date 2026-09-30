@@ -14,7 +14,9 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.util.GeckoLibUtil
 
-class BlueprintResearchTableBlockItem : BlockItem(ModBlocks.BLUEPRINT_RESEARCH_TABLE.get(), Properties()), GeoItem {
+class BlueprintResearchTableBlockItem :
+    BlockItem(ModBlocks.BLUEPRINT_RESEARCH_TABLE.get(), Properties()),
+    GeoItem {
     private val cache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
 
     override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar) {}
@@ -35,7 +37,7 @@ class BlueprintResearchTableBlockItem : BlockItem(ModBlocks.BLUEPRINT_RESEARCH_T
                             BlueprintResearchingTableBlockItemRenderer(mc.blockEntityRenderDispatcher, mc.entityModels)
                     }
                     renderer!!.renderByItem(stack, mode, poseStack, buffer, light, overlay)
-                }
+                },
             )
         }
     }

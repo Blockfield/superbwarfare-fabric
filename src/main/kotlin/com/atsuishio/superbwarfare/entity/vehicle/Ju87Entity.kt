@@ -5,7 +5,10 @@ import net.minecraft.world.entity.EntityType
 import net.minecraft.world.level.Level
 import org.joml.Math
 
-open class Ju87Entity(type: EntityType<Ju87Entity>, world: Level) : VehicleEntity(type, world) {
+open class Ju87Entity(
+    type: EntityType<Ju87Entity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     override var turretYRot = 180f
     override var turretYRotO = 180f
 
@@ -27,7 +30,6 @@ open class Ju87Entity(type: EntityType<Ju87Entity>, world: Level) : VehicleEntit
                 smallPropeller += 360f
                 smallPropellerO = delta + smallPropeller
             }
-
         }
     }
 }

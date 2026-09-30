@@ -45,7 +45,11 @@ import net.minecraft.world.phys.Vec3
 import org.joml.Math
 import java.util.*
 
-open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(type, world), OwnableEntity {
+open class AutoAimableEntity(
+    type: EntityType<*>,
+    world: Level,
+) : VehicleEntity(type, world),
+    OwnableEntity {
     init {
         this.noCulling = true
     }
@@ -63,7 +67,10 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
     open val threatConfig: TowerAI.ThreatConfig
         get() = TowerAI.ThreatConfig()
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val stack = player.mainHandItem
         if (player.isCrouching && !isWreck && !this.locked && !stack.`is`(ModTags.Items.TOOLS_CROWBAR)) {
             if (this.optionalOwnerUUID.isEmpty) {
@@ -79,7 +86,8 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
                         player.onPos,
                         SoundEvents.ARROW_HIT_PLAYER,
                         SoundSource.PLAYERS,
-                        0.5f, 1f
+                        0.5f,
+                        1f,
                     )
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide())
@@ -95,7 +103,7 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
     override fun onCrowbarInteract(
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult? {
         if (!player.isShiftKeyDown || this.isWreck) return null
         if (this.ownerUUID != null && player.uuid != this.ownerUUID) return null
@@ -123,9 +131,7 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
         optionalOwnerUUID = Optional.ofNullable(pUuid)
     }
 
-    override fun getOwnerUUID(): UUID? {
-        return optionalOwnerUUID.orElse(null)
-    }
+    override fun getOwnerUUID(): UUID? = optionalOwnerUUID.orElse(null)
 
     override fun addAdditionalSaveData(compound: CompoundTag) {
         super.addAdditionalSaveData(compound)
@@ -148,15 +154,16 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
             val s = compound.getString("Owner")
             val server = this.server
 
-            uuid = if (server == null) {
-                try {
-                    UUID.fromString(s)
-                } catch (_: Exception) {
-                    null
+            uuid =
+                if (server == null) {
+                    try {
+                        UUID.fromString(s)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } else {
+                    OldUsersConverter.convertMobOwnerIfNecessary(server, s)
                 }
-            } else {
-                OldUsersConverter.convertMobOwnerIfNecessary(server, s)
-            }
         }
 
         if (uuid != null) {
@@ -272,17 +279,18 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
         val targetPos = target.boundingBox.center
         val targetVel = target.deltaMovement
 
-        val targetVec = if (projectileTypeStr == "ray") {
-            barrelRootPos.vectorTo(targetPos).normalize()
-        } else {
-            calculateFiringSolution(
-                barrelRootPos,
-                targetPos,
-                targetVel.scale(1.1 + random.nextFloat() * 0.2f),
-                getProjectileVelocity(weaponName).toDouble(),
-                getProjectileGravity(weaponName).toDouble()
-            )
-        }
+        val targetVec =
+            if (projectileTypeStr == "ray") {
+                barrelRootPos.vectorTo(targetPos).normalize()
+            } else {
+                calculateFiringSolution(
+                    barrelRootPos,
+                    targetPos,
+                    targetVel.scale(1.1 + random.nextFloat() * 0.2f),
+                    getProjectileVelocity(weaponName).toDouble(),
+                    getProjectileGravity(weaponName).toDouble(),
+                )
+            }
 
         if (laserScale == 0f) {
             turretAutoAimFromVector(targetVec)
@@ -312,19 +320,15 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
 
     @Deprecated(
         message = "Use TowerAI.TeamResolver.isHostile() instead",
-        replaceWith = ReplaceWith("TowerAI.TeamResolver.isHostile(this, entity)")
+        replaceWith = ReplaceWith("TowerAI.TeamResolver.isHostile(this, entity)"),
     )
-    open fun basicEnemyFilter(entity: Entity): Boolean {
-        return TowerAI.TeamResolver.isHostile(this, entity)
-    }
+    open fun basicEnemyFilter(entity: Entity): Boolean = TowerAI.TeamResolver.isHostile(this, entity)
 
     @Deprecated(
         message = "Use TowerAI.TeamResolver.isHostileProjectile() instead",
-        replaceWith = ReplaceWith("TowerAI.TeamResolver.isHostileProjectile(this, projectile)")
+        replaceWith = ReplaceWith("TowerAI.TeamResolver.isHostileProjectile(this, projectile)"),
     )
-    open fun basicEnemyProjectileFilter(projectile: Projectile): Boolean {
-        return TowerAI.TeamResolver.isHostileProjectile(this, projectile)
-    }
+    open fun basicEnemyProjectileFilter(projectile: Projectile): Boolean = TowerAI.TeamResolver.isHostileProjectile(this, projectile)
 
     /**
      * 判断具有威胁的弹射物。
@@ -333,9 +337,13 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
      */
     @Deprecated(
         message = "Use TowerAI.TargetValidator.isValidProjectileTarget() instead",
-        replaceWith = ReplaceWith("TowerAI.TargetValidator.isValidProjectileTarget(this, target as Projectile, pos)")
+        replaceWith = ReplaceWith("TowerAI.TargetValidator.isValidProjectileTarget(this, target as Projectile, pos)"),
     )
-    open fun isThreateningEntity(target: Entity, size: Double, pos: Vec3): Boolean {
+    open fun isThreateningEntity(
+        target: Entity,
+        size: Double,
+        pos: Vec3,
+    ): Boolean {
         if (target is SmallCannonShellEntity) return false
 
         if (!target.onGround() && target is Projectile && (target.bbWidth >= size || target.bbHeight >= size)) {
@@ -346,32 +354,53 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
     }
 
     // 判断载具和目标之间有无障碍物
-    open fun checkNoClip(target: Entity, pos: Vec3): Boolean {
-        return this.level().clip(
-            ClipContext(
-                pos, target.boundingBox.center,
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this
-            )
-        ).type != HitResult.Type.BLOCK
-    }
+    open fun checkNoClip(
+        target: Entity,
+        pos: Vec3,
+    ): Boolean =
+        this
+            .level()
+            .clip(
+                ClipContext(
+                    pos,
+                    target.boundingBox.center,
+                    ClipContext.Block.COLLIDER,
+                    ClipContext.Fluid.ANY,
+                    this,
+                ),
+            ).type != HitResult.Type.BLOCK
 
-    open fun rayShoot(living: LivingEntity?, target: Entity, gunData: GunData) {
+    open fun rayShoot(
+        living: LivingEntity?,
+        target: Entity,
+        gunData: GunData,
+    ) {
         val serverLevel = level() as ServerLevel
         ParticleTool.sendParticle(
             serverLevel,
             ParticleTypes.END_ROD,
-            target.x, target.eyeY, target.z,
+            target.x,
+            target.eyeY,
+            target.z,
             12,
-            0.0, 0.0, 0.0,
-            0.05, true
+            0.0,
+            0.0,
+            0.0,
+            0.05,
+            true,
         )
         ParticleTool.sendParticle(
             serverLevel,
             ParticleTypes.LAVA,
-            target.x, target.eyeY, target.z,
+            target.x,
+            target.eyeY,
+            target.z,
             4,
-            0.0, 0.0, 0.0,
-            0.15, true
+            0.0,
+            0.0,
+            0.0,
+            0.15,
+            true,
         )
 
         val pos = target.boundingBox.center
@@ -380,7 +409,7 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
 
         target.forceHurt(
             ModDamageTypes.causeLaserStaticDamage(this.level().registryAccess(), this, living),
-            gunData.get(GunProp.DAMAGE).toFloat()
+            gunData.get(GunProp.DAMAGE).toFloat(),
         )
         target.invulnerableTime = 0
 
@@ -408,20 +437,26 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
         this.consumeEnergy(gunData.get(GunProp.AMMO_COST_PER_SHOOT))
     }
 
-    fun findNearEntity(vec: Vec3, gunData: GunData, shooter: Entity?) {
+    fun findNearEntity(
+        vec: Vec3,
+        gunData: GunData,
+        shooter: Entity?,
+    ) {
         val serverLevel = level() as? ServerLevel ?: return
 
         val aoeDamage = gunData.get(GunProp.EXPLOSION_DAMAGE)
         val range = gunData.get(GunProp.EXPLOSION_RADIUS)
 
-        val entities = SeekTool.Builder(this)
-            .withinRange(vec, range)
-            .notItsVehicle()
-            .baseFilter()
-            .noVehicle()
-            .notFriendly()
-            .isNotMyOwner()
-            .build()
+        val entities =
+            SeekTool
+                .Builder(this)
+                .withinRange(vec, range)
+                .notItsVehicle()
+                .baseFilter()
+                .noVehicle()
+                .notFriendly()
+                .isNotMyOwner()
+                .build()
 
         for (e in entities) {
             val dis = vec.distanceTo(e.eyePosition)
@@ -440,7 +475,7 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
                     0.0,
                     0.0,
                     0.0,
-                    true
+                    true,
                 )
                 i += 0.1f
             }
@@ -456,11 +491,11 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
                 0.0,
                 0.0,
                 0.15,
-                true
+                true,
             )
             e.forceHurt(
                 ModDamageTypes.causeLaserDamage(this.level().registryAccess(), this, shooter),
-                (aoeDamage - Mth.clamp(dis / range, 0.0, 0.75) * aoeDamage).toFloat()
+                (aoeDamage - Mth.clamp(dis / range, 0.0, 0.75) * aoeDamage).toFloat(),
             )
 
             if (shooter is ServerPlayer) {
@@ -474,8 +509,8 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
                         shooter.z,
                         1f,
                         1f,
-                        shooter.level().random.nextLong()
-                    )
+                        shooter.level().random.nextLong(),
+                    ),
                 )
                 shooter.sendPacket(ClientIndicatorMessage(0, 5))
             }
@@ -483,7 +518,11 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
     }
 
     // TODO 自定义溅射类型（散射or爆炸）
-    private fun causeLaserExplode(vec3: Vec3, gunData: GunData, living: Entity?) {
+    private fun causeLaserExplode(
+        vec3: Vec3,
+        gunData: GunData,
+        living: Entity?,
+    ) {
         val radius = gunData.get(GunProp.EXPLOSION_RADIUS).toFloat()
 
         createCustomExplosion()
@@ -518,7 +557,12 @@ open class AutoAimableEntity(type: EntityType<*>, world: Level) : VehicleEntity(
             SynchedEntityData.defineId(AutoAimableEntity::class.java, EntityDataSerializers.STRING)
 
         @JvmStatic
-        fun canAim(pos: Vec3, target: Entity, minAngle: Double, maxAngle: Double): Boolean {
+        fun canAim(
+            pos: Vec3,
+            target: Entity,
+            minAngle: Double,
+            maxAngle: Double,
+        ): Boolean {
             val targetPos = target.boundingBox.center
             val toVec = pos.vectorTo(targetPos).normalize()
             val targetAngle = getXRotFromVector(toVec)

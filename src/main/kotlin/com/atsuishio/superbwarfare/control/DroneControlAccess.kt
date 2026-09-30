@@ -17,15 +17,22 @@ object DroneControlAccess {
         if (!stack.`is`(ModItems.MONITOR.get())) return null
         val tag = NBTTool.getTag(stack)
         if (!tag.getBoolean(MonitorItem.LINKED) || !tag.getBoolean(MonitorItem.USING)) return null
-        val drone = EntityFindUtil.findDrone(player.level(), tag.getString(MonitorItem.LINKED_DRONE))
-            ?: return null
+        val drone =
+            EntityFindUtil.findDrone(player.level(), tag.getString(MonitorItem.LINKED_DRONE))
+                ?: return null
         return drone.takeIf { canUse(player, it) }
     }
 
-    fun owns(player: Player, drone: DroneEntity): Boolean =
-        drone.entityData.get(DroneEntity.CONTROLLER) == player.getStringUUID()
+    fun owns(
+        player: Player,
+        drone: DroneEntity,
+    ): Boolean = drone.entityData.get(DroneEntity.CONTROLLER) == player.getStringUUID()
 
-    fun canUse(player: Player, drone: DroneEntity, requireUsing: Boolean = true): Boolean {
+    fun canUse(
+        player: Player,
+        drone: DroneEntity,
+        requireUsing: Boolean = true,
+    ): Boolean {
         val stack = player.mainHandItem
         val tag = NBTTool.getTag(stack)
         return DroneControlPolicy.allows(
@@ -42,8 +49,9 @@ object DroneControlAccess {
                 droneAlive = drone.isAlive && !drone.isRemoved,
                 sameWorld = player.level() === drone.level(),
                 distance = player.position().distanceTo(drone.position()),
-                maxDistance = drone.maxControlDistance
-            ), requireUsing
+                maxDistance = drone.maxControlDistance,
+            ),
+            requireUsing,
         )
     }
 
@@ -61,11 +69,18 @@ object DroneControlAccess {
      * advance it. Call once per VehicleMovementMessage/MouseMoveMessage/DroneFireMessage,
      * after resolve()/canUse() already confirmed live ownership.
      */
-    fun acceptsSequence(drone: DroneEntity, sessionId: String, sequence: Long): Boolean =
-        drone.acceptControlSequence(sessionId, sequence)
+    fun acceptsSequence(
+        drone: DroneEntity,
+        sessionId: String,
+        sequence: Long,
+    ): Boolean = drone.acceptControlSequence(sessionId, sequence)
 
     /** Only touches this owner's active main-hand monitor; dormant copies cannot stop another drone. */
-    fun stopMonitor(player: Player, drone: DroneEntity, notifyClient: Boolean = true) {
+    fun stopMonitor(
+        player: Player,
+        drone: DroneEntity,
+        notifyClient: Boolean = true,
+    ) {
         if (!owns(player, drone)) return
         val stack = player.mainHandItem
         if (!stack.`is`(ModItems.MONITOR.get())) return

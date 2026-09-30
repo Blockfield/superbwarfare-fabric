@@ -17,12 +17,12 @@ class BlueprintResearchTableMenu(
     containerId: Int,
     playerInventory: Inventory,
     private val container: Container,
-    private val containerData: ContainerData = SimpleContainerData(BlueprintResearchTableBlockEntity.MAX_DATA_COUNT)
+    private val containerData: ContainerData = SimpleContainerData(BlueprintResearchTableBlockEntity.MAX_DATA_COUNT),
 ) : AbstractContainerMenu(ModMenuTypes.BLUEPRINT_RESEARCH_TABLE.get(), containerId) {
     constructor(containerId: Int, playerInventory: Inventory) : this(
         containerId,
         playerInventory,
-        SimpleContainer(CONTAINER_SIZE)
+        SimpleContainer(CONTAINER_SIZE),
     )
 
     init {
@@ -45,8 +45,8 @@ class BlueprintResearchTableMenu(
                         playerInventory,
                         j + i * 9 + 9,
                         8 + j * 18,
-                        95 + i * 18
-                    )
+                        95 + i * 18,
+                    ),
                 )
             }
         }
@@ -57,15 +57,15 @@ class BlueprintResearchTableMenu(
                     playerInventory,
                     k,
                     8 + k * 18,
-                    153
-                )
+                    153,
+                ),
             )
         }
     }
 
     override fun quickMoveStack(
         player: Player,
-        index: Int
+        index: Int,
     ): ItemStack {
         var stack = ItemStack.EMPTY
         val slot = this.slots[index]
@@ -90,9 +90,7 @@ class BlueprintResearchTableMenu(
         return stack
     }
 
-    override fun stillValid(pPlayer: Player): Boolean {
-        return this.container.stillValid(pPlayer)
-    }
+    override fun stillValid(pPlayer: Player): Boolean = this.container.stillValid(pPlayer)
 
     fun getTick() = this.containerData.get(0)
 
@@ -118,15 +116,21 @@ class BlueprintResearchTableMenu(
         const val SLOT_OUTPUT = 5
     }
 
-    private class ResultSlot(container: Container, slot: Int, x: Int, y: Int) : Slot(container, slot, x, y) {
-        override fun mayPlace(pStack: ItemStack): Boolean {
-            return false
-        }
+    private class ResultSlot(
+        container: Container,
+        slot: Int,
+        x: Int,
+        y: Int,
+    ) : Slot(container, slot, x, y) {
+        override fun mayPlace(pStack: ItemStack): Boolean = false
     }
 
-    private class FuelSlot(container: Container, slot: Int, x: Int, y: Int) : Slot(container, slot, x, y) {
-        override fun mayPlace(pStack: ItemStack): Boolean {
-            return pStack.`is`(ModTags.Items.RESEARCH_FUEL)
-        }
+    private class FuelSlot(
+        container: Container,
+        slot: Int,
+        x: Int,
+        y: Int,
+    ) : Slot(container, slot, x, y) {
+        override fun mayPlace(pStack: ItemStack): Boolean = pStack.`is`(ModTags.Items.RESEARCH_FUEL)
     }
 }

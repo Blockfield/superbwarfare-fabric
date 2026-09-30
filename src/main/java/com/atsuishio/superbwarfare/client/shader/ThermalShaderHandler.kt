@@ -4,14 +4,14 @@ import com.atsuishio.superbwarfare.Mod.loc
 import com.mojang.blaze3d.pipeline.RenderTarget
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.PoseStack
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.PostChain
 import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.Entity
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 
 /**
  * Code based on YWZJ Team
@@ -49,9 +49,7 @@ class ThermalShaderHandler : ResourceManagerReloadListener {
             }
         }
 
-        fun isActive(): Boolean {
-            return isActive
-        }
+        fun isActive(): Boolean = isActive
 
         fun init() {
             WorldRenderEvents.AFTER_ENTITIES.register { onAfterEntities(it) }
@@ -79,12 +77,13 @@ class ThermalShaderHandler : ResourceManagerReloadListener {
         private fun ensureChain(mc: Minecraft): Boolean {
             if (thermalChain == null) {
                 try {
-                    thermalChain = PostChain(
-                        mc.textureManager,
-                        mc.resourceManager,
-                        mc.mainRenderTarget,
-                        THERMAL_EFFECT
-                    )
+                    thermalChain =
+                        PostChain(
+                            mc.textureManager,
+                            mc.resourceManager,
+                            mc.mainRenderTarget,
+                            THERMAL_EFFECT,
+                        )
                     thermalChain!!.resize(mc.window.width, mc.window.height)
                     lastWidth = mc.window.width
                     lastHeight = mc.window.height
@@ -103,7 +102,10 @@ class ThermalShaderHandler : ResourceManagerReloadListener {
             return true
         }
 
-        private fun prepareAndRenderEntities(poseStack: PoseStack, partialTick: Float) {
+        private fun prepareAndRenderEntities(
+            poseStack: PoseStack,
+            partialTick: Float,
+        ) {
             val mc = Minecraft.getInstance()
             if (mc.level == null) {
                 return
@@ -152,7 +154,7 @@ class ThermalShaderHandler : ResourceManagerReloadListener {
                         partialTick,
                         poseStack,
                         bufferSource,
-                        15728880
+                        15728880,
                     )
                 }
             }

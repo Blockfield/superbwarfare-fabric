@@ -8,7 +8,9 @@ import com.atsuishio.superbwarfare.tools.mc
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class OpenVehicleSkinScreenMessage(val entityId: Int) : ClientPacketPayload() {
+data class OpenVehicleSkinScreenMessage(
+    val entityId: Int,
+) : ClientPacketPayload() {
     override fun PayloadContext.handler() {
         val entity = clientLevel?.getEntity(entityId) ?: return
         mc.setScreen(VehicleSkinScreen(entity))

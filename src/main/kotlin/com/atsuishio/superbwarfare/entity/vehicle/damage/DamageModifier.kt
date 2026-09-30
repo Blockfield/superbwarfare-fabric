@@ -21,7 +21,11 @@ class DamageModifier {
     private val customList = mutableListOf<DamageModify>()
 
     fun interface CustomDamageModifier {
-        fun compute(entity: Entity, source: DamageSource, damage: Float): Float
+        fun compute(
+            entity: Entity,
+            source: DamageSource,
+            damage: Float,
+        ): Float
     }
 
     /**
@@ -95,7 +99,10 @@ class DamageModifier {
      * @param value        要减少的数值
      * @param sourceTagKey 伤害类型
      */
-    fun reduce(value: Float, sourceTagKey: TagKey<DamageType>): DamageModifier {
+    fun reduce(
+        value: Float,
+        sourceTagKey: TagKey<DamageType>,
+    ): DamageModifier {
         modifyList.add(DamageModify(DamageModify.ModifyType.REDUCE, value, sourceTagKey))
         return this
     }
@@ -106,7 +113,10 @@ class DamageModifier {
      * @param value     要减少的数值
      * @param sourceKey 伤害类型
      */
-    fun reduce(value: Float, sourceKey: ResourceKey<DamageType>): DamageModifier {
+    fun reduce(
+        value: Float,
+        sourceKey: ResourceKey<DamageType>,
+    ): DamageModifier {
         modifyList.add(DamageModify(DamageModify.ModifyType.REDUCE, value, sourceKey))
         return this
     }
@@ -117,7 +127,10 @@ class DamageModifier {
      * @param value     要减少的数值
      * @param condition 伤害来源判定条件
      */
-    fun reduce(value: Float, condition: Function<DamageSource, Boolean>): DamageModifier {
+    fun reduce(
+        value: Float,
+        condition: Function<DamageSource, Boolean>,
+    ): DamageModifier {
         modifyList.add(DamageModify(DamageModify.ModifyType.REDUCE, value, condition))
         return this
     }
@@ -128,7 +141,10 @@ class DamageModifier {
      * @param value    要减少的数值
      * @param entityId 伤害来源实体ID
      */
-    fun reduce(value: Float, entityId: String): DamageModifier {
+    fun reduce(
+        value: Float,
+        entityId: String,
+    ): DamageModifier {
         modifyList.add(DamageModify(DamageModify.ModifyType.REDUCE, value, entityId))
         return this
     }
@@ -139,9 +155,10 @@ class DamageModifier {
      * @param value 要减少的数值
      * @param type  伤害来源实体类型
      */
-    fun reduce(value: Float, type: EntityType<*>): DamageModifier {
-        return reduce(value, EntityType.getKey(type).toString())
-    }
+    fun reduce(
+        value: Float,
+        type: EntityType<*>,
+    ): DamageModifier = reduce(value, EntityType.getKey(type).toString())
 
     /**
      * 将所有类型的伤害值乘以指定数值
@@ -159,7 +176,10 @@ class DamageModifier {
      * @param value        要乘以的数值
      * @param sourceTagKey 伤害类型
      */
-    fun multiply(value: Float, sourceTagKey: TagKey<DamageType>): DamageModifier {
+    fun multiply(
+        value: Float,
+        sourceTagKey: TagKey<DamageType>,
+    ): DamageModifier {
         modifyList.add(DamageModify(DamageModify.ModifyType.MULTIPLY, value, sourceTagKey))
         return this
     }
@@ -170,7 +190,10 @@ class DamageModifier {
      * @param value     要乘以的数值
      * @param sourceKey 伤害类型
      */
-    fun multiply(value: Float, sourceKey: ResourceKey<DamageType>): DamageModifier {
+    fun multiply(
+        value: Float,
+        sourceKey: ResourceKey<DamageType>,
+    ): DamageModifier {
         modifyList.add(DamageModify(DamageModify.ModifyType.MULTIPLY, value, sourceKey))
         return this
     }
@@ -181,7 +204,10 @@ class DamageModifier {
      * @param value     要乘以的数值
      * @param condition 伤害来源判定条件
      */
-    fun multiply(value: Float, condition: Function<DamageSource, Boolean>): DamageModifier {
+    fun multiply(
+        value: Float,
+        condition: Function<DamageSource, Boolean>,
+    ): DamageModifier {
         modifyList.add(DamageModify(DamageModify.ModifyType.MULTIPLY, value, condition))
         return this
     }
@@ -192,7 +218,10 @@ class DamageModifier {
      * @param value    要乘以的数值
      * @param entityId 伤害来源实体ID
      */
-    fun multiply(value: Float, entityId: String): DamageModifier {
+    fun multiply(
+        value: Float,
+        entityId: String,
+    ): DamageModifier {
         modifyList.add(DamageModify(DamageModify.ModifyType.MULTIPLY, value, entityId))
         return this
     }
@@ -203,9 +232,10 @@ class DamageModifier {
      * @param value 要乘以的数值
      * @param type  伤害来源实体类型
      */
-    fun multiply(value: Float, type: EntityType<*>): DamageModifier {
-        return multiply(value, EntityType.getKey(type).toString())
-    }
+    fun multiply(
+        value: Float,
+        type: EntityType<*>,
+    ): DamageModifier = multiply(value, EntityType.getKey(type).toString())
 
     /**
      * 自定义伤害值计算
@@ -234,80 +264,100 @@ class DamageModifier {
     }
 
     // 计算优先级 免疫 > 固定减伤/乘算 > 自定义减伤
-    fun toList(): List<DamageModify> = buildList {
-        addAll(immuneList)
-        addAll(modifyList)
-        addAll(customList)
-    }
+    fun toList(): List<DamageModify> =
+        buildList {
+            addAll(immuneList)
+            addAll(modifyList)
+            addAll(customList)
+        }
 
-    fun match(source: DamageSource): List<DamageModify> {
-        return toList().filter { it.match(source) }
-    }
+    fun match(source: DamageSource): List<DamageModify> = toList().filter { it.match(source) }
 
     @JvmRecord
-    data class ModifyResult(val modify: DamageModify?, val damage: Float) {
+    data class ModifyResult(
+        val modify: DamageModify?,
+        val damage: Float,
+    ) {
         fun getDamageInfo(): MutableComponent {
             if (modify == null) {
-                return Component.translatable("tips.superbwarfare.modify_result.function")
+                return Component
+                    .translatable("tips.superbwarfare.modify_result.function")
                     .withStyle { style -> style.withColor(0xe1ff6b) }
                     .append(
-                        Component.literal(" " + format2D(damage.toDouble()))
-                            .withStyle(ChatFormatting.WHITE)
+                        Component
+                            .literal(" " + format2D(damage.toDouble()))
+                            .withStyle(ChatFormatting.WHITE),
                     )
             }
             val color: Int
-            val sourceString = when (modify.sourceType) {
-                SourceType.TAG_KEY -> {
-                    color = 0xff987e
-                    modify.sourceTagKey!!.location().toString()
+            val sourceString =
+                when (modify.sourceType) {
+                    SourceType.TAG_KEY -> {
+                        color = 0xff987e
+                        modify.sourceTagKey!!.location().toString()
+                    }
+
+                    SourceType.ENTITY_TAG -> {
+                        color = 0xffd07e
+                        modify.entityTag!!.location().toString()
+                    }
+
+                    SourceType.FUNCTION -> {
+                        color = 0xe1ff6b
+                        ""
+                    }
+
+                    SourceType.ENTITY_ID -> {
+                        color = 0x6be6ff
+                        modify.entityId
+                    }
+
+                    SourceType.RESOURCE_KEY -> {
+                        color = 0x6b7aff
+                        modify.sourceKey!!.location().toString()
+                    }
+
+                    else -> {
+                        color = 0xff6bdf
+                        ""
+                    }
                 }
+            val typeString =
+                when (modify.type) {
+                    DamageModify.ModifyType.IMMUNITY -> {
+                        Component.literal(" 0").withStyle(ChatFormatting.GRAY)
+                    }
 
-                SourceType.ENTITY_TAG -> {
-                    color = 0xffd07e
-                    modify.entityTag!!.location().toString()
+                    DamageModify.ModifyType.REDUCE -> {
+                        Component
+                            .literal(" - ")
+                            .withStyle(ChatFormatting.GREEN)
+                            .append(Component.literal("" + modify.value).withStyle(ChatFormatting.RESET))
+                            .append(Component.literal(" = " + format2D(damage.toDouble())).withStyle(ChatFormatting.WHITE))
+                    }
+
+                    DamageModify.ModifyType.MULTIPLY -> {
+                        Component
+                            .literal(" * ")
+                            .withStyle(ChatFormatting.YELLOW)
+                            .append(Component.literal("" + modify.value).withStyle(ChatFormatting.RESET))
+                            .append(Component.literal(" = " + format2D(damage.toDouble())).withStyle(ChatFormatting.WHITE))
+                    }
+
+                    DamageModify.ModifyType.CUSTOM -> {
+                        Component.empty()
+                    }
+
+                    else -> {
+                        Component.literal("INVALID!").withStyle(ChatFormatting.RED)
+                    }
                 }
-
-                SourceType.FUNCTION -> {
-                    color = 0xe1ff6b
-                    ""
-                }
-
-                SourceType.ENTITY_ID -> {
-                    color = 0x6be6ff
-                    modify.entityId
-                }
-
-                SourceType.RESOURCE_KEY -> {
-                    color = 0x6b7aff
-                    modify.sourceKey!!.location().toString()
-                }
-
-                else -> {
-                    color = 0xff6bdf
-                    ""
-                }
-            }
-            val typeString = when (modify.type) {
-                DamageModify.ModifyType.IMMUNITY -> Component.literal(" 0").withStyle(ChatFormatting.GRAY)
-
-                DamageModify.ModifyType.REDUCE -> Component.literal(" - ")
-                    .withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal("" + modify.value).withStyle(ChatFormatting.RESET))
-                    .append(Component.literal(" = " + format2D(damage.toDouble())).withStyle(ChatFormatting.WHITE))
-
-                DamageModify.ModifyType.MULTIPLY -> Component.literal(" * ")
-                    .withStyle(ChatFormatting.YELLOW)
-                    .append(Component.literal("" + modify.value).withStyle(ChatFormatting.RESET))
-                    .append(Component.literal(" = " + format2D(damage.toDouble())).withStyle(ChatFormatting.WHITE))
-
-                DamageModify.ModifyType.CUSTOM -> Component.empty()
-
-                else -> Component.literal("INVALID!").withStyle(ChatFormatting.RED)
-            }
-            val component = Component.translatable(
-                "tips.superbwarfare.modify_result." + modify.sourceType!!.name.lowercase(),
-                sourceString
-            ).withStyle { style -> style.withColor(color) }
+            val component =
+                Component
+                    .translatable(
+                        "tips.superbwarfare.modify_result." + modify.sourceType!!.name.lowercase(),
+                        sourceString,
+                    ).withStyle { style -> style.withColor(color) }
             return component.append(typeString)
         }
     }
@@ -315,7 +365,11 @@ class DamageModifier {
     /**
      * 获取调试用的详细减伤结果
      */
-    fun matchResult(entity: Entity, source: DamageSource, damage: Float): MutableList<ModifyResult> {
+    fun matchResult(
+        entity: Entity,
+        source: DamageSource,
+        damage: Float,
+    ): MutableList<ModifyResult> {
         var damage = damage
         val matchList = match(source)
         val list = ArrayList<ModifyResult>()
@@ -344,7 +398,11 @@ class DamageModifier {
      * @param damage 原伤害值
      * @return 减伤后的伤害值
      */
-    fun compute(entity: Entity, source: DamageSource, damage: Float): Float {
+    fun compute(
+        entity: Entity,
+        source: DamageSource,
+        damage: Float,
+    ): Float {
         var damage = damage
         val matchList = match(source)
 
@@ -364,8 +422,8 @@ class DamageModifier {
 
     companion object {
         @JvmStatic
-        fun createDefaultModifier(): DamageModifier {
-            return DamageModifier()
+        fun createDefaultModifier(): DamageModifier =
+            DamageModifier()
                 .immuneTo(EntityType.POTION)
                 .immuneTo(EntityType.AREA_EFFECT_CLOUD)
                 .immuneTo(DamageTypes.FALL)
@@ -374,6 +432,5 @@ class DamageModifier {
                 .immuneTo(DamageTypes.DRAGON_BREATH)
                 .immuneTo(DamageTypes.WITHER)
                 .immuneTo(DamageTypes.WITHER_SKULL)
-        }
     }
 }

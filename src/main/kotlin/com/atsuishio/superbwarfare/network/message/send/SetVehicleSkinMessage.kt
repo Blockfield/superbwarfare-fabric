@@ -8,7 +8,10 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SetVehicleSkinMessage(val entityId: Int, val skinId: String) : ServerPacketPayload() {
+data class SetVehicleSkinMessage(
+    val entityId: Int,
+    val skinId: String,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         if (player.isSpectator || !player.isAlive) return

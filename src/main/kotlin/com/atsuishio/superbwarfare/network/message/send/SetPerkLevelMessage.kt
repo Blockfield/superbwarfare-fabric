@@ -7,8 +7,10 @@ import com.atsuishio.superbwarfare.perk.Perk
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SetPerkLevelMessage(val msgType: Int, val add: Boolean) : ServerPacketPayload() {
-
+data class SetPerkLevelMessage(
+    val msgType: Int,
+    val add: Boolean,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         val menu = player.containerMenu as? ReforgingTableMenu ?: return

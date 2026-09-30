@@ -27,7 +27,9 @@ import kotlin.math.max
  * 使用组合模式注入 [AutoAimableEntity]，替代原有的死板索敌机制。
  * 子类可通过覆盖 [AutoAimableEntity.threatConfig] 定制 AI 行为。
  */
-class TowerAI(private val tower: AutoAimableEntity) {
+class TowerAI(
+    private val tower: AutoAimableEntity,
+) {
     /**
      * 威胁评分配置，控制各因素在目标优先级中的权重。
      */
@@ -56,7 +58,6 @@ class TowerAI(private val tower: AutoAimableEntity) {
      * 集中化队伍 / TDM 判定。
      */
     object TeamResolver {
-
         /**
          * 判断目标实体对防御塔是否敌对。
          *
@@ -66,7 +67,10 @@ class TowerAI(private val tower: AutoAimableEntity) {
          * 3. 非友方且非同队 → 敌对
          */
         @JvmStatic
-        fun isHostile(tower: AutoAimableEntity, target: Entity): Boolean {
+        fun isHostile(
+            tower: AutoAimableEntity,
+            target: Entity,
+        ): Boolean {
             // 排除弹射物（弹射物用 isHostileProjectile 单独处理）
             if (target is Projectile) return false
 
@@ -98,7 +102,10 @@ class TowerAI(private val tower: AutoAimableEntity) {
          * 判断弹射物对防御塔是否敌对。
          */
         @JvmStatic
-        fun isHostileProjectile(tower: AutoAimableEntity, projectile: Projectile): Boolean {
+        fun isHostileProjectile(
+            tower: AutoAimableEntity,
+            projectile: Projectile,
+        ): Boolean {
             val owner = tower.owner ?: return false
 
             val projectileOwner = (projectile as? TraceableEntity)?.owner ?: return false
@@ -117,7 +124,10 @@ class TowerAI(private val tower: AutoAimableEntity) {
          * 判断目标是否对防御塔友好。
          */
         @JvmStatic
-        fun isFriendly(tower: AutoAimableEntity, target: Entity): Boolean {
+        fun isFriendly(
+            tower: AutoAimableEntity,
+            target: Entity,
+        ): Boolean {
             val owner = tower.owner ?: return false
 
             // TDM 覆盖：TDM 强制敌对，永远不友好
@@ -131,7 +141,6 @@ class TowerAI(private val tower: AutoAimableEntity) {
      * 目标合法性验证。
      */
     object TargetValidator {
-
         /**
          * 综合验证目标是否可以被锁定攻击。
          */
@@ -193,7 +202,11 @@ class TowerAI(private val tower: AutoAimableEntity) {
          * 包含轨迹分析：判断弹射物是否正飞向防御塔。
          */
         @JvmStatic
-        fun isValidProjectileTarget(tower: AutoAimableEntity, projectile: Projectile, pos: Vec3): Boolean {
+        fun isValidProjectileTarget(
+            tower: AutoAimableEntity,
+            projectile: Projectile,
+            pos: Vec3,
+        ): Boolean {
             // 排除已落地或静止的弹射物
             if (projectile.onGround()) return false
             if (projectile.deltaMovement.lengthSqr() < 0.0001) return false
@@ -223,7 +236,11 @@ class TowerAI(private val tower: AutoAimableEntity) {
          * 如果小于阈值且弹射物正朝防御塔移动，则视为威胁。
          */
         @JvmStatic
-        fun isOnCollisionCourse(tower: AutoAimableEntity, projectile: Projectile, threshold: Double): Boolean {
+        fun isOnCollisionCourse(
+            tower: AutoAimableEntity,
+            projectile: Projectile,
+            threshold: Double,
+        ): Boolean {
             val projPos = projectile.position()
             val velocity = projectile.deltaMovement
             val speed = velocity.length()
@@ -249,7 +266,11 @@ class TowerAI(private val tower: AutoAimableEntity) {
         /**
          * 计算射线到 AABB 的最短距离。
          */
-        private fun rayToAABBDistance(rayOrigin: Vec3, rayDir: Vec3, aabb: AABB): Double {
+        private fun rayToAABBDistance(
+            rayOrigin: Vec3,
+            rayDir: Vec3,
+            aabb: AABB,
+        ): Double {
             // 找到 AABB 上离射线最近的点
             // 使用 AABB 到射线的最短距离近似
             val center = aabb.center
@@ -257,18 +278,20 @@ class TowerAI(private val tower: AutoAimableEntity) {
 
             // 投影到射线方向上
             val t = toCenter.dot(rayDir)
-            val closestOnRay = if (t <= 0) {
-                rayOrigin
-            } else {
-                rayOrigin.add(rayDir.scale(t))
-            }
+            val closestOnRay =
+                if (t <= 0) {
+                    rayOrigin
+                } else {
+                    rayOrigin.add(rayDir.scale(t))
+                }
 
             // 将最近点钳制到 AABB 内
-            val clamped = Vec3(
-                closestOnRay.x.coerceIn(aabb.minX, aabb.maxX),
-                closestOnRay.y.coerceIn(aabb.minY, aabb.maxY),
-                closestOnRay.z.coerceIn(aabb.minZ, aabb.maxZ),
-            )
+            val clamped =
+                Vec3(
+                    closestOnRay.x.coerceIn(aabb.minX, aabb.maxX),
+                    closestOnRay.y.coerceIn(aabb.minY, aabb.maxY),
+                    closestOnRay.z.coerceIn(aabb.minZ, aabb.maxZ),
+                )
 
             return clamped.distanceTo(closestOnRay)
         }
@@ -277,32 +300,47 @@ class TowerAI(private val tower: AutoAimableEntity) {
          * 检查目标和炮塔之间是否有障碍物遮挡。
          */
         @JvmStatic
-        fun checkLineOfSight(tower: AutoAimableEntity, target: Entity, pos: Vec3): Boolean {
-            return tower.level().clip(
-                ClipContext(
-                    pos, target.boundingBox.center,
-                    ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, tower
-                )
-            ).type != HitResult.Type.BLOCK
-        }
+        fun checkLineOfSight(
+            tower: AutoAimableEntity,
+            target: Entity,
+            pos: Vec3,
+        ): Boolean =
+            tower
+                .level()
+                .clip(
+                    ClipContext(
+                        pos,
+                        target.boundingBox.center,
+                        ClipContext.Block.COLLIDER,
+                        ClipContext.Fluid.ANY,
+                        tower,
+                    ),
+                ).type != HitResult.Type.BLOCK
     }
 
     /**
      * 目标优先级评分器。
      */
     object TargetPrioritizer {
-
         /**
          * 对目标进行威胁评分。
          *
          * @return 评分（越高越优先），返回 null 表示该目标不应被考虑
          */
         @JvmStatic
-        fun evaluateThreat(tower: AutoAimableEntity, target: Entity): Double {
+        fun evaluateThreat(
+            tower: AutoAimableEntity,
+            target: Entity,
+        ): Double {
             val config = tower.threatConfig
 
             val distance = target.distanceTo(tower)
-            val maxRange = tower.data().compute().seekInfo?.maxSeekRange ?: 64.0
+            val maxRange =
+                tower
+                    .data()
+                    .compute()
+                    .seekInfo
+                    ?.maxSeekRange ?: 64.0
 
             // 距离评分（归一化到 [0, 1]，越近越高）
             val distanceScore = max(0.0, 1.0 - distance / maxRange) * 100.0 * config.distanceWeight
@@ -311,12 +349,13 @@ class TowerAI(private val tower: AutoAimableEntity) {
             val typeScore = getEntityTypeScore(target) * config.typeWeight
 
             // 生命值评分（低血量目标优先补刀）
-            val healthScore = if (target is LivingEntity) {
-                val healthPercent = target.health / target.maxHealth
-                (1.0 - healthPercent) * 100.0 * config.healthWeight
-            } else {
-                0.0
-            }
+            val healthScore =
+                if (target is LivingEntity) {
+                    val healthPercent = target.health / target.maxHealth
+                    (1.0 - healthPercent) * 100.0 * config.healthWeight
+                } else {
+                    0.0
+                }
 
             // 弹射物威胁加成
             var projectileBonus = 0.0
@@ -342,8 +381,8 @@ class TowerAI(private val tower: AutoAimableEntity) {
         /**
          * 获取实体类型基础分数。
          */
-        private fun getEntityTypeScore(target: Entity): Double {
-            return when (target) {
+        private fun getEntityTypeScore(target: Entity): Double =
+            when (target) {
                 is Player -> 100.0
                 is VehicleEntity -> 75.0
                 is Enemy -> 50.0
@@ -351,7 +390,6 @@ class TowerAI(private val tower: AutoAimableEntity) {
                 is LivingEntity -> 25.0
                 else -> 10.0
             }
-        }
 
         /**
          * 从候选目标列表中选择最佳目标。
@@ -359,15 +397,17 @@ class TowerAI(private val tower: AutoAimableEntity) {
          * @return 评分最高的目标，如果所有目标评分都低于阈值则返回 null
          */
         @JvmStatic
-        fun selectBestTarget(tower: AutoAimableEntity, candidates: List<Entity>): Entity? {
+        fun selectBestTarget(
+            tower: AutoAimableEntity,
+            candidates: List<Entity>,
+        ): Entity? {
             val config = tower.threatConfig
 
             return candidates
                 .map { target ->
                     val score = evaluateThreat(tower, target)
                     target to score
-                }
-                .filter { (_, score) -> score >= config.minThreatScore }
+                }.filter { (_, score) -> score >= config.minThreatScore }
                 .maxByOrNull { (_, score) -> score }
                 ?.first
         }
@@ -400,7 +440,6 @@ class TowerAI(private val tower: AutoAimableEntity) {
      * 目标追踪器，管理目标获取、验证与切换。
      */
     inner class TargetTracker {
-
         /** 当前锁定的目标 UUID 字符串 */
         var currentTargetUUID: String
             get() = tower.targetUUID
@@ -429,10 +468,11 @@ class TowerAI(private val tower: AutoAimableEntity) {
             val targetUUID = currentTargetUUID
             if (targetUUID.isEmpty()) return false
 
-            val target = EntityFindUtil.findEntity(tower.level(), targetUUID) ?: run {
-                clearTarget()
-                return false
-            }
+            val target =
+                EntityFindUtil.findEntity(tower.level(), targetUUID) ?: run {
+                    clearTarget()
+                    return false
+                }
 
             if (!target.isAlive) {
                 clearTarget()
@@ -515,14 +555,15 @@ class TowerAI(private val tower: AutoAimableEntity) {
             EntityFindUtil.getEntities(tower.level())?.get(aabb) { entity ->
                 entitiesInRange.add(entity)
             }
-            val candidates = entitiesInRange.filter { target ->
-                val distSqr = target.distanceToSqr(tower)
-                distSqr > minRangeSqr && distSqr <= seekRangeSqr
+            val candidates =
+                entitiesInRange.filter { target ->
+                    val distSqr = target.distanceToSqr(tower)
+                    distSqr > minRangeSqr && distSqr <= seekRangeSqr &&
                         // 显式检查炮管到目标之间是否有方块遮挡
-                        && TargetValidator.checkLineOfSight(tower, target, pos)
-                        && TargetValidator.isValidTarget(tower, target, pos, minAngle, maxAngle, minRange, maxRange)
-                        && target.boundingBox.size >= minTargetSize
-            }
+                        TargetValidator.checkLineOfSight(tower, target, pos) &&
+                        TargetValidator.isValidTarget(tower, target, pos, minAngle, maxAngle, minRange, maxRange) &&
+                        target.boundingBox.size >= minTargetSize
+                }
 
             if (candidates.isEmpty()) return
 
@@ -530,14 +571,23 @@ class TowerAI(private val tower: AutoAimableEntity) {
             val bestTarget = TargetPrioritizer.selectBestTarget(tower, candidates) ?: return
 
             // 检查是否需要切换目标
-            val currentTarget = if (currentTargetUUID.isNotEmpty()) {
-                EntityFindUtil.findEntity(tower.level(), currentTargetUUID)
-            } else null
+            val currentTarget =
+                if (currentTargetUUID.isNotEmpty()) {
+                    EntityFindUtil.findEntity(tower.level(), currentTargetUUID)
+                } else {
+                    null
+                }
 
             if (TargetPrioritizer.shouldSwitchTarget(tower, currentTarget, bestTarget)) {
                 currentTargetUUID = bestTarget.stringUUID
                 changeTargetTimer = 0
-                tower.consumeEnergy(tower.data().compute().seekInfo?.seekEnergyCost ?: 0)
+                tower.consumeEnergy(
+                    tower
+                        .data()
+                        .compute()
+                        .seekInfo
+                        ?.seekEnergyCost ?: 0,
+                )
             }
         }
 

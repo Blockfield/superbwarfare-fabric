@@ -19,7 +19,7 @@ object Subsistence : Perk("subsistence", Type.FUNCTIONAL) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val sourceEntity = source.entity
         val attacker: Player =

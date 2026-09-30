@@ -7,9 +7,9 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Замена net.neoforged.neoforge.items.wrapper.SidedInvWrapper.
  *
- * ponytail: выброшены костыли NeoForge под ванильную печь и варочную стойку (лимит ведра и
- * бутылок в 1 штуку). Оборачиваются только контейнеры самого мода. Если сюда когда-нибудь
- * заведут ванильный WorldlyContainer, вернуть проверки из апстрима.
+ * <p>ponytail: выброшены костыли NeoForge под ванильную печь и варочную стойку (лимит ведра и
+ * бутылок в 1 штуку). Оборачиваются только контейнеры самого мода. Если сюда когда-нибудь заведут
+ * ванильный WorldlyContainer, вернуть проверки из апстрима.
  */
 public class SidedInvWrapper implements IItemHandler {
     protected final WorldlyContainer inv;
@@ -48,9 +48,11 @@ public class SidedInvWrapper implements IItemHandler {
 
         int m;
         if (!stackInSlot.isEmpty()) {
-            if (stackInSlot.getCount() >= Math.min(stackInSlot.getMaxStackSize(), getSlotLimit(slot))) return stack;
+            if (stackInSlot.getCount()
+                    >= Math.min(stackInSlot.getMaxStackSize(), getSlotLimit(slot))) return stack;
             if (!ItemStack.isSameItemSameComponents(stack, stackInSlot)) return stack;
-            if (!inv.canPlaceItemThroughFace(slot1, stack, side) || !inv.canPlaceItem(slot1, stack)) return stack;
+            if (!inv.canPlaceItemThroughFace(slot1, stack, side) || !inv.canPlaceItem(slot1, stack))
+                return stack;
 
             m = Math.min(stack.getMaxStackSize(), getSlotLimit(slot)) - stackInSlot.getCount();
 
@@ -74,7 +76,8 @@ public class SidedInvWrapper implements IItemHandler {
             return stack;
         }
 
-        if (!inv.canPlaceItemThroughFace(slot1, stack, side) || !inv.canPlaceItem(slot1, stack)) return stack;
+        if (!inv.canPlaceItemThroughFace(slot1, stack, side) || !inv.canPlaceItem(slot1, stack))
+            return stack;
 
         m = Math.min(stack.getMaxStackSize(), getSlotLimit(slot));
         if (m < stack.getCount()) {
@@ -100,7 +103,8 @@ public class SidedInvWrapper implements IItemHandler {
 
         ItemStack stackInSlot = inv.getItem(slot1);
         if (stackInSlot.isEmpty()) return ItemStack.EMPTY;
-        if (side != null && !inv.canTakeItemThroughFace(slot1, stackInSlot, side)) return ItemStack.EMPTY;
+        if (side != null && !inv.canTakeItemThroughFace(slot1, stackInSlot, side))
+            return ItemStack.EMPTY;
 
         if (simulate) {
             if (stackInSlot.getCount() < amount) return stackInSlot.copy();

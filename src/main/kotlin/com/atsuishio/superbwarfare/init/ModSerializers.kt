@@ -16,7 +16,6 @@ import java.util.function.Supplier
  * объекта задаёт эти id, и он одинаков на клиенте и сервере — менять порядок нельзя.
  */
 object ModSerializers {
-
     /** Форма вызова из Mod.kt сохранена: обращение к REGISTRY инициализирует объект, а с ним
      *  и регистрацию сериализаторов; самому register() делать нечего. */
     val REGISTRY get() = this
@@ -33,42 +32,48 @@ object ModSerializers {
 
     @JvmField
     val VEC3_SERIALIZER: Supplier<EntityDataSerializer<Vec3>> =
-        add(EntityDataSerializer.forValueType(object : StreamCodec<ByteBuf, Vec3> {
-            override fun decode(buf: ByteBuf): Vec3 {
-                return Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble())
-            }
+        add(
+            EntityDataSerializer.forValueType(
+                object : StreamCodec<ByteBuf, Vec3> {
+                    override fun decode(buf: ByteBuf): Vec3 = Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble())
 
-            override fun encode(buf: ByteBuf, vec: Vec3) {
-                buf.writeDouble(vec.x)
-                buf.writeDouble(vec.y)
-                buf.writeDouble(vec.z)
-            }
-        }))
+                    override fun encode(
+                        buf: ByteBuf,
+                        vec: Vec3,
+                    ) {
+                        buf.writeDouble(vec.x)
+                        buf.writeDouble(vec.y)
+                        buf.writeDouble(vec.z)
+                    }
+                },
+            ),
+        )
 
     @JvmField
     val VEHICLE_GUN_DATA_MAP_SERIALIZER: Supplier<EntityDataSerializer<Map<String, GunData>>> =
-        add(object : EntityDataSerializer<Map<String, GunData>> {
-            override fun codec(): StreamCodec<in RegistryFriendlyByteBuf, Map<String, GunData>> {
-                return ByteBufCodecs.map(
-                    { HashMap(it) },
-                    ByteBufCodecs.STRING_UTF8,
-                    GunData.VEHICLE_GUN_STREAM_CODEC
-                )
-            }
+        add(
+            object : EntityDataSerializer<Map<String, GunData>> {
+                override fun codec(): StreamCodec<in RegistryFriendlyByteBuf, Map<String, GunData>> =
+                    ByteBufCodecs.map(
+                        { HashMap(it) },
+                        ByteBufCodecs.STRING_UTF8,
+                        GunData.VEHICLE_GUN_STREAM_CODEC,
+                    )
 
-            override fun copy(map: Map<String, GunData>): Map<String, GunData> {
-                val newMap = HashMap<String, GunData>()
-                map.forEach { (key: String, value: GunData) -> newMap[key] = value.copy() }
-                return newMap
-            }
-        })
+                override fun copy(map: Map<String, GunData>): Map<String, GunData> {
+                    val newMap = HashMap<String, GunData>()
+                    map.forEach { (key: String, value: GunData) -> newMap[key] = value.copy() }
+                    return newMap
+                }
+            },
+        )
 
     @JvmField
     val SHORT_LIST_LIST_SERIALIZER: Supplier<EntityDataSerializer<List<List<Short>>>> =
         add(
             EntityDataSerializer.forValueType(
-                ByteBufCodecs.SHORT.apply(ByteBufCodecs.list()).apply(ByteBufCodecs.list())
-            )
+                ByteBufCodecs.SHORT.apply(ByteBufCodecs.list()).apply(ByteBufCodecs.list()),
+            ),
         )
 
     private fun <T> add(serializer: EntityDataSerializer<T>): Supplier<EntityDataSerializer<T>> {

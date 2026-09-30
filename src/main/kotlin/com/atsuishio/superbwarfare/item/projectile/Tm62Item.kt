@@ -6,6 +6,9 @@ import com.atsuishio.superbwarfare.init.ModEntities
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.item.DispenserLaunchable
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer
 import net.minecraft.core.dispenser.BlockSource
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior
@@ -18,12 +21,11 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.DispenserBlock
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import org.joml.Math
 
-open class Tm62Item : Item(Properties().stacksTo(8)), DispenserLaunchable {
+open class Tm62Item :
+    Item(Properties().stacksTo(8)),
+    DispenserLaunchable {
     companion object {
         /** Клиент: BEWLR из IClientItemExtensions#getCustomRenderer заменён на DynamicItemRenderer из Fabric API. */
         @Environment(EnvType.CLIENT)
@@ -37,12 +39,16 @@ open class Tm62Item : Item(Properties().stacksTo(8)), DispenserLaunchable {
                         renderer = Tm62ItemRenderer(mc.blockEntityRenderDispatcher, mc.entityModels)
                     }
                     renderer!!.renderByItem(stack, mode, poseStack, buffer, light, overlay)
-                }
+                },
             )
         }
     }
 
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
 
         if (!level.isClientSide) {
@@ -54,7 +60,7 @@ open class Tm62Item : Item(Properties().stacksTo(8)), DispenserLaunchable {
             entity.setDeltaMovement(
                 0.5 * player.lookAngle.x,
                 0.5 * player.lookAngle.y,
-                0.5 * player.lookAngle.z
+                0.5 * player.lookAngle.z,
             )
 
             level.addFreshEntity(entity)
@@ -71,7 +77,10 @@ open class Tm62Item : Item(Properties().stacksTo(8)), DispenserLaunchable {
 
     override fun getLaunchBehavior(): DispenseItemBehavior {
         return object : DefaultDispenseItemBehavior() {
-            public override fun execute(pSource: BlockSource, pStack: ItemStack): ItemStack {
+            public override fun execute(
+                pSource: BlockSource,
+                pStack: ItemStack,
+            ): ItemStack {
                 val level: Level = pSource.level
                 val position = DispenserBlock.getDispensePosition(pSource)
                 val direction = pSource.state.getValue(DispenserBlock.FACING)

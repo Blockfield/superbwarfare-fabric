@@ -24,8 +24,9 @@ import org.joml.Quaternionf
 import software.bernie.geckolib.animatable.GeoAnimatable
 import software.bernie.geckolib.renderer.GeoEntityRenderer
 
-class TurretWreckRenderer(renderManager: EntityRendererProvider.Context) :
-    EntityRenderer<TurretWreckEntity>(renderManager) {
+class TurretWreckRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<TurretWreckEntity>(renderManager) {
     init {
         this.shadowRadius = 1f
     }
@@ -83,7 +84,7 @@ class TurretWreckRenderer(renderManager: EntityRendererProvider.Context) :
                     source,
                     packedLight,
                     packedOverlay,
-                    FastColor.ARGB32.colorFromFloat(1.0f, 0.3f, 0.3f, 0.3f)
+                    FastColor.ARGB32.colorFromFloat(1.0f, 0.3f, 0.3f, 0.3f),
                 )
                 renderer.renderChildBones(
                     poseStack,
@@ -96,7 +97,7 @@ class TurretWreckRenderer(renderManager: EntityRendererProvider.Context) :
                     partialTick,
                     packedLight,
                     packedOverlay,
-                    FastColor.ARGB32.colorFromFloat(1.0f, 0.3f, 0.3f, 0.3f)
+                    FastColor.ARGB32.colorFromFloat(1.0f, 0.3f, 0.3f, 0.3f),
                 )
                 poseStack.popPose()
             } else if (renderer is GeoVehicleRenderer) {
@@ -137,8 +138,11 @@ class TurretWreckRenderer(renderManager: EntityRendererProvider.Context) :
                     BedrockModelRenderTypes.polyMeshCutout(entry.texture),
                     packedLight,
                     OverlayTexture.NO_OVERLAY,
-                    0.3f, 0.3f, 0.3f, 1f,
-                    true
+                    0.3f,
+                    0.3f,
+                    0.3f,
+                    1f,
+                    true,
                 )
                 poseStack.popPose()
             }
@@ -151,7 +155,7 @@ class TurretWreckRenderer(renderManager: EntityRendererProvider.Context) :
         partialTicks: Float,
         poseStack: PoseStack,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         poseStack.pushPose()
         poseStack.rotateAround(Quaternionf(entityIn.getQuaternion(partialTicks)), 0f, 0.6f, 0f)
@@ -162,14 +166,14 @@ class TurretWreckRenderer(renderManager: EntityRendererProvider.Context) :
             bufferIn,
             partialTicks,
             packedLightIn,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
 
-        if (this.entityRenderDispatcher.shouldRenderHitBoxes()
-            && !entityIn.isInvisible
-            && !mc.showOnlyReducedInfo()
+        if (this.entityRenderDispatcher.shouldRenderHitBoxes() &&
+            !entityIn.isInvisible &&
+            !mc.showOnlyReducedInfo()
         ) {
             val matrix4f = poseStack.last().pose()
             val pose = poseStack.last()
@@ -186,9 +190,7 @@ class TurretWreckRenderer(renderManager: EntityRendererProvider.Context) :
         }
     }
 
-    override fun getTextureLocation(pEntity: TurretWreckEntity): ResourceLocation {
-        return TEXTURE
-    }
+    override fun getTextureLocation(pEntity: TurretWreckEntity): ResourceLocation = TEXTURE
 
     fun renderAxis(
         entityIn: TurretWreckEntity,
@@ -198,18 +200,20 @@ class TurretWreckRenderer(renderManager: EntityRendererProvider.Context) :
         buffer: VertexConsumer,
         r: Int,
         g: Int,
-        b: Int
+        b: Int,
     ) {
-        buffer.addVertex(matrix4f, 0.0f, 0.6f, 0.0f)
+        buffer
+            .addVertex(matrix4f, 0.0f, 0.6f, 0.0f)
             .setColor(r, g, b, 255)
             .setNormal(pose, vec3.x.toFloat(), vec3.y.toFloat(), vec3.z.toFloat())
 
-        buffer.addVertex(
-            matrix4f,
-            (vec3.x * 4.0).toFloat(),
-            (entityIn.eyeHeight.toDouble() + vec3.y * 4.0).toFloat(),
-            (vec3.z * 4.0).toFloat()
-        ).setColor(r, g, b, 255)
+        buffer
+            .addVertex(
+                matrix4f,
+                (vec3.x * 4.0).toFloat(),
+                (entityIn.eyeHeight.toDouble() + vec3.y * 4.0).toFloat(),
+                (vec3.z * 4.0).toFloat(),
+            ).setColor(r, g, b, 255)
             .setNormal(pose, vec3.x.toFloat(), vec3.y.toFloat(), vec3.z.toFloat())
     }
 

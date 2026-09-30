@@ -27,12 +27,16 @@ open class MedicalKitItem : Item(Properties().stacksTo(16)) {
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(Component.translatable("des.superbwarfare.medical_kit").withStyle(ChatFormatting.GRAY))
     }
 
-    override fun use(level: Level, player: Player, handIn: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        level: Level,
+        player: Player,
+        handIn: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(handIn)
 
         if (player.isShiftKeyDown) {
@@ -49,7 +53,7 @@ open class MedicalKitItem : Item(Properties().stacksTo(16)) {
                 entity.setDeltaMovement(
                     0.8 * player.lookAngle.x,
                     0.8 * player.lookAngle.y,
-                    0.8 * player.lookAngle.z
+                    0.8 * player.lookAngle.z,
                 )
                 level.addFreshEntity(entity)
             }
@@ -68,11 +72,13 @@ open class MedicalKitItem : Item(Properties().stacksTo(16)) {
         return InteractionResultHolder.fail(stack)
     }
 
-    override fun getUseAnimation(stack: ItemStack): UseAnim {
-        return UseAnim.BOW
-    }
+    override fun getUseAnimation(stack: ItemStack): UseAnim = UseAnim.BOW
 
-    override fun finishUsingItem(pStack: ItemStack, pLevel: Level, pLivingEntity: LivingEntity): ItemStack {
+    override fun finishUsingItem(
+        pStack: ItemStack,
+        pLevel: Level,
+        pLivingEntity: LivingEntity,
+    ): ItemStack {
         if (!pLevel.isClientSide) {
             treat(pLivingEntity)
 
@@ -83,7 +89,7 @@ open class MedicalKitItem : Item(Properties().stacksTo(16)) {
                     SoundEvents.ARMOR_EQUIP_LEATHER.value(),
                     SoundSource.PLAYERS,
                     0.5f,
-                    1f
+                    1f,
                 )
             }
 
@@ -99,9 +105,10 @@ open class MedicalKitItem : Item(Properties().stacksTo(16)) {
         return super.finishUsingItem(pStack, pLevel, pLivingEntity)
     }
 
-    override fun getUseDuration(stack: ItemStack, entity: LivingEntity): Int {
-        return 40
-    }
+    override fun getUseDuration(
+        stack: ItemStack,
+        entity: LivingEntity,
+    ): Int = 40
 
     open fun treat(living: LivingEntity) {
         val value =

@@ -30,61 +30,80 @@ import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-open class JumpPadBlock : Block(
-    Properties.of().forceSolidOn().instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE)
-        .strength(3f, 8f).noCollission().noOcclusion()
-        .isRedstoneConductor { _, _, _ -> false }
-) {
+open class JumpPadBlock :
+    Block(
+        Properties
+            .of()
+            .forceSolidOn()
+            .instrument(NoteBlockInstrument.BASEDRUM)
+            .sound(SoundType.STONE)
+            .strength(3f, 8f)
+            .noCollission()
+            .noOcclusion()
+            .isRedstoneConductor { _, _, _ -> false },
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(WATERLOGGED, false)
-                .setValue(ACTIVATED, false)
+                .setValue(ACTIVATED, false),
         )
     }
 
-    override fun propagatesSkylightDown(state: BlockState, reader: BlockGetter, pos: BlockPos): Boolean {
-        return true
-    }
+    override fun propagatesSkylightDown(
+        state: BlockState,
+        reader: BlockGetter,
+        pos: BlockPos,
+    ): Boolean = true
 
     override fun getVisualShape(
         state: BlockState,
         world: BlockGetter,
         pos: BlockPos,
-        context: CollisionContext
-    ): VoxelShape {
-        return Shapes.empty()
-    }
+        context: CollisionContext,
+    ): VoxelShape = Shapes.empty()
 
-    override fun getShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
-        return when (state.getValue(FACING)) {
-            Direction.NORTH -> Shapes.or(
-                box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
-                box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
-                box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
-                box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
-                box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
-                box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0)
-            )
+    override fun getShape(
+        state: BlockState,
+        world: BlockGetter,
+        pos: BlockPos,
+        context: CollisionContext,
+    ): VoxelShape =
+        when (state.getValue(FACING)) {
+            Direction.NORTH -> {
+                Shapes.or(
+                    box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
+                    box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
+                    box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
+                    box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
+                    box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
+                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0),
+                )
+            }
 
-            Direction.EAST -> Shapes.or(
-                box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
-                box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
-                box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
-                box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
-                box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
-                box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0)
-            )
+            Direction.EAST -> {
+                Shapes.or(
+                    box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
+                    box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
+                    box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
+                    box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
+                    box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
+                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0),
+                )
+            }
 
-            Direction.WEST -> Shapes.or(
-                box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
-                box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
-                box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
-                box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
-                box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
-                box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0)
-            )
+            Direction.WEST -> {
+                Shapes.or(
+                    box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
+                    box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
+                    box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
+                    box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
+                    box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
+                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0),
+                )
+            }
 
             else -> {
                 Shapes.or(
@@ -93,7 +112,7 @@ open class JumpPadBlock : Block(
                     box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
                     box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
                     box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
-                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0)
+                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0),
                 )
                 Shapes.or(
                     box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
@@ -101,7 +120,7 @@ open class JumpPadBlock : Block(
                     box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
                     box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
                     box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
-                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0)
+                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0),
                 )
                 Shapes.or(
                     box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
@@ -109,7 +128,7 @@ open class JumpPadBlock : Block(
                     box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
                     box(14.0, -0.1, -0.25, 16.25, 3.25, 2.0),
                     box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
-                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0)
+                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0),
                 )
                 Shapes.or(
                     box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0),
@@ -117,11 +136,10 @@ open class JumpPadBlock : Block(
                     box(14.0, -0.1, 14.0, 16.25, 3.25, 16.25),
                     box(-0.25, -0.1, 14.0, 2.0, 3.25, 16.25),
                     box(-0.25, -0.1, -0.25, 2.0, 3.25, 2.0),
-                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0)
+                    box(1.0, 3.0, 1.0, 15.0, 4.0, 15.0),
                 )
             }
         }
-    }
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block?, BlockState?>) {
         builder.add(FACING, WATERLOGGED, ACTIVATED)
@@ -129,23 +147,24 @@ open class JumpPadBlock : Block(
 
     override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
         val flag = context.level.getFluidState(context.clickedPos).type === Fluids.WATER
-        return this.defaultBlockState()
+        return this
+            .defaultBlockState()
             .setValue(FACING, context.horizontalDirection.opposite)
             .setValue(WATERLOGGED, flag)
             .setValue(ACTIVATED, false)
     }
 
-    override fun getFluidState(state: BlockState): FluidState {
-        return if (state.getValue(WATERLOGGED)) Fluids.WATER.getSource(false) else super.getFluidState(state)
-    }
+    override fun getFluidState(state: BlockState): FluidState = if (state.getValue(WATERLOGGED)) Fluids.WATER.getSource(false) else super.getFluidState(state)
 
-    override fun rotate(state: BlockState, rot: Rotation): BlockState {
-        return state.setValue(FACING, rot.rotate(state.getValue(FACING)))
-    }
+    override fun rotate(
+        state: BlockState,
+        rot: Rotation,
+    ): BlockState = state.setValue(FACING, rot.rotate(state.getValue(FACING)))
 
-    override fun mirror(state: BlockState, mirrorIn: Mirror): BlockState {
-        return state.rotate(mirrorIn.getRotation(state.getValue(FACING)))
-    }
+    override fun mirror(
+        state: BlockState,
+        mirrorIn: Mirror,
+    ): BlockState = state.rotate(mirrorIn.getRotation(state.getValue(FACING)))
 
     override fun updateShape(
         state: BlockState,
@@ -153,7 +172,7 @@ open class JumpPadBlock : Block(
         facingState: BlockState,
         world: LevelAccessor,
         currentPos: BlockPos,
-        facingPos: BlockPos
+        facingPos: BlockPos,
     ): BlockState {
         if (state.getValue(WATERLOGGED)) {
             world.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
@@ -161,7 +180,12 @@ open class JumpPadBlock : Block(
         return super.updateShape(state, facing, facingState, world, currentPos, facingPos)
     }
 
-    override fun entityInside(state: BlockState, level: Level, pos: BlockPos, entity: Entity) {
+    override fun entityInside(
+        state: BlockState,
+        level: Level,
+        pos: BlockPos,
+        entity: Entity,
+    ) {
         super.entityInside(state, level, pos, entity)
 
         if (entity is TargetEntity) return
@@ -187,7 +211,7 @@ open class JumpPadBlock : Block(
                 ModSounds.JUMP.get(),
                 SoundSource.BLOCKS,
                 1f,
-                1f
+                1f,
             )
         } else {
             level.playLocalSound(
@@ -198,12 +222,13 @@ open class JumpPadBlock : Block(
                 SoundSource.BLOCKS,
                 1f,
                 1f,
-                false
+                false,
             )
         }
 
         // 谁说载具就不能二段跳了（）
-        entity.passengers.stream()
+        entity.passengers
+            .stream()
             .filter { it is Player && it.level().isClientSide }
             .findFirst()
             .ifPresent { _ ->
@@ -215,15 +240,21 @@ open class JumpPadBlock : Block(
         }
     }
 
-    override fun isSignalSource(pState: BlockState): Boolean {
-        return true
-    }
+    override fun isSignalSource(pState: BlockState): Boolean = true
 
-    override fun getSignal(pState: BlockState, pLevel: BlockGetter, pPos: BlockPos, pDirection: Direction): Int {
-        return if (pState.getValue(ACTIVATED)) 15 else 0
-    }
+    override fun getSignal(
+        pState: BlockState,
+        pLevel: BlockGetter,
+        pPos: BlockPos,
+        pDirection: Direction,
+    ): Int = if (pState.getValue(ACTIVATED)) 15 else 0
 
-    override fun tick(pState: BlockState, pLevel: ServerLevel, pPos: BlockPos, pRandom: RandomSource) {
+    override fun tick(
+        pState: BlockState,
+        pLevel: ServerLevel,
+        pPos: BlockPos,
+        pRandom: RandomSource,
+    ) {
         if (pState.getValue(ACTIVATED)) {
             pLevel.setBlock(pPos, pState.setValue(ACTIVATED, false), 3)
         }
@@ -241,7 +272,12 @@ open class JumpPadBlock : Block(
 
         private const val ACTIVATION_TICKS = 4
 
-        private fun setOutputPower(pLevel: LevelAccessor, pState: BlockState, pPos: BlockPos, pWaitTime: Int) {
+        private fun setOutputPower(
+            pLevel: LevelAccessor,
+            pState: BlockState,
+            pPos: BlockPos,
+            pWaitTime: Int,
+        ) {
             pLevel.setBlock(pPos, pState.setValue(ACTIVATED, true), 3)
             pLevel.scheduleTick(pPos, pState.block, pWaitTime)
         }

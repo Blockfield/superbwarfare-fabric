@@ -11,7 +11,9 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.BlockHitResult
 
-open class RpgRocketTBGEntity : FastThrowableProjectile, BasicGeoProjectileEntity {
+open class RpgRocketTBGEntity :
+    FastThrowableProjectile,
+    BasicGeoProjectileEntity {
     init {
         this.durability = 20
         this.gravityValue = 0.03f
@@ -31,7 +33,7 @@ open class RpgRocketTBGEntity : FastThrowableProjectile, BasicGeoProjectileEntit
         pLevel: Level,
         damage: Float,
         explosionDamage: Float,
-        explosionRadius: Float
+        explosionRadius: Float,
     ) : super(pEntityType, pX, pY, pZ, pLevel) {
         this.damageValue = damage
         this.explosionDamageValue = explosionDamage
@@ -44,9 +46,7 @@ open class RpgRocketTBGEntity : FastThrowableProjectile, BasicGeoProjectileEntit
         }
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.RPG_ROCKET_TBG.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.RPG_ROCKET_TBG.get()
 
     override fun tick() {
         super.tick()
@@ -66,7 +66,7 @@ open class RpgRocketTBGEntity : FastThrowableProjectile, BasicGeoProjectileEntit
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
                 ParticleTool.sendParticle(
                     level,
@@ -79,7 +79,7 @@ open class RpgRocketTBGEntity : FastThrowableProjectile, BasicGeoProjectileEntit
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
             }
         }
@@ -88,9 +88,7 @@ open class RpgRocketTBGEntity : FastThrowableProjectile, BasicGeoProjectileEntit
         }
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
     override fun getHiddenTicks() = 1
 }

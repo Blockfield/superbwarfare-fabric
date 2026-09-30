@@ -11,11 +11,13 @@ import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.item.gun.rifle.Hk416Item;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.cache.object.GeoBone;
 
@@ -26,7 +28,18 @@ public class Hk416ItemRenderer extends CustomGunRenderer<Hk416Item> {
     }
 
     @Override
-    public void renderRecursively(PoseStack stack, Hk416Item animatable, GeoBone bone, RenderType type, MultiBufferSource buffer, VertexConsumer bufferIn, boolean isReRender, float partialTick, int packedLightIn, int packedOverlayIn, int color) {
+    public void renderRecursively(
+            PoseStack stack,
+            Hk416Item animatable,
+            GeoBone bone,
+            RenderType type,
+            MultiBufferSource buffer,
+            VertexConsumer bufferIn,
+            boolean isReRender,
+            float partialTick,
+            int packedLightIn,
+            int packedOverlayIn,
+            int color) {
         Minecraft mc = Minecraft.getInstance();
         String name = bone.getName();
         boolean renderingArms = false;
@@ -41,10 +54,13 @@ public class Hk416ItemRenderer extends CustomGunRenderer<Hk416Item> {
         if (player == null) return;
         ItemStack itemStack = player.getMainHandItem();
 
-        if (itemStack.getItem() instanceof GunItem && GeoItem.getId(itemStack) == this.getInstanceId(animatable)) {
-            if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || this.renderPerspective == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
+        if (itemStack.getItem() instanceof GunItem
+                && GeoItem.getId(itemStack) == this.getInstanceId(animatable)) {
+            if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                    || this.renderPerspective == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
 
-                AnimationHelper.handleShootFlare(name, stack, itemStack, bone, buffer, packedLightIn);
+                AnimationHelper.handleShootFlare(
+                        name, stack, itemStack, bone, buffer, packedLightIn);
                 ItemModelHelper.handleGunAttachments(bone, itemStack, name);
 
                 if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
@@ -53,7 +69,10 @@ public class Hk416ItemRenderer extends CustomGunRenderer<Hk416Item> {
                         bone.setHidden(ClientEventHandler.zoomPos > 0.7 && ClientEventHandler.zoom);
                     }
                     if (data.attachment.get(AttachmentType.SCOPE) == 3
-                            && (name.equals("jing") || name.equals("Barrel") || name.equals("yugu") || name.equals("qiangguan"))) {
+                            && (name.equals("jing")
+                                    || name.equals("Barrel")
+                                    || name.equals("yugu")
+                                    || name.equals("qiangguan"))) {
                         bone.setHidden(ClientEventHandler.zoomPos > 0.7 && ClientEventHandler.zoom);
                     }
 
@@ -61,11 +80,59 @@ public class Hk416ItemRenderer extends CustomGunRenderer<Hk416Item> {
 
                     switch (scopeType) {
                         case 1 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.25, 30, 1, 0, 255, 0, 255, "eotech", false);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.25,
+                                        30,
+                                        1,
+                                        0,
+                                        255,
+                                        0,
+                                        255,
+                                        "eotech",
+                                        false);
                         case 2 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.313, 9, 1, 255, 0, 0, 255, "acog", true);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.313,
+                                        9,
+                                        1,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "acog",
+                                        true);
                         case 3 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.29, 65, (float) ClientEventHandler.customZoom, 255, 0, 0, 255, "lpvo", true);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.29,
+                                        65,
+                                        (float) ClientEventHandler.customZoom,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "lpvo",
+                                        true);
                     }
                 }
 
@@ -77,8 +144,28 @@ public class Hk416ItemRenderer extends CustomGunRenderer<Hk416Item> {
         }
 
         if (renderingArms) {
-            AnimationHelper.renderArms(player, this.renderPerspective, stack, name, bone, buffer, type, packedLightIn, false);
+            AnimationHelper.renderArms(
+                    player,
+                    this.renderPerspective,
+                    stack,
+                    name,
+                    bone,
+                    buffer,
+                    type,
+                    packedLightIn,
+                    false);
         }
-        super.renderRecursively(stack, animatable, bone, type, buffer, bufferIn, isReRender, partialTick, packedLightIn, packedOverlayIn, color);
+        super.renderRecursively(
+                stack,
+                animatable,
+                bone,
+                type,
+                buffer,
+                bufferIn,
+                isReRender,
+                partialTick,
+                packedLightIn,
+                packedOverlayIn,
+                color);
     }
 }

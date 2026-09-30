@@ -19,12 +19,16 @@ class MediumRocketItem(
     private val fireProbability: Float,
     private val fireTime: Int,
     @JvmField val type: MediumRocketEntity.Type,
-    private val spreadAmount: Int
+    private val spreadAmount: Int,
 ) : Item(
-    Properties().stacksTo(4)
-), DispenserLaunchable {
-    fun createProjectile(level: Level, pos: Position): MediumRocketEntity {
-        return MediumRocketEntity(
+        Properties().stacksTo(4),
+    ),
+    DispenserLaunchable {
+    fun createProjectile(
+        level: Level,
+        pos: Position,
+    ): MediumRocketEntity =
+        MediumRocketEntity(
             ModEntities.MEDIUM_ROCKET.get(),
             pos.x(),
             pos.y(),
@@ -37,24 +41,22 @@ class MediumRocketItem(
             fireTime,
             type,
             spreadAmount,
-            15
+            15,
         )
-    }
 
-    override fun getLaunchBehavior(): AbstractProjectileDispenseBehavior {
-        return object : AbstractProjectileDispenseBehavior() {
-            override fun getPower(): Float {
-                return 6f
-            }
+    override fun getLaunchBehavior(): AbstractProjectileDispenseBehavior =
+        object : AbstractProjectileDispenseBehavior() {
+            override fun getPower(): Float = 6f
 
-            override fun getProjectile(level: Level, position: Position, stack: ItemStack): Projectile {
-                return createProjectile(level, position)
-            }
+            override fun getProjectile(
+                level: Level,
+                position: Position,
+                stack: ItemStack,
+            ): Projectile = createProjectile(level, position)
 
             override fun playSound(source: BlockSource) {
                 source.level
                     .playSound(null, source.pos, ModSounds.MEDIUM_ROCKET_FIRE.get(), SoundSource.BLOCKS, 4f, 1f)
             }
         }
-    }
 }

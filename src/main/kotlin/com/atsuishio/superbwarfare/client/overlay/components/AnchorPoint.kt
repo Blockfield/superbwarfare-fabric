@@ -23,12 +23,16 @@ data class AnchorPoint(
 ) {
     // TODO 如何处理组件挂载位置？
 
-    fun offset(x: Float, y: Float) =
-        this.copy(baseX = { width -> baseX(width) + x }, baseY = { height -> baseY(height) + y })
+    fun offset(
+        x: Float,
+        y: Float,
+    ) = this.copy(baseX = { width -> baseX(width) + x }, baseY = { height -> baseY(height) + y })
 
     fun offsetX(x: Float) = this.copy(baseX = { width -> baseX(width) + x })
+
     fun offsetY(y: Float) = this.copy(baseY = { height -> baseY(height) + y })
 
     fun getX(width: Float) = baseX(width)
+
     fun getY(height: Float) = baseY(height)
 }

@@ -26,16 +26,23 @@ import kotlin.reflect.full.createInstance
  * "" -> {}
  */
 @Serializable(STOSerializer::class)
-class StringToObject<T : DeserializeFromString>(@JvmField var value: T) {
-    internal class StringOrObjectAdapter<T : DeserializeFromString>(type: Type, private val gson: Gson) :
-        TypeAdapter<StringToObject<T>>() {
+class StringToObject<T : DeserializeFromString>(
+    @JvmField var value: T,
+) {
+    internal class StringOrObjectAdapter<T : DeserializeFromString>(
+        type: Type,
+        private val gson: Gson,
+    ) : TypeAdapter<StringToObject<T>>() {
         /**
          * Type of T
          */
         private val type = (type as ParameterizedType).actualTypeArguments[0]
 
         @Throws(IOException::class)
-        override fun write(jsonWriter: JsonWriter, obj: StringToObject<T>?) {
+        override fun write(
+            jsonWriter: JsonWriter,
+            obj: StringToObject<T>?,
+        ) {
             if (obj == null) {
                 jsonWriter.nullValue()
                 return
@@ -64,7 +71,10 @@ class StringToObject<T : DeserializeFromString>(@JvmField var value: T) {
     }
 
     internal class AdapterFactory : TypeAdapterFactory {
-        override fun <T> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
+        override fun <T> create(
+            gson: Gson,
+            type: TypeToken<T>,
+        ): TypeAdapter<T>? {
             if (StringToObject::class.java.isAssignableFrom(type.getRawType()) && type.type is ParameterizedType) {
                 @Suppress("UNCHECKED_CAST")
                 return StringOrObjectAdapter<DeserializeFromString>(type.type, gson) as TypeAdapter<T>
@@ -78,15 +88,20 @@ private val cachedInstances = mutableMapOf<KClass<*>, Any>()
 
 // 获取object实例或者创建无参构造函数实例
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any> KClass<T>.getInstance() = cachedInstances.getOrPut(this) {
-    objectInstance ?: createInstance()
-} as T
+private fun <T : Any> KClass<T>.getInstance() =
+    cachedInstances.getOrPut(this) {
+        objectInstance ?: createInstance()
+    } as T
 
-class STOSerializer<T : DeserializeFromString>(private val serializer: KSerializer<T>) :
-    KSerializer<StringToObject<T>> {
+class STOSerializer<T : DeserializeFromString>(
+    private val serializer: KSerializer<T>,
+) : KSerializer<StringToObject<T>> {
     override val descriptor = serializer.descriptor
 
-    override fun serialize(encoder: Encoder, value: StringToObject<T>) {
+    override fun serialize(
+        encoder: Encoder,
+        value: StringToObject<T>,
+    ) {
         encoder.encodeSerializableValue(serializer, value.value)
     }
 
@@ -95,15 +110,22 @@ class STOSerializer<T : DeserializeFromString>(private val serializer: KSerializ
         require(decoder is JsonDecoder) { "only JsonDecoder is supported!" }
         val element = decoder.decodeJsonElement()
 
-        if (element !is JsonPrimitive || !element.jsonPrimitive.isString) return StringToObject(
-            decoder.json.decodeFromJsonElement(serializer, element)
-        )
+        if (element !is JsonPrimitive || !element.jsonPrimitive.isString) {
+            return StringToObject(
+                decoder.json.decodeFromJsonElement(serializer, element),
+            )
+        }
 
         @Suppress("UNCHECKED_CAST")
-        val fac = serializer.descriptor.annotations.filterIsInstance<STOFactory>()
-            .singleOrNull()?.factory as KClass<StringInstanceBuilder<T>>?
+        val fac =
+            serializer.descriptor.annotations
+                .filterIsInstance<STOFactory>()
+                .singleOrNull()
+                ?.factory as KClass<StringInstanceBuilder<T>>?
 
-        requireNotNull(fac) { "No factory found for ${serializer.descriptor.serialName}! Add a @STOFactory annotation to your target class!" }
+        requireNotNull(
+            fac,
+        ) { "No factory found for ${serializer.descriptor.serialName}! Add a @STOFactory annotation to your target class!" }
         return StringToObject(fac.getInstance().fromString(element.jsonPrimitive.content))
     }
 }
@@ -115,7 +137,9 @@ class STOSerializer<T : DeserializeFromString>(private val serializer: KSerializ
 @Retention(AnnotationRetention.RUNTIME)
 @SerialInfo
 @Target(AnnotationTarget.CLASS)
-annotation class STOFactory(val factory: KClass<out StringInstanceBuilder<*>>)
+annotation class STOFactory(
+    val factory: KClass<out StringInstanceBuilder<*>>,
+)
 
 interface StringInstanceBuilder<T> {
     fun fromString(value: String): T

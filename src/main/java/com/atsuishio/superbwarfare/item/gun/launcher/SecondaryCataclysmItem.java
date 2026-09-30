@@ -7,11 +7,13 @@ import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.GunProp;
 import com.atsuishio.superbwarfare.data.gun.ShootParameters;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
+import com.atsuishio.superbwarfare.fabric.Capabilities;
 import com.atsuishio.superbwarfare.init.ModRarities;
 import com.atsuishio.superbwarfare.init.ModSounds;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.tools.ParticleTool;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -23,15 +25,17 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import com.atsuishio.superbwarfare.fabric.Capabilities;
+
 import org.jetbrains.annotations.NotNull;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.function.Supplier;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 public class SecondaryCataclysmItem extends GunGeoItem {
 
@@ -41,13 +45,26 @@ public class SecondaryCataclysmItem extends GunGeoItem {
 
     @Override
     @ParametersAreNonnullByDefault
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void appendHoverText(
+            ItemStack stack,
+            TooltipContext context,
+            List<Component> tooltipComponents,
+            TooltipFlag tooltipFlag) {
         tooltipComponents.add(Component.empty());
-        tooltipComponents.add(Component.translatable("des.superbwarfare.secondary_cataclysm_1").withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.ITALIC));
+        tooltipComponents.add(
+                Component.translatable("des.superbwarfare.secondary_cataclysm_1")
+                        .withStyle(ChatFormatting.GRAY)
+                        .withStyle(ChatFormatting.ITALIC));
 
         TooltipTool.addHideText(tooltipComponents, Component.empty());
-        TooltipTool.addHideText(tooltipComponents, Component.translatable("des.superbwarfare.trachelium_3").withStyle(ChatFormatting.WHITE));
-        TooltipTool.addHideText(tooltipComponents, Component.translatable("des.superbwarfare.secondary_cataclysm_2").withStyle(Style.EMPTY.withColor(0x68B9F6)));
+        TooltipTool.addHideText(
+                tooltipComponents,
+                Component.translatable("des.superbwarfare.trachelium_3")
+                        .withStyle(ChatFormatting.WHITE));
+        TooltipTool.addHideText(
+                tooltipComponents,
+                Component.translatable("des.superbwarfare.secondary_cataclysm_2")
+                        .withStyle(Style.EMPTY.withColor(0x68B9F6)));
     }
 
     @Override
@@ -60,46 +77,60 @@ public class SecondaryCataclysmItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
-            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(
+                    RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
 
         var data = GunData.from(stack);
 
         if (data.reload.stage() == 1 && data.reload.prepareLoadTimer.get() > 0) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.secondary_cataclysm.prepare"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.secondary_cataclysm.prepare"));
         }
 
         if (data.loadIndex.get() == 0 && data.reload.stage() == 2) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.secondary_cataclysm.iterativeload"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.secondary_cataclysm.iterativeload"));
         }
 
         if (data.loadIndex.get() == 1 && data.reload.stage() == 2) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.secondary_cataclysm.iterativeload2"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.secondary_cataclysm.iterativeload2"));
         }
 
         if (data.reload.stage() == 3) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.secondary_cataclysm.finish"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.secondary_cataclysm.finish"));
         }
 
-        return event.setAndContinue(RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
+        return event.setAndContinue(
+                RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
     }
 
     private PlayState meleePredicate(AnimationState<SecondaryCataclysmItem> event) {
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
-            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(
+                    RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
 
         if (ClientEventHandler.gunMelee > 0) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.secondary_cataclysm.hit"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.secondary_cataclysm.hit"));
         }
 
-        return event.setAndContinue(RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
+        return event.setAndContinue(
+                RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var reloadAnimController = new AnimationController<>(this, "reloadAnimController", 1, this::reloadAnimPredicate);
+        var reloadAnimController =
+                new AnimationController<>(
+                        this, "reloadAnimController", 1, this::reloadAnimPredicate);
         data.add(reloadAnimController);
-        var meleeController = new AnimationController<>(this, "meleeController", 0, this::meleePredicate);
+        var meleeController =
+                new AnimationController<>(this, "meleeController", 0, this::meleePredicate);
         data.add(meleeController);
     }
 
@@ -128,22 +159,30 @@ public class SecondaryCataclysmItem extends GunGeoItem {
         var hasEnoughEnergy = stackCap != null && stackCap.getEnergyStored() >= 3000;
 
         boolean isChargedFire = hasEnoughEnergy;
-//                zoom && hasEnoughEnergy;
-//
-//        if (isChargedFire) {
-//            data.setTempModifications(rawData -> {
-//                rawData.damage *= 1.25F;
-//                rawData.velocity *= 4;
-//                return rawData;
-//            });
-//        }
+        //                zoom && hasEnoughEnergy;
+        //
+        //        if (isChargedFire) {
+        //            data.setTempModifications(rawData -> {
+        //                rawData.damage *= 1.25F;
+        //                rawData.velocity *= 4;
+        //                return rawData;
+        //            });
+        //        }
 
         if (!super.shootBullet(parameters)) return false;
 
-        ParticleTool.sendParticle(level, ParticleTypes.CLOUD, shootPosition.x + 1.8 * shootDirection.x,
+        ParticleTool.sendParticle(
+                level,
+                ParticleTypes.CLOUD,
+                shootPosition.x + 1.8 * shootDirection.x,
                 shootPosition.y - 0.35 + 1.8 * shootDirection.y,
                 shootPosition.z + 1.8 * shootDirection.z,
-                4, 0.1, 0.1, 0.1, 0.002, true);
+                4,
+                0.1,
+                0.1,
+                0.1,
+                0.002,
+                true);
 
         if (isChargedFire) {
             var itemCap = Capabilities.EnergyStorage.ITEM.get(stack);
@@ -162,8 +201,10 @@ public class SecondaryCataclysmItem extends GunGeoItem {
         if (cap != null && cap.getEnergyStored() > 3000) {
             float soundRadius = data.get(GunProp.SOUND_RADIUS).floatValue();
 
-            shooter.playSound(ModSounds.SECONDARY_CATACLYSM_FIRE_3P_CHARGE.get(), soundRadius * 0.4f, 1f);
-            shooter.playSound(ModSounds.SECONDARY_CATACLYSM_FAR_CHARGE.get(), soundRadius * 0.7f, 1f);
+            shooter.playSound(
+                    ModSounds.SECONDARY_CATACLYSM_FIRE_3P_CHARGE.get(), soundRadius * 0.4f, 1f);
+            shooter.playSound(
+                    ModSounds.SECONDARY_CATACLYSM_FAR_CHARGE.get(), soundRadius * 0.7f, 1f);
             shooter.playSound(ModSounds.SECONDARY_CATACLYSM_VERYFAR_CHARGE.get(), soundRadius, 1f);
         } else {
             super.playFireSounds(data, shooter, zoom);

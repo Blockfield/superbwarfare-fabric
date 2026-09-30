@@ -9,7 +9,10 @@ import net.minecraft.world.entity.EntityType
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 
-open class A10Entity(type: EntityType<A10Entity>, world: Level) : VehicleEntity(type, world) {
+open class A10Entity(
+    type: EntityType<A10Entity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     override fun onEngine1Damaged(pos: Vec3) {
         if (level().isClientSide) {
             val random = 2 * (this.random.nextFloat() - 0.5f)
@@ -24,8 +27,13 @@ open class A10Entity(type: EntityType<A10Entity>, world: Level) : VehicleEntity(
                     2.5f + 0.5f * random,
                     -0.07f,
                     true,
-                    true
-                ), pos, 0.5f, level(), 1.5f, 1
+                    true,
+                ),
+                pos,
+                0.5f,
+                level(),
+                1.5f,
+                1,
             )
         }
     }
@@ -44,8 +52,13 @@ open class A10Entity(type: EntityType<A10Entity>, world: Level) : VehicleEntity(
                     2.5f + 0.5f * random,
                     -0.07f,
                     true,
-                    true
-                ), pos, 0.5f, level(), 1.5f, 1
+                    true,
+                ),
+                pos,
+                0.5f,
+                level(),
+                1.5f,
+                1,
             )
         }
     }

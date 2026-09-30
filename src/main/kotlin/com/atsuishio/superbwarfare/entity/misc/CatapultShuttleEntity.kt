@@ -26,21 +26,22 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import kotlin.math.max
 
-open class CatapultShuttleEntity(type: EntityType<out CatapultShuttleEntity>, world: Level) : Entity(type, world) {
-
+open class CatapultShuttleEntity(
+    type: EntityType<out CatapultShuttleEntity>,
+    world: Level,
+) : Entity(type, world) {
     open val modelInstance = EntityModelReloadListener.getModel(MODEL)?.createInstance()
 
     constructor(level: Level) : this(ModEntities.CATAPULT_SHUTTLE.get(), level)
 
-    override fun canCollideWith(entity: Entity): Boolean {
-        return entity is CatapultShuttleEntity
-    }
+    override fun canCollideWith(entity: Entity): Boolean = entity is CatapultShuttleEntity
 
-    override fun isPickable(): Boolean {
-        return !this.isRemoved
-    }
+    override fun isPickable(): Boolean = !this.isRemoved
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (player.isShiftKeyDown && player.mainHandItem.isEmpty) {
             if (!this.level().isClientSide) {
                 clearTowingInfo()

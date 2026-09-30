@@ -1,5 +1,6 @@
 package com.atsuishio.superbwarfare.network.message.send
 
+import com.atsuishio.superbwarfare.fabric.findFirstEquipped
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.curio.ParachuteItem
@@ -7,7 +8,6 @@ import com.atsuishio.superbwarfare.network.PayloadContext
 import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import com.atsuishio.superbwarfare.tools.NBTTool
 import net.minecraft.sounds.SoundSource
-import com.atsuishio.superbwarfare.fabric.findFirstEquipped
 
 object ParachuteMessage : ServerPacketPayload() {
     override fun PayloadContext.handler() {
@@ -31,7 +31,7 @@ object ParachuteMessage : ServerPacketPayload() {
                         ModSounds.PARACHUTE_OPEN.get(),
                         SoundSource.PLAYERS,
                         1f,
-                        1f
+                        1f,
                     )
                 } else if (tag.getBoolean(ParachuteItem.TAG_OPEN)) {
                     tag.putBoolean(ParachuteItem.TAG_OPEN, false)
@@ -45,7 +45,7 @@ object ParachuteMessage : ServerPacketPayload() {
                         ModSounds.PARACHUTE_CLOSE.get(),
                         SoundSource.PLAYERS,
                         1f,
-                        1f
+                        1f,
                     )
                 }
             }

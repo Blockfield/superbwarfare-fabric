@@ -11,11 +11,13 @@ import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.item.gun.rifle.Qbz95Item;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.cache.object.GeoBone;
 
@@ -26,7 +28,18 @@ public class Qbz95ItemRenderer extends CustomGunRenderer<Qbz95Item> {
     }
 
     @Override
-    public void renderRecursively(PoseStack stack, Qbz95Item animatable, GeoBone bone, RenderType type, MultiBufferSource buffer, VertexConsumer bufferIn, boolean isReRender, float partialTick, int packedLightIn, int packedOverlayIn, int color) {
+    public void renderRecursively(
+            PoseStack stack,
+            Qbz95Item animatable,
+            GeoBone bone,
+            RenderType type,
+            MultiBufferSource buffer,
+            VertexConsumer bufferIn,
+            boolean isReRender,
+            float partialTick,
+            int packedLightIn,
+            int packedOverlayIn,
+            int color) {
         Minecraft mc = Minecraft.getInstance();
         String name = bone.getName();
         boolean renderingArms = false;
@@ -43,8 +56,10 @@ public class Qbz95ItemRenderer extends CustomGunRenderer<Qbz95Item> {
 
         boolean needHide = name.equals("under_rail") || name.equals("longbow");
 
-        if (itemStack.getItem() instanceof GunItem && GeoItem.getId(itemStack) == this.getInstanceId(animatable)) {
-            if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || this.renderPerspective == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
+        if (itemStack.getItem() instanceof GunItem
+                && GeoItem.getId(itemStack) == this.getInstanceId(animatable)) {
+            if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                    || this.renderPerspective == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
                 var data = GunData.from(itemStack);
                 if (name.equals("tiba")) {
                     bone.setHidden(data.attachment.get(AttachmentType.SCOPE) != 0);
@@ -57,11 +72,11 @@ public class Qbz95ItemRenderer extends CustomGunRenderer<Qbz95Item> {
                 }
 
                 ItemModelHelper.handleGunAttachments(bone, itemStack, name);
-                AnimationHelper.handleShootFlare(name, stack, itemStack, bone, buffer, packedLightIn);
+                AnimationHelper.handleShootFlare(
+                        name, stack, itemStack, bone, buffer, packedLightIn);
 
                 if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
-                    if (data.attachment.get(AttachmentType.SCOPE) == 2
-                            && (name.equals("hidden"))) {
+                    if (data.attachment.get(AttachmentType.SCOPE) == 2 && (name.equals("hidden"))) {
                         bone.setHidden(ClientEventHandler.zoomPos > 0.7 && ClientEventHandler.zoom);
                     }
                     if (data.attachment.get(AttachmentType.SCOPE) == 3
@@ -72,11 +87,59 @@ public class Qbz95ItemRenderer extends CustomGunRenderer<Qbz95Item> {
                     int scopeType = data.attachment.get(AttachmentType.SCOPE);
                     switch (scopeType) {
                         case 1 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.5363125, 16, 1, 255, 0, 0, 255, "dot", false);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.5363125,
+                                        16,
+                                        1,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "dot",
+                                        false);
                         case 2 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.55, 24, 1, 255, 0, 0, 255, "dot", false);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.55,
+                                        24,
+                                        1,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "dot",
+                                        false);
                         case 3 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.55, 36, 4, 255, 0, 0, 255, "sniper", true);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.55,
+                                        36,
+                                        4,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "sniper",
+                                        true);
                     }
                 }
 
@@ -94,8 +157,28 @@ public class Qbz95ItemRenderer extends CustomGunRenderer<Qbz95Item> {
         }
 
         if (renderingArms) {
-            AnimationHelper.renderArms(player, this.renderPerspective, stack, name, bone, buffer, type, packedLightIn, true);
+            AnimationHelper.renderArms(
+                    player,
+                    this.renderPerspective,
+                    stack,
+                    name,
+                    bone,
+                    buffer,
+                    type,
+                    packedLightIn,
+                    true);
         }
-        super.renderRecursively(stack, animatable, bone, type, buffer, bufferIn, isReRender, partialTick, packedLightIn, packedOverlayIn, color);
+        super.renderRecursively(
+                stack,
+                animatable,
+                bone,
+                type,
+                buffer,
+                bufferIn,
+                isReRender,
+                partialTick,
+                packedLightIn,
+                packedOverlayIn,
+                color);
     }
 }

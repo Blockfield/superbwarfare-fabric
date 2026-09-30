@@ -7,14 +7,16 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.util.profiling.ProfilerFiller
 
-open class BasicModelReloadListener(path: String) : BedrockModelReloadListener<BakedBedrockModel>(
-    "models/bedrock/$path",
-    "animations/bedrock/$path"
-) {
+open class BasicModelReloadListener(
+    path: String,
+) : BedrockModelReloadListener<BakedBedrockModel>(
+        "models/bedrock/$path",
+        "animations/bedrock/$path",
+    ) {
     override fun apply(
         map: Map<ResourceLocation, BedrockModelPOJO>,
         resourceManager: ResourceManager,
-        profiler: ProfilerFiller
+        profiler: ProfilerFiller,
     ) {
         super.apply(map, resourceManager, profiler)
         map.forEach { (location, pojo) ->

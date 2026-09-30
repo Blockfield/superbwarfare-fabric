@@ -10,6 +10,8 @@ import com.atsuishio.superbwarfare.item.ItemScreenProvider
 import com.atsuishio.superbwarfare.tools.component1
 import com.atsuishio.superbwarfare.tools.component2
 import com.atsuishio.superbwarfare.tools.component3
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.BlockPos
@@ -21,8 +23,6 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.context.UseOnContext
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 var ItemStack.firingParameters: FiringParametersItem.Parameters
     get() = this.getOrDefault(ModDataComponents.FIRING_PARAMETERS.get(), FiringParametersItem.Parameters())
@@ -30,9 +30,16 @@ var ItemStack.firingParameters: FiringParametersItem.Parameters
         set(ModDataComponents.FIRING_PARAMETERS.get(), value)
     }
 
-class FiringParametersItem : Item(Properties().stacksTo(1)), ItemScreenProvider, IVehicleInteract {
+class FiringParametersItem :
+    Item(Properties().stacksTo(1)),
+    ItemScreenProvider,
+    IVehicleInteract {
     @JvmRecord
-    data class Parameters(val pos: BlockPos, val radius: Int, val isDepressed: Boolean) {
+    data class Parameters(
+        val pos: BlockPos,
+        val radius: Int,
+        val isDepressed: Boolean,
+    ) {
         constructor(pos: BlockPos, isDepressed: Boolean) : this(pos, 0, isDepressed)
 
         @JvmOverloads
@@ -56,7 +63,7 @@ class FiringParametersItem : Item(Properties().stacksTo(1)), ItemScreenProvider,
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         TooltipTool.addScreenProviderText(tooltipComponents)
 
@@ -64,32 +71,38 @@ class FiringParametersItem : Item(Properties().stacksTo(1)), ItemScreenProvider,
         val (x, y, z) = pos
 
         tooltipComponents.add(
-            Component.translatable("tips.superbwarfare.mortar.target_pos").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal("[$x, $y, $z]"))
+            Component
+                .translatable("tips.superbwarfare.mortar.target_pos")
+                .withStyle(ChatFormatting.GRAY)
+                .append(Component.literal("[$x, $y, $z]")),
         )
         tooltipComponents.add(
-            Component.translatable("tips.superbwarfare.mortar.target_pos.radius", radius).withStyle(ChatFormatting.GRAY)
+            Component.translatable("tips.superbwarfare.mortar.target_pos.radius", radius).withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(
-            Component.translatable(
-                if (isDepressed)
-                    "tips.superbwarfare.mortar.target_pos.depressed_trajectory"
-                else
-                    "tips.superbwarfare.mortar.target_pos.lofted_trajectory"
-            ).withStyle(ChatFormatting.GRAY)
+            Component
+                .translatable(
+                    if (isDepressed) {
+                        "tips.superbwarfare.mortar.target_pos.depressed_trajectory"
+                    } else {
+                        "tips.superbwarfare.mortar.target_pos.lofted_trajectory"
+                    },
+                ).withStyle(ChatFormatting.GRAY),
         )
     }
 
     @Environment(EnvType.CLIENT)
-    override fun getItemScreen(stack: ItemStack, player: Player, hand: InteractionHand): Screen {
-        return FiringParametersScreen(stack, hand)
-    }
+    override fun getItemScreen(
+        stack: ItemStack,
+        player: Player,
+        hand: InteractionHand,
+    ): Screen = FiringParametersScreen(stack, hand)
 
     override fun onInteractVehicle(
         vehicle: VehicleEntity,
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult? {
         if (vehicle !is ArtilleryEntity) return null
         if (!player.isShiftKeyDown) return null

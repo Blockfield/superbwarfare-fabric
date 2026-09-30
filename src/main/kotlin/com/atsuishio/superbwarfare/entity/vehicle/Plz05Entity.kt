@@ -7,7 +7,10 @@ import com.atsuishio.superbwarfare.tools.toVec3
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.level.Level
 
-open class Plz05Entity(type: EntityType<Plz05Entity>, world: Level) : SpArtilleryEntity(type, world) {
+open class Plz05Entity(
+    type: EntityType<Plz05Entity>,
+    world: Level,
+) : SpArtilleryEntity(type, world) {
     private var wasLockTurret = false
 
     override fun baseTick() {
@@ -28,13 +31,14 @@ open class Plz05Entity(type: EntityType<Plz05Entity>, world: Level) : SpArtiller
             val ctx = anim?.context ?: return
             if (lockTurret && !wasLockTurret) {
                 ctx.playAnimation(
-                    "animation.plz_05.lock_turret", AnimationPlayType.LOOP,
-                    fadeInTicks = 40
+                    "animation.plz_05.lock_turret",
+                    AnimationPlayType.LOOP,
+                    fadeInTicks = 40,
                 )
             } else if (!lockTurret && wasLockTurret) {
                 ctx.stopAnimation(
                     "animation.plz_05.lock_turret",
-                    fadeOutTicks = 80
+                    fadeOutTicks = 80,
                 )
             }
             wasLockTurret = lockTurret

@@ -11,7 +11,7 @@
 1.  确保使用的Minecraft版本为 1.20.1；
 2.  确保你为Minecraft安装了 47.2.0 及以上版本的 Forge；
 3.  确保安装了 5.4.2-1.20.1 版本及以上的 Curios Api 模组；
-4. 确保安装了 4.7.1.2-1.20.1 版本及以上的 Geckolib 模组；(0.8.0前要求4.4.4)
+4.  确保安装了 4.7.1.2-1.20.1 版本及以上的 Geckolib 模组；(0.8.0前要求4.4.4)
 5.  将模组jar文件放进mods文件夹。
 
 ## 游玩教程
@@ -39,6 +39,5 @@ QQ群: 460300219
 [Github](https://github.com/Mercurows/SuperbWarfare)
 
 [Gitee](https://gitee.com/atsuishio/SuperbWarfare)
-
 
 [Discord](https://discord.gg/g7RVnHFDh9)

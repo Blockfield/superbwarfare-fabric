@@ -11,8 +11,9 @@ import com.atsuishio.superbwarfare.data.gun.value.AttachmentType
  *
  * @param gun the owning [GunData] instance.
  */
-class Attachment(private val gun: GunData) {
-
+class Attachment(
+    private val gun: GunData,
+) {
     private val attachment = gun.attachment()
 
     /**
@@ -29,8 +30,11 @@ class Attachment(private val gun: GunData) {
      * @param type slot to modify.
      * @param value new slot index.
      */
-    fun set(type: AttachmentType, value: Int) {
-        if (attachment.getInt(type.attachmentName) == value) return  // no-op: unchanged
+    fun set(
+        type: AttachmentType,
+        value: Int,
+    ) {
+        if (attachment.getInt(type.attachmentName) == value) return // no-op: unchanged
         attachment.putInt(type.attachmentName, value)
         gun.nbtVersion.invalidateStructural()
     }

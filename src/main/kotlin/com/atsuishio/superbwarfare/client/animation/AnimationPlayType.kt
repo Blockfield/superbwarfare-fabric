@@ -5,7 +5,9 @@ import com.maydaymemory.mae.control.runner.*
 import java.util.*
 import java.util.function.Supplier
 
-enum class AnimationPlayType(val supplier: Supplier<IAnimationState>) {
+enum class AnimationPlayType(
+    val supplier: Supplier<IAnimationState>,
+) {
     @SerializedName("play_once_stop")
     PLAY_ONCE_STOP(Supplier { PlayingState({ System.nanoTime() }, { StopState() }) }),
 
@@ -13,11 +15,10 @@ enum class AnimationPlayType(val supplier: Supplier<IAnimationState>) {
     PLAY_ONCE_HOLD(Supplier { PlayingState({ System.nanoTime() }, { PauseState() }) }),
 
     @SerializedName("loop")
-    LOOP(Supplier { LoopingState { System.nanoTime() } });
+    LOOP(Supplier { LoopingState { System.nanoTime() } }),
+    ;
 
-    fun state(): IAnimationState {
-        return supplier.get()
-    }
+    fun state(): IAnimationState = supplier.get()
 
     companion object {
         /**

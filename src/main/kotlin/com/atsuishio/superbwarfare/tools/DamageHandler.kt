@@ -14,10 +14,15 @@ import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 
-fun Entity?.forceHurt(source: DamageSource, damage: Float): Boolean {
-    return if (this == null) false
-    else doDamage(this, source, damage)
-}
+fun Entity?.forceHurt(
+    source: DamageSource,
+    damage: Float,
+): Boolean =
+    if (this == null) {
+        false
+    } else {
+        doDamage(this, source, damage)
+    }
 
 object DamageHandler {
     /**
@@ -28,7 +33,11 @@ object DamageHandler {
      * поэтому сбрасываем ровно те два поля, из-за которых hurt() отказал, и повторяем вызов.
      */
     @JvmStatic
-    fun doDamage(entity: Entity, source: DamageSource, damage: Float): Boolean {
+    fun doDamage(
+        entity: Entity,
+        source: DamageSource,
+        damage: Float,
+    ): Boolean {
         if (entity.hurt(source, damage)) return true
         if (entity !is LivingEntity || entity.level().isClientSide) return false
         if (!MiscConfig.FORCE_DAMAGE_MODE.get()) return false
@@ -47,48 +56,58 @@ object DamageHandler {
         return false
     }
 
-    fun getDamageInfo(vehicle: VehicleEntity, source: DamageSource, amount: Float): MutableComponent {
+    fun getDamageInfo(
+        vehicle: VehicleEntity,
+        source: DamageSource,
+        amount: Float,
+    ): MutableComponent {
         val detailedDamageResult = vehicle.getDamageModifier().matchResult(vehicle, source, amount)
         val finalDamage =
             if (detailedDamageResult.isEmpty()) amount else detailedDamageResult[detailedDamageResult.size - 1].damage
 
-        val details = Component.empty()
-            .append(
-                Component.translatable(
-                    "des.superbwarfare.vehicle_damage_analyzer.info.raw",
-                    format2D(amount.toDouble()) + "\n"
-                ).withStyle(ChatFormatting.YELLOW).withStyle(ChatFormatting.UNDERLINE)
-            )
-            .append(Component.empty().withStyle(ChatFormatting.RESET))
-            .append(integrateInfo(detailedDamageResult))
-            .append(
-                Component.translatable(
-                    "des.superbwarfare.vehicle_damage_analyzer.info.final",
-                    format2D(finalDamage.toDouble())
-                ).withStyle(ChatFormatting.GREEN)
-            )
+        val details =
+            Component
+                .empty()
+                .append(
+                    Component
+                        .translatable(
+                            "des.superbwarfare.vehicle_damage_analyzer.info.raw",
+                            format2D(amount.toDouble()) + "\n",
+                        ).withStyle(ChatFormatting.YELLOW)
+                        .withStyle(ChatFormatting.UNDERLINE),
+                ).append(Component.empty().withStyle(ChatFormatting.RESET))
+                .append(integrateInfo(detailedDamageResult))
+                .append(
+                    Component
+                        .translatable(
+                            "des.superbwarfare.vehicle_damage_analyzer.info.final",
+                            format2D(finalDamage.toDouble()),
+                        ).withStyle(ChatFormatting.GREEN),
+                )
 
-        return Component.literal("[").append(vehicle.displayName ?: Component.empty())
+        return Component
+            .literal("[")
+            .append(vehicle.displayName ?: Component.empty())
             .append(Component.literal("] ").withStyle(ChatFormatting.WHITE))
             .append(
-                Component.translatable(
-                    "des.superbwarfare.vehicle_damage_analyzer.info.raw",
-                    format2D(amount.toDouble())
-                ).withStyle(ChatFormatting.YELLOW)
-            )
-            .append(Component.literal(" => ").withStyle(ChatFormatting.WHITE))
+                Component
+                    .translatable(
+                        "des.superbwarfare.vehicle_damage_analyzer.info.raw",
+                        format2D(amount.toDouble()),
+                    ).withStyle(ChatFormatting.YELLOW),
+            ).append(Component.literal(" => ").withStyle(ChatFormatting.WHITE))
             .append(
-                Component.translatable(
-                    "des.superbwarfare.vehicle_damage_analyzer.info.final",
-                    format2D(finalDamage.toDouble())
-                ).withStyle(ChatFormatting.GREEN)
-            )
-            .withStyle {
+                Component
+                    .translatable(
+                        "des.superbwarfare.vehicle_damage_analyzer.info.final",
+                        format2D(finalDamage.toDouble()),
+                    ).withStyle(ChatFormatting.GREEN),
+            ).withStyle {
                 it.withHoverEvent(
                     HoverEvent(
                         HoverEvent.Action.SHOW_TEXT,
-                        details
-                    )
+                        details,
+                    ),
                 )
             }
     }

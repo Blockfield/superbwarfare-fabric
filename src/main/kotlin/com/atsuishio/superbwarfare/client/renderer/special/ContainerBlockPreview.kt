@@ -6,15 +6,15 @@ import com.atsuishio.superbwarfare.client.renderer.ModRenderTypes
 import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.tools.localPlayer
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.HitResult
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 
 @Environment(EnvType.CLIENT)
 object ContainerBlockPreview {
@@ -68,10 +68,11 @@ object ContainerBlockPreview {
         poseStack.translate(pos.x - view.x, pos.y - view.y + 1, pos.z - view.z)
 
         // 什么b位置
-        val aabb = AABB(pos)
-            .inflate(w.toDouble(), 0.0, w.toDouble())
-            .expandTowards(0.0, (h - 1).toDouble(), 0.0)
-            .move(0.0, -1.0, 0.0)
+        val aabb =
+            AABB(pos)
+                .inflate(w.toDouble(), 0.0, w.toDouble())
+                .expandTowards(0.0, (h - 1).toDouble(), 0.0)
+                .move(0.0, -1.0, 0.0)
 
         val startX = aabb.minX.toFloat() - 0.001f - pos.x
         val startY = aabb.minY.toFloat() - 0.001f - pos.y
@@ -87,9 +88,13 @@ object ContainerBlockPreview {
         val blue = 0.0f
         val alpha = 0.2f
 
-        val builder = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(ModRenderTypes.BLOCK_OVERLAY)
+        val builder =
+            Minecraft
+                .getInstance()
+                .renderBuffers()
+                .bufferSource()
+                .getBuffer(ModRenderTypes.BLOCK_OVERLAY)
         val m4f = poseStack.last().pose()
-
 
         // east
         builder.addVertex(m4f, startX, startY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
@@ -97,13 +102,11 @@ object ContainerBlockPreview {
         builder.addVertex(m4f, endX, endY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, endX, startY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
 
-
         // west
         builder.addVertex(m4f, startX, startY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, endX, startY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, endX, endY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, startX, endY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
-
 
         // south
         builder.addVertex(m4f, endX, startY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
@@ -111,20 +114,17 @@ object ContainerBlockPreview {
         builder.addVertex(m4f, endX, endY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, endX, startY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
 
-
         // north
         builder.addVertex(m4f, startX, startY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, startX, startY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, startX, endY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, startX, endY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
 
-
         // top
         builder.addVertex(m4f, startX, endY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, endX, endY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, endX, endY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
         builder.addVertex(m4f, startX, endY, endZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)
-
 
         // bottom
         builder.addVertex(m4f, startX, startY, startZ).setColor(red.toFloat(), green.toFloat(), blue, alpha)

@@ -28,7 +28,7 @@ object FairMeans : Perk("fair_means", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (data.get(GunProp.BYPASSES_ARMOR) > 0) {

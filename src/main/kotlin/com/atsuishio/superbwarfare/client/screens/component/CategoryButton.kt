@@ -10,11 +10,21 @@ import net.minecraft.client.gui.components.Button
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.network.chat.Component
 
-class CategoryButton(x: Int, y: Int, var category: VehicleAssemblingRecipe.Category, onPress: OnPress) :
-    Button(x, y, 20, 22, Component.empty(), onPress, DEFAULT_NARRATION), AccessoriesButtonStub {
+class CategoryButton(
+    x: Int,
+    y: Int,
+    var category: VehicleAssemblingRecipe.Category,
+    onPress: OnPress,
+) : Button(x, y, 20, 22, Component.empty(), onPress, DEFAULT_NARRATION),
+    AccessoriesButtonStub {
     private var isSelected = false
 
-    override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun renderWidget(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         pGuiGraphics.pose().pushPose()
         RenderSystem.enableDepthTest()
 
@@ -28,7 +38,7 @@ class CategoryButton(x: Int, y: Int, var category: VehicleAssemblingRecipe.Categ
                 23,
                 this.height,
                 VehicleAssemblingScreen.IMAGE_SIZE,
-                VehicleAssemblingScreen.IMAGE_SIZE
+                VehicleAssemblingScreen.IMAGE_SIZE,
             )
         } else {
             pGuiGraphics.blit(
@@ -40,7 +50,7 @@ class CategoryButton(x: Int, y: Int, var category: VehicleAssemblingRecipe.Categ
                 20,
                 this.height,
                 VehicleAssemblingScreen.IMAGE_SIZE,
-                VehicleAssemblingScreen.IMAGE_SIZE
+                VehicleAssemblingScreen.IMAGE_SIZE,
             )
         }
 
@@ -51,17 +61,18 @@ class CategoryButton(x: Int, y: Int, var category: VehicleAssemblingRecipe.Categ
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
 
-        val vOffset = when (this.category) {
-            VehicleAssemblingRecipe.Category.LAND -> 182
-            VehicleAssemblingRecipe.Category.DEFENSE -> 198
-            VehicleAssemblingRecipe.Category.AIRCRAFT -> 214
-            VehicleAssemblingRecipe.Category.WATER -> 230
-            VehicleAssemblingRecipe.Category.CIVILIAN -> 246
-            else -> 262
-        }
+        val vOffset =
+            when (this.category) {
+                VehicleAssemblingRecipe.Category.LAND -> 182
+                VehicleAssemblingRecipe.Category.DEFENSE -> 198
+                VehicleAssemblingRecipe.Category.AIRCRAFT -> 214
+                VehicleAssemblingRecipe.Category.WATER -> 230
+                VehicleAssemblingRecipe.Category.CIVILIAN -> 246
+                else -> 262
+            }
         pGuiGraphics.blit(
             VehicleAssemblingScreen.TEXTURE,
             this.x + 3,
@@ -71,7 +82,7 @@ class CategoryButton(x: Int, y: Int, var category: VehicleAssemblingRecipe.Categ
             16,
             16,
             VehicleAssemblingScreen.IMAGE_SIZE,
-            VehicleAssemblingScreen.IMAGE_SIZE
+            VehicleAssemblingScreen.IMAGE_SIZE,
         )
 
         RenderSystem.depthMask(true)
@@ -91,13 +102,17 @@ class CategoryButton(x: Int, y: Int, var category: VehicleAssemblingRecipe.Categ
         this.isSelected = selected
     }
 
-    fun renderTooltips(pGuiGraphics: GuiGraphics, mouseX: Int, mouseY: Int) {
+    fun renderTooltips(
+        pGuiGraphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+    ) {
         if (this.isHovered()) {
             pGuiGraphics.renderTooltip(
                 mc.font,
                 Component.translatable("tips.superbwarfare.category." + this.category.typeName),
                 mouseX,
-                mouseY
+                mouseY,
             )
         }
     }

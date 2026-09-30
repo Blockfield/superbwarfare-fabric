@@ -8,11 +8,14 @@ import net.minecraft.resources.ResourceLocation
 
 open class VehicleAnimationInstance<T>(
     entity: T,
-    location: ResourceLocation
+    location: ResourceLocation,
 ) where T : VehicleEntity, T : BasicGeoVehicleEntity {
     val context: VehicleAnimationContext<T> = VehicleAnimationContext(entity, location)
 
-    open fun fire(weaponName: String, index: Int) {
+    open fun fire(
+        weaponName: String,
+        index: Int,
+    ) {
         context.fire(weaponName, index)
     }
 
@@ -20,9 +23,7 @@ open class VehicleAnimationInstance<T>(
         context.tick()
     }
 
-    open fun getPose(): Pose {
-        return context.getPose()
-    }
+    open fun getPose(): Pose = context.getPose()
 
     companion object {
         @JvmStatic

@@ -29,14 +29,13 @@ class PhosphorusFireCapability {
 
         /** Хранится тем же тегом, что и на NeoForge, — чтобы старые миры читались без миграции. */
         @JvmField
-        val CODEC: Codec<PhosphorusFireCapability> = CompoundTag.CODEC.xmap(
-            { tag -> PhosphorusFireCapability().apply { readFromNBT(tag) } },
-            PhosphorusFireCapability::writeToNBT
-        )
+        val CODEC: Codec<PhosphorusFireCapability> =
+            CompoundTag.CODEC.xmap(
+                { tag -> PhosphorusFireCapability().apply { readFromNBT(tag) } },
+                PhosphorusFireCapability::writeToNBT,
+            )
 
         @JvmStatic
-        fun of(living: LivingEntity): PhosphorusFireCapability {
-            return living.getData(ModAttachments.PHOSPHORUS_FIRE)
-        }
+        fun of(living: LivingEntity): PhosphorusFireCapability = living.getData(ModAttachments.PHOSPHORUS_FIRE)
     }
 }

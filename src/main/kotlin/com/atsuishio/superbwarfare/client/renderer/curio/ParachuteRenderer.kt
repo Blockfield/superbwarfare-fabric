@@ -8,6 +8,10 @@ import com.atsuishio.superbwarfare.tools.localPlayer
 import com.atsuishio.superbwarfare.tools.mc
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
+import io.wispforest.accessories.api.client.AccessoryRenderer
+import io.wispforest.accessories.api.slot.SlotReference
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.CameraType
 import net.minecraft.client.model.EntityModel
 import net.minecraft.client.renderer.MultiBufferSource
@@ -17,10 +21,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
-import io.wispforest.accessories.api.client.AccessoryRenderer
-import io.wispforest.accessories.api.slot.SlotReference
 
 class ParachuteRenderer : AccessoryRenderer {
     private val model: ParachuteModel = ParachuteModel(mc.entityModels.bakeLayer(ParachuteModel.LAYER_LOCATION))
@@ -37,7 +37,7 @@ class ParachuteRenderer : AccessoryRenderer {
         partialTicks: Float,
         ageInTicks: Float,
         netHeadYaw: Float,
-        headPitch: Float
+        headPitch: Float,
     ) {
         matrixStack.pushPose()
 
@@ -49,11 +49,12 @@ class ParachuteRenderer : AccessoryRenderer {
             this.model.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTicks)
             this.model.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch)
 
-            val vertexConsumer = ItemRenderer.getArmorFoilBuffer(
-                renderTypeBuffer,
-                RenderType.armorCutoutNoCull(TEXTURE),
-                stack.hasFoil()
-            )
+            val vertexConsumer =
+                ItemRenderer.getArmorFoilBuffer(
+                    renderTypeBuffer,
+                    RenderType.armorCutoutNoCull(TEXTURE),
+                    stack.hasFoil(),
+                )
 
             model.renderToBuffer(matrixStack, vertexConsumer, light, OverlayTexture.NO_OVERLAY, -0x1)
         }
@@ -80,9 +81,10 @@ class ParachuteRenderer : AccessoryRenderer {
                 stack.pushPose()
 
                 if (parachuteModel == null) {
-                    parachuteModel = ParachuteModel(
-                        mc.entityModels.bakeLayer(ParachuteModel.LAYER_LOCATION)
-                    )
+                    parachuteModel =
+                        ParachuteModel(
+                            mc.entityModels.bakeLayer(ParachuteModel.LAYER_LOCATION),
+                        )
                 }
 
                 stack.mulPose(Axis.XP.rotationDegrees(180f))
@@ -93,15 +95,19 @@ class ParachuteRenderer : AccessoryRenderer {
                     player,
                     0f,
                     0f,
-                    context.tickCounter().getGameTimeDeltaPartialTick(true)
+                    context.tickCounter().getGameTimeDeltaPartialTick(true),
                 )
                 parachuteModel!!.setupAnim(player, 0f, 0f, player.tickCount.toFloat(), 0f, 0f)
                 parachuteModel!!.renderToBuffer(
-                    stack, buffers.bufferSource().getBuffer(
+                    stack,
+                    buffers.bufferSource().getBuffer(
                         RenderType.armorCutoutNoCull(
-                            TEXTURE
-                        )
-                    ), 0xFFFFFF, OverlayTexture.NO_OVERLAY, -0x1
+                            TEXTURE,
+                        ),
+                    ),
+                    0xFFFFFF,
+                    OverlayTexture.NO_OVERLAY,
+                    -0x1,
                 )
 
                 stack.popPose()
@@ -110,7 +116,11 @@ class ParachuteRenderer : AccessoryRenderer {
 
         /** RenderLivingEvent.Post: зовётся из LivingEntityRendererMixin после рендера сущности. */
         @JvmStatic
-        fun onRenderLiving(entity: LivingEntity, stack: PoseStack, partialTick: Float) {
+        fun onRenderLiving(
+            entity: LivingEntity,
+            stack: PoseStack,
+            partialTick: Float,
+        ) {
             if (entity is Player) return
             if (!ParachuteItem.isParachuteOpen(entity)) return
             if (!ParachuteItem.isParachuteVisible(entity)) return
@@ -118,9 +128,10 @@ class ParachuteRenderer : AccessoryRenderer {
             stack.pushPose()
 
             if (parachuteModel == null) {
-                parachuteModel = ParachuteModel(
-                    mc.entityModels.bakeLayer(ParachuteModel.LAYER_LOCATION)
-                )
+                parachuteModel =
+                    ParachuteModel(
+                        mc.entityModels.bakeLayer(ParachuteModel.LAYER_LOCATION),
+                    )
             }
 
             val buffers = mc.renderBuffers()
@@ -133,11 +144,15 @@ class ParachuteRenderer : AccessoryRenderer {
             parachuteModel!!.prepareMobModel(entity, 0f, 0f, partialTick)
             parachuteModel!!.setupAnim(entity, 0f, 0f, entity.tickCount.toFloat(), 0f, 0f)
             parachuteModel!!.renderToBuffer(
-                stack, buffers.bufferSource().getBuffer(
+                stack,
+                buffers.bufferSource().getBuffer(
                     RenderType.armorCutoutNoCull(
-                        TEXTURE
-                    )
-                ), 0xFFFFFF, OverlayTexture.NO_OVERLAY, -0x1
+                        TEXTURE,
+                    ),
+                ),
+                0xFFFFFF,
+                OverlayTexture.NO_OVERLAY,
+                -0x1,
             )
 
             stack.popPose()

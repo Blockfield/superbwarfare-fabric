@@ -6,16 +6,22 @@ import com.atsuishio.superbwarfare.item.misc.VehicleKeyItem
 import com.atsuishio.superbwarfare.tools.EntityFindUtil
 import com.atsuishio.superbwarfare.tools.NBTTool
 import com.atsuishio.superbwarfare.tools.clientLevel
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 class VehicleKeyItemDecorator : ItemDecorator {
-    override fun render(guiGraphics: GuiGraphics, font: Font, stack: ItemStack, xOffset: Int, yOffset: Int): Boolean {
+    override fun render(
+        guiGraphics: GuiGraphics,
+        font: Font,
+        stack: ItemStack,
+        xOffset: Int,
+        yOffset: Int,
+    ): Boolean {
         if (stack.item !is VehicleKeyItem) return false
         val tag = NBTTool.getTag(stack)
         if (!tag.contains(VehicleKeyItem.TAG_UUID)) return false
@@ -41,7 +47,7 @@ class VehicleKeyItemDecorator : ItemDecorator {
             16f,
             16f,
             16f,
-            colorInt
+            colorInt,
         )
 
         pose.popPose()

@@ -7,33 +7,39 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.Entity
 
-val SKIN_COMMAND = buildCommand("skin") {
-    requirePermission(2)
+val SKIN_COMMAND =
+    buildCommand("skin") {
+        requirePermission(2)
 
-    entityArg("vehicle") {
-        "set" {
-            stringArg("skinId") {
+        entityArg("vehicle") {
+            "set" {
+                stringArg("skinId") {
+                    execute {
+                        val (res, msg) = setSkin(entity, stringArg)
+                        if (res) success { msg } else fail { msg }
+                    }
+                }
+            }
+
+            "clear" {
                 execute {
-                    val (res, msg) = setSkin(entity, stringArg)
-                    if (res) success { msg } else fail { msg }
+                    val vehicle =
+                        entity as? VehicleEntity
+                            ?: fail { Component.translatable("commands.superbwarfare.skin.fail.vehicle") }
+                    vehicle.skinId = ""
+                    success { Component.translatable("commands.superbwarfare.skin.success.clear", entity.displayName) }
                 }
             }
         }
-
-        "clear" {
-            execute {
-                val vehicle = entity as? VehicleEntity
-                    ?: fail { Component.translatable("commands.superbwarfare.skin.fail.vehicle") }
-                vehicle.skinId = ""
-                success { Component.translatable("commands.superbwarfare.skin.success.clear", entity.displayName) }
-            }
-        }
     }
-}
 
-private fun setSkin(entity: Entity, skinId: String): Pair<Boolean, Component> {
-    val vehicle = entity as? VehicleEntity
-        ?: return false to Component.translatable("commands.superbwarfare.skin.fail.vehicle")
+private fun setSkin(
+    entity: Entity,
+    skinId: String,
+): Pair<Boolean, Component> {
+    val vehicle =
+        entity as? VehicleEntity
+            ?: return false to Component.translatable("commands.superbwarfare.skin.fail.vehicle")
     if (skinId.isBlank()) {
         return false to Component.translatable("commands.superbwarfare.skin.fail.empty")
     }

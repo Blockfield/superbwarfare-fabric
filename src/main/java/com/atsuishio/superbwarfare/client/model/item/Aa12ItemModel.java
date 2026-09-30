@@ -4,17 +4,20 @@ import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.shotgun.Aa12Item;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class Aa12ItemModel extends CustomGunModel<Aa12Item> {
 
     @Override
-    public void setCustomAnimations(Aa12Item animatable, long instanceId, AnimationState<Aa12Item> animationState) {
+    public void setCustomAnimations(
+            Aa12Item animatable, long instanceId, AnimationState<Aa12Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -37,7 +40,11 @@ public class Aa12ItemModel extends CustomGunModel<Aa12Item> {
 
         CrossHairOverlay.gunRot = shen.getRotZ();
 
-        shen.setPosX(0.2f * (float) (ClientEventHandler.recoilHorizon * (0.5 + 0.4 * ClientEventHandler.fireSpread)));
+        shen.setPosX(
+                0.2f
+                        * (float)
+                                (ClientEventHandler.recoilHorizon
+                                        * (0.5 + 0.4 * ClientEventHandler.fireSpread)));
 
         ClientEventHandler.gunRootMove(getAnimationProcessor(), 0, 0, 0, false);
 
@@ -47,7 +54,10 @@ public class Aa12ItemModel extends CustomGunModel<Aa12Item> {
         float numP = (float) (1 - 0.68 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 1f, 0.55f);
     }
 }

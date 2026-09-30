@@ -18,21 +18,21 @@ import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.tools.localPlayer
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.PoseStack
-import net.minecraft.client.gui.Font
-import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.ItemStack
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
-import net.minecraft.world.entity.projectile.Projectile
-import net.minecraft.world.phys.Vec3
+import io.wispforest.accessories.api.client.AccessoriesRendererRegistry
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback
-import io.wispforest.accessories.api.client.AccessoriesRendererRegistry
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
+import net.minecraft.world.entity.projectile.Projectile
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.phys.Vec3
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -56,7 +56,11 @@ object ClientRenderHandler {
      * 修改子弹类实体的虚拟渲染位置
      */
     @JvmStatic
-    fun transformVirtualRenderPosition(stack: PoseStack, projectile: Projectile, partialTick: Float) {
+    fun transformVirtualRenderPosition(
+        stack: PoseStack,
+        projectile: Projectile,
+        partialTick: Float,
+    ) {
         if (bulletRenderOffset == null) return
 
         val player = localPlayer
@@ -86,25 +90,32 @@ object ClientRenderHandler {
     private fun registerRenderers() {
         BlockEntityRendererRegistry.register(
             ModBlockEntities.CONTAINER.get(),
-            BlockEntityRendererProvider { ContainerBlockEntityRenderer() })
+            BlockEntityRendererProvider { ContainerBlockEntityRenderer() },
+        )
         BlockEntityRendererRegistry.register(
             ModBlockEntities.FUMO_25.get(),
-            BlockEntityRendererProvider { FuMO25BlockEntityRenderer() })
+            BlockEntityRendererProvider { FuMO25BlockEntityRenderer() },
+        )
         BlockEntityRendererRegistry.register(
             ModBlockEntities.CHARGING_STATION.get(),
-            BlockEntityRendererProvider { ChargingStationBlockEntityRenderer() })
+            BlockEntityRendererProvider { ChargingStationBlockEntityRenderer() },
+        )
         BlockEntityRendererRegistry.register(
             ModBlockEntities.SMALL_CONTAINER.get(),
-            BlockEntityRendererProvider { SmallContainerBlockEntityRenderer() })
+            BlockEntityRendererProvider { SmallContainerBlockEntityRenderer() },
+        )
         BlockEntityRendererRegistry.register(
             ModBlockEntities.LUCKY_CONTAINER.get(),
-            BlockEntityRendererProvider { LuckyContainerBlockEntityRenderer() })
+            BlockEntityRendererProvider { LuckyContainerBlockEntityRenderer() },
+        )
         BlockEntityRendererRegistry.register(
             ModBlockEntities.VEHICLE_ASSEMBLING_TABLE.get(),
-            BlockEntityRendererProvider { VehicleAssemblingTableBlockEntityRenderer() })
+            BlockEntityRendererProvider { VehicleAssemblingTableBlockEntityRenderer() },
+        )
         BlockEntityRendererRegistry.register(
             ModBlockEntities.BLUEPRINT_RESEARCH_TABLE.get(),
-            BlockEntityRendererProvider { BlueprintResearchTableBlockEntityRenderer() })
+            BlockEntityRendererProvider { BlueprintResearchTableBlockEntityRenderer() },
+        )
     }
 
     // У Fabric API 1.21.1 нет аналога RegisterGuiLayersEvent: HudRenderCallback рисует
@@ -112,32 +123,33 @@ object ClientRenderHandler {
     // Цепочка registerBelow/registerBelowAll в NeoForge давала порядок отрисовки, обратный
     // порядку вызовов, поэтому здесь слои перечислены в обратном порядке.
     private fun registerOverlays() {
-        val layers = listOf(
-            SodayoRocketInfoOverlay,
-            Type63InfoOverlay,
-            MortarInfoOverlay,
-            TowOverlay,
-            SpyglassRangeOverlay,
-            HandsomeFrameOverlay,
-            RedTriangleOverlay,
-            DroneHudOverlay,
-            HeatBarOverlay,
-            CrossHairOverlay,
-            ItemRendererFixOverlay,
-            AmmoCountOverlay,
-            StaminaOverlay,
-            VehicleCrosshairOverlay,
-            GPWSOverlay,
-            VehicleMainWeaponHudOverlay,
-            VehicleHudOverlay,
-            IglaHudOverlay,
-            JavelinHudOverlay,
-            VehicleTeamOverlay,
-            IFFOverlay,
-            AmmoBarOverlay,
-            ArmorPlateOverlay,
-            KillMessageOverlay,
-        )
+        val layers =
+            listOf(
+                SodayoRocketInfoOverlay,
+                Type63InfoOverlay,
+                MortarInfoOverlay,
+                TowOverlay,
+                SpyglassRangeOverlay,
+                HandsomeFrameOverlay,
+                RedTriangleOverlay,
+                DroneHudOverlay,
+                HeatBarOverlay,
+                CrossHairOverlay,
+                ItemRendererFixOverlay,
+                AmmoCountOverlay,
+                StaminaOverlay,
+                VehicleCrosshairOverlay,
+                GPWSOverlay,
+                VehicleMainWeaponHudOverlay,
+                VehicleHudOverlay,
+                IglaHudOverlay,
+                JavelinHudOverlay,
+                VehicleTeamOverlay,
+                IFFOverlay,
+                AmmoBarOverlay,
+                ArmorPlateOverlay,
+                KillMessageOverlay,
+            )
         layers.forEach { layer ->
             HudRenderCallback.EVENT.register { guiGraphics, deltaTracker ->
                 layer.render(guiGraphics, deltaTracker)
@@ -155,7 +167,13 @@ object ClientRenderHandler {
 
     /** RegisterItemDecorationsEvent: зовётся из GuiGraphicsMixin в хвосте renderItemDecorations. */
     @JvmStatic
-    fun renderItemDecorations(guiGraphics: GuiGraphics, font: Font, stack: ItemStack, x: Int, y: Int) {
+    fun renderItemDecorations(
+        guiGraphics: GuiGraphics,
+        font: Font,
+        stack: ItemStack,
+        x: Int,
+        y: Int,
+    ) {
         if (stack.isEmpty) return
         val decorator = itemDecorators[stack.item] ?: return
         resetDecoratorRenderState()
@@ -175,6 +193,8 @@ object ClientRenderHandler {
 
     private fun registerLayer() {
         EntityModelLayerRegistry.registerModelLayer(ParachuteModel.LAYER_LOCATION) { ParachuteModel.createBodyLayer() }
-        EntityModelLayerRegistry.registerModelLayer(ThermalImagingGogglesModel.LAYER_LOCATION) { ThermalImagingGogglesModel.createBodyLayer() }
+        EntityModelLayerRegistry.registerModelLayer(
+            ThermalImagingGogglesModel.LAYER_LOCATION,
+        ) { ThermalImagingGogglesModel.createBodyLayer() }
     }
 }

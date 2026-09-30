@@ -7,43 +7,43 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder
 import net.minecraft.network.chat.Component
 
 object GameplayClothConfig {
-    fun init(root: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+    fun init(
+        root: ConfigBuilder,
+        entryBuilder: ConfigEntryBuilder,
+    ) {
         val category = root.getOrCreateCategory(Component.translatable("config.superbwarfare.common.gameplay"))
 
         category.addEntry(
             entryBuilder
                 .startBooleanToggle(
                     Component.translatable("config.superbwarfare.common.gameplay.respawn_reload"),
-                    GameplayConfig.RESPAWN_RELOAD.get()
-                )
-                .setDefaultValue(true)
+                    GameplayConfig.RESPAWN_RELOAD.get(),
+                ).setDefaultValue(true)
                 .setSaveConsumer(save(GameplayConfig.RESPAWN_RELOAD))
                 .setTooltip(Component.translatable("config.superbwarfare.common.gameplay.respawn_reload.des"))
-                .build()
+                .build(),
         )
 
         category.addEntry(
             entryBuilder
                 .startBooleanToggle(
                     Component.translatable("config.superbwarfare.common.gameplay.global_indication"),
-                    GameplayConfig.GLOBAL_INDICATION.get()
-                )
-                .setDefaultValue(false)
+                    GameplayConfig.GLOBAL_INDICATION.get(),
+                ).setDefaultValue(false)
                 .setSaveConsumer(save(GameplayConfig.GLOBAL_INDICATION))
                 .setTooltip(Component.translatable("config.superbwarfare.common.gameplay.global_indication.des"))
-                .build()
+                .build(),
         )
 
         category.addEntry(
             entryBuilder
                 .startBooleanToggle(
                     Component.translatable("config.superbwarfare.common.gameplay.respawn_auto_armor"),
-                    GameplayConfig.RESPAWN_AUTO_ARMOR.get()
-                )
-                .setDefaultValue(true)
+                    GameplayConfig.RESPAWN_AUTO_ARMOR.get(),
+                ).setDefaultValue(true)
                 .setSaveConsumer(save(GameplayConfig.RESPAWN_AUTO_ARMOR))
                 .setTooltip(Component.translatable("config.superbwarfare.common.gameplay.respawn_auto_armor.des"))
-                .build()
+                .build(),
         )
     }
 }

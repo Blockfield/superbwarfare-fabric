@@ -16,8 +16,14 @@ import net.minecraft.world.level.block.DispenserBlock
 import org.joml.Math
 import kotlin.random.Random
 
-class Blu43MineItem : Item(Properties()), DispenserLaunchable {
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+class Blu43MineItem :
+    Item(Properties()),
+    DispenserLaunchable {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
 
         if (!level.isClientSide) {
@@ -29,7 +35,7 @@ class Blu43MineItem : Item(Properties()), DispenserLaunchable {
             entity.setDeltaMovement(
                 0.5 * player.lookAngle.x,
                 0.5 * player.lookAngle.y,
-                0.5 * player.lookAngle.z
+                0.5 * player.lookAngle.z,
             )
 
             level.addFreshEntity(entity)
@@ -44,26 +50,30 @@ class Blu43MineItem : Item(Properties()), DispenserLaunchable {
         return InteractionResultHolder.success(stack)
     }
 
-    override fun getLaunchBehavior() = object : DefaultDispenseItemBehavior() {
-        public override fun execute(pSource: BlockSource, pStack: ItemStack): ItemStack {
-            val level: Level = pSource.level
-            val position = DispenserBlock.getDispensePosition(pSource)
-            val direction = pSource.state.getValue(DispenserBlock.FACING)
+    override fun getLaunchBehavior() =
+        object : DefaultDispenseItemBehavior() {
+            public override fun execute(
+                pSource: BlockSource,
+                pStack: ItemStack,
+            ): ItemStack {
+                val level: Level = pSource.level
+                val position = DispenserBlock.getDispensePosition(pSource)
+                val direction = pSource.state.getValue(DispenserBlock.FACING)
 
-            val blu43 = Blu43Entity(ModEntities.BLU_43.get(), level)
-            blu43.setPos(position.x(), position.y(), position.z())
-            val randomRot = Mth.clamp((2 * Math.random() - 1) * 180, -180.0, 180.0).toFloat()
+                val blu43 = Blu43Entity(ModEntities.BLU_43.get(), level)
+                blu43.setPos(position.x(), position.y(), position.z())
+                val randomRot = Mth.clamp((2 * Math.random() - 1) * 180, -180.0, 180.0).toFloat()
 
-            val pX = direction.stepX
-            val pY = direction.stepY
-            val pZ = direction.stepZ
-            blu43.shoot(pX.toDouble(), pY.toDouble(), pZ.toDouble(), 0.4f, 10f)
-            blu43.yRot = randomRot
-            blu43.yRotO = blu43.yRot
+                val pX = direction.stepX
+                val pY = direction.stepY
+                val pZ = direction.stepZ
+                blu43.shoot(pX.toDouble(), pY.toDouble(), pZ.toDouble(), 0.4f, 10f)
+                blu43.yRot = randomRot
+                blu43.yRotO = blu43.yRot
 
-            level.addFreshEntity(blu43)
-            pStack.shrink(1)
-            return pStack
+                level.addFreshEntity(blu43)
+                pStack.shrink(1)
+                return pStack
+            }
         }
-    }
 }

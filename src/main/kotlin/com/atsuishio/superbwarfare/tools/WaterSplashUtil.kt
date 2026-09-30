@@ -40,7 +40,6 @@ import kotlin.math.sin
  * @since 0.8.9.1
  */
 object WaterSplashUtil {
-
     //
     // Tuning constants — change numbers here, not inside logic
     //
@@ -92,18 +91,19 @@ object WaterSplashUtil {
         location: Vec3,
         result: BlockHitResult,
         damage: Float,
-        discardOnWater: Boolean = false
+        discardOnWater: Boolean = false,
     ): Boolean {
         val pos = result.blockPos
         val face = result.direction
         val state = level.getBlockState(pos)
 
         // Blend face normal with inverse projectile direction for a natural outward splash angle
-        val dir = Vec3(
-            face.stepX.toDouble(),
-            face.stepY.toDouble(),
-            face.stepZ.toDouble()
-        ).add(projectile.deltaMovement.normalize().scale(-0.1))
+        val dir =
+            Vec3(
+                face.stepX.toDouble(),
+                face.stepY.toDouble(),
+                face.stepZ.toDouble(),
+            ).add(projectile.deltaMovement.normalize().scale(-0.1))
 
         return when {
             state.block === Blocks.WATER && !projectile.isInWater -> {
@@ -123,7 +123,9 @@ object WaterSplashUtil {
                 true
             }
 
-            else -> false
+            else -> {
+                false
+            }
         }
     }
 
@@ -145,7 +147,7 @@ object WaterSplashUtil {
         projectile: Projectile,
         location: Vec3,
         dir: Vec3,
-        damage: Float
+        damage: Float,
     ) {
         val rng = level.random
         val power = (damage / POWER_DAMAGE_SCALE).coerceIn(POWER_MIN, POWER_MAX)
@@ -160,12 +162,17 @@ object WaterSplashUtil {
         // Ambient rain/drizzle above the impact point
         if (power > MIST_THRESHOLD) {
             ParticleTool.sendParticle(
-                level, ParticleTypes.RAIN,
-                location.x, location.y + 0.25, location.z,
+                level,
+                ParticleTypes.RAIN,
+                location.x,
+                location.y + 0.25,
+                location.z,
                 (power * 6).toInt().coerceIn(0, 6),
-                0.1 + 0.3 * power, 0.15, 0.1 + 0.3 * power,
+                0.1 + 0.3 * power,
+                0.15,
+                0.1 + 0.3 * power,
                 0.05,
-                true
+                true,
             )
         }
 
@@ -187,7 +194,11 @@ object WaterSplashUtil {
      * @param location impact point.
      * @param power    normalised damage power [0.1, 1.0].
      */
-    private fun spawnFoamLayer(level: ServerLevel, location: Vec3, power: Float) {
+    private fun spawnFoamLayer(
+        level: ServerLevel,
+        location: Vec3,
+        power: Float,
+    ) {
         if (power < FOAM_THRESHOLD) return
         val rng = level.random
         val foamCount = (power * 7).toInt().coerceIn(1, 7)
@@ -197,31 +208,33 @@ object WaterSplashUtil {
             val foamSize = (0.06f + 0.10f * power) * (0.4f + 0.6f * rng.nextFloat())
             val foamLife = (15 + (20 * power * rng.nextFloat()).toInt()).coerceAtLeast(8)
 
-            val foam = CustomCloudOption(
-                0.88f + 0.08f * rng.nextFloat(),
-                0.93f + 0.05f * rng.nextFloat(),
-                0.98f,
-                foamLife,
-                foamSize,
-                0.0f,          // no gravity — stays flat on surface
-                cooldown = false,
-                light = false
-            )
+            val foam =
+                CustomCloudOption(
+                    0.88f + 0.08f * rng.nextFloat(),
+                    0.93f + 0.05f * rng.nextFloat(),
+                    0.98f,
+                    foamLife,
+                    foamSize,
+                    0.0f, // no gravity — stays flat on surface
+                    cooldown = false,
+                    light = false,
+                )
 
             // Lateral scatter, barely any vertical lift
             val angle = rng.nextDouble() * 2.0 * PI
             val lateralMag = (0.03 + 0.07 * power) * rng.nextDouble()
             ParticleTool.sendParticle(
-                level, foam,
+                level,
+                foam,
                 location.x + rng.triangle(0.0, 0.08 * power),
                 location.y + 0.01,
                 location.z + rng.triangle(0.0, 0.08 * power),
-                0,                                       // count=0 → use velocity directly
+                0, // count=0 → use velocity directly
                 cos(angle) * lateralMag,
                 0.005 + 0.01 * rng.nextDouble(),
                 sin(angle) * lateralMag,
                 1.0,
-                true
+                true,
             )
         }
     }
@@ -238,7 +251,11 @@ object WaterSplashUtil {
      * @param location impact point.
      * @param power    normalised damage power [0.1, 1.0].
      */
-    private fun spawnDropLayer(level: ServerLevel, location: Vec3, power: Float) {
+    private fun spawnDropLayer(
+        level: ServerLevel,
+        location: Vec3,
+        power: Float,
+    ) {
         val rng = level.random
         val dropCount = (3 + power * 11).toInt().coerceIn(3, 14)
 
@@ -246,8 +263,8 @@ object WaterSplashUtil {
             // Random azimuth (full 360°) and elevation (0° = horizontal → ~70° = steep upward)
             val azimuth = rng.nextDouble() * 2.0 * PI
             // Bias elevation toward the upper half with square-root to avoid a flat carpet of drops
-            val elevNorm = rng.nextDouble().let { Math.sqrt(it) }           // [0,1], skewed high
-            val elevation = elevNorm * (PI / 2.6)                           // 0 → ~69°
+            val elevNorm = rng.nextDouble().let { Math.sqrt(it) } // [0,1], skewed high
+            val elevation = elevNorm * (PI / 2.6) // 0 → ~69°
 
             val lateralSpeed = (0.15 + 0.45 * power) * (0.4 + 0.6 * rng.nextDouble())
             val verticalSpeed = (0.15 + 0.65 * power) * (0.5 + 0.5 * rng.nextDouble())
@@ -258,14 +275,17 @@ object WaterSplashUtil {
 
             // Slight spawn position jitter so drops don't all originate from a single point
             ParticleTool.sendParticle(
-                level, ParticleTypes.SPLASH,
+                level,
+                ParticleTypes.SPLASH,
                 location.x + rng.triangle(0.0, 0.04),
                 location.y + 0.05,
                 location.z + rng.triangle(0.0, 0.04),
-                0,        // count=0 → velocity interpreted as direct vector
-                vx, vy, vz,
+                0, // count=0 → velocity interpreted as direct vector
+                vx,
+                vy,
+                vz,
                 1.0,
-                true
+                true,
             )
         }
     }
@@ -280,23 +300,29 @@ object WaterSplashUtil {
      * @param location impact point.
      * @param power    normalised damage power [0.1, 1.0].
      */
-    private fun spawnSurfaceFlash(level: ServerLevel, location: Vec3, power: Float) {
+    private fun spawnSurfaceFlash(
+        level: ServerLevel,
+        location: Vec3,
+        power: Float,
+    ) {
         val rng = level.random
         val flashSize = 0.04f + 0.06f * (power - FLASH_THRESHOLD) / (POWER_MAX - FLASH_THRESHOLD)
 
-        val flash = CustomFlareOption(
-            0.80f + 0.15f * rng.nextFloat(),  // warm white-blue
-            0.88f + 0.10f * rng.nextFloat(),
-            1.00f,
-            life = 8,
-            fade = 0.60f,                     // fast fade — purely momentary
-            animationSpeed = 2,
-            sizeAdd = 0.012f,                 // subtle outward bloom
-            size = flashSize
-        )
+        val flash =
+            CustomFlareOption(
+                0.80f + 0.15f * rng.nextFloat(), // warm white-blue
+                0.88f + 0.10f * rng.nextFloat(),
+                1.00f,
+                life = 8,
+                fade = 0.60f, // fast fade — purely momentary
+                animationSpeed = 2,
+                sizeAdd = 0.012f, // subtle outward bloom
+                size = flashSize,
+            )
 
         ParticleTool.sendParticle(
-            level, flash,
+            level,
+            flash,
             location.x + rng.triangle(0.0, 0.06),
             location.y + 0.02,
             location.z + rng.triangle(0.0, 0.06),
@@ -305,7 +331,7 @@ object WaterSplashUtil {
             0.005,
             rng.triangle(0.0, 0.005),
             1.0,
-            true
+            true,
         )
     }
 
@@ -322,7 +348,11 @@ object WaterSplashUtil {
      * @param location impact point.
      * @param power    normalised damage power [0.1, 1.0].
      */
-    private fun spawnColumnLayer(level: ServerLevel, location: Vec3, power: Float) {
+    private fun spawnColumnLayer(
+        level: ServerLevel,
+        location: Vec3,
+        power: Float,
+    ) {
         val rng = level.random
         // Scale column height to how far above threshold we are
         val columnPower = ((power - COLUMN_THRESHOLD) / (POWER_MAX - COLUMN_THRESHOLD)).coerceIn(0f, 1f)
@@ -331,11 +361,12 @@ object WaterSplashUtil {
         // Tight upward SPLASH arc — narrow azimuth spread, high elevation
         repeat(columnDrops) {
             val azimuth = rng.nextDouble() * 2.0 * PI
-            val lateralDrift = (0.02 + 0.06 * columnPower) * rng.nextDouble()  // nearly vertical
+            val lateralDrift = (0.02 + 0.06 * columnPower) * rng.nextDouble() // nearly vertical
             val vy = 0.40 + 0.70 * columnPower + rng.nextDouble() * 0.20
 
             ParticleTool.sendParticle(
-                level, ParticleTypes.SPLASH,
+                level,
+                ParticleTypes.SPLASH,
                 location.x + rng.triangle(0.0, 0.03),
                 location.y + 0.08,
                 location.z + rng.triangle(0.0, 0.03),
@@ -344,33 +375,37 @@ object WaterSplashUtil {
                 vy,
                 sin(azimuth) * lateralDrift,
                 1.0,
-                true
+                true,
             )
         }
 
         // Rising column puff — a large CustomCloud that floats upward
         val puffSize = 0.45f + 0.70f * columnPower
         val puffLife = (70 + 80 * columnPower).toInt()
-        val columnPuff = CustomCloudOption(
-            0.83f, 0.91f, 0.98f,
-            puffLife,
-            puffSize,
-            -0.005f,          // negative gravity → drifts upward
-            cooldown = false,
-            light = false
-        )
+        val columnPuff =
+            CustomCloudOption(
+                0.83f,
+                0.91f,
+                0.98f,
+                puffLife,
+                puffSize,
+                -0.005f, // negative gravity → drifts upward
+                cooldown = false,
+                light = false,
+            )
 
         ParticleTool.sendParticle(
-            level, columnPuff,
+            level,
+            columnPuff,
             location.x + rng.triangle(0.0, 0.05),
             location.y + 0.12,
             location.z + rng.triangle(0.0, 0.05),
             0,
             rng.triangle(0.0, 0.012),
-            0.12 + 0.18 * columnPower,   // upward drift
+            0.12 + 0.18 * columnPower, // upward drift
             rng.triangle(0.0, 0.012),
             1.0,
-            true
+            true,
         )
     }
 
@@ -386,7 +421,11 @@ object WaterSplashUtil {
      * @param location impact point.
      * @param power    normalised damage power [0.1, 1.0].
      */
-    private fun spawnRingLayers(level: ServerLevel, location: Vec3, power: Float) {
+    private fun spawnRingLayers(
+        level: ServerLevel,
+        location: Vec3,
+        power: Float,
+    ) {
         val rng = level.random
         val ringLayers = (1 + power * 2).toInt().coerceIn(1, 3)
         val basePoints = (8 + power * 16).toInt().coerceIn(8, 24)
@@ -399,14 +438,17 @@ object WaterSplashUtil {
             val size = (0.10f + 0.42f * power) * (1.0f - layer * 0.20f)
             val lifetime = (80 + 100 * power * (1.0f + layer * 0.30f)).toInt()
 
-            val ringParticle = CustomCloudOption(
-                1f, 1f, 1f,
-                lifetime,
-                size,
-                -0.002f,       // barely floats, sits on surface
-                cooldown = false,
-                light = false
-            )
+            val ringParticle =
+                CustomCloudOption(
+                    1f,
+                    1f,
+                    1f,
+                    lifetime,
+                    size,
+                    -0.002f, // barely floats, sits on surface
+                    cooldown = false,
+                    light = false,
+                )
 
             val points = (basePoints - layer * 4).coerceAtLeast(6)
             val angleStep = 2.0 * PI / points
@@ -421,14 +463,17 @@ object WaterSplashUtil {
                 // Position jitter — particles don't all spawn at dead-centre
                 val posJitter = 0.015 * power
                 ParticleTool.sendParticle(
-                    level, ringParticle,
+                    level,
+                    ringParticle,
                     location.x + rng.triangle(0.0, posJitter),
                     location.y + 0.02,
                     location.z + rng.triangle(0.0, posJitter),
                     0,
-                    vx, 0.0, vz,
+                    vx,
+                    0.0,
+                    vz,
                     1.0,
-                    true
+                    true,
                 )
             }
         }
@@ -445,7 +490,11 @@ object WaterSplashUtil {
      * @param location impact point.
      * @param power    normalised damage power [0.1, 1.0].
      */
-    private fun spawnVariedMist(level: ServerLevel, location: Vec3, power: Float) {
+    private fun spawnVariedMist(
+        level: ServerLevel,
+        location: Vec3,
+        power: Float,
+    ) {
         if (power < MIST_THRESHOLD) return
         val rng = level.random
         val mistCount = (1 + power * 6).toInt().coerceIn(1, 7)
@@ -455,26 +504,31 @@ object WaterSplashUtil {
             val t = rng.nextFloat().let { it * it }
 
             // Small wisps: 0.10–0.25  |  Mid billows: 0.25–0.55  |  Large: 0.55–0.90+
-            val mistSize = ((0.10f + 0.80f * power) * (0.15f + 0.85f * (1f - t)))
-                .coerceIn(0.08f, 1.10f)
+            val mistSize =
+                ((0.10f + 0.80f * power) * (0.15f + 0.85f * (1f - t)))
+                    .coerceIn(0.08f, 1.10f)
 
             // Lifetime scales with size — big clouds linger longer
-            val mistLife = (55 + (130 * power * (0.6f + 0.8f * mistSize / (0.10f + 0.80f * power))).toInt())
-                .coerceAtLeast(30)
+            val mistLife =
+                (55 + (130 * power * (0.6f + 0.8f * mistSize / (0.10f + 0.80f * power))).toInt())
+                    .coerceAtLeast(30)
 
             // Per-particle colour variation: subtle blue-grey tint randomisation
             val r = 0.80f + 0.12f * rng.nextFloat()
             val g = 0.87f + 0.09f * rng.nextFloat()
             val b = 0.93f + 0.06f * rng.nextFloat()
 
-            val mistParticle = CustomCloudOption(
-                r, g, b,
-                mistLife,
-                mistSize,
-                -0.003f,     // slow upward drift
-                cooldown = false,
-                light = false
-            )
+            val mistParticle =
+                CustomCloudOption(
+                    r,
+                    g,
+                    b,
+                    mistLife,
+                    mistSize,
+                    -0.003f, // slow upward drift
+                    cooldown = false,
+                    light = false,
+                )
 
             // Spread spawn positions — bigger clouds spawn farther from centre
             val spreadRadius = 0.08 + 0.18 * power * (0.3 + 0.7 * mistSize)
@@ -482,7 +536,8 @@ object WaterSplashUtil {
             val radialOffset = spreadRadius * rng.nextDouble()
 
             ParticleTool.sendParticle(
-                level, mistParticle,
+                level,
+                mistParticle,
                 location.x + cos(angle) * radialOffset,
                 location.y + 0.05 + rng.nextDouble() * 0.18 * power,
                 location.z + sin(angle) * radialOffset,
@@ -491,7 +546,7 @@ object WaterSplashUtil {
                 0.006 + 0.025 * power * rng.nextDouble(),
                 rng.triangle(0.0, 0.008 + 0.010 * power),
                 1.0,
-                true
+                true,
             )
         }
     }
@@ -510,16 +565,24 @@ object WaterSplashUtil {
     private fun spawnUnderwaterBubbles(
         level: ServerLevel,
         projectile: Projectile,
-        location: Vec3
+        location: Vec3,
     ) {
         val movementLength = projectile.deltaMovement.length()
         var i = 0.0
         while (i < movementLength) {
             val p = location.add(projectile.deltaMovement.normalize().scale(i))
             ParticleTool.sendParticle(
-                level, ParticleTypes.BUBBLE_COLUMN_UP,
-                p.x, p.y, p.z,
-                1, 0.0, 0.0, 0.0, 0.001, false
+                level,
+                ParticleTypes.BUBBLE_COLUMN_UP,
+                p.x,
+                p.y,
+                p.z,
+                1,
+                0.0,
+                0.0,
+                0.0,
+                0.001,
+                false,
             )
             i += 1.0
         }
@@ -541,7 +604,7 @@ object WaterSplashUtil {
         level: ServerLevel,
         location: Vec3,
         dir: Vec3,
-        state: BlockState
+        state: BlockState,
     ) {
         val rng = level.random
         val particleData = BlockParticleOption(ParticleTypes.BLOCK, state)
@@ -549,21 +612,32 @@ object WaterSplashUtil {
         for (i in 0..6) {
             val spreadDir = randomSpreadVec(rng, dir, 20.0)
             ParticleTool.sendParticle(
-                level, particleData,
+                level,
+                particleData,
                 location.x + 0.1 * i * dir.x,
                 location.y + 0.1 * i * dir.y,
                 location.z + 0.1 * i * dir.z,
                 0,
-                spreadDir.x, spreadDir.y, spreadDir.z,
+                spreadDir.x,
+                spreadDir.y,
+                spreadDir.z,
                 10.0,
-                true
+                true,
             )
         }
 
         ParticleTool.sendParticle(
-            level, ParticleTypes.LAVA,
-            location.x, location.y, location.z,
-            4, 0.0, 0.0, 0.0, 0.6, true
+            level,
+            ParticleTypes.LAVA,
+            location.x,
+            location.y,
+            location.z,
+            4,
+            0.0,
+            0.0,
+            0.0,
+            0.6,
+            true,
         )
 
         level.playSound(
@@ -571,7 +645,8 @@ object WaterSplashUtil {
             BlockPos(location.x.toInt(), location.y.toInt(), location.z.toInt()),
             SoundEvents.LAVA_POP,
             SoundSource.BLOCKS,
-            1f, 1f
+            1f,
+            1f,
         )
     }
 
@@ -589,14 +664,18 @@ object WaterSplashUtil {
      * @param location sound origin.
      * @param power    normalised damage power [0.1, 1.0].
      */
-    private fun playWaterSound(level: ServerLevel, location: Vec3, power: Float) {
+    private fun playWaterSound(
+        level: ServerLevel,
+        location: Vec3,
+        power: Float,
+    ) {
         level.playSound(
             null,
             BlockPos(location.x.toInt(), location.y.toInt(), location.z.toInt()),
             ModSounds.HIT_WATER.get(),
             SoundSource.BLOCKS,
             0.25f + 0.75f * power,
-            1.3f - 0.4f * power   // high power → lower pitch
+            1.3f - 0.4f * power, // high power → lower pitch
         )
     }
 }

@@ -14,19 +14,20 @@ data class DataSyncMessage(
     val path: String,
     val jsonData: CompressedString,
 ) : ClientPacketPayload() {
-
     @Suppress("unchecked_cast")
     override fun PayloadContext.handler() {
-        val data = DataLoader.LOADED_DATA[path] ?: run {
-            Mod.LOGGER.error("unknown data path $path!")
-            return
-        }
+        val data =
+            DataLoader.LOADED_DATA[path] ?: run {
+                Mod.LOGGER.error("unknown data path $path!")
+                return
+            }
 
-        val map = if (data.isKtData) {
-            DataLoader.JSON.decodeFromString(serializer(data.mapType.type), jsonData)
-        } else {
-            DataLoader.GSON.fromJson(jsonData, data.mapType)
-        } as Map<String, Any>
+        val map =
+            if (data.isKtData) {
+                DataLoader.JSON.decodeFromString(serializer(data.mapType.type), jsonData)
+            } else {
+                DataLoader.GSON.fromJson(jsonData, data.mapType)
+            } as Map<String, Any>
 
         data.dataMap.clear()
         data.dataMap.putAll(map)

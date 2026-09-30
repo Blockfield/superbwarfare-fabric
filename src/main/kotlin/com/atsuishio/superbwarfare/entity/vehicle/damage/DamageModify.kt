@@ -47,11 +47,12 @@ class DamageModify : DeserializeFromString {
         this.source = prefix + id
         generateSourceType()
 
-        this.type = when (operator) {
-            "-", "+" -> ModifyType.REDUCE
-            "*" -> ModifyType.MULTIPLY
-            else -> if (value == "0") ModifyType.IMMUNITY else ModifyType.INVALID
-        }
+        this.type =
+            when (operator) {
+                "-", "+" -> ModifyType.REDUCE
+                "*" -> ModifyType.MULTIPLY
+                else -> if (value == "0") ModifyType.IMMUNITY else ModifyType.INVALID
+            }
 
         if (this.type == ModifyType.INVALID) {
             Mod.LOGGER.warn("invalid damage modify: {}", str)
@@ -62,83 +63,86 @@ class DamageModify : DeserializeFromString {
     }
 
     object DamageModifyInstanceBuilder : StringInstanceBuilder<DamageModify> {
-        override fun fromString(value: String) = DamageModify().apply {
-            if (value.trim().startsWith("$")) {
-                val trimmed = value.trim().substring(1)
+        override fun fromString(value: String) =
+            DamageModify().apply {
+                if (value.trim().startsWith("$")) {
+                    val trimmed = value.trim().substring(1)
 
-                val script = ScriptManager.createSafeScript("damageModifier", trimmed)
-                if (script == null) {
-                    this.type = ModifyType.INVALID
-                    Mod.LOGGER.warn("invalid damage modify script: {}", value)
+                    val script = ScriptManager.createSafeScript("damageModifier", trimmed)
+                    if (script == null) {
+                        this.type = ModifyType.INVALID
+                        Mod.LOGGER.warn("invalid damage modify script: {}", value)
+                        return@apply
+                    }
+
+                    this.script = script
+                    this.type = ModifyType.CUSTOM
+
+                    this.modifyFunction =
+                        DamageModifier.CustomDamageModifier { entity, source, damage ->
+                            try {
+                                this.script!!.putProperty("entity", entity)
+                                this.script!!.putProperty("source", source)
+                                this.script!!.putProperty("damage", damage)
+
+                                val result = this.script!!.exec()
+                                if (result is Number) {
+                                    return@CustomDamageModifier result.toFloat()
+                                } else {
+                                    throw IllegalArgumentException("damage modifier script result($result) is not a number!")
+                                }
+                            } catch (exception: Exception) {
+                                Mod.LOGGER.error("error computing damage", exception)
+                            }
+                            damage
+                        }
+
                     return@apply
                 }
 
-                this.script = script
-                this.type = ModifyType.CUSTOM
-
-                this.modifyFunction = DamageModifier.CustomDamageModifier { entity, source, damage ->
-                    try {
-                        this.script!!.putProperty("entity", entity)
-                        this.script!!.putProperty("source", source)
-                        this.script!!.putProperty("damage", damage)
-
-                        val result = this.script!!.exec()
-                        if (result is Number) {
-                            return@CustomDamageModifier result.toFloat()
-                        } else {
-                            throw IllegalArgumentException("damage modifier script result($result) is not a number!")
-                        }
-                    } catch (exception: Exception) {
-                        Mod.LOGGER.error("error computing damage", exception)
-                    }
-                    damage
+                val matcher: Matcher = MODIFY_PATTERN.matcher(value.trim())
+                if (!matcher.matches()) {
+                    Mod.LOGGER.warn("invalid damage modify: {}", value)
+                    return@apply
                 }
 
-                return@apply
+                val prefix = matcher.group("prefix").trim()
+                val id = matcher.group("id").trim()
+                val operator = matcher.group("operator").trim()
+                val value = matcher.group("value").trim()
+
+                this.source = prefix + id
+                generateSourceType()
+
+                this.type =
+                    when (operator) {
+                        "-", "+" -> ModifyType.REDUCE
+                        "*" -> ModifyType.MULTIPLY
+                        else -> if (value == "0") ModifyType.IMMUNITY else ModifyType.INVALID
+                    }
+
+                if (this.type == ModifyType.INVALID) {
+                    Mod.LOGGER.warn("invalid damage modify: {}", value)
+                    return@apply
+                }
+
+                this.value = if (value.isEmpty()) 0f else value.toFloat() * (if (operator == "+") -1 else 1)
             }
-
-            val matcher: Matcher = MODIFY_PATTERN.matcher(value.trim())
-            if (!matcher.matches()) {
-                Mod.LOGGER.warn("invalid damage modify: {}", value)
-                return@apply
-            }
-
-            val prefix = matcher.group("prefix").trim()
-            val id = matcher.group("id").trim()
-            val operator = matcher.group("operator").trim()
-            val value = matcher.group("value").trim()
-
-            this.source = prefix + id
-            generateSourceType()
-
-            this.type = when (operator) {
-                "-", "+" -> ModifyType.REDUCE
-                "*" -> ModifyType.MULTIPLY
-                else -> if (value == "0") ModifyType.IMMUNITY else ModifyType.INVALID
-            }
-
-            if (this.type == ModifyType.INVALID) {
-                Mod.LOGGER.warn("invalid damage modify: {}", value)
-                return@apply
-            }
-
-            this.value = if (value.isEmpty()) 0f else value.toFloat() * (if (operator == "+") -1 else 1)
-        }
     }
 
     @Serializable
     enum class ModifyType {
         @SerializedName("Immunity")
         @SerialName("Immunity")
-        IMMUNITY,  // 完全免疫
+        IMMUNITY, // 完全免疫
 
         @SerializedName("Reduce")
         @SerialName("Reduce")
-        REDUCE,  // 固定数值减伤
+        REDUCE, // 固定数值减伤
 
         @SerializedName("Multiply")
         @SerialName("Multiply")
-        MULTIPLY,  // 乘以指定倍数
+        MULTIPLY, // 乘以指定倍数
 
         @SerializedName("Custom")
         @SerialName("Custom")
@@ -146,7 +150,7 @@ class DamageModify : DeserializeFromString {
 
         @SerializedName("Invalid")
         @SerialName("Invalid")
-        INVALID // 解析无效
+        INVALID, // 解析无效
     }
 
     @SerializedName("Value")
@@ -253,7 +257,7 @@ class DamageModify : DeserializeFromString {
 
     /**
      * 判断指定伤害来源是否符合指定条件，若未指定条件则默认符合
-     * 
+     *
      * @param source 伤害来源
      * @return 伤害来源是否符合条件
      */
@@ -274,7 +278,10 @@ class DamageModify : DeserializeFromString {
                 source.`is`(sourceKey ?: return false)
             }
 
-            SourceType.FUNCTION -> condition!!.apply(source)
+            SourceType.FUNCTION -> {
+                condition!!.apply(source)
+            }
+
             SourceType.ENTITY_ID -> {
                 val directEntity = source.directEntity
                 val entity = source.entity
@@ -293,31 +300,54 @@ class DamageModify : DeserializeFromString {
                 source.directEntity?.type?.`is`(entityTag ?: return false) ?: false
             }
 
-            SourceType.ALL -> true
+            SourceType.ALL -> {
+                true
+            }
         }
     }
 
     /**
      * 计算减伤后的伤害值
-     * 
+     *
      * @param damage 原伤害值
      * @return 计算后的伤害值
      */
-    fun compute(entity: Entity, source: DamageSource, damage: Float): Float {
+    fun compute(
+        entity: Entity,
+        source: DamageSource,
+        damage: Float,
+    ): Float {
         // 类型出错默认视为免疫
         if (type == null) return 0f
 
         return when (type) {
-            ModifyType.IMMUNITY -> 0F
-            ModifyType.REDUCE -> max(damage - value, 0f)
-            ModifyType.MULTIPLY -> damage * value
-            ModifyType.CUSTOM -> {
-                if (this.modifyFunction == null) damage
-                else this.modifyFunction!!.compute(entity, source, damage)
+            ModifyType.IMMUNITY -> {
+                0F
             }
 
-            ModifyType.INVALID -> damage
-            else -> error("invalid type!")
+            ModifyType.REDUCE -> {
+                max(damage - value, 0f)
+            }
+
+            ModifyType.MULTIPLY -> {
+                damage * value
+            }
+
+            ModifyType.CUSTOM -> {
+                if (this.modifyFunction == null) {
+                    damage
+                } else {
+                    this.modifyFunction!!.compute(entity, source, damage)
+                }
+            }
+
+            ModifyType.INVALID -> {
+                damage
+            }
+
+            else -> {
+                error("invalid type!")
+            }
         }
     }
 

@@ -39,7 +39,7 @@ object ProjectileCalculator {
         startPos: Vec3,
         launchVector: Vec3,
         velocity: Double,
-        gravity: Double
+        gravity: Double,
     ): Vec3 {
         val dir = launchVector.normalize()
         val vx = dir.x * velocity
@@ -74,7 +74,7 @@ object ProjectileCalculator {
                     level,
                     Vec3(prevX, prevY, prevZ),
                     Vec3(x, y, z),
-                    level.minBuildHeight.toDouble()
+                    level.minBuildHeight.toDouble(),
                 )
             }
 
@@ -90,7 +90,7 @@ object ProjectileCalculator {
                         level,
                         Vec3(prevX, prevY, prevZ),
                         Vec3(x, y, z),
-                        terrainHeight
+                        terrainHeight,
                     )
                 }
             }
@@ -112,7 +112,7 @@ object ProjectileCalculator {
      */
     private fun calculateVerticalImpact(
         level: Level,
-        startPos: Vec3
+        startPos: Vec3,
     ): Vec3 {
         val bx = startPos.x.toInt()
         val bz = startPos.z.toInt()
@@ -130,30 +130,32 @@ object ProjectileCalculator {
             // 从地形上方垂直向下射线，精准捕获地形表面
             val aboveY = max(startPos.y, terrainHeight) + 2
             val belowY = level.minBuildHeight.toDouble() - 1
-            val hit = level.clip(
-                ClipContext(
-                    Vec3(startPos.x, aboveY, startPos.z),
-                    Vec3(startPos.x, belowY, startPos.z),
-                    ClipContext.Block.COLLIDER,
-                    ClipContext.Fluid.ANY,
-                    CollisionContext.empty()
+            val hit =
+                level.clip(
+                    ClipContext(
+                        Vec3(startPos.x, aboveY, startPos.z),
+                        Vec3(startPos.x, belowY, startPos.z),
+                        ClipContext.Block.COLLIDER,
+                        ClipContext.Fluid.ANY,
+                        CollisionContext.empty(),
+                    ),
                 )
-            )
             if (hit.type == HitResult.Type.BLOCK) return hit.location
 
             return Vec3(startPos.x, terrainHeight, startPos.z)
         } else {
             // 室内/遮挡：高度图显示的是天花板，直接从弹丸位置垂直向下做射线检测
             val belowY = level.minBuildHeight.toDouble() - 1
-            val hit = level.clip(
-                ClipContext(
-                    startPos,
-                    Vec3(startPos.x, belowY, startPos.z),
-                    ClipContext.Block.COLLIDER,
-                    ClipContext.Fluid.ANY,
-                    CollisionContext.empty()
+            val hit =
+                level.clip(
+                    ClipContext(
+                        startPos,
+                        Vec3(startPos.x, belowY, startPos.z),
+                        ClipContext.Block.COLLIDER,
+                        ClipContext.Fluid.ANY,
+                        CollisionContext.empty(),
+                    ),
                 )
-            )
             if (hit.type == HitResult.Type.BLOCK) return hit.location
 
             return Vec3(startPos.x, level.minBuildHeight.toDouble(), startPos.z)
@@ -169,13 +171,14 @@ object ProjectileCalculator {
         level: Level,
         start: Vec3,
         end: Vec3,
-        minY: Double
+        minY: Double,
     ): Vec3 {
         // 确保射线终点不低于世界底部
         val clampedEnd = Vec3(end.x, max(end.y, minY - 1), end.z)
-        val hit = level.clip(
-            ClipContext(start, clampedEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty())
-        )
+        val hit =
+            level.clip(
+                ClipContext(start, clampedEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty()),
+            )
         if (hit.type == HitResult.Type.BLOCK) return hit.location
         return Vec3(end.x, minY, end.z)
     }
@@ -191,20 +194,22 @@ object ProjectileCalculator {
         level: Level,
         prev: Vec3,
         current: Vec3,
-        terrainHeight: Double
+        terrainHeight: Double,
     ): Vec3 {
         // 策略1：从地形表面上方垂直向下射线
         val above = Vec3(current.x, terrainHeight + 2, current.z)
         val below = Vec3(current.x, terrainHeight - 2, current.z)
-        val hit = level.clip(
-            ClipContext(above, below, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty())
-        )
+        val hit =
+            level.clip(
+                ClipContext(above, below, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty()),
+            )
         if (hit.type == HitResult.Type.BLOCK) return hit.location
 
         // 策略2：沿弹道方向检测（处理地形垂直面）
-        val hit2 = level.clip(
-            ClipContext(prev, current, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty())
-        )
+        val hit2 =
+            level.clip(
+                ClipContext(prev, current, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty()),
+            )
         if (hit2.type == HitResult.Type.BLOCK) return hit2.location
 
         // 无碰撞方块时回退到高度图位置
@@ -214,7 +219,8 @@ object ProjectileCalculator {
     /**
      * 区块未加载时的回退：直接使用世界底部高度。
      */
-    private fun fallbackToWorldBottom(startPos: Vec3, minBuildHeight: Int): Vec3 {
-        return Vec3(startPos.x, minBuildHeight.toDouble(), startPos.z)
-    }
+    private fun fallbackToWorldBottom(
+        startPos: Vec3,
+        minBuildHeight: Int,
+    ): Vec3 = Vec3(startPos.x, minBuildHeight.toDouble(), startPos.z)
 }

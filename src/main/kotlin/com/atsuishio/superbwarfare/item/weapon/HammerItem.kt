@@ -5,8 +5,8 @@ import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.item.CustomDamageProperty
 import com.atsuishio.superbwarfare.tools.NBTTool
-import io.github.fabricators_of_create.porting_lib.item.extensions.DamageableItem
 import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerEvents
+import io.github.fabricators_of_create.porting_lib.item.extensions.DamageableItem
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.sounds.SoundSource
@@ -17,26 +17,31 @@ import net.minecraft.world.item.Tier
 import net.minecraft.world.item.TooltipFlag
 import org.joml.Math
 
-open class HammerItem(tier: Tier, attackDamage: Int, attackSpeed: Float, properties: Properties) :
-    SwordItem(tier, properties.attributes(createAttributes(tier, attackDamage, attackSpeed))), DamageableItem {
-
+open class HammerItem(
+    tier: Tier,
+    attackDamage: Int,
+    attackSpeed: Float,
+    properties: Properties,
+) : SwordItem(tier, properties.attributes(createAttributes(tier, attackDamage, attackSpeed))),
+    DamageableItem {
     constructor(tier: Tier, attackDamage: Int, attackSpeed: Float, maxDamage: Int) : this(
         tier,
         attackDamage,
         attackSpeed,
-        CustomDamageProperty(maxDamage)
+        CustomDamageProperty(maxDamage),
     )
 
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         TooltipTool.addHideText(
             tooltipComponents,
-            Component.translatable("des.superbwarfare.hammer", NBTTool.getTag(stack).getInt("CraftCount"))
-                .withStyle(ChatFormatting.GRAY)
+            Component
+                .translatable("des.superbwarfare.hammer", NBTTool.getTag(stack).getInt("CraftCount"))
+                .withStyle(ChatFormatting.GRAY),
         )
     }
 
@@ -59,18 +64,20 @@ open class HammerItem(tier: Tier, attackDamage: Int, attackSpeed: Float, propert
         return stack
     }
 
-    override fun isRepairable(itemstack: ItemStack): Boolean {
-        return true
-    }
+    override fun isRepairable(itemstack: ItemStack): Boolean = true
 
-    override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
+    override fun hurtEnemy(
+        stack: ItemStack,
+        target: LivingEntity,
+        attacker: LivingEntity,
+    ): Boolean {
         attacker.level().playSound(
             null,
             target.onPos,
             ModSounds.MELEE_HIT.get(),
             SoundSource.PLAYERS,
             1f,
-            ((2 * Math.random() - 1) * 0.1f + 1.0f).toFloat()
+            ((2 * Math.random() - 1) * 0.1f + 1.0f).toFloat(),
         )
         return super.hurtEnemy(stack, target, attacker)
     }

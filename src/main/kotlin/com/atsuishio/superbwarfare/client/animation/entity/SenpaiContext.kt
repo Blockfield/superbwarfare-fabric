@@ -4,14 +4,14 @@ import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.entity.living.SenpaiEntity
 import kotlin.math.abs
 
-class SenpaiContext(entity: SenpaiEntity) : BasicEntityContext<SenpaiEntity>(entity, ANIM) {
+class SenpaiContext(
+    entity: SenpaiEntity,
+) : BasicEntityContext<SenpaiEntity>(entity, ANIM) {
     companion object {
         val ANIM = loc("animations/bedrock/entity/senpai.animation.json")
     }
 
-    fun isRunner(): Boolean {
-        return entity.runner
-    }
+    fun isRunner(): Boolean = entity.runner
 
     fun isMoving(): Boolean {
         val velocity = entity.deltaMovement

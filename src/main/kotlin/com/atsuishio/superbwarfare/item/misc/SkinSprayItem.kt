@@ -7,22 +7,24 @@ import com.atsuishio.superbwarfare.item.IVehicleInteract
 import com.atsuishio.superbwarfare.network.message.receive.OpenVehicleSkinScreenMessage
 import com.atsuishio.superbwarfare.tools.mc
 import com.atsuishio.superbwarfare.tools.sendPacket
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 
-class SkinSprayItem : Item(Properties().stacksTo(1)), IVehicleInteract {
+class SkinSprayItem :
+    Item(Properties().stacksTo(1)),
+    IVehicleInteract {
     override fun onInteractVehicle(
         vehicle: VehicleEntity,
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult {
         val level = player.level()
         if (!level.isClientSide) {
@@ -44,7 +46,7 @@ class SkinSprayItem : Item(Properties().stacksTo(1)), IVehicleInteract {
                         renderer = SkinSprayRenderer(mc.blockEntityRenderDispatcher, mc.entityModels)
                     }
                     renderer!!.renderByItem(stack, mode, poseStack, buffer, light, overlay)
-                }
+                },
             )
         }
     }

@@ -149,7 +149,8 @@ public class ItemStackHandler implements IItemHandler {
 
     protected void validateSlotIndex(int slot) {
         if (slot < 0 || slot >= stacks.size()) {
-            throw new RuntimeException("Slot " + slot + " not in valid range - [0," + stacks.size() + ")");
+            throw new RuntimeException(
+                    "Slot " + slot + " not in valid range - [0," + stacks.size() + ")");
         }
     }
 

@@ -18,9 +18,8 @@ class BooleanValue(
     private val tag: CompoundTag,
     private val name: String,
     override val defaultValue: Boolean = false,
-    private val onSet: (() -> Unit)? = null
+    private val onSet: (() -> Unit)? = null,
 ) : TagValue<Boolean> {
-
     /** Returns the stored value, or [defaultValue] if the key is absent. */
     override fun get(): Boolean = if (tag.contains(name)) tag.getBoolean(name) else defaultValue
 
@@ -31,7 +30,7 @@ class BooleanValue(
      */
     override fun set(value: Boolean) {
         val current = if (tag.contains(name)) tag.getBoolean(name) else defaultValue
-        if (current == value) return                          // no-op: value unchanged
+        if (current == value) return // no-op: value unchanged
         if (value == defaultValue) tag.remove(name) else tag.putBoolean(name, value)
         onSet?.invoke()
     }

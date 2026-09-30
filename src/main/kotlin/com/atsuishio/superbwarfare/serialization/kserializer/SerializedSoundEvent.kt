@@ -10,12 +10,17 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
 import java.util.regex.Pattern
 
-typealias SerializedSoundEvent = @Serializable(SoundEventSerializer::class) SoundEvent
+typealias SerializedSoundEvent =
+    @Serializable(SoundEventSerializer::class)
+    SoundEvent
 
 object SoundEventSerializer : KSerializer<SoundEvent> {
     override val descriptor = PrimitiveSerialDescriptor("net.minecraft.sounds.SoundEvent", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: SoundEvent) {
+    override fun serialize(
+        encoder: Encoder,
+        value: SoundEvent,
+    ) {
 //        val str = "${value.location} ${value.getRange()}"
         encoder.encodeString(value.location.toString())
     }

@@ -31,16 +31,14 @@ open class GrapeshotEntity : FastThrowableProjectile {
         this.damageValue = damage
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.LARGE_SHELL_GS.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.LARGE_SHELL_GS.get()
 
     override fun canPassThroughFluid() = true
 
     override fun performDamage(
         entity: Entity,
         damage: Float,
-        isHeadshot: Boolean
+        isHeadshot: Boolean,
     ) {
         entity.invulnerableTime = 0
 
@@ -48,7 +46,7 @@ open class GrapeshotEntity : FastThrowableProjectile {
         if (damage > 0) {
             entity.forceHurt(
                 ModDamageTypes.causeGrapeShotHitDamage(this.level().registryAccess(), this, this.owner),
-                damage * headShotModifier
+                damage * headShotModifier,
             )
             entity.invulnerableTime = 0
         }
@@ -72,7 +70,7 @@ open class GrapeshotEntity : FastThrowableProjectile {
             event,
             SoundSource.AMBIENT,
             volume,
-            1f
+            1f,
         )
 
         val face = result.direction
@@ -87,14 +85,19 @@ open class GrapeshotEntity : FastThrowableProjectile {
             ModSounds.LAND.get(),
             SoundSource.BLOCKS,
             1f,
-            1f
+            1f,
         )
 
         super.afterHitBlock(result)
     }
 
     @Suppress("DEPRECATION")
-    fun summonVectorParticle(serverLevel: ServerLevel, state: BlockState, pos: Vec3, dir: Vec3) {
+    fun summonVectorParticle(
+        serverLevel: ServerLevel,
+        state: BlockState,
+        pos: Vec3,
+        dir: Vec3,
+    ) {
         val particleData = BlockParticleOption(ParticleTypes.BLOCK, state)
         for (i in 0..6) {
             val vec3 = randomVec(dir, 40.0)
@@ -109,7 +112,7 @@ open class GrapeshotEntity : FastThrowableProjectile {
                 vec3.y,
                 vec3.z,
                 10.0,
-                true
+                true,
             )
         }
         repeat(2) {
@@ -125,11 +128,14 @@ open class GrapeshotEntity : FastThrowableProjectile {
                 vec3.y,
                 vec3.z,
                 0.05,
-                true
+                true,
             )
         }
         val soundType = state.soundType
-        if (soundType === SoundType.METAL || soundType === SoundType.ANVIL || soundType === SoundType.CHAIN || soundType === SoundType.COPPER || soundType === SoundType.NETHERITE_BLOCK) {
+        if (soundType === SoundType.METAL || soundType === SoundType.ANVIL || soundType === SoundType.CHAIN ||
+            soundType === SoundType.COPPER ||
+            soundType === SoundType.NETHERITE_BLOCK
+        ) {
             serverLevel.playSound(null, pos.x, pos.y, pos.z, ModSounds.HIT.get(), SoundSource.BLOCKS, 2f, 1f)
             repeat(2) {
                 val vec3 = randomVec(dir, 80.0)
@@ -144,7 +150,7 @@ open class GrapeshotEntity : FastThrowableProjectile {
                     vec3.y,
                     vec3.z,
                     0.2 + 0.1 * Math.random(),
-                    true
+                    true,
                 )
             }
         }
@@ -156,17 +162,21 @@ open class GrapeshotEntity : FastThrowableProjectile {
         if (!this.level().isClientSide()) {
             val startVec = this.position()
             val endVec = startVec.add(this.deltaMovement)
-            val fluidResult = IAdvancedHitDetection.rayTraceBlocks(
-                this.level(),
-                ClipContext(startVec, endVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this)
-            ) { false }
+            val fluidResult =
+                IAdvancedHitDetection.rayTraceBlocks(
+                    this.level(),
+                    ClipContext(startVec, endVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this),
+                ) { false }
             this.onHitWater(fluidResult.getLocation(), fluidResult)
         }
 
         this.deltaMovement = this.deltaMovement.multiply(0.96, 0.96, 0.96)
     }
 
-    protected fun onHitWater(location: Vec3, result: BlockHitResult) {
+    protected fun onHitWater(
+        location: Vec3,
+        result: BlockHitResult,
+    ) {
         val level = this.level()
         if (level is ServerLevel) {
             WaterSplashUtil.handleFluidImpact(
@@ -175,15 +185,15 @@ open class GrapeshotEntity : FastThrowableProjectile {
                 location = location,
                 result = result,
                 damage = this.damageValue,
-                discardOnWater = true
+                discardOnWater = true,
             )
         }
     }
 
-    fun randomVec(vec3: Vec3, spread: Double): Vec3 =
-        randomSpreadVec(this.random, vec3, spread)
+    fun randomVec(
+        vec3: Vec3,
+        spread: Double,
+    ): Vec3 = randomSpreadVec(this.random, vec3, spread)
 
-    override fun isFastMoving(): Boolean {
-        return false
-    }
+    override fun isFastMoving(): Boolean = false
 }

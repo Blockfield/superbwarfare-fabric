@@ -1,10 +1,10 @@
 package com.atsuishio.superbwarfare.capability.energy
 
+import com.atsuishio.superbwarfare.fabric.EnergyStorage
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.Tag
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.SynchedEntityData
-import com.atsuishio.superbwarfare.fabric.EnergyStorage
 
 /**
  * 自动同步的实体能量存储能力，会和客户端自动同步实体的当前能量值
@@ -14,7 +14,7 @@ open class SyncedEntityEnergyStorage(
     maxReceive: Int,
     maxExtract: Int,
     protected var entityData: SynchedEntityData,
-    protected var energyDataAccessor: EntityDataAccessor<Int>
+    protected var energyDataAccessor: EntityDataAccessor<Int>,
 ) : EnergyStorage(capacity, maxReceive, maxExtract, 0) {
     /**
      * 自动同步的实体能量存储能力
@@ -28,7 +28,7 @@ open class SyncedEntityEnergyStorage(
         capacity,
         capacity,
         data,
-        energyDataAccessor
+        energyDataAccessor,
     )
 
     init {
@@ -53,7 +53,10 @@ open class SyncedEntityEnergyStorage(
         this.maxReceive = maxReceive
     }
 
-    override fun receiveEnergy(maxReceive: Int, simulate: Boolean): Int {
+    override fun receiveEnergy(
+        maxReceive: Int,
+        simulate: Boolean,
+    ): Int {
         val received = super.receiveEnergy(maxReceive, simulate)
 
         if (!simulate) {
@@ -63,7 +66,10 @@ open class SyncedEntityEnergyStorage(
         return received
     }
 
-    override fun extractEnergy(maxExtract: Int, simulate: Boolean): Int {
+    override fun extractEnergy(
+        maxExtract: Int,
+        simulate: Boolean,
+    ): Int {
         val extracted = super.extractEnergy(maxExtract, simulate)
 
         if (!simulate) {
@@ -78,7 +84,10 @@ open class SyncedEntityEnergyStorage(
         return entityData.get(energyDataAccessor)
     }
 
-    override fun deserializeNBT(provider: HolderLookup.Provider, nbt: Tag) {
+    override fun deserializeNBT(
+        provider: HolderLookup.Provider,
+        nbt: Tag,
+    ) {
         super.deserializeNBT(provider, nbt)
         entityData.set(energyDataAccessor, energy)
     }

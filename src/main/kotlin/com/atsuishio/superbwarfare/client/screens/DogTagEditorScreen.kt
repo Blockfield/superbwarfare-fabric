@@ -1,6 +1,7 @@
 package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.Mod.loc
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.init.ModDataComponents
 import com.atsuishio.superbwarfare.item.curio.DogTagItem.Companion.getColors
 import com.atsuishio.superbwarfare.network.message.send.DogTagFinishEditMessage
@@ -8,6 +9,8 @@ import com.atsuishio.superbwarfare.tools.hasCustomHoverName
 import com.atsuishio.superbwarfare.tools.localPlayer
 import com.atsuishio.superbwarfare.tools.sendPacketTo
 import com.atsuishio.superbwarfare.tools.sendPacketToServer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.GameNarrator
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
@@ -20,15 +23,15 @@ import net.minecraft.network.protocol.game.ServerboundRenameItemPacket
 import net.minecraft.util.StringUtil
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import java.util.*
 import kotlin.math.ceil
 import kotlin.math.floor
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 @Environment(EnvType.CLIENT)
-open class DogTagEditorScreen(var stack: ItemStack, private val hand: InteractionHand) : Screen(GameNarrator.NO_TITLE) {
+open class DogTagEditorScreen(
+    var stack: ItemStack,
+    private val hand: InteractionHand,
+) : Screen(GameNarrator.NO_TITLE) {
     lateinit var name: EditBox
     private var currentColor: Short = 0
     private var icon: Array<ShortArray> = Array(16) { ShortArray(16) }
@@ -40,9 +43,7 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
 
     private var itemName: String? = null
 
-    override fun isPauseScreen(): Boolean {
-        return false
-    }
+    override fun isPauseScreen(): Boolean = false
 
     protected fun renderBg(pGuiGraphics: GuiGraphics) {
         val i = (this.width - this.imageWidth) / 2
@@ -60,8 +61,11 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
                 val num = this.icon[x][y]
                 if (num.toInt() != -1) {
                     pGuiGraphics.fill(
-                        i + 66 + x * 9, j + 44 + y * 9, i + 58 + x * 9, j + 36 + y * 9,
-                        getColorByNum(num)
+                        i + 66 + x * 9,
+                        j + 44 + y * 9,
+                        i + 58 + x * 9,
+                        j + 36 + y * 9,
+                        getColorByNum(num),
                     )
                 }
             }
@@ -70,7 +74,12 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
         pose.popPose()
     }
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderBlurredBackground(pPartialTick)
         this.renderBg(pGuiGraphics)
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
@@ -81,21 +90,35 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
+    override fun mouseClicked(
+        pMouseX: Double,
+        pMouseY: Double,
+        pButton: Int,
+    ): Boolean {
         this.drawColor(pMouseX, pMouseY, pButton)
         return super.mouseClicked(pMouseX, pMouseY, pButton)
     }
 
-    override fun mouseDragged(pMouseX: Double, pMouseY: Double, pButton: Int, pDragX: Double, pDragY: Double): Boolean {
+    override fun mouseDragged(
+        pMouseX: Double,
+        pMouseY: Double,
+        pButton: Int,
+        pDragX: Double,
+        pDragY: Double,
+    ): Boolean {
         this.drawColor(pMouseX, pMouseY, pButton)
         return super.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY)
     }
 
-    private fun drawColor(pMouseX: Double, pMouseY: Double, pButton: Int) {
+    private fun drawColor(
+        pMouseX: Double,
+        pMouseY: Double,
+        pButton: Int,
+    ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
 
@@ -194,8 +217,14 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class ColorButton(var color: Short, pX: Int, pY: Int, pWidth: Int, pHeight: Int) :
-        AbstractButton(pX, pY, pWidth, pHeight, Component.empty()), AccessoriesButtonStub {
+    internal inner class ColorButton(
+        var color: Short,
+        pX: Int,
+        pY: Int,
+        pWidth: Int,
+        pHeight: Int,
+    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             this@DogTagEditorScreen.currentColor = this.color
             if (this.color.toInt() == -1 && hasShiftDown()) {
@@ -206,17 +235,36 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
         override fun updateWidgetNarration(pNarrationElementOutput: NarrationElementOutput) {
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             if (this.isHovered || this@DogTagEditorScreen.currentColor == this.color) {
                 if (this.color.toInt() == -1) {
                     pGuiGraphics.blit(
-                        TEXTURE, this.x, this.y, 19f, 186f,
-                        18, 8, 256, 256
+                        TEXTURE,
+                        this.x,
+                        this.y,
+                        19f,
+                        186f,
+                        18,
+                        8,
+                        256,
+                        256,
                     )
                 } else {
                     pGuiGraphics.blit(
-                        TEXTURE, this.x, this.y, 0f, 186f,
-                        18, 8, 256, 256
+                        TEXTURE,
+                        this.x,
+                        this.y,
+                        0f,
+                        186f,
+                        18,
+                        8,
+                        256,
+                        256,
                     )
                 }
             }
@@ -224,8 +272,13 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
     }
 
     @Environment(EnvType.CLIENT)
-    internal open inner class FinishButton(pX: Int, pY: Int, pWidth: Int, pHeight: Int) :
-        AbstractButton(pX, pY, pWidth, pHeight, Component.empty()), AccessoriesButtonStub {
+    internal open inner class FinishButton(
+        pX: Int,
+        pY: Int,
+        pWidth: Int,
+        pHeight: Int,
+    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             if (!this@DogTagEditorScreen.init) return
             if (this@DogTagEditorScreen.minecraft != null) {
@@ -234,17 +287,30 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
             this.updateLocal(this@DogTagEditorScreen.icon, this@DogTagEditorScreen.name.value)
             sendPacketToServer(
                 DogTagFinishEditMessage(
-                    this@DogTagEditorScreen.icon, this@DogTagEditorScreen.name.value,
-                    this@DogTagEditorScreen.hand == InteractionHand.MAIN_HAND
-                )
+                    this@DogTagEditorScreen.icon,
+                    this@DogTagEditorScreen.name.value,
+                    this@DogTagEditorScreen.hand == InteractionHand.MAIN_HAND,
+                ),
             )
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             if (this.isHovered) {
                 pGuiGraphics.blit(
-                    TEXTURE, this.x, this.y, 0f, 195f,
-                    40, 13, 256, 256
+                    TEXTURE,
+                    this.x,
+                    this.y,
+                    0f,
+                    195f,
+                    40,
+                    13,
+                    256,
+                    256,
                 )
             }
         }
@@ -252,7 +318,10 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
         override fun updateWidgetNarration(pNarrationElementOutput: NarrationElementOutput) {
         }
 
-        protected fun updateLocal(colors: Array<ShortArray>, name: String) {
+        protected fun updateLocal(
+            colors: Array<ShortArray>,
+            name: String,
+        ) {
             val colorsArray = MutableList(16) { MutableList(16) { 0.toShort() } }
             for (i in colors.indices) {
                 val color = MutableList(colors[i].size) { 0.toShort() }
@@ -277,8 +346,8 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
             return if (s.length <= 30) s else null
         }
 
-        fun getColorByNum(num: Short): Int {
-            return when (num.toInt()) {
+        fun getColorByNum(num: Short): Int =
+            when (num.toInt()) {
                 0 -> -0x1000000
                 1 -> -0x1
                 2 -> -0x7f7f80
@@ -297,6 +366,5 @@ open class DogTagEditorScreen(var stack: ItemStack, private val hand: Interactio
                 15 -> -0x71b30
                 else -> -1
             }
-        }
     }
 }

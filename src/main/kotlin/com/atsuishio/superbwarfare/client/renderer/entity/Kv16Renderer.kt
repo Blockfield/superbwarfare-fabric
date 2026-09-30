@@ -6,13 +6,15 @@ import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class Kv16Renderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
+class Kv16Renderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
     override fun transformCustomModelPart(
         entity: VehicleEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 

@@ -17,7 +17,7 @@ data class LoiterConfigMessage(
     val centerZ: Float,
     val radius: Float,
     val active: Boolean,
-    val skipTerrain: Boolean
+    val skipTerrain: Boolean,
 ) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
@@ -28,11 +28,12 @@ data class LoiterConfigMessage(
         val clampedRadius = min(10000f, max(200f, radius))
 
         // Apply terrain safety check on Y (reuse resolveSafeY from LoiterCommand)
-        val finalY = if (skipTerrain) {
-            centerY
-        } else {
-            resolveSafeY(vehicle, centerX.toInt(), centerY.toInt(), centerZ.toInt())
-        }
+        val finalY =
+            if (skipTerrain) {
+                centerY
+            } else {
+                resolveSafeY(vehicle, centerX.toInt(), centerY.toInt(), centerZ.toInt())
+            }
 
         vehicle.loiterParams = Quaternionf(centerX, finalY, centerZ, clampedRadius)
         vehicle.loiterActive = active

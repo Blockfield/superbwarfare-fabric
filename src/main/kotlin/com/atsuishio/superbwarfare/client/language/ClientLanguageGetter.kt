@@ -18,24 +18,24 @@ object ClientLanguageGetter {
     lateinit var EN_US: ClientLanguage
 
     fun init() {
-        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(object :
-            SimplePreparableReloadListener<ClientLanguage>(), IdentifiableResourceReloadListener {
-            override fun getFabricId(): ResourceLocation = Mod.loc("client_language_getter")
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
+            object :
+                SimplePreparableReloadListener<ClientLanguage>(), IdentifiableResourceReloadListener {
+                override fun getFabricId(): ResourceLocation = Mod.loc("client_language_getter")
 
-            override fun prepare(
-                pResourceManager: ResourceManager,
-                pProfiler: ProfilerFiller
-            ): ClientLanguage {
-                return ClientLanguage.loadFrom(pResourceManager, listOf("en_us"), false)
-            }
+                override fun prepare(
+                    pResourceManager: ResourceManager,
+                    pProfiler: ProfilerFiller,
+                ): ClientLanguage = ClientLanguage.loadFrom(pResourceManager, listOf("en_us"), false)
 
-            override fun apply(
-                pObject: ClientLanguage,
-                pResourceManager: ResourceManager,
-                pProfiler: ProfilerFiller
-            ) {
-                EN_US = pObject
-            }
-        })
+                override fun apply(
+                    pObject: ClientLanguage,
+                    pResourceManager: ResourceManager,
+                    pProfiler: ProfilerFiller,
+                ) {
+                    EN_US = pObject
+                }
+            },
+        )
     }
 }

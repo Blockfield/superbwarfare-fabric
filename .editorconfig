@@ -1,0 +1,24 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+[*.{md,yml,yaml,json}]
+indent_size = 2
+
+[*.{kt,kts}]
+max_line_length = off
+# Preserve upstream API/package names and imports; enforce the formatter on every source file.
+ktlint_standard_filename = disabled
+ktlint_standard_property-naming = disabled
+ktlint_standard_package-name = disabled
+ktlint_standard_no-wildcard-imports = disabled
+# These rules rewrite documentation or expressions rather than whitespace.
+ktlint_standard_kdoc = disabled
+ktlint_standard_no-consecutive-comments = disabled
+ktlint_standard_value-parameter-comment = disabled
+ktlint_standard_mixed-condition-operators = disabled

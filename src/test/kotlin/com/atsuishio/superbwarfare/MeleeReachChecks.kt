@@ -12,7 +12,11 @@ fun meleeReachChecks() {
     // A pickup-sized hull turned 45 degrees: its AABB corners are empty space.
     val hull = OBB(Vector3d(0.0, 1.0, 0.0), Vector3d(1.25, 0.75, 3.4), Quaterniond().rotateY(Math.toRadians(45.0)), OBB.Part.BODY)
     val aabb = OBB.getWorldAABB(hull)
-    fun dist(eye: Vec3, withAabb: Boolean) = sqrt(MeleeAttackMessage.hitboxDistanceSqr(eye, aabb.takeIf { withAabb }, listOf(hull)))
+
+    fun dist(
+        eye: Vec3,
+        withAabb: Boolean,
+    ) = sqrt(MeleeAttackMessage.hitboxDistanceSqr(eye, aabb.takeIf { withAabb }, listOf(hull)))
 
     // 3 blocks straight out of the short side of the hull.
     val side = Vec3(1.0, 0.0, -1.0).normalize().scale(1.25 + 3.0).add(0.0, 1.0, 0.0)

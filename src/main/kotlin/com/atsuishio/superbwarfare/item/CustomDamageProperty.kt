@@ -22,7 +22,5 @@ class CustomDamageProperty : Item.Properties {
         this.component(DataComponents.UNBREAKABLE, Unbreakable(showInTooltip))
     }
 
-    override fun durability(maxDamage: Int): CustomDamageProperty {
-        return this
-    }
+    override fun durability(maxDamage: Int): CustomDamageProperty = this
 }

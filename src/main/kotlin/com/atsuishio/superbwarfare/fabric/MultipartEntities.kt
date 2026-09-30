@@ -18,9 +18,10 @@ import net.minecraft.world.entity.boss.EnderDragonPart
 object MultipartEntities {
     fun isPart(entity: Entity): Boolean = entity is EnderDragonPart || entity is PartEntity<*>
 
-    fun parentOf(entity: Entity): Entity? = when (entity) {
-        is EnderDragonPart -> entity.parentMob
-        is PartEntity<*> -> entity.parent
-        else -> null
-    }
+    fun parentOf(entity: Entity): Entity? =
+        when (entity) {
+            is EnderDragonPart -> entity.parentMob
+            is PartEntity<*> -> entity.parent
+            else -> null
+        }
 }

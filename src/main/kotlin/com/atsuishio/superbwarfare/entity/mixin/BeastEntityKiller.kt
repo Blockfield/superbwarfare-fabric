@@ -7,8 +7,6 @@ interface BeastEntityKiller {
     fun `sbw$kill`()
 
     companion object {
-        fun getInstance(entity: LivingEntity): BeastEntityKiller {
-            return entity as BeastEntityKiller
-        }
+        fun getInstance(entity: LivingEntity): BeastEntityKiller = entity as BeastEntityKiller
     }
 }

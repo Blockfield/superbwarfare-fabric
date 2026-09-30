@@ -6,12 +6,14 @@ import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
@@ -29,7 +31,8 @@ public class VectorItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.vector.idle"));
 
         var data = GunData.from(stack);
@@ -37,17 +40,21 @@ public class VectorItem extends GunGeoItem {
 
         if (data.reload.empty()) {
             if (drum) {
-                return event.setAndContinue(RawAnimation.begin().thenPlay("animation.vector.reload_empty_drum"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenPlay("animation.vector.reload_empty_drum"));
             } else {
-                return event.setAndContinue(RawAnimation.begin().thenPlay("animation.vector.reload_empty"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenPlay("animation.vector.reload_empty"));
             }
         }
 
         if (data.reload.normal()) {
             if (drum) {
-                return event.setAndContinue(RawAnimation.begin().thenPlay("animation.vector.reload_normal_drum"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenPlay("animation.vector.reload_normal_drum"));
             } else {
-                return event.setAndContinue(RawAnimation.begin().thenPlay("animation.vector.reload_normal"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenPlay("animation.vector.reload_normal"));
             }
         }
 
@@ -59,7 +66,8 @@ public class VectorItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.vector.idle"));
 
         if (ClientEventHandler.isEditing) {
@@ -71,9 +79,11 @@ public class VectorItem extends GunGeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        AnimationController<VectorItem> idleController = new AnimationController<>(this, "idleController", 2, this::idlePredicate);
+        AnimationController<VectorItem> idleController =
+                new AnimationController<>(this, "idleController", 2, this::idlePredicate);
         data.add(idleController);
-        var editController = new AnimationController<>(this, "editController", 1, this::editPredicate);
+        var editController =
+                new AnimationController<>(this, "editController", 1, this::editPredicate);
         data.add(editController);
     }
 
@@ -84,12 +94,12 @@ public class VectorItem extends GunGeoItem {
 
     @Override
     public int[] getValidScopes() {
-        return new int[]{0, 1, 2};
+        return new int[] {0, 1, 2};
     }
 
     @Override
     public int[] getValidGrips() {
-        return new int[]{0, 1, 2};
+        return new int[] {0, 1, 2};
     }
 
     @Override

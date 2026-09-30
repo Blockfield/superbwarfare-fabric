@@ -4,6 +4,7 @@ import com.atsuishio.superbwarfare.Mod
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.init.ModAttributes
 import com.atsuishio.superbwarfare.init.ModItems
+import com.atsuishio.superbwarfare.item.StackAttributeItem
 import com.atsuishio.superbwarfare.resource.model.ArmorModelReloadListener
 import com.atsuishio.superbwarfare.tiers.ModArmorMaterial
 import com.github.mcmodderanchor.simplebedrockmodel.v1.client.handler.FirstPersonArmorHandler
@@ -20,13 +21,14 @@ import net.minecraft.world.item.ArmorItem
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import kotlin.math.max
-import com.atsuishio.superbwarfare.item.StackAttributeItem
 
-class UsChestIotvItem : ArmorItem(
-    ModArmorMaterial.CEMENTED_CARBIDE,
-    Type.CHESTPLATE,
-    Properties().durability(Type.CHESTPLATE.getDurability(50))
-), StackAttributeItem {
+class UsChestIotvItem :
+    ArmorItem(
+        ModArmorMaterial.CEMENTED_CARBIDE,
+        Type.CHESTPLATE,
+        Properties().durability(Type.CHESTPLATE.getDurability(50)),
+    ),
+    StackAttributeItem {
     companion object {
         val SHOULDERPADS_ID = loc("shoulderpads")
         val TEXTURE = loc("textures/bedrock/armor/us_chest_iotv.png")
@@ -36,13 +38,15 @@ class UsChestIotvItem : ArmorItem(
         @Environment(EnvType.CLIENT)
         fun init() {
             var renderer: GeoArmorRendererV2? = null
+
             fun getRenderer(slot: EquipmentSlot): GeoArmorRendererV2 {
                 if (renderer == null) {
-                    renderer = GeoArmorRendererV2(
-                        ArmorModelReloadListener.getModel(MODEL),
-                        slot,
-                        TEXTURE
-                    )
+                    renderer =
+                        GeoArmorRendererV2(
+                            ArmorModelReloadListener.getModel(MODEL),
+                            slot,
+                            TEXTURE,
+                        )
                 }
                 return renderer!!
             }
@@ -66,18 +70,19 @@ class UsChestIotvItem : ArmorItem(
             ItemAttributeModifiers.Entry(
                 Attributes.ARMOR,
                 AttributeModifier(SHOULDERPADS_ID, 4.0, AttributeModifier.Operation.ADD_VALUE),
-                EquipmentSlotGroup.bySlot(this.type.slot)
-            )
+                EquipmentSlotGroup.bySlot(this.type.slot),
+            ),
         )
         list.add(
             ItemAttributeModifiers.Entry(
-                ModAttributes.BULLET_RESISTANCE, AttributeModifier(
+                ModAttributes.BULLET_RESISTANCE,
+                AttributeModifier(
                     Mod.ATTRIBUTE_MODIFIER,
                     0.5 * max(0.0, 1 - stack.damageValue.toDouble() / stack.maxDamage),
-                    AttributeModifier.Operation.ADD_VALUE
+                    AttributeModifier.Operation.ADD_VALUE,
                 ),
-                EquipmentSlotGroup.bySlot(this.type.slot)
-            )
+                EquipmentSlotGroup.bySlot(this.type.slot),
+            ),
         )
         return ItemAttributeModifiers(list, true)
     }

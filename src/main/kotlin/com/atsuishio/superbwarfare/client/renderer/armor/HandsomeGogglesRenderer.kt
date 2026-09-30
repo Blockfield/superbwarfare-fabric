@@ -14,7 +14,10 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.EquipmentSlot
 import java.io.IOException
 
-class HandsomeGogglesRenderer(model: TreeBedrockModel, slot: EquipmentSlot) : GeoArmorRendererV2(model, slot, GLASS) {
+class HandsomeGogglesRenderer(
+    model: TreeBedrockModel,
+    slot: EquipmentSlot,
+) : GeoArmorRendererV2(model, slot, GLASS) {
     companion object {
         val GLASS = Mod.loc("textures/bedrock/vehicle/happiest_ghast_glass.png")
         val TEXTURE = Mod.loc("textures/bedrock/vehicle/happiest_ghast.png")
@@ -68,7 +71,10 @@ class HandsomeGogglesRenderer(model: TreeBedrockModel, slot: EquipmentSlot) : Ge
          * 对每个像素做 HSV 色相偏移，保留原始饱和度和明度。
          * 此方法仅在初始化时调用 CYCLE_TICKS 次，运行时不再调用。
          */
-        private fun createHueShiftedFrame(source: NativeImage, hueShift: Float): NativeImage {
+        private fun createHueShiftedFrame(
+            source: NativeImage,
+            hueShift: Float,
+        ): NativeImage {
             val dest = NativeImage(source.width, source.height, true)
 
             for (y in 0 until source.height) {
@@ -101,19 +107,24 @@ class HandsomeGogglesRenderer(model: TreeBedrockModel, slot: EquipmentSlot) : Ge
         // ========== RGB ↔ HSV 转换 ==========
 
         /** RGB 0-1 → HSV (Hue 0-1, Sat 0-1, Val 0-1) */
-        private fun rgbToHsv(r: Float, g: Float, b: Float): Triple<Float, Float, Float> {
+        private fun rgbToHsv(
+            r: Float,
+            g: Float,
+            b: Float,
+        ): Triple<Float, Float, Float> {
             val max = maxOf(r, g, b)
             val min = minOf(r, g, b)
             val delta = max - min
 
-            val h = when {
-                delta == 0f -> 0f
-                max == r -> ((g - b) / delta) % 6f
-                max == g -> ((b - r) / delta) + 2f
-                else -> ((r - g) / delta) + 4f
-            }.let { raw ->
-                if (raw < 0f) raw + 6f else raw
-            } / 6f
+            val h =
+                when {
+                    delta == 0f -> 0f
+                    max == r -> ((g - b) / delta) % 6f
+                    max == g -> ((b - r) / delta) + 2f
+                    else -> ((r - g) / delta) + 4f
+                }.let { raw ->
+                    if (raw < 0f) raw + 6f else raw
+                } / 6f
 
             val s = if (max == 0f) 0f else delta / max
 
@@ -121,7 +132,11 @@ class HandsomeGogglesRenderer(model: TreeBedrockModel, slot: EquipmentSlot) : Ge
         }
 
         /** HSV → RGB 0-1：保留纹理原本的饱和度和明度，只偏移色相 */
-        private fun hsvToRgbScalar(h: Float, s: Float, v: Float): Triple<Float, Float, Float> {
+        private fun hsvToRgbScalar(
+            h: Float,
+            s: Float,
+            v: Float,
+        ): Triple<Float, Float, Float> {
             if (s == 0f) return Triple(v, v, v)
 
             val hue6 = h * 6f
@@ -152,7 +167,7 @@ class HandsomeGogglesRenderer(model: TreeBedrockModel, slot: EquipmentSlot) : Ge
         r: Float,
         g: Float,
         b: Float,
-        a: Float
+        a: Float,
     ) {
         val mc = mc
         val bufferSource = mc.renderBuffers().bufferSource()
@@ -171,7 +186,7 @@ class HandsomeGogglesRenderer(model: TreeBedrockModel, slot: EquipmentSlot) : Ge
             r,
             g,
             b,
-            a
+            a,
         )
         this.instance.renderToBuffer(
             poseStack,
@@ -181,7 +196,7 @@ class HandsomeGogglesRenderer(model: TreeBedrockModel, slot: EquipmentSlot) : Ge
             r,
             g,
             b,
-            a
+            a,
         )
         poseStack.popPose()
     }

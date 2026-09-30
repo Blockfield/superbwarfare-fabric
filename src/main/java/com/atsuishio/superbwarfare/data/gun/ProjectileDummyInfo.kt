@@ -8,7 +8,6 @@ import net.minecraft.world.phys.Vec3
 
 @Serializable
 class ProjectileDummyInfo {
-
     @SerializedName("Offset")
     @SerialName("Offset")
     var offset: SerializedVec3 = Vec3.ZERO

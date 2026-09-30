@@ -9,10 +9,10 @@ import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.tools.SeekTool
 import com.atsuishio.superbwarfare.tools.worldToScreen
 import com.mojang.blaze3d.systems.RenderSystem
-import net.minecraft.util.Mth
-import net.minecraft.world.phys.Vec3
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.util.Mth
+import net.minecraft.world.phys.Vec3
 
 @Environment(EnvType.CLIENT)
 object RedTriangleOverlay : CommonOverlay("red_triangle") {
@@ -34,27 +34,30 @@ object RedTriangleOverlay : CommonOverlay("red_triangle") {
             // Маркер захвата -- про технику: обе наши ракеты РПГ неуправляемые, и треугольник над
             // игроком/мобом/мишенью только вводил в заблуждение. Ищем именно технику, а не ближайшее
             // живое существо, иначе игрок перед танком забирал бы захват себе.
-            val idf = SeekTool.seekQuery(player) {
-                withinRange(128.0)
-                withinAngle(6.0)
-                baseFilter()
-                smokeFilter()
-                notFriendly()
-                isNotOwner()
-                noClip()
-                custom(java.util.function.Predicate { it is VehicleEntity })
-            }.buildWithClosest() ?: return
+            val idf =
+                SeekTool
+                    .seekQuery(player) {
+                        withinRange(128.0)
+                        withinAngle(6.0)
+                        baseFilter()
+                        smokeFilter()
+                        notFriendly()
+                        isNotOwner()
+                        noClip()
+                        custom(java.util.function.Predicate { it is VehicleEntity })
+                    }.buildWithClosest() ?: return
 
             val distance = idf.position().distanceTo(cameraPos)
-            val pos = Vec3(
-                Mth.lerp(deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(), idf.xo, idf.x),
-                Mth.lerp(
-                    deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(),
-                    idf.yo + idf.eyeHeight + 0.5 + 0.07 * distance,
-                    idf.eyeY + 0.5 + 0.07 * distance
-                ),
-                Mth.lerp(deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(), idf.zo, idf.z)
-            )
+            val pos =
+                Vec3(
+                    Mth.lerp(deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(), idf.xo, idf.x),
+                    Mth.lerp(
+                        deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(),
+                        idf.yo + idf.eyeHeight + 0.5 + 0.07 * distance,
+                        idf.eyeY + 0.5 + 0.07 * distance,
+                    ),
+                    Mth.lerp(deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(), idf.zo, idf.z),
+                )
             val point = pos.worldToScreen()
 
             poseStack.pushPose()

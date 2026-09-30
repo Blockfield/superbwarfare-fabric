@@ -14,7 +14,9 @@ import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
-typealias CompressedString = @Serializable(CompressedStringSerializer::class) String
+typealias CompressedString =
+    @Serializable(CompressedStringSerializer::class)
+    String
 
 object CompressedStringSerializer : KSerializer<String> {
     override val descriptor = PrimitiveSerialDescriptor("CompressedString", PrimitiveKind.STRING)
@@ -41,15 +43,20 @@ object CompressedStringSerializer : KSerializer<String> {
         return outputStream.toByteArray()
     }
 
-    private val CACHE = CacheBuilder.newBuilder()
-        .expireAfterWrite(5, TimeUnit.MINUTES)
-        .build(object : CacheLoader<String, ByteArray>() {
-            override fun load(str: String): ByteArray {
-                return compress(str.toByteArray())
-            }
-        })
+    private val CACHE =
+        CacheBuilder
+            .newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .build(
+                object : CacheLoader<String, ByteArray>() {
+                    override fun load(str: String): ByteArray = compress(str.toByteArray())
+                },
+            )
 
-    override fun serialize(encoder: Encoder, value: String) {
+    override fun serialize(
+        encoder: Encoder,
+        value: String,
+    ) {
         val compressed = CACHE.getUnchecked(value)
 
         encoder.encodeInt(compressed.size)

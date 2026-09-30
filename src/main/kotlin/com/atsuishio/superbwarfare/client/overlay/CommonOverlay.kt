@@ -5,16 +5,19 @@ import com.atsuishio.superbwarfare.client.overlay.components.BaseComponent
 import com.atsuishio.superbwarfare.tools.isNullOrSpector
 import com.atsuishio.superbwarfare.tools.localPlayer
 import com.atsuishio.superbwarfare.tools.options
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Camera
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.LayeredDraw
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
-class RenderContext(var guiGraphics: GuiGraphics, var deltaTracker: DeltaTracker) {
+class RenderContext(
+    var guiGraphics: GuiGraphics,
+    var deltaTracker: DeltaTracker,
+) {
     val screenWidth get() = guiGraphics.guiWidth()
     val screenHeight get() = guiGraphics.guiHeight()
 
@@ -36,7 +39,9 @@ class RenderContext(var guiGraphics: GuiGraphics, var deltaTracker: DeltaTracker
 }
 
 @Environment(EnvType.CLIENT)
-abstract class CommonOverlay(id: String) : LayeredDraw.Layer {
+abstract class CommonOverlay(
+    id: String,
+) : LayeredDraw.Layer {
     val ID = loc(id)
 
     val components = mutableListOf<BaseComponent>()
@@ -61,7 +66,7 @@ abstract class CommonOverlay(id: String) : LayeredDraw.Layer {
 
     override fun render(
         guiGraphics: GuiGraphics,
-        deltaTracker: DeltaTracker
+        deltaTracker: DeltaTracker,
     ) {
         if (!shouldRender()) return
 

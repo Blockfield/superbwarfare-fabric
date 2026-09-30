@@ -31,13 +31,18 @@ data class DroneFireMessage(
             if (!DroneControlPolicy.validBlockTarget(pos.x, pos.y, pos.z)) return
             val offStack = player.offhandItem
             val (_, radius, isDepressed) = offStack.firingParameters
-            offStack.firingParameters = FiringParametersItem.Parameters(
-                BlockPos(pos.x.toInt(), pos.y.toInt(), pos.z.toInt()), radius, isDepressed
-            )
+            offStack.firingParameters =
+                FiringParametersItem.Parameters(
+                    BlockPos(pos.x.toInt(), pos.y.toInt(), pos.z.toInt()),
+                    radius,
+                    isDepressed,
+                )
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.mortar.target_pos")
+                Component
+                    .translatable("tips.superbwarfare.mortar.target_pos")
                     .withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal("[${pos.x()}, ${pos.y()}, ${pos.z()}]")), true
+                    .append(Component.literal("[${pos.x()}, ${pos.y()}, ${pos.z()}]")),
+                true,
             )
             player.playLocalSound(ModSounds.CANNON_ZOOM_IN.get(), 2f, 1f)
             val item = offStack.item

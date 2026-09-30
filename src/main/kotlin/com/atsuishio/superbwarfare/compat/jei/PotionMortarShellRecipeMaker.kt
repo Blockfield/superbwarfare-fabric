@@ -17,30 +17,40 @@ object PotionMortarShellRecipeMaker {
         val group = "jei.potion_mortar_shell"
         val ingredient = Ingredient.of(ItemStack(ModItems.MORTAR_SHELL.get()))
 
-        return BuiltInRegistries.POTION.stream().map { potion ->
-            val input = ItemStack(Items.LINGERING_POTION)
-            input.set<PotionContents?>(DataComponents.POTION_CONTENTS, PotionContents(Holder.direct(potion)))
+        return BuiltInRegistries.POTION
+            .stream()
+            .map { potion ->
+                val input = ItemStack(Items.LINGERING_POTION)
+                input.set<PotionContents?>(DataComponents.POTION_CONTENTS, PotionContents(Holder.direct(potion)))
 
-            val output = ItemStack(ModItems.POTION_MORTAR_SHELL.get(), 4)
-            output.set<PotionContents?>(DataComponents.POTION_CONTENTS, PotionContents(Holder.direct(potion)))
+                val output = ItemStack(ModItems.POTION_MORTAR_SHELL.get(), 4)
+                output.set<PotionContents?>(DataComponents.POTION_CONTENTS, PotionContents(Holder.direct(potion)))
 
-            val potionIngredient = Ingredient.of(input)
-            val inputs = NonNullList.of(
-                Ingredient.EMPTY,
-                Ingredient.EMPTY, ingredient, Ingredient.EMPTY,
-                ingredient, potionIngredient, ingredient,
-                Ingredient.EMPTY, ingredient, Ingredient.EMPTY
-            )
+                val potionIngredient = Ingredient.of(input)
+                val inputs =
+                    NonNullList.of(
+                        Ingredient.EMPTY,
+                        Ingredient.EMPTY,
+                        ingredient,
+                        Ingredient.EMPTY,
+                        ingredient,
+                        potionIngredient,
+                        ingredient,
+                        Ingredient.EMPTY,
+                        ingredient,
+                        Ingredient.EMPTY,
+                    )
 
-            val id = ResourceLocation.withDefaultNamespace(group + "." + output.descriptionId)
-            RecipeHolder(
-                id, ShapedRecipe(
-                    group,
-                    CraftingBookCategory.MISC,
-                    ShapedRecipePattern(3, 3, inputs, Optional.empty()),
-                    output
-                ) as CraftingRecipe
-            )
-        }.toList()
+                val id = ResourceLocation.withDefaultNamespace(group + "." + output.descriptionId)
+                RecipeHolder(
+                    id,
+                    ShapedRecipe(
+                        group,
+                        CraftingBookCategory.MISC,
+                        ShapedRecipePattern(3, 3, inputs, Optional.empty()),
+                        output,
+                    ) as CraftingRecipe,
+                )
+            }.toList()
     }
 }

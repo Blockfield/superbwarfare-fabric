@@ -4,10 +4,10 @@ import com.atsuishio.superbwarfare.data.gun.GunData
 import com.atsuishio.superbwarfare.item.gun.GunItem
 import com.atsuishio.superbwarfare.perk.Perk
 import com.atsuishio.superbwarfare.tools.DamageTypeTool
-import net.minecraft.world.damagesource.DamageTypes
-import net.minecraft.world.entity.player.Player
 import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDropsEvent
 import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingExperienceDropEvent
+import net.minecraft.world.damagesource.DamageTypes
+import net.minecraft.world.entity.player.Player
 
 object PowerfulAttraction : Perk("powerful_attraction", Type.FUNCTIONAL) {
     fun init() {

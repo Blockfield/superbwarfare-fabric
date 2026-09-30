@@ -11,6 +11,9 @@ import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.tools.GunsTool;
 import com.atsuishio.superbwarfare.tools.ParticleTool;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -22,16 +25,17 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
 import org.jetbrains.annotations.NotNull;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.function.Supplier;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 public class Ql1031Item extends GunGeoItem {
 
@@ -46,13 +50,26 @@ public class Ql1031Item extends GunGeoItem {
 
     @Override
     @ParametersAreNonnullByDefault
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void appendHoverText(
+            ItemStack stack,
+            TooltipContext context,
+            List<Component> tooltipComponents,
+            TooltipFlag tooltipFlag) {
         tooltipComponents.add(Component.empty());
-        tooltipComponents.add(Component.translatable("des.superbwarfare.ql_1031_1").withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.ITALIC));
+        tooltipComponents.add(
+                Component.translatable("des.superbwarfare.ql_1031_1")
+                        .withStyle(ChatFormatting.GRAY)
+                        .withStyle(ChatFormatting.ITALIC));
 
         TooltipTool.addHideText(tooltipComponents, Component.empty());
-        TooltipTool.addHideText(tooltipComponents, Component.translatable("des.superbwarfare.trachelium_3").withStyle(ChatFormatting.WHITE));
-        TooltipTool.addHideText(tooltipComponents, Component.translatable("des.superbwarfare.ql_1031_2").withStyle(Style.EMPTY.withColor(0xFFECE7)));
+        TooltipTool.addHideText(
+                tooltipComponents,
+                Component.translatable("des.superbwarfare.trachelium_3")
+                        .withStyle(ChatFormatting.WHITE));
+        TooltipTool.addHideText(
+                tooltipComponents,
+                Component.translatable("des.superbwarfare.ql_1031_2")
+                        .withStyle(Style.EMPTY.withColor(0xFFECE7)));
     }
 
     @Environment(EnvType.CLIENT)
@@ -61,7 +78,8 @@ public class Ql1031Item extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.ql_1031.idle"));
 
         if (ClientEventHandler.isEditing) {
@@ -77,12 +95,15 @@ public class Ql1031Item extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem gunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.ql_1031.idle"));
 
         var data = GunData.from(stack);
 
-        if (ClientEventHandler.holdingFireKey && gunItem.canShoot(data, player) && data.selectedFireModeInfo().name.equals("Hold")) {
+        if (ClientEventHandler.holdingFireKey
+                && gunItem.canShoot(data, player)
+                && data.selectedFireModeInfo().name.equals("Hold")) {
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.ql_1031.charge"));
         }
 
@@ -99,16 +120,31 @@ public class Ql1031Item extends GunGeoItem {
 
         if (data.selectedFireModeInfo().name.equals("Hold")) {
             for (int i = 0; i < 40; i += 2) {
-                Vec3 pos = shootPosition.add(shootDirection.normalize().scale(1 + 0.5 * i + 0.05 * i * i));
-                ParticleTool.sendParticle(level, ParticleTypes.CHERRY_LEAVES, pos.x, pos.y - 0.12, pos.z, 1, 0.04, 0.04, 0.04, 1, false);
+                Vec3 pos =
+                        shootPosition.add(
+                                shootDirection.normalize().scale(1 + 0.5 * i + 0.05 * i * i));
+                ParticleTool.sendParticle(
+                        level,
+                        ParticleTypes.CHERRY_LEAVES,
+                        pos.x,
+                        pos.y - 0.12,
+                        pos.z,
+                        1,
+                        0.04,
+                        0.04,
+                        0.04,
+                        1,
+                        false);
             }
         }
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var editController = new AnimationController<>(this, "editController", 1, this::editPredicate);
-        var chargeController = new AnimationController<>(this, "chargeController", 1, this::chargePredicate);
+        var editController =
+                new AnimationController<>(this, "editController", 1, this::editPredicate);
+        var chargeController =
+                new AnimationController<>(this, "chargeController", 1, this::chargePredicate);
         data.add(editController);
         data.add(chargeController);
     }

@@ -36,9 +36,10 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.Vec3
 
-open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
-    BlockEntity(ModBlockEntities.SMALL_CONTAINER.get(), pos, state) {
-
+open class SmallContainerBlockEntity(
+    pos: BlockPos,
+    state: BlockState,
+) : BlockEntity(ModBlockEntities.SMALL_CONTAINER.get(), pos, state) {
     open val modelInstance = BlockModelReloadListener.getModel(MODEL)?.createInstance()
 
     var lootTable: ResourceKey<LootTable>? = null
@@ -67,21 +68,28 @@ open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
         }
     }
 
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun loadAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.loadAdditional(tag, registries)
 
         if (tag.contains("LootTable", 8)) {
-            this.lootTable = ResourceKey.create(
-                Registries.LOOT_TABLE,
-                ResourceLocation.parse(tag.getString("LootTable"))
-            )
+            this.lootTable =
+                ResourceKey.create(
+                    Registries.LOOT_TABLE,
+                    ResourceLocation.parse(tag.getString("LootTable")),
+                )
             this.lootTableSeed = tag.getLong("LootTableSeed")
         }
         this.tick = tag.getInt("Tick")
         this.opened = tag.getBoolean("Opened")
     }
 
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun saveAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveAdditional(tag, registries)
 
         val lootTable = this.lootTable
@@ -95,15 +103,14 @@ open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
         tag.putBoolean("Opened", this.opened)
     }
 
-    override fun getUpdatePacket(): ClientboundBlockEntityDataPacket? {
-        return ClientboundBlockEntityDataPacket.create(this)
-    }
+    override fun getUpdatePacket(): ClientboundBlockEntityDataPacket? = ClientboundBlockEntityDataPacket.create(this)
 
-    override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag {
-        return this.saveWithFullMetadata(registries)
-    }
+    override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag = this.saveWithFullMetadata(registries)
 
-    override fun saveToItem(stack: ItemStack, registries: HolderLookup.Provider) {
+    override fun saveToItem(
+        stack: ItemStack,
+        registries: HolderLookup.Provider,
+    ) {
         val tag = CompoundTag()
         if (this.lootTable != null) {
             tag.putString("LootTable", this.lootTable.toString())
@@ -114,7 +121,10 @@ open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
         BlockItem.setBlockEntityData(stack, this.type, tag)
     }
 
-    fun setLootTable(pLootTable: ResourceKey<LootTable>, pLootTableSeed: Long) {
+    fun setLootTable(
+        pLootTable: ResourceKey<LootTable>,
+        pLootTableSeed: Long,
+    ) {
         this.lootTable = pLootTable
         this.lootTableSeed = pLootTableSeed
     }
@@ -130,13 +140,16 @@ open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
             }
 
             this.lootTable = null
-            val builder = (LootParams.Builder(level as ServerLevel))
-                .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition))
+            val builder =
+                (LootParams.Builder(level as ServerLevel))
+                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition))
             if (pPlayer != null) {
                 builder.withLuck(pPlayer.luck).withParameter(LootContextParams.THIS_ENTITY, pPlayer)
             }
 
-            return table.getRandomItems(builder.create(LootContextParamSets.CHEST), this.lootTableSeed).stream()
+            return table
+                .getRandomItems(builder.create(LootContextParamSets.CHEST), this.lootTableSeed)
+                .stream()
                 .toList()
         }
         return mutableListOf()
@@ -145,7 +158,12 @@ open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
     companion object {
         val MODEL = loc("models/bedrock/block/small_container.geo.json")
 
-        fun serverTick(pLevel: Level, pPos: BlockPos, pState: BlockState, blockEntity: SmallContainerBlockEntity) {
+        fun serverTick(
+            pLevel: Level,
+            pPos: BlockPos,
+            pState: BlockState,
+            blockEntity: SmallContainerBlockEntity,
+        ) {
             if (!pState.getValue(SmallContainerBlock.OPENED)) {
                 return
             }
@@ -166,7 +184,7 @@ open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
                         1.5,
                         1.5,
                         1.0,
-                        false
+                        false,
                     )
                     pLevel.playSound(
                         null,
@@ -174,7 +192,7 @@ open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
                         SoundEvents.GENERIC_EXPLODE.value(),
                         SoundSource.BLOCKS,
                         4f,
-                        (1f + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.2f) * 0.7f
+                        (1f + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.2f) * 0.7f,
                     )
                 }
             } else {
@@ -184,11 +202,12 @@ open class SmallContainerBlockEntity(pos: BlockPos, state: BlockState) :
                 if (!items.isEmpty()) {
                     for (item in items) {
                         val entity = ItemEntity(pLevel, pPos.x + 0.5, pPos.y + 0.85, pPos.z + 0.5, item)
-                        entity.deltaMovement = Vec3(
-                            pLevel.random.nextDouble() * 0.1,
-                            0.1,
-                            pLevel.random.nextDouble() * 0.1
-                        )
+                        entity.deltaMovement =
+                            Vec3(
+                                pLevel.random.nextDouble() * 0.1,
+                                0.1,
+                                pLevel.random.nextDouble() * 0.1,
+                            )
                         pLevel.addFreshEntity(entity)
                     }
                 }

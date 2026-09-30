@@ -1,9 +1,9 @@
 package com.atsuishio.superbwarfare.client.util
 
 import com.atsuishio.superbwarfare.data.gun.Ammo
+import com.atsuishio.superbwarfare.init.ModAttachments
 import com.atsuishio.superbwarfare.init.getData
 import com.atsuishio.superbwarfare.init.setData
-import com.atsuishio.superbwarfare.init.ModAttachments
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 
 /**
@@ -14,7 +14,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 object PendingPlayerVariables {
     private val pending = HashMap<Int, Map<Byte, Int>>()
 
-    fun stash(entityId: Int, data: Map<Byte, Int>) {
+    fun stash(
+        entityId: Int,
+        data: Map<Byte, Int>,
+    ) {
         synchronized(pending) {
             val merged = pending[entityId]?.toMutableMap() ?: HashMap()
             merged.putAll(data)

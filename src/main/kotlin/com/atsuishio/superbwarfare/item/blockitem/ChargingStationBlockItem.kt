@@ -26,23 +26,19 @@ class ChargingStationBlockItem : BlockItem(ModBlocks.CHARGING_STATION.get(), Pro
         return (energy * 13f / max(1, MiscConfig.CHARGING_STATION_MAX_ENERGY.get())).roundToInt()
     }
 
-    override fun getBarColor(pStack: ItemStack): Int {
-        return 0xFFFF00
-    }
+    override fun getBarColor(pStack: ItemStack): Int = 0xFFFF00
 
-    override fun getTooltipImage(pStack: ItemStack): Optional<TooltipComponent> {
-        return Optional.of(ChargingStationImageComponent(pStack))
-    }
+    override fun getTooltipImage(pStack: ItemStack): Optional<TooltipComponent> = Optional.of(ChargingStationImageComponent(pStack))
 
     @ParametersAreNonnullByDefault
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.charging_station").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.charging_station").withStyle(ChatFormatting.GRAY),
         )
     }
 }

@@ -25,8 +25,13 @@ import net.minecraft.world.phys.BlockHitResult
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 open class ChargingStationBlock :
-    BaseEntityBlock(Properties.of().sound(SoundType.METAL).strength(3.0f).requiresCorrectToolForDrops()) {
-
+    BaseEntityBlock(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .requiresCorrectToolForDrops(),
+    ) {
     companion object {
         @JvmStatic
         val FACING: DirectionProperty = HorizontalDirectionalBlock.FACING
@@ -40,9 +45,10 @@ open class ChargingStationBlock :
 
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(SHOW_RANGE, false)
+                .setValue(SHOW_RANGE, false),
         )
     }
 
@@ -51,7 +57,7 @@ open class ChargingStationBlock :
         level: Level,
         pos: BlockPos,
         player: Player,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): InteractionResult {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS
@@ -61,7 +67,11 @@ open class ChargingStationBlock :
         }
     }
 
-    protected fun openContainer(pLevel: Level, pPos: BlockPos, pPlayer: Player) {
+    protected fun openContainer(
+        pLevel: Level,
+        pPos: BlockPos,
+        pPlayer: Player,
+    ) {
         val blockEntity = pLevel.getBlockEntity(pPos)
         if (blockEntity is ChargingStationBlockEntity) {
             pPlayer.openMenu(blockEntity)
@@ -70,24 +80,23 @@ open class ChargingStationBlock :
 
     override fun codec() = CODEC
 
-    public override fun getRenderShape(pState: BlockState): RenderShape {
-        return RenderShape.MODEL
-    }
+    public override fun getRenderShape(pState: BlockState): RenderShape = RenderShape.MODEL
 
-    override fun newBlockEntity(pPos: BlockPos, pState: BlockState): BlockEntity? {
-        return ChargingStationBlockEntity(pPos, pState)
-    }
+    override fun newBlockEntity(
+        pPos: BlockPos,
+        pState: BlockState,
+    ): BlockEntity? = ChargingStationBlockEntity(pPos, pState)
 
     override fun <T : BlockEntity> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T>
+        pBlockEntityType: BlockEntityType<T>,
     ): BlockEntityTicker<T>? {
         if (!pLevel.isClientSide) {
             return createTickerHelper(
                 pBlockEntityType,
                 ModBlockEntities.CHARGING_STATION.get(),
-                ChargingStationBlockEntity::serverTick
+                ChargingStationBlockEntity::serverTick,
             )
         }
         return null
@@ -98,7 +107,7 @@ open class ChargingStationBlock :
         pLevel: Level,
         pPos: BlockPos,
         pNewState: BlockState,
-        pMovedByPiston: Boolean
+        pMovedByPiston: Boolean,
     ) {
         if (!pState.`is`(pNewState.block)) {
             val blockentity = pLevel.getBlockEntity(pPos)
@@ -117,20 +126,18 @@ open class ChargingStationBlock :
         pBuilder.add(FACING).add(SHOW_RANGE)
     }
 
-    override fun getStateForPlacement(pContext: BlockPlaceContext): BlockState {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(pContext: BlockPlaceContext): BlockState =
+        this
+            .defaultBlockState()
             .setValue(FACING, pContext.horizontalDirection.opposite)
             .setValue(SHOW_RANGE, false)
-    }
 
-    override fun hasAnalogOutputSignal(state: BlockState): Boolean {
-        return true
-    }
+    override fun hasAnalogOutputSignal(state: BlockState): Boolean = true
 
     override fun getAnalogOutputSignal(
         state: BlockState,
         level: Level,
-        pos: BlockPos
+        pos: BlockPos,
     ): Int {
         val blockEntity = level.getBlockEntity(pos)
         if (blockEntity is ChargingStationBlockEntity) {
@@ -144,10 +151,11 @@ open class ChargingStationBlock :
     override fun getCloneItemStack(
         level: LevelReader,
         pos: BlockPos,
-        state: BlockState
+        state: BlockState,
     ): ItemStack {
         val itemstack = super.getCloneItemStack(level, pos, state)
-        level.getBlockEntity(pos, ModBlockEntities.CHARGING_STATION.get())
+        level
+            .getBlockEntity(pos, ModBlockEntities.CHARGING_STATION.get())
             .ifPresent { blockEntity ->
                 blockEntity.saveToItem(itemstack, level.registryAccess())
             }

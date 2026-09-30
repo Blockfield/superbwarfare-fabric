@@ -21,7 +21,10 @@ import java.util.function.UnaryOperator
  * Codes Based on @Create
  */
 @Suppress("unused")
-class ModAdvancement(private val id: String, b: UnaryOperator<Builder>) {
+class ModAdvancement(
+    private val id: String,
+    b: UnaryOperator<Builder>,
+) {
     private val builder: Advancement.Builder = Advancement.Builder.advancement()
     private var parent: ModAdvancement? = null
     var result: AdvancementHolder? = null
@@ -44,22 +47,16 @@ class ModAdvancement(private val id: String, b: UnaryOperator<Builder>) {
                 builtInBuilder.type.frame,
                 builtInBuilder.type.toast,
                 builtInBuilder.type.announce,
-                builtInBuilder.type.hide
-            )
+                builtInBuilder.type.hide,
+            ),
         )
     }
 
-    private fun title(): String {
-        return "${Mod.MODID}.advancement.main.$id"
-    }
+    private fun title(): String = "${Mod.MODID}.advancement.main.$id"
 
-    private fun titleComponent(): Component {
-        return Component.translatable(title())
-    }
+    private fun titleComponent(): Component = Component.translatable(title())
 
-    private fun description(): String {
-        return "${title()}.des"
-    }
+    private fun description(): String = "${title()}.des"
 
     fun save(t: Consumer<AdvancementHolder>) {
         if (parent != null) {
@@ -75,7 +72,7 @@ class ModAdvancement(private val id: String, b: UnaryOperator<Builder>) {
         val frame: AdvancementType,
         val toast: Boolean,
         val announce: Boolean,
-        val hide: Boolean
+        val hide: Boolean,
     ) {
         DEFAULT(AdvancementType.TASK, true, true, false),
         DEFAULT_NO_ANNOUNCE(AdvancementType.TASK, true, false, false),
@@ -83,7 +80,7 @@ class ModAdvancement(private val id: String, b: UnaryOperator<Builder>) {
         SILENT(AdvancementType.TASK, false, false, false),
         GOAL(AdvancementType.GOAL, true, true, false),
         SECRET(AdvancementType.TASK, true, true, true),
-        SECRET_CHALLENGE(AdvancementType.CHALLENGE, true, true, true)
+        SECRET_CHALLENGE(AdvancementType.CHALLENGE, true, true, true),
     }
 
     inner class Builder {
@@ -101,49 +98,37 @@ class ModAdvancement(private val id: String, b: UnaryOperator<Builder>) {
             return this
         }
 
-        fun icon(item: ItemLike): Builder {
-            return icon(ItemStack(item))
-        }
+        fun icon(item: ItemLike): Builder = icon(ItemStack(item))
 
         fun icon(stack: ItemStack): Builder {
             icon = stack
             return this
         }
 
-        fun whenBlockPlaced(block: Block): Builder {
-            return externalTrigger(ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(block))
-        }
+        fun whenBlockPlaced(block: Block): Builder = externalTrigger(ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(block))
 
-        fun whenIconCollected(): Builder {
-            return externalTrigger(InventoryChangeTrigger.TriggerInstance.hasItems(icon!!.item))
-        }
+        fun whenIconCollected(): Builder = externalTrigger(InventoryChangeTrigger.TriggerInstance.hasItems(icon!!.item))
 
-        fun whenItemCollected(itemProvider: ItemLike): Builder {
-            return externalTrigger(InventoryChangeTrigger.TriggerInstance.hasItems(itemProvider))
-        }
+        fun whenItemCollected(itemProvider: ItemLike): Builder = externalTrigger(InventoryChangeTrigger.TriggerInstance.hasItems(itemProvider))
 
-        fun whenItemCollected(tag: TagKey<Item>): Builder {
-            return externalTrigger(
+        fun whenItemCollected(tag: TagKey<Item>): Builder =
+            externalTrigger(
                 InventoryChangeTrigger.TriggerInstance
-                    .hasItems(ItemPredicate.Builder.item().of(tag).build())
+                    .hasItems(
+                        ItemPredicate.Builder
+                            .item()
+                            .of(tag)
+                            .build(),
+                    ),
             )
-        }
 
-        fun whenItemConsumed(itemProvider: ItemLike): Builder {
-            return externalTrigger(ConsumeItemTrigger.TriggerInstance.usedItem(itemProvider))
-        }
+        fun whenItemConsumed(itemProvider: ItemLike): Builder = externalTrigger(ConsumeItemTrigger.TriggerInstance.usedItem(itemProvider))
 
-        fun whenIconConsumed(): Builder {
-            return externalTrigger(ConsumeItemTrigger.TriggerInstance.usedItem(icon!!.item))
-        }
+        fun whenIconConsumed(): Builder = externalTrigger(ConsumeItemTrigger.TriggerInstance.usedItem(icon!!.item))
 
-        fun awardedForFree(): Builder {
-            return externalTrigger(PlayerTrigger.TriggerInstance.tick())
-        }
+        fun awardedForFree(): Builder = externalTrigger(PlayerTrigger.TriggerInstance.tick())
 
-        fun whenEffectChanged(predicate: MobEffectsPredicate.Builder): Builder {
-            return externalTrigger(EffectsChangedTrigger.TriggerInstance.hasEffects(predicate))
-        }
+        fun whenEffectChanged(predicate: MobEffectsPredicate.Builder): Builder = externalTrigger(EffectsChangedTrigger.TriggerInstance.hasEffects(predicate))
 
         fun externalTrigger(trigger: Criterion<*>): Builder {
             builder.addCriterion(keyIndex.toString(), trigger)
@@ -163,12 +148,13 @@ class ModAdvancement(private val id: String, b: UnaryOperator<Builder>) {
 
         fun rewardLootTable(location: ResourceLocation): Builder {
             builder.rewards(
-                AdvancementRewards.Builder.loot(
-                    ResourceKey.create(
-                        Registries.LOOT_TABLE,
-                        location
-                    )
-                ).build()
+                AdvancementRewards.Builder
+                    .loot(
+                        ResourceKey.create(
+                            Registries.LOOT_TABLE,
+                            location,
+                        ),
+                    ).build(),
             )
             return this
         }

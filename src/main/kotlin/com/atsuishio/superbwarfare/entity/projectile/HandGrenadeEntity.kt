@@ -21,11 +21,13 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import kotlin.math.min
 
-open class HandGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
+open class HandGrenadeEntity :
+    BounceProjectile,
+    BasicGeoProjectileEntity {
     constructor(type: EntityType<out HandGrenadeEntity>, level: Level) : super(type, level)
 
     constructor(type: EntityType<out HandGrenadeEntity>, x: Double, y: Double, z: Double, level: Level) :
-            super(type, x, y, z, level)
+        super(type, x, y, z, level)
 
     constructor(entity: LivingEntity?, level: Level) : super(ModEntities.HAND_GRENADE.get(), entity, level)
 
@@ -36,9 +38,7 @@ open class HandGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
         this.headShotValue = 10f
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.HAND_GRENADE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.HAND_GRENADE.get()
 
     override fun canPassThroughFluid() = true
 
@@ -58,7 +58,7 @@ open class HandGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
                 event,
                 SoundSource.AMBIENT,
                 volume,
-                1f
+                1f,
             )
         }
         this.bounce(result.direction)
@@ -78,18 +78,19 @@ open class HandGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
                     ModSounds.INDICATION.get(),
                     SoundSource.VOICE,
                     1f,
-                    1f
+                    1f,
                 )
 
                 sendPacketTo(owner, ClientIndicatorMessage(0, 5))
             }
         }
         this.bounce(
-            Direction.getNearest(
-                this.deltaMovement.x(),
-                this.deltaMovement.y(),
-                this.deltaMovement.z()
-            ).opposite
+            Direction
+                .getNearest(
+                    this.deltaMovement.x(),
+                    this.deltaMovement.y(),
+                    this.deltaMovement.z(),
+                ).opposite,
         )
         this.deltaMovement = this.deltaMovement.multiply(0.25, 1.0, 0.25)
     }
@@ -99,13 +100,20 @@ open class HandGrenadeEntity : BounceProjectile, BasicGeoProjectileEntity {
         val level = this.level()
         if (level is ServerLevel) {
             ParticleTool.sendParticle(
-                level, ParticleTypes.SMOKE, this.xo, this.yo, this.zo,
-                1, 0.0, 0.0, 0.0, 0.01, true
+                level,
+                ParticleTypes.SMOKE,
+                this.xo,
+                this.yo,
+                this.zo,
+                1,
+                0.0,
+                0.0,
+                0.0,
+                0.01,
+                true,
             )
         }
     }
 
-    override fun isFastMoving(): Boolean {
-        return false
-    }
+    override fun isFastMoving(): Boolean = false
 }

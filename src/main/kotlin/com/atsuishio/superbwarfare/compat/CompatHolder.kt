@@ -21,7 +21,10 @@ object CompatHolder {
         }
     }
 
-    fun hasMod(modid: String, runnable: Runnable) {
+    fun hasMod(
+        modid: String,
+        runnable: Runnable,
+    ) {
         if (FabricLoader.getInstance().isModLoaded(modid)) {
             runnable.run()
         }

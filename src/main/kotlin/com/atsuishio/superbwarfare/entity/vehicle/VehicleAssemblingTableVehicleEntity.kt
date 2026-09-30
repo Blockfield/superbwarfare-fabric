@@ -33,8 +33,12 @@ import net.minecraft.world.level.Level
 import kotlin.math.max
 import kotlin.math.min
 
-open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level) : VehicleEntity(type, level),
-    HasCustomInventoryScreen, MenuProvider {
+open class VehicleAssemblingTableVehicleEntity(
+    type: EntityType<*>,
+    level: Level,
+) : VehicleEntity(type, level),
+    HasCustomInventoryScreen,
+    MenuProvider {
     var deltaXo: Float = 0f
     var deltaYo: Float = 0f
     var deltaX: Float = 0f
@@ -47,19 +51,20 @@ open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level
     override fun onCrowbarInteract(
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult? {
         if (!player.isShiftKeyDown) {
             if (!this.level().isClientSide && this.getPassengers().isEmpty()) {
                 val facing = direction
                 val currentPos = this.position()
-                val targetPos = when (facing) {
-                    Direction.WEST -> currentPos.add(-0.5, 0.0, -0.5)
-                    Direction.EAST -> currentPos.add(0.5, 0.0, 0.5)
-                    Direction.NORTH -> currentPos.add(0.5, 0.0, -0.5)
-                    Direction.SOUTH -> currentPos.add(-0.5, 0.0, 0.5)
-                    else -> currentPos
-                }
+                val targetPos =
+                    when (facing) {
+                        Direction.WEST -> currentPos.add(-0.5, 0.0, -0.5)
+                        Direction.EAST -> currentPos.add(0.5, 0.0, 0.5)
+                        Direction.NORTH -> currentPos.add(0.5, 0.0, -0.5)
+                        Direction.SOUTH -> currentPos.add(-0.5, 0.0, 0.5)
+                        else -> currentPos
+                    }
                 val targetBlockPos = BlockPos.containing(targetPos)
 
                 var canPlace = true
@@ -75,9 +80,12 @@ open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level
                 if (canPlace) {
                     for (part in BlockPart.entries) {
                         val blockPos = part.relative(targetBlockPos, facing)
-                        val state = ModBlocks.VEHICLE_ASSEMBLING_TABLE.get().defaultBlockState()
-                            .setValue(VehicleAssemblingTableBlock.FACING, facing)
-                            .setValue(VehicleAssemblingTableBlock.BLOCK_PART, part)
+                        val state =
+                            ModBlocks.VEHICLE_ASSEMBLING_TABLE
+                                .get()
+                                .defaultBlockState()
+                                .setValue(VehicleAssemblingTableBlock.FACING, facing)
+                                .setValue(VehicleAssemblingTableBlock.BLOCK_PART, part)
 
                         this.level().setBlock(blockPos, state, 3)
                     }
@@ -86,8 +94,10 @@ open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level
                     return InteractionResult.SUCCESS
                 } else {
                     player.displayClientMessage(
-                        Component.translatable("tips.superbwarfare.vehicle_assembling_table.warn")
-                            .withStyle(ChatFormatting.RED), true
+                        Component
+                            .translatable("tips.superbwarfare.vehicle_assembling_table.warn")
+                            .withStyle(ChatFormatting.RED),
+                        true,
                     )
                     return InteractionResult.FAIL
                 }
@@ -125,8 +135,9 @@ open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level
                     causeVehicleStrikeDamage(
                         this.level().registryAccess(),
                         this,
-                        if (this.getFirstPassenger() == null) this else this.getFirstPassenger()
-                    ), (20 * ((lastTickSpeed - 0.4) * (lastTickSpeed - 0.4))).toFloat()
+                        if (this.getFirstPassenger() == null) this else this.getFirstPassenger(),
+                    ),
+                    (20 * ((lastTickSpeed - 0.4) * (lastTickSpeed - 0.4))).toFloat(),
                 )
             }
         }
@@ -180,13 +191,14 @@ open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level
                         ModSounds.WHEEL_CHAIR_JUMP.get(),
                         SoundSource.PLAYERS,
                         2f,
-                        1f
+                        1f,
                     )
                 }
-                val movement = this.forward
-                    .multiply(1.0, 0.0, 1.0)
-                    .normalize()
-                    .scale(0.7)
+                val movement =
+                    this.forward
+                        .multiply(1.0, 0.0, 1.0)
+                        .normalize()
+                        .scale(0.7)
                 this.deltaMovement = this.deltaMovement.add(movement.x, 1.0, movement.z)
             }
 
@@ -199,10 +211,11 @@ open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level
             val yRotSync = (-(50 * this.deltaMovement.length()).coerceIn(2.0, 4.0) * deltaRot).toFloat()
 
             this.yRot += yRotSync
-            this.xRot = (this.xRot + addX).coerceIn(
-                (if (onGround()) -12 else -120).toFloat(),
-                (if (onGround()) 3 else 120).toFloat()
-            )
+            this.xRot =
+                (this.xRot + addX).coerceIn(
+                    (if (onGround()) -12 else -120).toFloat(),
+                    (if (onGround()) 3 else 120).toFloat(),
+                )
             this.setZRot(this.roll - 0.2f * addZ)
         }
 
@@ -212,30 +225,29 @@ open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level
                 forward
                     .multiply(1.0, 0.0, 1.0)
                     .normalize()
-                    .multiply(powerValue, powerValue, powerValue)
-            )
+                    .multiply(powerValue, powerValue, powerValue),
+            ),
         )
     }
 
     override fun destroy() {
         super.destroy()
         if (level() is ServerLevel) {
-            val item = ItemEntity(
-                level(),
-                this.x,
-                this.y,
-                this.z,
-                ItemStack(ModItems.VEHICLE_ASSEMBLING_TABLE.get())
-            )
+            val item =
+                ItemEntity(
+                    level(),
+                    this.x,
+                    this.y,
+                    this.z,
+                    ItemStack(ModItems.VEHICLE_ASSEMBLING_TABLE.get()),
+                )
             item.setPickUpDelay(50)
             this.level().addFreshEntity(item)
         }
         discard()
     }
 
-    override fun getRetrieveItems(): MutableList<ItemStack> {
-        return mutableListOf(ItemStack(ModItems.VEHICLE_ASSEMBLING_TABLE.get()))
-    }
+    override fun getRetrieveItems(): MutableList<ItemStack> = mutableListOf(ItemStack(ModItems.VEHICLE_ASSEMBLING_TABLE.get()))
 
     override fun openCustomInventoryScreen(player: Player) {
         player.openMenu(this)
@@ -247,7 +259,9 @@ open class VehicleAssemblingTableVehicleEntity(type: EntityType<*>, level: Level
         }
     }
 
-    override fun createMenu(pContainerId: Int, pPlayerInventory: Inventory, pPlayer: Player): AbstractContainerMenu? {
-        return VehicleAssemblingMenu(pContainerId, pPlayerInventory, ContainerLevelAccess.NULL, true)
-    }
+    override fun createMenu(
+        pContainerId: Int,
+        pPlayerInventory: Inventory,
+        pPlayer: Player,
+    ): AbstractContainerMenu? = VehicleAssemblingMenu(pContainerId, pPlayerInventory, ContainerLevelAccess.NULL, true)
 }

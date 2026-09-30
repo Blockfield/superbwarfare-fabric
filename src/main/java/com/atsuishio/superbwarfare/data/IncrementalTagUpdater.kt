@@ -8,128 +8,170 @@ import java.io.DataInput
 import java.io.DataOutput
 
 object IncrementalTagUpdater {
-
     fun test() {
-        val result = listOf(
-            // 0
-            compare(CompoundTag().apply {
-                putInt("aaa", 114)
-                putInt("bbb", 114)
-            }, CompoundTag().apply {
-                putInt("aaa", 114)
-                putInt("bbb", 114)
-            }),
-
-            // 1
-            compare(CompoundTag().apply {
-                putInt("aaa", 114)
-                putInt("bbb", 114)
-            }, CompoundTag().apply {
-                putInt("aaa", 114)
-                putInt("bbb", 514)
-            }),
-
-            // 2
-            compare(CompoundTag().apply {
-                putInt("aaa", 114)
-            }, CompoundTag().apply {
-                putInt("aaa", 114)
-                putInt("bbb", 514)
-            }),
-
-            // 3
-            compare(CompoundTag().apply {
-                putInt("aaa", 114)
-            }, CompoundTag().apply {
-                putInt("aaa", 514)
-                putInt("bbb", 1919)
-            }),
-
-            // 4
-            compare(CompoundTag().apply {
-                putInt("aaa", 114)
-                putInt("bbb", 514)
-            }, CompoundTag().apply {
-                putInt("aaa", 114)
-            }),
-
-            // 5
-            compare(CompoundTag().apply {
-                putInt("aaa", 114)
-            }, CompoundTag().apply {
-                put("aaa", CompoundTag().apply {
-                    putInt("bbb", 114)
-                })
-            }),
-
-            // 6
-            compare(CompoundTag().apply {
-                put("aaa", CompoundTag().apply {
-                    putInt("bbb", 514)
-                })
-            }, CompoundTag().apply {
-                put("aaa", CompoundTag().apply {
-                    putInt("bbb", 114)
-                })
-            }),
-
-            // 7
-            compare(CompoundTag().apply {
-                put("aaa", CompoundTag().apply {
-                    putInt("bbb", 514)
-                })
-            }, CompoundTag().apply {
-                put("aaa", CompoundTag().apply {
-                    putString("bbb", "diffType")
-                })
-            }),
-
-            // patch apply test
-            // 8
-            compare(
-                CompoundTag().apply {
-                    put("aaa", CompoundTag().apply {
+        val result =
+            listOf(
+                // 0
+                compare(
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                        putInt("bbb", 114)
+                    },
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                        putInt("bbb", 114)
+                    },
+                ),
+                // 1
+                compare(
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                        putInt("bbb", 114)
+                    },
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
                         putInt("bbb", 514)
-                    })
-                }, updateTag(
-                    CompoundTag(),
-                    listOf(
-                        Patch(Operation.ADD, ArrayDeque(), "aaa", CompoundTag().apply {
-                            putInt("bbb", 514)
-                        }),
-                    )
-                )
-            ),
-
-            // 9
-            compare(
-                CompoundTag().apply {
-                    putInt("aaa", 1)
-                    putInt("bbb", 2)
-                    putInt("ddd", 4)
-                }, updateTag(
+                    },
+                ),
+                // 2
+                compare(
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                    },
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                        putInt("bbb", 514)
+                    },
+                ),
+                // 3
+                compare(
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                    },
+                    CompoundTag().apply {
+                        putInt("aaa", 514)
+                        putInt("bbb", 1919)
+                    },
+                ),
+                // 4
+                compare(
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                        putInt("bbb", 514)
+                    },
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                    },
+                ),
+                // 5
+                compare(
+                    CompoundTag().apply {
+                        putInt("aaa", 114)
+                    },
+                    CompoundTag().apply {
+                        put(
+                            "aaa",
+                            CompoundTag().apply {
+                                putInt("bbb", 114)
+                            },
+                        )
+                    },
+                ),
+                // 6
+                compare(
+                    CompoundTag().apply {
+                        put(
+                            "aaa",
+                            CompoundTag().apply {
+                                putInt("bbb", 514)
+                            },
+                        )
+                    },
+                    CompoundTag().apply {
+                        put(
+                            "aaa",
+                            CompoundTag().apply {
+                                putInt("bbb", 114)
+                            },
+                        )
+                    },
+                ),
+                // 7
+                compare(
+                    CompoundTag().apply {
+                        put(
+                            "aaa",
+                            CompoundTag().apply {
+                                putInt("bbb", 514)
+                            },
+                        )
+                    },
+                    CompoundTag().apply {
+                        put(
+                            "aaa",
+                            CompoundTag().apply {
+                                putString("bbb", "diffType")
+                            },
+                        )
+                    },
+                ),
+                // patch apply test
+                // 8
+                compare(
+                    CompoundTag().apply {
+                        put(
+                            "aaa",
+                            CompoundTag().apply {
+                                putInt("bbb", 514)
+                            },
+                        )
+                    },
+                    updateTag(
+                        CompoundTag(),
+                        listOf(
+                            Patch(
+                                Operation.ADD,
+                                ArrayDeque(),
+                                "aaa",
+                                CompoundTag().apply {
+                                    putInt("bbb", 514)
+                                },
+                            ),
+                        ),
+                    ),
+                ),
+                // 9
+                compare(
                     CompoundTag().apply {
                         putInt("aaa", 1)
                         putInt("bbb", 2)
-                        putInt("ccc", 3)
                         putInt("ddd", 4)
-                    }, listOf(Patch(Operation.REMOVE, ArrayDeque(listOf(2))))
-                )
-            ),
-
-            // 10
-            compare(
-                CompoundTag().apply {
-                    putInt("aaa", 1)
-                    putInt("bbb", 514)
-                }, updateTag(
+                    },
+                    updateTag(
+                        CompoundTag().apply {
+                            putInt("aaa", 1)
+                            putInt("bbb", 2)
+                            putInt("ccc", 3)
+                            putInt("ddd", 4)
+                        },
+                        listOf(Patch(Operation.REMOVE, ArrayDeque(listOf(2)))),
+                    ),
+                ),
+                // 10
+                compare(
                     CompoundTag().apply {
                         putInt("aaa", 1)
-                        putInt("bbb", 2)
-                    }, listOf(Patch(Operation.UPDATE, ArrayDeque(listOf(1)), value = IntTag.valueOf(514)))
-                )
-            ),
-        )
+                        putInt("bbb", 514)
+                    },
+                    updateTag(
+                        CompoundTag().apply {
+                            putInt("aaa", 1)
+                            putInt("bbb", 2)
+                        },
+                        listOf(Patch(Operation.UPDATE, ArrayDeque(listOf(1)), value = IntTag.valueOf(514))),
+                    ),
+                ),
+            )
 
         println(result)
 
@@ -145,9 +187,18 @@ object IncrementalTagUpdater {
 
         // t11
         testPatchSerialize {
-            TagPatch(listOf(Patch(Operation.ADD, name = "aaa", value = CompoundTag().apply {
-                putInt("bbb", 514)
-            })))
+            TagPatch(
+                listOf(
+                    Patch(
+                        Operation.ADD,
+                        name = "aaa",
+                        value =
+                            CompoundTag().apply {
+                                putInt("bbb", 514)
+                            },
+                    ),
+                ),
+            )
         }
 
         // t12
@@ -157,11 +208,20 @@ object IncrementalTagUpdater {
 
         // t13
         testPatchSerialize {
-            TagPatch(listOf(Patch(Operation.UPDATE, ArrayDeque(listOf(11)), value = ListTag().apply {
-                add(IntTag.valueOf(114))
-                add(IntTag.valueOf(514))
-                add(IntTag.valueOf(1919))
-            })))
+            TagPatch(
+                listOf(
+                    Patch(
+                        Operation.UPDATE,
+                        ArrayDeque(listOf(11)),
+                        value =
+                            ListTag().apply {
+                                add(IntTag.valueOf(114))
+                                add(IntTag.valueOf(514))
+                                add(IntTag.valueOf(1919))
+                            },
+                    ),
+                ),
+            )
         }
 
         // t14
@@ -170,7 +230,10 @@ object IncrementalTagUpdater {
         }
     }
 
-    fun compare(oldTag: CompoundTag, newTag: CompoundTag) = mutableListOf<Patch>()
+    fun compare(
+        oldTag: CompoundTag,
+        newTag: CompoundTag,
+    ) = mutableListOf<Patch>()
         .apply {
             recursiveCompare(ArrayDeque(), this, oldTag, newTag)
         }.toList()
@@ -179,7 +242,7 @@ object IncrementalTagUpdater {
         path: ArrayDeque<Int>,
         diffList: MutableList<Patch>,
         oldTag: CompoundTag,
-        newTag: CompoundTag
+        newTag: CompoundTag,
     ) {
         val sortedOldKeys = oldTag.allKeys.toSortedSet()
         val sortedNewKeys = newTag.allKeys.toSortedSet()
@@ -188,7 +251,7 @@ object IncrementalTagUpdater {
         // 避免更新过程中修改原Tag键数量
         for (key in sortedNewKeys) {
             val newValue = newTag.get(key)!!
-            val oldValue = oldTag.get(key) ?: continue  // 新增的键由后面单独处理
+            val oldValue = oldTag.get(key) ?: continue // 新增的键由后面单独处理
             if (oldValue == newValue) continue
 
             path += sortedNewKeys.indexOf(key)
@@ -220,8 +283,14 @@ object IncrementalTagUpdater {
         }
     }
 
-    fun updateTag(tag: CompoundTag, patches: List<Patch>): CompoundTag {
-        tailrec fun applyPatch(tag: CompoundTag, patch: Patch) {
+    fun updateTag(
+        tag: CompoundTag,
+        patches: List<Patch>,
+    ): CompoundTag {
+        tailrec fun applyPatch(
+            tag: CompoundTag,
+            patch: Patch,
+        ) {
             val orderedKeys = tag.allKeys.sorted()
             val path = patch.path
             val op = patch.operation
@@ -282,37 +351,48 @@ object IncrementalTagUpdater {
     fun FriendlyByteBuf.readTagPatch(): TagPatch {
         val size = readVarInt()
 
-        return TagPatch(buildList {
-            repeat(size) {
-                val op = Operation.entries[readByte().toInt()]
-                val path = readIntIdList()
+        return TagPatch(
+            buildList {
+                repeat(size) {
+                    val op = Operation.entries[readByte().toInt()]
+                    val path = readIntIdList()
 
-                var name: String? = null
-                var tag: Tag? = null
+                    var name: String? = null
+                    var tag: Tag? = null
 
-                if (op == Operation.ADD) {
-                    name = readUtf()
+                    if (op == Operation.ADD) {
+                        name = readUtf()
+                    }
+
+                    if (op != Operation.REMOVE) {
+                        val tagType = readByte().toInt()
+                        tag =
+                            TagTypes
+                                .getType(tagType)
+                                .load(ByteBufWrapper(this@readTagPatch), NbtAccounter.unlimitedHeap())
+                    }
+
+                    add(Patch(op, ArrayDeque(path), name, tag))
                 }
-
-                if (op != Operation.REMOVE) {
-                    val tagType = readByte().toInt()
-                    tag = TagTypes.getType(tagType)
-                        .load(ByteBufWrapper(this@readTagPatch), NbtAccounter.unlimitedHeap())
-                }
-
-                add(Patch(op, ArrayDeque(path), name, tag))
-            }
-        })
+            },
+        )
     }
 
-    private class ByteBufWrapper(val buf: FriendlyByteBuf) : DataInput, DataOutput {
+    private class ByteBufWrapper(
+        val buf: FriendlyByteBuf,
+    ) : DataInput,
+        DataOutput {
         override fun readFully(b: ByteArray) {
             repeat(b.size) {
                 b[it] = readByte()
             }
         }
 
-        override fun readFully(b: ByteArray, off: Int, len: Int) {
+        override fun readFully(
+            b: ByteArray,
+            off: Int,
+            len: Int,
+        ) {
             repeat(len) {
                 b[it + off] = readByte()
             }
@@ -324,14 +404,23 @@ object IncrementalTagUpdater {
         }
 
         override fun readBoolean() = buf.readBoolean()
+
         override fun readByte() = buf.readByte()
+
         override fun readUnsignedByte() = buf.readUnsignedByte().toInt()
+
         override fun readShort() = buf.readShort()
+
         override fun readUnsignedShort() = buf.readUnsignedShort()
+
         override fun readChar() = buf.readChar()
+
         override fun readInt() = buf.readVarInt()
+
         override fun readLong() = buf.readVarLong()
+
         override fun readFloat() = buf.readFloat()
+
         override fun readDouble() = buf.readDouble()
 
         override fun readLine(): String {
@@ -348,7 +437,11 @@ object IncrementalTagUpdater {
             buf.writeByteArray(b)
         }
 
-        override fun write(b: ByteArray, off: Int, len: Int) {
+        override fun write(
+            b: ByteArray,
+            off: Int,
+            len: Int,
+        ) {
             buf.writeByteArray(b.slice(off..<off + len).toByteArray())
         }
 
@@ -385,11 +478,12 @@ object IncrementalTagUpdater {
         }
 
         override fun writeBytes(s: String) = writeUTF(s)
+
         override fun writeChars(s: String) = writeUTF(s)
+
         override fun writeUTF(s: String) {
             buf.writeUtf(s)
         }
-
     }
 
     enum class Operation {

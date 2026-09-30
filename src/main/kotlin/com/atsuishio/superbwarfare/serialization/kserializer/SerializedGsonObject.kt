@@ -13,20 +13,34 @@ import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.jsonObject
 
-typealias SerializedGsonObject = @Serializable(GsonObjectSerializer::class) JsonObject
+typealias SerializedGsonObject =
+    @Serializable(GsonObjectSerializer::class)
+    JsonObject
 
 object GsonObjectSerializer : KSerializer<JsonObject> {
     @OptIn(ExperimentalSerializationApi::class)
     override val descriptor =
-        SerialDescriptor("GsonObject", kotlinx.serialization.json.JsonObject.serializer().descriptor)
+        SerialDescriptor(
+            "GsonObject",
+            kotlinx.serialization.json.JsonObject
+                .serializer()
+                .descriptor,
+        )
 
-    override fun serialize(encoder: Encoder, value: JsonObject) {
+    override fun serialize(
+        encoder: Encoder,
+        value: JsonObject,
+    ) {
         require(encoder is JsonEncoder)
         encoder.encodeJsonElement(value.toKxJson())
     }
 
     override fun deserialize(decoder: Decoder): JsonObject {
         require(decoder is JsonDecoder)
-        return decoder.decodeJsonElement().jsonObject.toGson().asJsonObject
+        return decoder
+            .decodeJsonElement()
+            .jsonObject
+            .toGson()
+            .asJsonObject
     }
 }

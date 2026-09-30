@@ -16,7 +16,9 @@ import net.minecraft.world.phys.Vec3
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 
-class C4Renderer(renderManager: EntityRendererProvider.Context) : EntityRenderer<C4Entity>(renderManager) {
+class C4Renderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<C4Entity>(renderManager) {
     init {
         this.shadowRadius = 0f
     }
@@ -27,7 +29,7 @@ class C4Renderer(renderManager: EntityRendererProvider.Context) : EntityRenderer
         partialTicks: Float,
         poseStack: PoseStack,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         val instance = entityIn.modelInstance ?: return
 
@@ -42,14 +44,14 @@ class C4Renderer(renderManager: EntityRendererProvider.Context) : EntityRenderer
             poseStack,
             vertexConsumer,
             packedLightIn,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
 
-        if (this.entityRenderDispatcher.shouldRenderHitBoxes()
-            && !entityIn.isInvisible
-            && !mc.showOnlyReducedInfo()
+        if (this.entityRenderDispatcher.shouldRenderHitBoxes() &&
+            !entityIn.isInvisible &&
+            !mc.showOnlyReducedInfo()
         ) {
             val pose = poseStack.last()
             val matrix4f = poseStack.last().pose()
@@ -82,17 +84,19 @@ class C4Renderer(renderManager: EntityRendererProvider.Context) : EntityRenderer
         buffer: VertexConsumer,
         r: Int,
         g: Int,
-        b: Int
+        b: Int,
     ) {
-        buffer.addVertex(matrix4f, 0.0f, 0.125f, 0.0f)
+        buffer
+            .addVertex(matrix4f, 0.0f, 0.125f, 0.0f)
             .setColor(r, g, b, 255)
             .setNormal(pose, vec3.x.toFloat(), vec3.y.toFloat(), vec3.z.toFloat())
-        buffer.addVertex(
-            matrix4f,
-            (vec3.x * 0.5).toFloat(),
-            (0.125 + vec3.y * 0.5).toFloat(),
-            (vec3.z * 0.5).toFloat()
-        ).setColor(r, g, b, 255)
+        buffer
+            .addVertex(
+                matrix4f,
+                (vec3.x * 0.5).toFloat(),
+                (0.125 + vec3.y * 0.5).toFloat(),
+                (vec3.z * 0.5).toFloat(),
+            ).setColor(r, g, b, 255)
             .setNormal(pose, vec3.x.toFloat(), vec3.y.toFloat(), vec3.z.toFloat())
     }
 

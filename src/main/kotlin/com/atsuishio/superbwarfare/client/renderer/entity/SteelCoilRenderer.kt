@@ -12,16 +12,16 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 
-class SteelCoilRenderer(renderManager: EntityRendererProvider.Context) :
-    EntityRenderer<SteelCoilEntity>(renderManager) {
-
+class SteelCoilRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<SteelCoilEntity>(renderManager) {
     override fun render(
         entity: SteelCoilEntity,
         entityYaw: Float,
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val instance = entity.modelInstance ?: return
         val bone = instance.getBone("move_main") ?: return
@@ -39,15 +39,13 @@ class SteelCoilRenderer(renderManager: EntityRendererProvider.Context) :
             RenderType.entityCutout(getTextureLocation(entity)),
             BedrockModelRenderTypes.polyMeshCutout(getTextureLocation(entity)),
             packedLight,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
     }
 
-    override fun getTextureLocation(entity: SteelCoilEntity): ResourceLocation {
-        return if (entity.uuid.leastSignificantBits % 810 == 0L) TEXTURE_ALTER else TEXTURE
-    }
+    override fun getTextureLocation(entity: SteelCoilEntity): ResourceLocation = if (entity.uuid.leastSignificantBits % 810 == 0L) TEXTURE_ALTER else TEXTURE
 
     companion object {
         val TEXTURE = loc("textures/bedrock/entity/steel_coil.png")

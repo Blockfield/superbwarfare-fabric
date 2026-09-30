@@ -7,14 +7,20 @@ import net.minecraft.world.entity.Entity
 import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.AvailableSince("0.8.9")
-open class ShootEvent private constructor(val parameters: ShootParameters) {
+open class ShootEvent private constructor(
+    val parameters: ShootParameters,
+) {
     val shooter: Entity? = parameters.shooter
     val level: ServerLevel = parameters.level
     val data: GunData = parameters.data
     val spread: Double = parameters.spread
     val zoom: Boolean = parameters.zoom
 
-    class Pre(parameters: ShootParameters) : ShootEvent(parameters)
+    class Pre(
+        parameters: ShootParameters,
+    ) : ShootEvent(parameters)
 
-    class Post(parameters: ShootParameters) : ShootEvent(parameters)
+    class Post(
+        parameters: ShootParameters,
+    ) : ShootEvent(parameters)
 }

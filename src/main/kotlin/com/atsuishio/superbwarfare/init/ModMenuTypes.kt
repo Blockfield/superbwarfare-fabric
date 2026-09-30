@@ -1,14 +1,14 @@
 package com.atsuishio.superbwarfare.init
 
 import com.atsuishio.superbwarfare.Mod
+import com.atsuishio.superbwarfare.fabric.DeferredHolder
+import com.atsuishio.superbwarfare.fabric.DeferredRegister
 import com.atsuishio.superbwarfare.inventory.menu.*
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.flag.FeatureFlags
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.MenuType
-import com.atsuishio.superbwarfare.fabric.DeferredHolder
-import com.atsuishio.superbwarfare.fabric.DeferredRegister
 import java.util.function.Supplier
 
 object ModMenuTypes {
@@ -24,17 +24,21 @@ object ModMenuTypes {
      * MenuScreens.register в ModScreens). Отдельный AW проекту заводить не нужно.
      */
     private fun <T : AbstractContainerMenu> register(
-        name: String, factory: (Int, Inventory) -> T
+        name: String,
+        factory: (Int, Inventory) -> T,
     ): DeferredHolder<MenuType<*>, MenuType<T>> =
-        REGISTRY.register(name, Supplier<MenuType<T>> {
-            MenuType(MenuType.MenuSupplier<T> { id, inv -> factory(id, inv) }, FeatureFlags.VANILLA_SET)
-        })
+        REGISTRY.register(
+            name,
+            Supplier<MenuType<T>> {
+                MenuType(MenuType.MenuSupplier<T> { id, inv -> factory(id, inv) }, FeatureFlags.VANILLA_SET)
+            },
+        )
 
     /** Меню, у которых тип уже собран рядом с самим меню (техника -- ExtendedScreenHandlerType). */
     private fun <T : AbstractContainerMenu> registerExisting(
-        name: String, type: MenuType<T>
-    ): DeferredHolder<MenuType<*>, MenuType<T>> =
-        REGISTRY.register(name, Supplier<MenuType<T>> { type })
+        name: String,
+        type: MenuType<T>,
+    ): DeferredHolder<MenuType<*>, MenuType<T>> = REGISTRY.register(name, Supplier<MenuType<T>> { type })
 
     @JvmField
     val REFORGING_TABLE_MENU =

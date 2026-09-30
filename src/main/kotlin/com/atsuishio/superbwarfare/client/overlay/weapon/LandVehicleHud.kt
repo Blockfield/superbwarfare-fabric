@@ -13,6 +13,8 @@ import com.atsuishio.superbwarfare.tools.MathTool.getGradientColor
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -21,8 +23,6 @@ import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
 import net.minecraft.world.level.ClipContext
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import org.joml.Math
 
 @Environment(EnvType.CLIENT)
@@ -49,7 +49,7 @@ object LandVehicleHud {
         gui: GuiGraphics,
         partialTick: Float,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         val mc = Minecraft.getInstance()
 
@@ -67,14 +67,14 @@ object LandVehicleHud {
         poseStack.translate(
             lerpRecoil * 6 + screenWidth * 0.025f * recoil,
             recoil * 3 + screenHeight * 0.025f * recoil - pitch,
-            0f
+            0f,
         )
         poseStack.scale(1 - recoil * 0.05f, 1 - recoil * 0.05f, 1f)
         poseStack.rotateAround(
             Axis.ZP.rotationDegrees(-0.3f * ClientEventHandler.cameraRoll + 2.5f * lerpRecoil),
             screenWidth / 2f,
             screenHeight / 2f,
-            0f
+            0f,
         )
 
         RenderSystem.disableDepthTest()
@@ -85,7 +85,7 @@ object LandVehicleHud {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -103,7 +103,7 @@ object LandVehicleHud {
                 (screenWidth + addW).toFloat(),
                 (screenHeight + addH).toFloat(),
                 (screenWidth + addW).toFloat(),
-                (screenHeight + addH).toFloat()
+                (screenHeight + addH).toFloat(),
             )
             RenderHelper.preciseBlitWithColor(
                 gui,
@@ -116,7 +116,7 @@ object LandVehicleHud {
                 1f,
                 128f,
                 1f,
-                color
+                color,
             )
 
             // 指南针
@@ -131,7 +131,7 @@ object LandVehicleHud {
                 16f,
                 512f,
                 16f,
-                color
+                color,
             )
             RenderHelper.preciseBlitWithColor(
                 gui,
@@ -144,7 +144,7 @@ object LandVehicleHud {
                 16f,
                 16f,
                 16f,
-                color
+                color,
             )
 
             val turretHeal = (100 - (100 * vehicle.turretHealth / vehicle.getTurretMaxHealth())).toInt()
@@ -159,7 +159,7 @@ object LandVehicleHud {
                 16f,
                 1f,
                 16f,
-                getGradientColor(color, 0xFF0000, turretHeal, 2)
+                getGradientColor(color, 0xFF0000, turretHeal, 2),
             )
 
             // 车身方向
@@ -169,9 +169,12 @@ object LandVehicleHud {
                     Mth.lerp(
                         partialTick,
                         vehicle.turretYRotO,
-                        vehicle.turretYRot
-                    )
-                ), screenWidth / 2f + 112, (screenHeight - 56).toFloat(), 0f
+                        vehicle.turretYRot,
+                    ),
+                ),
+                screenWidth / 2f + 112,
+                (screenHeight - 56).toFloat(),
+                0f,
             )
             val bodyHeal = (100 - (100 * vehicle.health / vehicle.getMaxHealth())).toInt()
             RenderHelper.preciseBlitWithColor(
@@ -185,7 +188,7 @@ object LandVehicleHud {
                 32f,
                 32f,
                 32f,
-                getGradientColor(color, 0xFF0000, bodyHeal, 2)
+                getGradientColor(color, 0xFF0000, bodyHeal, 2),
             )
             val leftWheelHeal = (100 - (100 * vehicle.leftWheelHealth / vehicle.getLeftWheelMaxHealth())).toInt()
             RenderHelper.preciseBlitWithColor(
@@ -199,7 +202,7 @@ object LandVehicleHud {
                 32f,
                 32f,
                 32f,
-                getGradientColor(color, 0xFF0000, leftWheelHeal, 2)
+                getGradientColor(color, 0xFF0000, leftWheelHeal, 2),
             )
             val rightWheelHeal = (100 - (100 * vehicle.rightWheelHealth / vehicle.getRightWheelMaxHealth())).toInt()
             RenderHelper.preciseBlitWithColor(
@@ -213,7 +216,7 @@ object LandVehicleHud {
                 32f,
                 32f,
                 32f,
-                getGradientColor(color, 0xFF0000, rightWheelHeal, 2)
+                getGradientColor(color, 0xFF0000, rightWheelHeal, 2),
             )
             val engineHeal = (100 - (100 * vehicle.mainEngineHealth / vehicle.getMainEngineMaxHealth())).toInt()
             RenderHelper.preciseBlitWithColor(
@@ -227,7 +230,7 @@ object LandVehicleHud {
                 32f,
                 32f,
                 32f,
-                getGradientColor(color, 0xFF0000, engineHeal, 2)
+                getGradientColor(color, 0xFF0000, engineHeal, 2),
             )
             poseStack.popPose()
 
@@ -237,13 +240,13 @@ object LandVehicleHud {
                 Component.literal(
                     format0D(
                         vehicle.deltaMovement.dot(vehicle.getViewVector(partialTick)) * 72,
-                        " km/h"
-                    )
+                        " km/h",
+                    ),
                 ),
                 screenWidth / 2 + 160,
                 screenHeight / 2 - 48,
                 color,
-                false
+                false,
             )
 
             // 低电量警告
@@ -252,12 +255,16 @@ object LandVehicleHud {
             // 测距
             var lookAtEntity = false
 
-            val result = player.level().clip(
-                ClipContext(
-                    player.eyePosition, player.eyePosition.add(player.getViewVector(1f).scale(512.0)),
-                    ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, player
+            val result =
+                player.level().clip(
+                    ClipContext(
+                        player.eyePosition,
+                        player.eyePosition.add(player.getViewVector(1f).scale(512.0)),
+                        ClipContext.Block.VISUAL,
+                        ClipContext.Fluid.NONE,
+                        player,
+                    ),
                 )
-            )
             val hitPos = result.getLocation()
 
             val blockRange = player.getEyePosition(1f).distanceTo(hitPos)
@@ -277,7 +284,7 @@ object LandVehicleHud {
                     screenWidth / 2 - width / 2,
                     screenHeight - 53,
                     color,
-                    false
+                    false,
                 )
             } else {
                 if (blockRange > 500) {
@@ -288,7 +295,7 @@ object LandVehicleHud {
                         screenWidth / 2 - width / 2,
                         screenHeight - 53,
                         color,
-                        false
+                        false,
                     )
                 } else {
                     val width = Minecraft.getInstance().font.width(format0D(blockRange, " m"))
@@ -298,7 +305,7 @@ object LandVehicleHud {
                         screenWidth / 2 - width / 2,
                         screenHeight - 53,
                         color,
-                        false
+                        false,
                     )
                 }
             }
@@ -311,7 +318,7 @@ object LandVehicleHud {
                 screenWidth / 2 - 165,
                 screenHeight / 2 - 46,
                 getGradientColor(color, 0xFF0000, bodyHeal, 2),
-                false
+                false,
             )
 
             // 诱饵
@@ -321,7 +328,7 @@ object LandVehicleHud {
                     gui,
                     screenWidth / 2 - 165,
                     screenHeight / 2 - 36,
-                    color
+                    color,
                 )
             }
 
@@ -333,7 +340,7 @@ object LandVehicleHud {
                 mc.font,
                 screenWidth,
                 screenHeight,
-                color
+                color,
             )
         }
         poseStack.popPose()

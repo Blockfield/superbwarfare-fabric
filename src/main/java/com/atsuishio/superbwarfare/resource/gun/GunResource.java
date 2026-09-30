@@ -8,20 +8,24 @@ import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
 import org.jetbrains.annotations.NotNull;
 
 public class GunResource implements DefaultDataSupplier<DefaultGunResource> {
 
-    public static final LoadingCache<ItemStack, GunResource> RESOURCE_CACHE = CacheBuilder.newBuilder()
-            .weakKeys()
-            .weakValues()
-            .build(new CacheLoader<>() {
-                public @NotNull GunResource load(@NotNull ItemStack stack) {
-                    return new GunResource(stack);
-                }
-            });
+    public static final LoadingCache<ItemStack, GunResource> RESOURCE_CACHE =
+            CacheBuilder.newBuilder()
+                    .weakKeys()
+                    .weakValues()
+                    .build(
+                            new CacheLoader<>() {
+                                public @NotNull GunResource load(@NotNull ItemStack stack) {
+                                    return new GunResource(stack);
+                                }
+                            });
 
     public final ItemStack stack;
     public final GunItem item;

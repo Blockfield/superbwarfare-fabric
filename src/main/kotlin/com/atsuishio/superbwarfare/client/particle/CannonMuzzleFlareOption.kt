@@ -15,7 +15,7 @@ data class CannonMuzzleFlareOption(
     val life: Int,
     val fade: Float,
     val animationSpeed: Int,
-    val sizeAdd: Float
+    val sizeAdd: Float,
 ) : ParticleOptions {
     constructor(
         r: Float,
@@ -24,13 +24,13 @@ data class CannonMuzzleFlareOption(
         life: Int,
         fade: Float,
         animationSpeed: Int,
-        sizeAdd: Float
+        sizeAdd: Float,
     ) : this(
         (r * 255).roundToInt() shl 16 or ((g * 255).roundToInt() shl 8) or (b * 255).roundToInt(),
         life,
         fade,
         animationSpeed,
-        sizeAdd
+        sizeAdd,
     )
 
     val red get() = (this.color shr 16 and 255) / 255f

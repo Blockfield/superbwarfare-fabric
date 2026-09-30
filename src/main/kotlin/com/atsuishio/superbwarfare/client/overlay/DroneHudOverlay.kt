@@ -13,15 +13,17 @@ import com.atsuishio.superbwarfare.tools.*
 import com.atsuishio.superbwarfare.tools.FormatTool.format1D
 import com.atsuishio.superbwarfare.tools.VectorTool.lerpGetEntityBoundingBoxCenter
 import com.mojang.blaze3d.platform.GlStateManager
+import com.mojang.blaze3d.platform.NativeImage
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GameRenderer
-import net.minecraft.nbt.Tag
-import net.minecraft.network.chat.Component
-import com.mojang.blaze3d.platform.NativeImage
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
+import net.minecraft.nbt.Tag
+import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.util.Mth
@@ -29,8 +31,6 @@ import net.minecraft.util.RandomSource
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 object DroneHudOverlay : CommonOverlay("drone_hud") {
@@ -45,7 +45,10 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
     /**
      * Доля помех 0..1: последняя пятая часть дальности связи. 0 на 80% дистанции, 1 на пределе.
      */
-    private fun signalNoise(distance: Double, drone: DroneEntity): Float {
+    private fun signalNoise(
+        distance: Double,
+        drone: DroneEntity,
+    ): Float {
         val max = drone.maxControlDistance
         val start = 0.8 * max
         if (max <= start || distance <= start) return 0f
@@ -58,10 +61,12 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
         noiseTextureReady = true
         val image = NativeImage(NOISE_SIZE, NOISE_SIZE, false)
         val random = RandomSource.create(0x5EED)
-        for (y in 0 until NOISE_SIZE) for (x in 0 until NOISE_SIZE) {
-            val v = 30 + random.nextInt(226)
-            // NativeImage хранит ABGR; шум серый, так что порядок каналов роли не играет.
-            image.setPixelRGBA(x, y, (0xFF shl 24) or (v shl 16) or (v shl 8) or v)
+        for (y in 0 until NOISE_SIZE) {
+            for (x in 0 until NOISE_SIZE) {
+                val v = 30 + random.nextInt(226)
+                // NativeImage хранит ABGR; шум серый, так что порядок каналов роли не играет.
+                image.setPixelRGBA(x, y, (0xFF shl 24) or (v shl 16) or (v shl 8) or v)
+            }
         }
         mc.textureManager.register(NOISE, DynamicTexture(image))
         return NOISE
@@ -89,9 +94,16 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
             var y = -offsetY
             while (y < screenHeight) {
                 RenderHelper.preciseBlit(
-                    guiGraphics, texture, x.toFloat(), y.toFloat(),
-                    0f, 0f, tile.toFloat(), tile.toFloat(),
-                    NOISE_SIZE.toFloat(), NOISE_SIZE.toFloat()
+                    guiGraphics,
+                    texture,
+                    x.toFloat(),
+                    y.toFloat(),
+                    0f,
+                    0f,
+                    tile.toFloat(),
+                    tile.toFloat(),
+                    NOISE_SIZE.toFloat(),
+                    NOISE_SIZE.toFloat(),
                 )
                 y += tile
             }
@@ -117,8 +129,8 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
             SimpleSoundInstance.forUI(
                 SoundEvents.FIRE_EXTINGUISH,
                 1.3f + 0.7f * random.nextFloat(),
-                0.6f + 0.4f * strength
-            )
+                0.6f + 0.4f * strength,
+            ),
         )
     }
 
@@ -163,13 +175,14 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
         val tag = NBTTool.getTag(stack)
         val firstPerson =
-            Minecraft.getInstance().options.cameraType == CameraType.FIRST_PERSON || Minecraft.getInstance().options.cameraType == CameraType.THIRD_PERSON_BACK
+            Minecraft.getInstance().options.cameraType == CameraType.FIRST_PERSON ||
+                Minecraft.getInstance().options.cameraType == CameraType.THIRD_PERSON_BACK
 
         if (stack.`is`(ModItems.MONITOR.get()) && tag.getBoolean("Using") && tag.getBoolean("Linked")) {
             if (firstPerson) {
@@ -188,7 +201,7 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                     (screenWidth + addW).toFloat(),
                     (screenHeight + addH).toFloat(),
                     (screenWidth + addW).toFloat(),
-                    (screenHeight + addH).toFloat()
+                    (screenHeight + addH).toFloat(),
                 )
 
                 RenderHelper.preciseBlit(
@@ -201,7 +214,7 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                     64f,
                     129f,
                     64f,
-                    129f
+                    129f,
                 )
                 guiGraphics.drawString(
                     mc.font,
@@ -209,7 +222,7 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                     screenWidth / 2 + 144,
                     screenHeight / 2 + 56 - ((ClientEventHandler.droneFovLerp - 1) * 23.8).toInt(),
                     -1,
-                    false
+                    false,
                 )
 
                 val entity = EntityFindUtil.findDrone(player.level(), tag.getString("LinkedDrone"))
@@ -218,12 +231,16 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                     var lookAtEntity = false
                     val distance = player.position().subtract(entity.position()).horizontalDistance()
 
-                    val result = entity.level().clip(
-                        ClipContext(
-                            cameraPos, cameraPos.add(entity.getViewVector(1f).scale(512.0)),
-                            ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity
+                    val result =
+                        entity.level().clip(
+                            ClipContext(
+                                cameraPos,
+                                cameraPos.add(entity.getViewVector(1f).scale(512.0)),
+                                ClipContext.Block.OUTLINE,
+                                ClipContext.Fluid.NONE,
+                                entity,
+                            ),
                         )
-                    )
                     val hitPos = result.getLocation()
 
                     val blockRange = cameraPos.distanceTo(hitPos)
@@ -246,100 +263,139 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                     // 超出距离警告
                     if (distance > maxDistance - 48) {
                         guiGraphics.drawString(
-                            mc.font, Component.translatable("tips.superbwarfare.drone.warning"),
-                            screenWidth / 2 - 18, screenHeight / 2 - 47, -65536, false
+                            mc.font,
+                            Component.translatable("tips.superbwarfare.drone.warning"),
+                            screenWidth / 2 - 18,
+                            screenHeight / 2 - 47,
+                            -65536,
+                            false,
                         )
                         color = -65536
                     }
 
                     // 距离
                     guiGraphics.drawString(
-                        mc.font, Component.translatable("tips.superbwarfare.drone.distance")
+                        mc.font,
+                        Component
+                            .translatable("tips.superbwarfare.drone.distance")
                             .append(Component.literal(format1D(distance, "m"))),
-                        screenWidth / 2 + 10, screenHeight / 2 + 33, color, false
+                        screenWidth / 2 + 10,
+                        screenHeight / 2 + 33,
+                        color,
+                        false,
                     )
 
                     // 血量
                     guiGraphics.drawString(
-                        mc.font, Component.translatable("tips.superbwarfare.drone.health")
+                        mc.font,
+                        Component
+                            .translatable("tips.superbwarfare.drone.health")
                             .append(
                                 Component.literal(
-                                    format1D(entity.health.toDouble()) + " / " + format1D(
-                                        entity.getMaxHealth().toDouble()
-                                    )
-                                )
+                                    format1D(entity.health.toDouble()) + " / " +
+                                        format1D(
+                                            entity.getMaxHealth().toDouble(),
+                                        ),
+                                ),
                             ),
-                        screenWidth / 2 - 77, screenHeight / 2 + 33, -1, false
+                        screenWidth / 2 - 77,
+                        screenHeight / 2 + 33,
+                        -1,
+                        false,
                     )
                     if (!entity.getEntityData().get(DroneEntity.IS_KAMIKAZE)) {
                         // 弹药
                         guiGraphics.drawString(
-                            mc.font, Component.translatable("tips.superbwarfare.drone.ammo")
+                            mc.font,
+                            Component
+                                .translatable("tips.superbwarfare.drone.ammo")
                                 .append(
                                     Component.literal(
-                                        entity.getAmmo().toString() + " / " + entity.getEntityData().get(DroneEntity.MAX_AMMO)
-                                    )
+                                        entity.getAmmo().toString() + " / " + entity.getEntityData().get(DroneEntity.MAX_AMMO),
+                                    ),
                                 ),
-                            screenWidth / 2 + 12, screenHeight / 2 - 37, -1, false
+                            screenWidth / 2 + 12,
+                            screenHeight / 2 - 37,
+                            -1,
+                            false,
                         )
                     } else {
                         // 神风
                         guiGraphics.drawString(
-                            mc.font, Component.translatable("tips.superbwarfare.drone.kamikaze"),
-                            screenWidth / 2 + 12, screenHeight / 2 - 37, -65536, false
+                            mc.font,
+                            Component.translatable("tips.superbwarfare.drone.kamikaze"),
+                            screenWidth / 2 + 12,
+                            screenHeight / 2 - 37,
+                            -65536,
+                            false,
                         )
                     }
 
                     if (lookAtEntity) {
                         // 实体距离
                         guiGraphics.drawString(
-                            mc.font, Component.translatable("tips.superbwarfare.drone.range")
+                            mc.font,
+                            Component
+                                .translatable("tips.superbwarfare.drone.range")
                                 .append(
                                     Component.literal(
                                         format1D(
                                             entityRange,
-                                            "m "
-                                        ) + lookingEntity!!.displayName!!.string
-                                    )
+                                            "m ",
+                                        ) + lookingEntity!!.displayName!!.string,
+                                    ),
                                 ),
-                            screenWidth / 2 + 12, screenHeight / 2 - 28, color, false
+                            screenWidth / 2 + 12,
+                            screenHeight / 2 - 28,
+                            color,
+                            false,
                         )
                     } else {
                         // 方块距离
                         if (blockRange > 500) {
                             guiGraphics.drawString(
                                 mc.font,
-                                Component.translatable("tips.superbwarfare.drone.range")
+                                Component
+                                    .translatable("tips.superbwarfare.drone.range")
                                     .append(Component.literal("---m")),
                                 screenWidth / 2 + 12,
                                 screenHeight / 2 - 28,
                                 color,
-                                false
+                                false,
                             )
                         } else {
                             guiGraphics.drawString(
-                                mc.font, Component.translatable("tips.superbwarfare.drone.range")
+                                mc.font,
+                                Component
+                                    .translatable("tips.superbwarfare.drone.range")
                                     .append(Component.literal(format1D(blockRange, "m"))),
-                                screenWidth / 2 + 12, screenHeight / 2 - 28, color, false
+                                screenWidth / 2 + 12,
+                                screenHeight / 2 - 28,
+                                color,
+                                false,
                             )
                         }
                     }
 
                     val entities = SeekTool.seekLivingEntities(entity, 256.0, 30.0)
                     for (e in entities) {
-                        val pos = Vec3(
-                            Mth.lerp(partialTick.toDouble(), e.xo, e.x),
-                            Mth.lerp(partialTick.toDouble(), e.yo + e.eyeHeight, e.eyeY),
-                            Mth.lerp(partialTick.toDouble(), e.zo, e.z)
-                        )
+                        val pos =
+                            Vec3(
+                                Mth.lerp(partialTick.toDouble(), e.xo, e.x),
+                                Mth.lerp(partialTick.toDouble(), e.yo + e.eyeHeight, e.eyeY),
+                                Mth.lerp(partialTick.toDouble(), e.zo, e.z),
+                            )
                         val point = pos.worldToScreen()
                         poseStack.pushPose()
                         val x = point.x.toFloat()
                         val y = point.y.toFloat()
 
                         // Blockfield: own frame for self and allies; everyone else keeps the white one.
-                        if (e == player || e.isAlliedTo(player)) RenderSystem.setShaderColor(0.2f, 1f, 0.2f, 1f)
-                        else RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+                        if (e == player || e.isAlliedTo(player)) {
+                            RenderSystem.setShaderColor(0.2f, 1f, 0.2f, 1f)
+                        } else {
+                            RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+                        }
                         RenderHelper.preciseBlit(
                             guiGraphics,
                             FRAME,
@@ -352,7 +408,7 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                             24f,
                             24f,
                             24f,
-                            24f
+                            24f,
                         )
                         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
                         poseStack.popPose()
@@ -377,7 +433,7 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                         GlStateManager.SourceFactor.SRC_ALPHA,
                         GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                         GlStateManager.SourceFactor.ONE,
-                        GlStateManager.DestFactor.ZERO
+                        GlStateManager.DestFactor.ZERO,
                     )
                     RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -397,14 +453,15 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                             12f,
                             12f,
                             12f,
-                            12f
+                            12f,
                         )
                     }
 
                     // 火炮位置
                     if (offStack.`is`(ModItems.ARTILLERY_INDICATOR.get())) {
                         val tags =
-                            NBTTool.getTag(offStack)
+                            NBTTool
+                                .getTag(offStack)
                                 .getList(ArtilleryIndicatorItem.TAG_CANNON, Tag.TAG_COMPOUND.toInt())
                         for (m in tags.indices) {
                             val tag = tags.getCompound(m)
@@ -425,7 +482,7 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                                     12f,
                                     12f,
                                     12f,
-                                    12f
+                                    12f,
                                 )
                             }
                         }
@@ -452,7 +509,7 @@ object DroneHudOverlay : CommonOverlay("drone_hud") {
                         12f,
                         12f,
                         12f,
-                        12f
+                        12f,
                     )
                 }
             }

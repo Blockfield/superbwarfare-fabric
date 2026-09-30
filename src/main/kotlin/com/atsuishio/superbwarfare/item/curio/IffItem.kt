@@ -1,32 +1,35 @@
 package com.atsuishio.superbwarfare.item.curio
 
 import com.atsuishio.superbwarfare.config.server.SyncConfig
+import com.atsuishio.superbwarfare.fabric.isAnotherEquipped
 import com.atsuishio.superbwarfare.network.message.receive.EntityRelationSyncMessage
 import com.atsuishio.superbwarfare.network.message.receive.PlayerInfoSyncMessage
 import com.atsuishio.superbwarfare.tools.SeekTool
 import com.atsuishio.superbwarfare.tools.ServerSyncedEntityHandler
 import com.atsuishio.superbwarfare.tools.sendPacketTo
+import io.wispforest.accessories.api.Accessory
+import io.wispforest.accessories.api.slot.SlotReference
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
+import net.minecraft.server.MinecraftServer
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.minecraft.server.MinecraftServer
-import com.atsuishio.superbwarfare.fabric.isAnotherEquipped
-import io.wispforest.accessories.api.Accessory
-import io.wispforest.accessories.api.slot.SlotReference
 
-open class IffItem : Item(Properties().stacksTo(1)), Accessory {
-    override fun canEquip(stack: ItemStack, reference: SlotReference): Boolean {
-        return !isAnotherEquipped(stack, reference, this)
-    }
+open class IffItem :
+    Item(Properties().stacksTo(1)),
+    Accessory {
+    override fun canEquip(
+        stack: ItemStack,
+        reference: SlotReference,
+    ): Boolean = !isAnotherEquipped(stack, reference, this)
 
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(Component.translatable("des.superbwarfare.iff_1").withStyle(ChatFormatting.GRAY))
     }
@@ -48,23 +51,25 @@ open class IffItem : Item(Properties().stacksTo(1)), Accessory {
                 // 向所有队友同步自身 ID 和玩家信息
                 val dim = player.level().dimension().location()
                 val idMsg = EntityRelationSyncMessage(dim, friendlyIds = listOf(player.id))
-                val infoMsg = PlayerInfoSyncMessage(
-                    dim, listOf(
-                        PlayerInfoSyncMessage.SyncedPlayerInfo(
-                            uuid = player.uuid,
-                            pos = player.position(),
-                            name = player.name.string,
-                            onVehicle = player.vehicle != null,
-                            isDriver = player.vehicle != null && player.vehicle?.controllingPassenger == player,
-                            relation = "friendly",
-                            entityId = player.id,
-                        )
+                val infoMsg =
+                    PlayerInfoSyncMessage(
+                        dim,
+                        listOf(
+                            PlayerInfoSyncMessage.SyncedPlayerInfo(
+                                uuid = player.uuid,
+                                pos = player.position(),
+                                name = player.name.string,
+                                onVehicle = player.vehicle != null,
+                                isDriver = player.vehicle != null && player.vehicle?.controllingPassenger == player,
+                                relation = "friendly",
+                                entityId = player.id,
+                            ),
+                        ),
                     )
-                )
                 for (teammate in server.playerList.players) {
-                    if (teammate != player && teammate.isAlive
-                        && teammate.level().dimension() == player.level().dimension()
-                        && SeekTool.IS_FRIENDLY.test(teammate, player)
+                    if (teammate != player && teammate.isAlive &&
+                        teammate.level().dimension() == player.level().dimension() &&
+                        SeekTool.IS_FRIENDLY.test(teammate, player)
                     ) {
                         sendPacketTo(teammate, idMsg)
                         sendPacketTo(teammate, infoMsg)

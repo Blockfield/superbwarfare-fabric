@@ -1,10 +1,10 @@
 package com.atsuishio.superbwarfare.client.particle
 
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.*
 import net.minecraft.core.particles.SimpleParticleType
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import javax.annotation.ParametersAreNonnullByDefault
 import kotlin.math.max
 
@@ -17,9 +17,11 @@ open class WhiteStarParticle protected constructor(
     vx: Double,
     vy: Double,
     vz: Double,
-    spriteSet: SpriteSet
+    spriteSet: SpriteSet,
 ) : TextureSheetParticle(world, x, y, z) {
-    class WhiteStarParticleProvider(private val spriteSet: SpriteSet) : ParticleProvider<SimpleParticleType> {
+    class WhiteStarParticleProvider(
+        private val spriteSet: SpriteSet,
+    ) : ParticleProvider<SimpleParticleType> {
         @ParametersAreNonnullByDefault
         override fun createParticle(
             typeIn: SimpleParticleType,
@@ -29,10 +31,8 @@ open class WhiteStarParticle protected constructor(
             z: Double,
             xSpeed: Double,
             ySpeed: Double,
-            zSpeed: Double
-        ): Particle {
-            return WhiteStarParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet)
-        }
+            zSpeed: Double,
+        ): Particle = WhiteStarParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet)
     }
 
     init {
@@ -47,13 +47,9 @@ open class WhiteStarParticle protected constructor(
         this.setSpriteFromAge(spriteSet)
     }
 
-    public override fun getLightColor(partialTick: Float): Int {
-        return 15728880
-    }
+    public override fun getLightColor(partialTick: Float): Int = 15728880
 
-    override fun getRenderType(): ParticleRenderType {
-        return ParticleRenderType.PARTICLE_SHEET_LIT
-    }
+    override fun getRenderType(): ParticleRenderType = ParticleRenderType.PARTICLE_SHEET_LIT
 
     override fun tick() {
         super.tick()
@@ -61,8 +57,6 @@ open class WhiteStarParticle protected constructor(
     }
 
     companion object {
-        fun provider(spriteSet: SpriteSet): WhiteStarParticleProvider {
-            return WhiteStarParticleProvider(spriteSet)
-        }
+        fun provider(spriteSet: SpriteSet): WhiteStarParticleProvider = WhiteStarParticleProvider(spriteSet)
     }
 }

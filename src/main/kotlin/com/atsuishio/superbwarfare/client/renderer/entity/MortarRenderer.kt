@@ -9,14 +9,15 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 import net.minecraft.world.phys.Vec3
 
-class MortarRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
-
+class MortarRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
     override fun transformCustomModelPart(
         entity: VehicleEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         val paoguan = instance.getBone("move_paoguan")
         val monitor = instance.getBone("move_monitor")
@@ -28,13 +29,18 @@ class MortarRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRend
         monitor?.visible = entity.entityData.get(MortarEntity.INTELLIGENT)
     }
 
-    override fun rotateVehicleAxis(entity: VehicleEntity, poseStack: PoseStack, entityYaw: Float, partialTicks: Float) {
+    override fun rotateVehicleAxis(
+        entity: VehicleEntity,
+        poseStack: PoseStack,
+        entityYaw: Float,
+        partialTicks: Float,
+    ) {
         val root = Vec3(0.0, entity.rotateOffsetHeight, 0.0)
         poseStack.rotateAround(
             Axis.YP.rotationDegrees(-entityYaw + 180),
             root.x.toFloat(),
             root.y.toFloat(),
-            root.z.toFloat()
+            root.z.toFloat(),
         )
     }
 }

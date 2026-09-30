@@ -15,6 +15,8 @@ import com.atsuishio.superbwarfare.tools.canBeSeen
 import com.atsuishio.superbwarfare.tools.worldToScreen
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GameRenderer
@@ -22,8 +24,6 @@ import net.minecraft.nbt.Tag
 import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
 import net.minecraft.world.level.ClipContext
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -38,8 +38,14 @@ object SpyglassRangeOverlay : CommonOverlay("spyglass_range") {
         val poseStack = guiGraphics.pose()
 
         val stack = player.getUseItem()
-        if (((player.isUsingItem && player.getUseItem()
-                .`is`(ModItems.ARTILLERY_INDICATOR.get())) || player.isScoping) && mc.options.cameraType == CameraType.FIRST_PERSON
+        if ((
+                (
+                    player.isUsingItem &&
+                        player
+                            .getUseItem()
+                            .`is`(ModItems.ARTILLERY_INDICATOR.get())
+                ) || player.isScoping
+            ) && mc.options.cameraType == CameraType.FIRST_PERSON
         ) {
             if (player.getUseItem().`is`(ModItems.ARTILLERY_INDICATOR.get())) {
                 poseStack.pushPose()
@@ -51,15 +57,17 @@ object SpyglassRangeOverlay : CommonOverlay("spyglass_range") {
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                     GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ZERO
+                    GlStateManager.DestFactor.ZERO,
                 )
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
-                scopeScale = Mth.lerp(
-                    (0.5f * deltaFrame).toDouble(),
-                    scopeScale.toDouble(),
-                    1.35f + (0.2f * ClientEventHandler.boltMove)
-                ).toFloat()
+                scopeScale =
+                    Mth
+                        .lerp(
+                            (0.5f * deltaFrame).toDouble(),
+                            scopeScale.toDouble(),
+                            1.35f + (0.2f * ClientEventHandler.boltMove),
+                        ).toFloat()
                 val f = min(screenWidth, screenHeight).toFloat()
                 val f1: Float = min(screenWidth.toFloat() / f, screenHeight.toFloat() / f) * scopeScale
                 val i = Mth.floor(f * f1).toFloat()
@@ -86,7 +94,7 @@ object SpyglassRangeOverlay : CommonOverlay("spyglass_range") {
                         12f,
                         12f,
                         12f,
-                        12f
+                        12f,
                     )
                 }
 
@@ -111,7 +119,7 @@ object SpyglassRangeOverlay : CommonOverlay("spyglass_range") {
                                 12f,
                                 12f,
                                 12f,
-                                12f
+                                12f,
                             )
                         }
                     }
@@ -119,34 +127,41 @@ object SpyglassRangeOverlay : CommonOverlay("spyglass_range") {
 
                 poseStack.popPose()
 
-                lerpHoldArtilleryIndicator = Mth.lerp(
-                    deltaTracker.getGameTimeDeltaPartialTick(true),
-                    lerpHoldArtilleryIndicator,
-                    0.05f * ClientEventHandler.holdArtilleryIndicator
-                )
+                lerpHoldArtilleryIndicator =
+                    Mth.lerp(
+                        deltaTracker.getGameTimeDeltaPartialTick(true),
+                        lerpHoldArtilleryIndicator,
+                        0.05f * ClientEventHandler.holdArtilleryIndicator,
+                    )
 
                 if (lerpHoldArtilleryIndicator > 0) {
                     val alpha = Mth.clamp(lerpHoldArtilleryIndicator * 20, 0f, 5f) * 0.2f
                     RenderHelper.renderCircularRing(
                         guiGraphics,
-                        screenWidth / 2f, screenHeight / 2f,
-                        0.07f, 0.052f,
+                        screenWidth / 2f,
+                        screenHeight / 2f,
+                        0.07f,
+                        0.052f,
                         floatArrayOf(0f, 0f, 0f, 0.4f * alpha),
                         floatArrayOf(1f, 1f, 1f, 0.8f * alpha),
                         lerpHoldArtilleryIndicator,
-                        true
+                        true,
                     )
                 }
             }
 
             var lookAtEntity = false
 
-            val result = player.level().clip(
-                ClipContext(
-                    player.eyePosition, player.eyePosition.add(player.getViewVector(1f).scale(512.0)),
-                    ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player
+            val result =
+                player.level().clip(
+                    ClipContext(
+                        player.eyePosition,
+                        player.eyePosition.add(player.getViewVector(1f).scale(512.0)),
+                        ClipContext.Block.OUTLINE,
+                        ClipContext.Fluid.NONE,
+                        player,
+                    ),
                 )
-            )
             val hitPos = result.getLocation()
 
             val blockRange = player.getEyePosition(1f).distanceTo(hitPos)
@@ -163,25 +178,41 @@ object SpyglassRangeOverlay : CommonOverlay("spyglass_range") {
 
             if (lookAtEntity) {
                 guiGraphics.drawString(
-                    Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.drone.range")
+                    Minecraft.getInstance().font,
+                    Component
+                        .translatable("tips.superbwarfare.drone.range")
                         .append(
                             Component.literal(
-                                format1D(entityRange, "M ") + lookingEntity!!.displayName!!.string
-                            )
+                                format1D(entityRange, "M ") + lookingEntity!!.displayName!!.string,
+                            ),
                         ),
-                    screenWidth / 2 + 12, screenHeight / 2 - 28, -1, false
+                    screenWidth / 2 + 12,
+                    screenHeight / 2 - 28,
+                    -1,
+                    false,
                 )
             } else {
                 if (blockRange > 500) {
                     guiGraphics.drawString(
-                        Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.drone.range")
-                            .append(Component.literal("---M")), screenWidth / 2 + 12, screenHeight / 2 - 28, -1, false
+                        Minecraft.getInstance().font,
+                        Component
+                            .translatable("tips.superbwarfare.drone.range")
+                            .append(Component.literal("---M")),
+                        screenWidth / 2 + 12,
+                        screenHeight / 2 - 28,
+                        -1,
+                        false,
                     )
                 } else {
                     guiGraphics.drawString(
-                        Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.drone.range")
+                        Minecraft.getInstance().font,
+                        Component
+                            .translatable("tips.superbwarfare.drone.range")
                             .append(Component.literal(format1D(blockRange, "M"))),
-                        screenWidth / 2 + 12, screenHeight / 2 - 28, -1, false
+                        screenWidth / 2 + 12,
+                        screenHeight / 2 - 28,
+                        -1,
+                        false,
                     )
                 }
             }

@@ -14,11 +14,15 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature
  * а не данные. Ключи размещённых фич остаются в data/superbwarfare/worldgen/placed_feature.
  */
 object ModBiomeModifications {
-    private val ORES = listOf(
-        "galena_ore", "deepslate_galena_ore",
-        "scheelite_ore", "deepslate_scheelite_ore",
-        "silver_ore", "deepslate_silver_ore",
-    )
+    private val ORES =
+        listOf(
+            "galena_ore",
+            "deepslate_galena_ore",
+            "scheelite_ore",
+            "deepslate_scheelite_ore",
+            "silver_ore",
+            "deepslate_silver_ore",
+        )
 
     fun init() {
         val overworld = BiomeSelectors.foundInOverworld()
@@ -27,7 +31,7 @@ object ModBiomeModifications {
             BiomeModifications.addFeature(
                 overworld,
                 GenerationStep.Decoration.UNDERGROUND_ORES,
-                ResourceKey.create(Registries.PLACED_FEATURE, Mod.loc(it))
+                ResourceKey.create(Registries.PLACED_FEATURE, Mod.loc(it)),
             )
         }
 

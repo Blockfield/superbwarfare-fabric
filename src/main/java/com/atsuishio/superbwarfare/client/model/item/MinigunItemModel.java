@@ -5,10 +5,12 @@ import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.GunProp;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.machinegun.MinigunItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
@@ -17,7 +19,8 @@ public class MinigunItemModel extends CustomGunModel<MinigunItem> {
     private static float rotZ = 0.0f;
 
     @Override
-    public void setCustomAnimations(MinigunItem animatable, long instanceId, AnimationState<MinigunItem> animationState) {
+    public void setCustomAnimations(
+            MinigunItem animatable, long instanceId, AnimationState<MinigunItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -26,7 +29,14 @@ public class MinigunItemModel extends CustomGunModel<MinigunItem> {
         GeoBone gun = getAnimationProcessor().getBone("barrel");
         GeoBone shen = getAnimationProcessor().getBone("shen");
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
 
         var data = GunData.from(stack);
         int rpm = data.get(GunProp.RPM);
@@ -48,6 +58,9 @@ public class MinigunItemModel extends CustomGunModel<MinigunItem> {
         ClientEventHandler.gunRootMove(getAnimationProcessor(), 7, 1, 3, false);
 
         GeoBone camera = getAnimationProcessor().getBone("camera");
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

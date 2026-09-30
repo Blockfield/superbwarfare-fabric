@@ -10,26 +10,27 @@ import net.minecraft.client.CameraType
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class Bmp2Renderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
-    override fun hideForTurretControllerWhileZooming(): Boolean {
-        return true
-    }
+class Bmp2Renderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
+    override fun hideForTurretControllerWhileZooming(): Boolean = true
 
-    override fun renderScale(): Float {
-        return 0.9f
-    }
+    override fun renderScale(): Float = 0.9f
 
     override fun transformCustomModelPart(
         entity: VehicleEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 
         val player = localPlayer
-        val hide = player != null && entity === player.vehicle && entity.getFirstPassenger() !== player && entity.hasWeapon(entity.getSeatIndex(player)) && (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
+        val hide =
+            player != null && entity === player.vehicle && entity.getFirstPassenger() !== player &&
+                entity.hasWeapon(entity.getSeatIndex(player)) &&
+                (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
 
         val base = instance.getBone("base")
         val track = instance.getBone("move_Track")

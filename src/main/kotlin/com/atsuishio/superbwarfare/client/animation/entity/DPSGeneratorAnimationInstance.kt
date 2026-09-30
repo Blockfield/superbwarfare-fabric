@@ -4,7 +4,9 @@ import com.atsuishio.superbwarfare.entity.living.DPSGeneratorEntity
 import com.maydaymemory.mae.basic.Pose
 import com.maydaymemory.mae.control.statemachine.AnimationStateMachine
 
-class DPSGeneratorAnimationInstance(entity: DPSGeneratorEntity) {
+class DPSGeneratorAnimationInstance(
+    entity: DPSGeneratorEntity,
+) {
     val context: DPSGeneratorContext = DPSGeneratorContext(entity)
     private val stateMachine = AnimationStateMachine(DPSGeneratorStates.INIT, context) { System.nanoTime() }
 
@@ -13,7 +15,5 @@ class DPSGeneratorAnimationInstance(entity: DPSGeneratorEntity) {
         context.tick()
     }
 
-    fun getPose(): Pose {
-        return stateMachine.getPose()
-    }
+    fun getPose(): Pose = stateMachine.getPose()
 }

@@ -25,10 +25,11 @@ import net.minecraft.world.phys.BlockHitResult
 class CatapultControllerBlock : Block(Properties.of().sound(SoundType.METAL).strength(3.0f)) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(LAUNCH_POWER, 0)
-                .setValue(POWERED, false)
+                .setValue(POWERED, false),
         )
     }
 
@@ -36,17 +37,17 @@ class CatapultControllerBlock : Block(Properties.of().sound(SoundType.METAL).str
         builder.add(FACING).add(LAUNCH_POWER).add(POWERED)
     }
 
-    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? =
+        this
+            .defaultBlockState()
             .setValue(FACING, context.horizontalDirection.opposite)
-    }
 
     override fun useWithoutItem(
         state: BlockState,
         level: Level,
         pos: BlockPos,
         player: Player,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): InteractionResult {
         if (level.isClientSide) return InteractionResult.SUCCESS
 
@@ -68,7 +69,7 @@ class CatapultControllerBlock : Block(Properties.of().sound(SoundType.METAL).str
         pos: BlockPos,
         block: Block,
         fromPos: BlockPos,
-        isMoving: Boolean
+        isMoving: Boolean,
     ) {
         if (!level.isClientSide) {
             val currentState = level.getBlockState(pos)
@@ -85,7 +86,7 @@ class CatapultControllerBlock : Block(Properties.of().sound(SoundType.METAL).str
         level: Level,
         pos: BlockPos,
         oldState: BlockState,
-        movedByPiston: Boolean
+        movedByPiston: Boolean,
     ) {
         if (level is ServerLevel) {
             val hasPower = level.hasNeighborSignal(pos)
@@ -98,7 +99,12 @@ class CatapultControllerBlock : Block(Properties.of().sound(SoundType.METAL).str
         }
     }
 
-    override fun tick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
+    override fun tick(
+        state: BlockState,
+        level: ServerLevel,
+        pos: BlockPos,
+        random: RandomSource,
+    ) {
         val currentState = level.getBlockState(pos)
         updateConnectedCatapults(level, pos, currentState.getValue(FACING), currentState.getValue(LAUNCH_POWER), true)
         propagateDirection(level, pos, currentState.getValue(FACING), currentState.getValue(POWERED))
@@ -110,7 +116,7 @@ class CatapultControllerBlock : Block(Properties.of().sound(SoundType.METAL).str
         level: Level,
         pos: BlockPos,
         newState: BlockState,
-        movedByPiston: Boolean
+        movedByPiston: Boolean,
     ) {
         if (!state.`is`(newState.block)) {
             // Release control of connected catapults
@@ -124,22 +130,27 @@ class CatapultControllerBlock : Block(Properties.of().sound(SoundType.METAL).str
         controllerPos: BlockPos,
         facing: Direction,
         power: Int,
-        controlled: Boolean
+        controlled: Boolean,
     ) {
         var checkPos = controllerPos.relative(facing)
         while (level.getBlockState(checkPos).block is AircraftCatapultBlock) {
             val catapultState = level.getBlockState(checkPos)
             level.setBlock(
                 checkPos,
-                catapultState.setValue(AircraftCatapultBlock.LAUNCH_POWER, power)
+                catapultState
+                    .setValue(AircraftCatapultBlock.LAUNCH_POWER, power)
                     .setValue(AircraftCatapultBlock.CONTROLLED, controlled),
-                3
+                3,
             )
             checkPos = checkPos.relative(facing)
         }
     }
 
-    private fun releaseConnectedCatapults(level: Level, controllerPos: BlockPos, facing: Direction) {
+    private fun releaseConnectedCatapults(
+        level: Level,
+        controllerPos: BlockPos,
+        facing: Direction,
+    ) {
         if (level !is ServerLevel) return
         var checkPos = controllerPos.relative(facing)
         while (level.getBlockState(checkPos).block is AircraftCatapultBlock) {
@@ -152,7 +163,12 @@ class CatapultControllerBlock : Block(Properties.of().sound(SoundType.METAL).str
         }
     }
 
-    private fun propagateDirection(level: Level, controllerPos: BlockPos, facing: Direction, powered: Boolean) {
+    private fun propagateDirection(
+        level: Level,
+        controllerPos: BlockPos,
+        facing: Direction,
+        powered: Boolean,
+    ) {
         if (level !is ServerLevel) return
         var checkPos = controllerPos.relative(facing)
         while (level.getBlockState(checkPos).block is AircraftCatapultBlock) {

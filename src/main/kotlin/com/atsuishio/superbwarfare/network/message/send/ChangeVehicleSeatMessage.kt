@@ -6,7 +6,9 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ChangeVehicleSeatMessage(val index: Int) : ServerPacketPayload() {
+data class ChangeVehicleSeatMessage(
+    val index: Int,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
 

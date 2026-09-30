@@ -13,15 +13,16 @@ object CommandRegister {
     }
 
     private fun registerCommand(dispatcher: CommandDispatcher<CommandSourceStack>) {
-        val command = buildCommand("sbw") {
-            add(AMMO_COMMAND)
-            add(CONFIG_COMMAND)
-            add(TDM_COMMAND)
-            add(RIDE_COMMAND)
-            add(DISMOUNT_COMMAND)
-            add(SKIN_COMMAND)
-            add(LOITER_COMMAND)
-        }
+        val command =
+            buildCommand("sbw") {
+                add(AMMO_COMMAND)
+                add(CONFIG_COMMAND)
+                add(TDM_COMMAND)
+                add(RIDE_COMMAND)
+                add(DISMOUNT_COMMAND)
+                add(SKIN_COMMAND)
+                add(LOITER_COMMAND)
+            }
 
         val result = dispatcher.register(command as LiteralArgumentBuilder<CommandSourceStack>)
         dispatcher.register(Commands.literal("superbwarfare").redirect(result))

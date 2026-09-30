@@ -4,9 +4,9 @@ import com.atsuishio.superbwarfare.Mod
 import com.atsuishio.superbwarfare.advancement.criteria.OttoSprintTrigger
 import com.atsuishio.superbwarfare.advancement.criteria.RPGMeleeExplosionTrigger
 import com.atsuishio.superbwarfare.advancement.criteria.VehicleHurtTrigger
+import com.atsuishio.superbwarfare.fabric.DeferredRegister
 import net.minecraft.advancements.CriterionTrigger
 import net.minecraft.core.registries.Registries
-import com.atsuishio.superbwarfare.fabric.DeferredRegister
 import java.util.function.Supplier
 
 object ModCriteriaTriggers {

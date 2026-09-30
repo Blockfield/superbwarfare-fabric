@@ -17,7 +17,7 @@ class CreativeVehicleKeyItem : VehicleKeyItem(Properties().stacksTo(1).rarity(Ra
         stack: ItemStack,
         context: TooltipContext,
         tooltip: MutableList<Component>,
-        flag: TooltipFlag
+        flag: TooltipFlag,
     ) {
         tooltip.add(Component.translatable("des.superbwarfare.creative_vehicle_key").withStyle(ChatFormatting.GRAY))
     }
@@ -25,21 +25,21 @@ class CreativeVehicleKeyItem : VehicleKeyItem(Properties().stacksTo(1).rarity(Ra
     override fun use(
         level: Level,
         player: Player,
-        hand: InteractionHand
-    ): InteractionResultHolder<ItemStack> {
-        return InteractionResultHolder.fail(player.getItemInHand(hand))
-    }
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> = InteractionResultHolder.fail(player.getItemInHand(hand))
 
     override fun onInteractVehicle(
         vehicle: VehicleEntity,
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult {
         if (!vehicle.passengers.isEmpty()) {
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.vehicle.lock_not_empty")
-                    .withStyle(ChatFormatting.RED), true
+                Component
+                    .translatable("tips.superbwarfare.vehicle.lock_not_empty")
+                    .withStyle(ChatFormatting.RED),
+                true,
             )
             return InteractionResult.FAIL
         }
@@ -49,10 +49,12 @@ class CreativeVehicleKeyItem : VehicleKeyItem(Properties().stacksTo(1).rarity(Ra
             vehicle.locked = true
 
             player.displayClientMessage(
-                Component.translatable(
-                    "tips.superbwarfare.vehicle.lock_vehicle",
-                    vehicle.displayName
-                ).withStyle(ChatFormatting.GREEN), true
+                Component
+                    .translatable(
+                        "tips.superbwarfare.vehicle.lock_vehicle",
+                        vehicle.displayName,
+                    ).withStyle(ChatFormatting.GREEN),
+                true,
             )
             return InteractionResult.SUCCESS
         } else {
@@ -60,10 +62,12 @@ class CreativeVehicleKeyItem : VehicleKeyItem(Properties().stacksTo(1).rarity(Ra
             vehicle.locked = false
 
             player.displayClientMessage(
-                Component.translatable(
-                    "tips.superbwarfare.vehicle.unlock_vehicle",
-                    vehicle.displayName
-                ).withStyle(ChatFormatting.GREEN), true
+                Component
+                    .translatable(
+                        "tips.superbwarfare.vehicle.unlock_vehicle",
+                        vehicle.displayName,
+                    ).withStyle(ChatFormatting.GREEN),
+                true,
             )
             return InteractionResult.SUCCESS
         }

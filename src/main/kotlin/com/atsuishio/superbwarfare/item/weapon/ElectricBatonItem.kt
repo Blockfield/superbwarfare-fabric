@@ -1,6 +1,8 @@
 package com.atsuishio.superbwarfare.item.weapon
 
 import com.atsuishio.superbwarfare.client.tooltip.component.CellImageComponent
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModMobEffects
 import com.atsuishio.superbwarfare.init.ModSounds
@@ -21,55 +23,59 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.SwordItem
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
 import org.joml.Math
 import java.util.*
 import kotlin.math.roundToInt
 
-class ElectricBatonItem : SwordItem(
-    ModItemTier.STEEL, CustomDamageProperty(1114).attributes(createAttributes(ModItemTier.STEEL, 2, -2.5f))
-), EnergyStorageItem {
+class ElectricBatonItem :
+    SwordItem(
+        ModItemTier.STEEL,
+        CustomDamageProperty(1114).attributes(createAttributes(ModItemTier.STEEL, 2, -2.5f)),
+    ),
+    EnergyStorageItem {
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(Component.translatable("des.superbwarfare.electric_baton").withStyle(ChatFormatting.AQUA))
 
         if (NBTTool.getTag(stack).getBoolean(TAG_OPEN)) {
             tooltipComponents.add(
-                Component.translatable("des.superbwarfare.electric_baton.open").withStyle(ChatFormatting.GRAY)
+                Component.translatable("des.superbwarfare.electric_baton.open").withStyle(ChatFormatting.GRAY),
             )
         }
     }
 
     override fun getMaxEnergy(stack: ItemStack) = MAX_ENERGY
 
-    override fun use(level: Level, player: Player, usedHand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        level: Level,
+        player: Player,
+        usedHand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(usedHand)
 
         if (player.isShiftKeyDown) {
             val tag = NBTTool.getTag(stack)
             tag.putBoolean(
                 TAG_OPEN,
-                !tag.getBoolean(TAG_OPEN)
+                !tag.getBoolean(TAG_OPEN),
             )
             NBTTool.saveTag(stack, tag)
 
             player.displayClientMessage(
                 Component.translatable(
-                    "des.superbwarfare.electric_baton." + (if (tag.getBoolean(TAG_OPEN)) "open" else "close")
-                ), true
+                    "des.superbwarfare.electric_baton." + (if (tag.getBoolean(TAG_OPEN)) "open" else "close"),
+                ),
+                true,
             )
         }
         return InteractionResultHolder.fail(stack)
     }
 
-    override fun isBarVisible(stack: ItemStack): Boolean {
-        return NBTTool.getTag(stack).getBoolean(TAG_OPEN) || super.isBarVisible(stack)
-    }
+    override fun isBarVisible(stack: ItemStack): Boolean = NBTTool.getTag(stack).getBoolean(TAG_OPEN) || super.isBarVisible(stack)
 
     override fun getBarWidth(stack: ItemStack): Int {
         if (NBTTool.getTag(stack).getBoolean(TAG_OPEN)) {
@@ -81,20 +87,28 @@ class ElectricBatonItem : SwordItem(
         }
     }
 
-    override fun getBarColor(stack: ItemStack): Int {
-        return if (NBTTool.getTag(stack)
+    override fun getBarColor(stack: ItemStack): Int =
+        if (NBTTool
+                .getTag(stack)
                 .getBoolean(TAG_OPEN)
-        ) 0xFFFF00 else super.getBarColor(stack)
-    }
+        ) {
+            0xFFFF00
+        } else {
+            super.getBarColor(stack)
+        }
 
-    override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
+    override fun hurtEnemy(
+        stack: ItemStack,
+        target: LivingEntity,
+        attacker: LivingEntity,
+    ): Boolean {
         attacker.level().playSound(
             null,
             target.onPos,
             ModSounds.MELEE_HIT.get(),
             SoundSource.PLAYERS,
             1f,
-            ((2 * Math.random() - 1) * 0.1f + 1).toFloat()
+            ((2 * Math.random() - 1) * 0.1f + 1).toFloat(),
         )
 
         if (NBTTool.getTag(stack).getBoolean(TAG_OPEN)) {
@@ -110,9 +124,7 @@ class ElectricBatonItem : SwordItem(
         return super.hurtEnemy(stack, target, attacker)
     }
 
-    override fun getTooltipImage(pStack: ItemStack): Optional<TooltipComponent> {
-        return Optional.of(CellImageComponent(pStack))
-    }
+    override fun getTooltipImage(pStack: ItemStack): Optional<TooltipComponent> = Optional.of(CellImageComponent(pStack))
 
     companion object {
         const val MAX_ENERGY: Int = 30000

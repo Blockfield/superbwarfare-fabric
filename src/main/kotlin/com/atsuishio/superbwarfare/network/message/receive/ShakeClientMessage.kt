@@ -24,9 +24,8 @@ data class ShakeClientMessage(
     var amplitude: Double,
     var x: Double,
     var y: Double,
-    var z: Double
+    var z: Double,
 ) : ClientPacketPayload() {
-
     private val shakeStrength by lazy {
         DisplayConfig.EXPLOSION_SCREEN_SHAKE.get().toFloat() / 100.0f
     }
@@ -50,7 +49,6 @@ data class ShakeClientMessage(
     }
 
     companion object {
-
         @JvmStatic
         fun sendToNearbyPlayers(
             level: Level,
@@ -59,7 +57,7 @@ data class ShakeClientMessage(
             z: Double,
             sendRadius: Double,
             time: Double,
-            amplitude: Double
+            amplitude: Double,
         ) {
             val center = Vec3(x, y, z)
             val entitiesInRange = mutableListOf<ServerPlayer>()
@@ -70,7 +68,12 @@ data class ShakeClientMessage(
         }
 
         @JvmStatic
-        fun sendToNearbyPlayers(source: Entity, sendRadius: Double, time: Double, amplitude: Double) {
+        fun sendToNearbyPlayers(
+            source: Entity,
+            sendRadius: Double,
+            time: Double,
+            amplitude: Double,
+        ) {
             if (sendRadius <= 0 || time <= 0 || amplitude <= 0) return
 
             sendToNearbyPlayers(
@@ -80,7 +83,7 @@ data class ShakeClientMessage(
                 source.z,
                 sendRadius,
                 time,
-                amplitude
+                amplitude,
             )
         }
     }

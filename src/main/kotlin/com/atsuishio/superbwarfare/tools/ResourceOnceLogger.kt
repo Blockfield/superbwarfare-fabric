@@ -17,7 +17,10 @@ class ResourceOnceLogger {
         LOGGERS.add(this)
     }
 
-    fun log(obj: Any, logger: Consumer<Logger>) {
+    fun log(
+        obj: Any,
+        logger: Consumer<Logger>,
+    ) {
         if (logged.contains(obj)) {
             return
         }

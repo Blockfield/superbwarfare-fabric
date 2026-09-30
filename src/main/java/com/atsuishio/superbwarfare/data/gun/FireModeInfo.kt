@@ -8,7 +8,9 @@ import kotlinx.serialization.Serializable
 
 @STOFactory(FireModeInfo.FireModeInfoInstanceBuilder::class)
 @Serializable
-class FireModeInfo : DeserializeFromString, PropertyModifier<GunData, DefaultGunData> {
+class FireModeInfo :
+    DeserializeFromString,
+    PropertyModifier<GunData, DefaultGunData> {
     @JvmField
     @SerializedName("Mode")
     @SerialName("Mode")
@@ -43,10 +45,11 @@ class FireModeInfo : DeserializeFromString, PropertyModifier<GunData, DefaultGun
     }
 
     object FireModeInfoInstanceBuilder : StringInstanceBuilder<FireModeInfo> {
-        override fun fromString(value: String) = FireModeInfo().apply {
-            init()
-            this.mode = FireMode.tryParse(value)
-            this.name = value
-        }
+        override fun fromString(value: String) =
+            FireModeInfo().apply {
+                init()
+                this.mode = FireMode.tryParse(value)
+                this.name = value
+            }
     }
 }

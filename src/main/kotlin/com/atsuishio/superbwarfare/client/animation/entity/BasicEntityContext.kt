@@ -12,7 +12,10 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.world.entity.Entity
 
-open class BasicEntityContext<T : Entity>(val entity: T, location: ResourceLocation) {
+open class BasicEntityContext<T : Entity>(
+    val entity: T,
+    location: ResourceLocation,
+) {
     val animations = hashMapOf<String, BedrockAnimation>()
     var partialTick: Float = 0f
 
@@ -51,12 +54,15 @@ open class BasicEntityContext<T : Entity>(val entity: T, location: ResourceLocat
                 soundEvent,
                 entity.soundSource,
                 1.0f,
-                1.0f
+                1.0f,
             )
         }
     }
 
-    fun playAnimation(animationName: String?, type: AnimationPlayType) {
+    fun playAnimation(
+        animationName: String?,
+        type: AnimationPlayType,
+    ) {
         val animation = animations[animationName]
         if (animation != null) {
             animationRunner = AnimationRunner(animation, AnimationContext(animation.specifiedEndTimeS))
@@ -64,7 +70,5 @@ open class BasicEntityContext<T : Entity>(val entity: T, location: ResourceLocat
         }
     }
 
-    fun getPose(): Pose {
-        return animationRunner?.evaluate() ?: DummyPose.INSTANCE
-    }
+    fun getPose(): Pose = animationRunner?.evaluate() ?: DummyPose.INSTANCE
 }

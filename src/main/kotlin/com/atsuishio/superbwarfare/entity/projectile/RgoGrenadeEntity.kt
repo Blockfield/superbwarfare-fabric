@@ -13,11 +13,13 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 
-open class RgoGrenadeEntity : FastThrowableProjectile, BasicGeoProjectileEntity {
+open class RgoGrenadeEntity :
+    FastThrowableProjectile,
+    BasicGeoProjectileEntity {
     constructor(type: EntityType<out RgoGrenadeEntity>, level: Level) : super(type, level)
 
     constructor(type: EntityType<out RgoGrenadeEntity>, x: Double, y: Double, z: Double, level: Level) :
-            super(type, x, y, z, level)
+        super(type, x, y, z, level)
 
     constructor(entity: LivingEntity?, level: Level) : super(ModEntities.RGO_GRENADE.get(), entity, level)
 
@@ -33,15 +35,13 @@ open class RgoGrenadeEntity : FastThrowableProjectile, BasicGeoProjectileEntity 
 
     override fun canPassThroughFluid() = true
 
-    override fun getDefaultItem(): Item {
-        return ModItems.RGO_GRENADE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.RGO_GRENADE.get()
 
     override fun performOnHit(
         entity: Entity,
         damage: Float,
         headshot: Boolean,
-        knockback: Double
+        knockback: Double,
     ) {
         this.customExplode(this.explosionDamageValue, this.explosionRadiusValue)
     }
@@ -50,8 +50,17 @@ open class RgoGrenadeEntity : FastThrowableProjectile, BasicGeoProjectileEntity 
         super.tick()
         val level = this.level() as? ServerLevel ?: return
         ParticleTool.sendParticle(
-            level, ParticleTypes.SMOKE, this.xo, this.yo, this.zo,
-            1, 0.0, 0.0, 0.0, 0.01, true
+            level,
+            ParticleTypes.SMOKE,
+            this.xo,
+            this.yo,
+            this.zo,
+            1,
+            0.0,
+            0.0,
+            0.0,
+            0.01,
+            true,
         )
     }
 }

@@ -1,40 +1,41 @@
 package com.atsuishio.superbwarfare.entity.vehicle.utils
 
-import net.minecraft.tags.FluidTags
-import kotlin.math.max
 import com.atsuishio.superbwarfare.data.gun.GunProp
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.event.ClientEventHandler
 import com.atsuishio.superbwarfare.event.ClientMouseHandler
 import com.atsuishio.superbwarfare.tools.angleTo
 import com.mojang.math.Axis
+import net.minecraft.tags.FluidTags
 import net.minecraft.util.Mth
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
 import org.joml.*
+import kotlin.math.max
 
 /**
  * 处理载具相关动量、向量和旋转等数据的工具类
  */
 object VehicleVecUtils {
     @JvmStatic
-    fun transformPosition(transform: Matrix4d, x: Double, y: Double, z: Double): Vector4d =
-        transform.transform(Vector4d(x, y, z, 1.0))
+    fun transformPosition(
+        transform: Matrix4d,
+        x: Double,
+        y: Double,
+        z: Double,
+    ): Vector4d = transform.transform(Vector4d(x, y, z, 1.0))
 
     @JvmStatic
-    fun getYRotFromVector(vec3: Vec3) =
-        Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI)
+    fun getYRotFromVector(vec3: Vec3) = Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI)
 
     @JvmStatic
-    fun getXRotFromVector(vec3: Vec3) =
-        Mth.atan2(vec3.y, vec3.horizontalDistance()) * (180f / Math.PI)
+    fun getXRotFromVector(vec3: Vec3) = Mth.atan2(vec3.y, vec3.horizontalDistance()) * (180f / Math.PI)
 
     /** Вместо NeoForge-типов жидкости берём максимум из двух ванильных: вода и лава. */
     @JvmStatic
-    fun getSubmergedHeight(entity: Entity) =
-        max(entity.getFluidHeight(FluidTags.WATER), entity.getFluidHeight(FluidTags.LAVA))
+    fun getSubmergedHeight(entity: Entity) = max(entity.getFluidHeight(FluidTags.WATER), entity.getFluidHeight(FluidTags.LAVA))
 
     /**
      * 获取四元数实体的局部Y轴（上方向）在世界空间中的单位向量
@@ -68,7 +69,11 @@ object VehicleVecUtils {
     }
 
     @JvmStatic
-    fun eulerToQuaternion(yaw: Float, pitch: Float, roll: Float): Quaternionf {
+    fun eulerToQuaternion(
+        yaw: Float,
+        pitch: Float,
+        roll: Float,
+    ): Quaternionf {
         val cy = Math.cos(yaw * 0.5 * Mth.DEG_TO_RAD)
         val sy = Math.sin(yaw * 0.5 * Mth.DEG_TO_RAD)
         val cp = Math.cos(pitch * 0.5 * Mth.DEG_TO_RAD)
@@ -86,41 +91,50 @@ object VehicleVecUtils {
     }
 
     @JvmStatic
-    fun calculateAngle(move: Vec3, view: Vec3): Double {
+    fun calculateAngle(
+        move: Vec3,
+        view: Vec3,
+    ): Double {
         val nMove = move.multiply(1.0, 0.0, 1.0).normalize()
         val nView = view.multiply(1.0, 0.0, 1.0).normalize()
         return nMove.angleTo(nView)
     }
 
     @JvmStatic
-    fun entityEyePos(entity: Entity, partialTicks: Float): Vec3 {
-        return Vec3(
+    fun entityEyePos(
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 =
+        Vec3(
             Mth.lerp(partialTicks.toDouble(), entity.xo, entity.x),
             Mth.lerp(partialTicks.toDouble(), entity.yo + entity.eyeHeight, entity.eyeY),
-            Mth.lerp(partialTicks.toDouble(), entity.zo, entity.z)
+            Mth.lerp(partialTicks.toDouble(), entity.zo, entity.z),
         )
-    }
 
     @JvmStatic
-    fun simulate3P(entity: Entity, partialTicks: Float, distance: Double, height: Double): Vec3 {
-        return Vec3(
+    fun simulate3P(
+        entity: Entity,
+        partialTicks: Float,
+        distance: Double,
+        height: Double,
+    ): Vec3 =
+        Vec3(
             Mth.lerp(
                 partialTicks.toDouble(),
                 entity.xo,
-                entity.x
+                entity.x,
             ) - distance * entity.getViewVector(partialTicks).x,
             Mth.lerp(
                 partialTicks.toDouble(),
                 entity.yo + entity.eyeHeight + height,
-                entity.eyeY + height
+                entity.eyeY + height,
             ) - distance * entity.getViewVector(partialTicks).y,
             Mth.lerp(
                 partialTicks.toDouble(),
                 entity.zo,
-                entity.z
-            ) - distance * entity.getViewVector(partialTicks).z
+                entity.z,
+            ) - distance * entity.getViewVector(partialTicks).z,
         )
-    }
 
     /**
      * 将有炮塔的载具驾驶员的面朝方向设置为炮塔角度
@@ -128,7 +142,10 @@ object VehicleVecUtils {
      * @param player 载具驾驶员
      */
     @JvmStatic
-    fun setDriverAngle(vehicle: VehicleEntity, player: Player) {
+    fun setDriverAngle(
+        vehicle: VehicleEntity,
+        player: Player,
+    ) {
         if (vehicle.hasTurret()) {
             val barrelVector = vehicle.getBarrelVector(1f)
 
@@ -157,18 +174,23 @@ object VehicleVecUtils {
      * @return 角度
      */
     @JvmStatic
-    fun getDamageSourceAngle(vehicle: VehicleEntity, source: DamageSource, multiplier: Float): Float {
+    fun getDamageSourceAngle(
+        vehicle: VehicleEntity,
+        source: DamageSource,
+        multiplier: Float,
+    ): Float {
         var attacker = source.entity
         if (attacker == null) {
             attacker = source.directEntity
         }
 
         if (attacker != null) {
-            val toVec = Vec3(
-                vehicle.x,
-                vehicle.y + vehicle.bbHeight / 2,
-                vehicle.z
-            ).vectorTo(attacker.position()).normalize()
+            val toVec =
+                Vec3(
+                    vehicle.x,
+                    vehicle.y + vehicle.bbHeight / 2,
+                    vehicle.z,
+                ).vectorTo(attacker.position()).normalize()
             return Math.max(1f - multiplier * toVec.dot(vehicle.getViewVector(1f)), 0.5).toFloat()
         }
         return 1f
@@ -183,7 +205,11 @@ object VehicleVecUtils {
      * @return 视角向量
      */
     @JvmStatic
-    fun getViewVec(vehicle: VehicleEntity, entity: Entity, partialTicks: Float): Vec3 {
+    fun getViewVec(
+        vehicle: VehicleEntity,
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 {
         val data = vehicle.getGunData(vehicle.getSeatIndex(entity)) ?: return vehicle.getViewVector(partialTicks)
 
         val stringOrVec3 = data.get(GunProp.SHOOT_POS).viewDirection
@@ -202,19 +228,21 @@ object VehicleVecUtils {
             return vehicle.getVectorFromString(stringOrVec3.string!!, partialTicks, vehicle.getSeatIndex(entity))
         } else {
             val vec3 = stringOrVec3.vec3!!
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x + stringOrVec3.vec3.x,
-                vec3.y + stringOrVec3.vec3.y,
-                vec3.z + stringOrVec3.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x + stringOrVec3.vec3.x,
+                    vec3.y + stringOrVec3.vec3.y,
+                    vec3.z + stringOrVec3.vec3.z,
+                )
 
-            val worldPositionO = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x,
-                vec3.y,
-                vec3.z
-            )
+            val worldPositionO =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -223,7 +251,11 @@ object VehicleVecUtils {
     }
 
     @JvmStatic
-    fun getViewPos(vehicle: VehicleEntity, entity: Entity, partialTicks: Float): Vec3 {
+    fun getViewPos(
+        vehicle: VehicleEntity,
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 {
         val data = vehicle.getGunData(vehicle.getSeatIndex(entity)) ?: return entityEyePos(entity, partialTicks)
 
         val vec3 = data.get(GunProp.SHOOT_POS).viewPosition
@@ -231,12 +263,13 @@ object VehicleVecUtils {
         return if (vec3 == null) {
             vehicle.getCameraPos(entity, partialTicks)
         } else {
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x,
-                vec3.y,
-                vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
             Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
         }
     }
@@ -250,7 +283,11 @@ object VehicleVecUtils {
      * @return 视角向量
      */
     @JvmStatic
-    fun getSeekVec(vehicle: VehicleEntity, entity: Entity?, partialTicks: Float): Vec3? {
+    fun getSeekVec(
+        vehicle: VehicleEntity,
+        entity: Entity?,
+        partialTicks: Float,
+    ): Vec3? {
         val data = vehicle.getGunData(vehicle.getSeatIndex(entity)) ?: return vehicle.getViewVector(partialTicks)
 
         val stringOrVec3 = data.get(GunProp.SEEK_WEAPON_INFO)?.seekDirection
@@ -261,19 +298,21 @@ object VehicleVecUtils {
             return vehicle.getVectorFromString(stringOrVec3.string!!, partialTicks, vehicle.getSeatIndex(entity))
         } else {
             val vec3 = stringOrVec3.vec3!!
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x + stringOrVec3.vec3.x,
-                vec3.y + stringOrVec3.vec3.y,
-                vec3.z + stringOrVec3.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x + stringOrVec3.vec3.x,
+                    vec3.y + stringOrVec3.vec3.y,
+                    vec3.z + stringOrVec3.vec3.z,
+                )
 
-            val worldPositionO = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x,
-                vec3.y,
-                vec3.z
-            )
+            val worldPositionO =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -290,7 +329,11 @@ object VehicleVecUtils {
      * @return 射击向量
      */
     @JvmStatic
-    fun getShootVec(vehicle: VehicleEntity, entity: Entity?, partialTicks: Float): Vec3 {
+    fun getShootVec(
+        vehicle: VehicleEntity,
+        entity: Entity?,
+        partialTicks: Float,
+    ): Vec3 {
         val data = vehicle.getGunData(vehicle.getSeatIndex(entity)) ?: return vehicle.getViewVector(partialTicks)
 
         val stringOrVec3 = data.fireDirection()
@@ -300,19 +343,21 @@ object VehicleVecUtils {
         } else {
             val vec3 = data.firePosition()
 
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x + stringOrVec3.vec3!!.x,
-                vec3.y + stringOrVec3.vec3.y,
-                vec3.z + stringOrVec3.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x + stringOrVec3.vec3!!.x,
+                    vec3.y + stringOrVec3.vec3.y,
+                    vec3.z + stringOrVec3.vec3.z,
+                )
 
-            val worldPositionO = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x,
-                vec3.y,
-                vec3.z
-            )
+            val worldPositionO =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -321,7 +366,11 @@ object VehicleVecUtils {
     }
 
     @JvmStatic
-    fun getShootVec(vehicle: VehicleEntity, weaponName: String, partialTicks: Float): Vec3 {
+    fun getShootVec(
+        vehicle: VehicleEntity,
+        weaponName: String,
+        partialTicks: Float,
+    ): Vec3 {
         val data = vehicle.getGunData(weaponName) ?: return vehicle.getViewVector(partialTicks)
 
         val stringOrVec3 = data.fireDirection()
@@ -331,19 +380,21 @@ object VehicleVecUtils {
         } else {
             val vec3 = data.firePosition()
 
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x + stringOrVec3.vec3!!.x,
-                vec3.y + stringOrVec3.vec3.y,
-                vec3.z + stringOrVec3.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x + stringOrVec3.vec3!!.x,
+                    vec3.y + stringOrVec3.vec3.y,
+                    vec3.z + stringOrVec3.vec3.z,
+                )
 
-            val worldPositionO = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x,
-                vec3.y,
-                vec3.z
-            )
+            val worldPositionO =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -360,24 +411,32 @@ object VehicleVecUtils {
      * @return 射击向量
      */
     @JvmStatic
-    fun getDefaultBarrelDirection(vehicle: VehicleEntity, entity: Entity?, partialTicks: Float): Vec3? {
+    fun getDefaultBarrelDirection(
+        vehicle: VehicleEntity,
+        entity: Entity?,
+        partialTicks: Float,
+    ): Vec3? {
         val data = vehicle.getGunData(vehicle.getSeatIndex(entity)) ?: return null
 
         val direct = data.get(GunProp.SHOOT_POS).defaultBarrelDirection
 
         if (direct != null) {
             val vec3 = direct.vec3!!
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).defaultTransform, partialTicks),
-                vec3.x + direct.vec3.x,
-                vec3.y + direct.vec3.y,
-                vec3.z + direct.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).defaultTransform, partialTicks),
+                    vec3.x + direct.vec3.x,
+                    vec3.y + direct.vec3.y,
+                    vec3.z + direct.vec3.z,
+                )
 
-            val worldPositionO = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).defaultTransform, partialTicks),
-                vec3.x, vec3.y, vec3.z
-            )
+            val worldPositionO =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).defaultTransform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -387,24 +446,32 @@ object VehicleVecUtils {
     }
 
     @JvmStatic
-    fun getDefaultBarrelDirection(vehicle: VehicleEntity, weaponName: String, partialTicks: Float): Vec3? {
+    fun getDefaultBarrelDirection(
+        vehicle: VehicleEntity,
+        weaponName: String,
+        partialTicks: Float,
+    ): Vec3? {
         val data = vehicle.getGunData(weaponName) ?: return vehicle.getViewVector(partialTicks)
 
         val direct = data.get(GunProp.SHOOT_POS).defaultBarrelDirection
 
         if (direct != null) {
             val vec3 = direct.vec3!!
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).defaultTransform, partialTicks),
-                vec3.x + direct.vec3.x,
-                vec3.y + direct.vec3.y,
-                vec3.z + direct.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).defaultTransform, partialTicks),
+                    vec3.x + direct.vec3.x,
+                    vec3.y + direct.vec3.y,
+                    vec3.z + direct.vec3.z,
+                )
 
-            val worldPositionO = transformPosition(
-                vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).defaultTransform, partialTicks),
-                vec3.x, vec3.y, vec3.z
-            )
+            val worldPositionO =
+                transformPosition(
+                    vehicle.getTransformFromString(data.get(GunProp.SHOOT_POS).defaultTransform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -422,7 +489,11 @@ object VehicleVecUtils {
      * @return 摄像机位置
      */
     @JvmStatic
-    fun getCameraPos(vehicle: VehicleEntity, entity: Entity, partialTicks: Float): Vec3 {
+    fun getCameraPos(
+        vehicle: VehicleEntity,
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 {
         val index = vehicle.getSeatIndex(entity)
         val seat = vehicle.computed().seats().getOrNull(index) ?: return entityEyePos(entity, partialTicks)
 
@@ -451,7 +522,11 @@ object VehicleVecUtils {
      * @return 摄像机方向
      */
     @JvmStatic
-    fun getCameraDirection(vehicle: VehicleEntity, entity: Entity, partialTicks: Float): Vec3 {
+    fun getCameraDirection(
+        vehicle: VehicleEntity,
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 {
         val index = vehicle.getSeatIndex(entity)
         val seat = vehicle.computed().seats().getOrNull(index) ?: return entity.getViewVector(partialTicks)
 
@@ -475,12 +550,13 @@ object VehicleVecUtils {
         } else {
             val vec3 = data.position
 
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.transform, partialTicks),
-                vec3.x + stringOrVec3.vec3!!.x,
-                vec3.y + stringOrVec3.vec3.y,
-                vec3.z + stringOrVec3.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.transform, partialTicks),
+                    vec3.x + stringOrVec3.vec3!!.x,
+                    vec3.y + stringOrVec3.vec3.y,
+                    vec3.z + stringOrVec3.vec3.z,
+                )
 
             val startPos = getCameraPos(vehicle, entity, partialTicks)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -497,7 +573,11 @@ object VehicleVecUtils {
      * @return 瞄准坐标
      */
     @JvmStatic
-    fun getZoomPos(vehicle: VehicleEntity, entity: Entity, partialTicks: Float): Vec3 {
+    fun getZoomPos(
+        vehicle: VehicleEntity,
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 {
         val index = vehicle.getSeatIndex(entity)
         val seat = vehicle.computed().seats().getOrNull(index) ?: return entityEyePos(entity, partialTicks)
 
@@ -505,9 +585,13 @@ object VehicleVecUtils {
 
         val vec3 = data.zoomPosition
         return if (vec3 != null) {
-            val worldPosition = transformPosition(
-                vehicle.getTransformFromString(data.transform, partialTicks), vec3.x, vec3.y, vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    vehicle.getTransformFromString(data.transform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
             Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
         } else {
             getCameraPos(vehicle, entity, partialTicks)
@@ -523,7 +607,11 @@ object VehicleVecUtils {
      * @return 瞄准方向
      */
     @JvmStatic
-    fun getZoomDirection(vehicle: VehicleEntity, entity: Entity, partialTicks: Float): Vec3 {
+    fun getZoomDirection(
+        vehicle: VehicleEntity,
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 {
         val index = vehicle.getSeatIndex(entity)
         val seat = vehicle.computed().seats().getOrNull(index) ?: return entity.getViewVector(partialTicks)
 
@@ -535,12 +623,13 @@ object VehicleVecUtils {
                 vehicle.getVectorFromString(stringOrVec3.string!!, partialTicks, vehicle.getSeatIndex(entity))
             } else {
                 val vec3 = data.zoomPosition ?: Vec3.ZERO
-                val worldPosition = transformPosition(
-                    vehicle.getTransformFromString(data.transform, partialTicks),
-                    vec3.x + stringOrVec3.vec3!!.x,
-                    vec3.y + stringOrVec3.vec3.y,
-                    vec3.z + stringOrVec3.vec3.z
-                )
+                val worldPosition =
+                    transformPosition(
+                        vehicle.getTransformFromString(data.transform, partialTicks),
+                        vec3.x + stringOrVec3.vec3!!.x,
+                        vec3.y + stringOrVec3.vec3.y,
+                        vec3.z + stringOrVec3.vec3.z,
+                    )
 
                 val startPos = vehicle.getShootPos(entity, partialTicks)
                 val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -552,16 +641,19 @@ object VehicleVecUtils {
 
     // From Immersive_Aircraft
     @JvmStatic
-    fun getVehicleYOffsetTransform(vehicle: VehicleEntity, partialTicks: Float): Matrix4d {
+    fun getVehicleYOffsetTransform(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Matrix4d {
         val transform = Matrix4d()
         transform.translate(
             Mth.lerp(partialTicks.toDouble(), vehicle.xo, vehicle.x),
             Mth.lerp(
                 partialTicks.toDouble(),
                 vehicle.yo + vehicle.rotateOffsetHeight,
-                vehicle.y + vehicle.rotateOffsetHeight
+                vehicle.y + vehicle.rotateOffsetHeight,
             ),
-            Mth.lerp(partialTicks.toDouble(), vehicle.zo, vehicle.z)
+            Mth.lerp(partialTicks.toDouble(), vehicle.zo, vehicle.z),
         )
         transform.rotate(Axis.YP.rotationDegrees(-Mth.lerp(partialTicks, vehicle.yRotO, vehicle.yRot)))
         transform.rotate(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, vehicle.xRotO, vehicle.xRot)))
@@ -570,46 +662,56 @@ object VehicleVecUtils {
     }
 
     @JvmStatic
-    fun getVehicleFlatTransform(vehicle: VehicleEntity, partialTicks: Float): Matrix4d {
+    fun getVehicleFlatTransform(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Matrix4d {
         val transform = Matrix4d()
         transform.translate(
             Mth.lerp(partialTicks.toDouble(), vehicle.xo, vehicle.x),
             Mth.lerp(partialTicks.toDouble(), vehicle.yo, vehicle.y),
-            Mth.lerp(partialTicks.toDouble(), vehicle.zo, vehicle.z)
+            Mth.lerp(partialTicks.toDouble(), vehicle.zo, vehicle.z),
         )
         transform.rotate(Axis.YP.rotationDegrees(-Mth.lerp(partialTicks, vehicle.yRotO, vehicle.yRot)))
         return transform
     }
 
     @JvmStatic
-    fun getClientVehicleTransform(vehicle: VehicleEntity, partialTicks: Float): Matrix4d {
+    fun getClientVehicleTransform(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Matrix4d {
         val transform = Matrix4d()
         transform.translate(
             Mth.lerp(partialTicks.toDouble(), vehicle.xo, vehicle.x),
             Mth.lerp(
                 partialTicks.toDouble(),
                 vehicle.yo + vehicle.rotateOffsetHeight,
-                vehicle.y + vehicle.rotateOffsetHeight
+                vehicle.y + vehicle.rotateOffsetHeight,
             ),
-            Mth.lerp(partialTicks.toDouble(), vehicle.zo, vehicle.z)
+            Mth.lerp(partialTicks.toDouble(), vehicle.zo, vehicle.z),
         )
         transform.rotate(
             Axis.YP.rotationDegrees(
-                (-Mth.lerp(
-                    partialTicks,
-                    vehicle.yRotO,
-                    vehicle.yRot
-                ) + ClientMouseHandler.freeCameraYaw).toFloat()
-            )
+                (
+                    -Mth.lerp(
+                        partialTicks,
+                        vehicle.yRotO,
+                        vehicle.yRot,
+                    ) + ClientMouseHandler.freeCameraYaw
+                ).toFloat(),
+            ),
         )
         transform.rotate(
             Axis.XP.rotationDegrees(
-                (Mth.lerp(
-                    partialTicks,
-                    vehicle.xRotO,
-                    vehicle.xRot
-                ) + ClientMouseHandler.freeCameraPitch).toFloat()
-            )
+                (
+                    Mth.lerp(
+                        partialTicks,
+                        vehicle.xRotO,
+                        vehicle.xRot,
+                    ) + ClientMouseHandler.freeCameraPitch
+                ).toFloat(),
+            ),
         )
         return transform
     }
@@ -622,17 +724,21 @@ object VehicleVecUtils {
      * @return 旋转矩阵
      */
     @JvmStatic
-    fun getTurretTransform(vehicle: VehicleEntity, partialTicks: Float): Matrix4d {
+    fun getTurretTransform(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Matrix4d {
         val transformV = vehicle.getVehicleTransformWithCustomPitch(partialTicks)
 
         val transform = Matrix4d()
         val pos = vehicle.turretPos ?: return transformV
-        val worldPosition = transformPosition(
-            transform,
-            pos.x,
-            pos.y,
-            pos.z
-        )
+        val worldPosition =
+            transformPosition(
+                transform,
+                pos.x,
+                pos.y,
+                pos.z,
+            )
 
         transformV.translate(worldPosition.x, worldPosition.y, worldPosition.z)
         transformV.rotate(Axis.YP.rotationDegrees(Mth.lerp(partialTicks, vehicle.turretYRotO, vehicle.turretYRot)))
@@ -647,7 +753,10 @@ object VehicleVecUtils {
      * @return 炮塔向量
      */
     @JvmStatic
-    fun getTurretVector(vehicle: VehicleEntity, partialTicks: Float): Vec3 {
+    fun getTurretVector(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Vec3 {
         val transform = getTurretTransform(vehicle, partialTicks)
         val rootPosition = transformPosition(transform, 0.0, 0.0, 0.0)
         val targetPosition = transformPosition(transform, 0.0, 0.0, 1.0)
@@ -655,23 +764,27 @@ object VehicleVecUtils {
             Vec3(
                 targetPosition.x,
                 targetPosition.y,
-                targetPosition.z
-            )
+                targetPosition.z,
+            ),
         )
     }
 
     @JvmStatic
-    fun getBarrelTransform(vehicle: VehicleEntity, partialTicks: Float): Matrix4d {
+    fun getBarrelTransform(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Matrix4d {
         val transformT = getTurretTransform(vehicle, partialTicks)
 
         val transform = Matrix4d()
         val pos = vehicle.barrelPosition
-        val worldPosition = transformPosition(
-            transform,
-            pos!!.x,
-            pos.y,
-            pos.z
-        )
+        val worldPosition =
+            transformPosition(
+                transform,
+                pos!!.x,
+                pos.y,
+                pos.z,
+            )
 
         transformT.translate(worldPosition.x, worldPosition.y, worldPosition.z)
         val x = Mth.lerp(partialTicks, vehicle.turretXRotO, vehicle.turretXRot)
@@ -681,43 +794,52 @@ object VehicleVecUtils {
     }
 
     @JvmStatic
-    fun getGunTransform(vehicle: VehicleEntity, partialTicks: Float): Matrix4d {
+    fun getGunTransform(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Matrix4d {
         val transformT = getTurretTransform(vehicle, partialTicks)
 
         val transform = Matrix4d()
         val pos = vehicle.passengerWeaponStationPosition ?: return transformT
-        val worldPosition = transformPosition(
-            transform,
-            pos.x,
-            pos.y,
-            pos.z
-        )
+        val worldPosition =
+            transformPosition(
+                transform,
+                pos.x,
+                pos.y,
+                pos.z,
+            )
 
         transformT.translate(worldPosition.x, worldPosition.y, worldPosition.z)
         transformT.rotate(
             Axis.YP.rotationDegrees(
-                Mth.lerp(partialTicks, vehicle.gunYRotO, vehicle.gunYRot) - Mth.lerp(
-                    partialTicks,
-                    vehicle.turretYRotO,
-                    vehicle.turretYRot
-                )
-            )
+                Mth.lerp(partialTicks, vehicle.gunYRotO, vehicle.gunYRot) -
+                    Mth.lerp(
+                        partialTicks,
+                        vehicle.turretYRotO,
+                        vehicle.turretYRot,
+                    ),
+            ),
         )
         return transformT
     }
 
     @JvmStatic
-    fun getPassengerWeaponStationBarrelTransform(vehicle: VehicleEntity, partialTicks: Float): Matrix4d {
+    fun getPassengerWeaponStationBarrelTransform(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Matrix4d {
         val transformG = getGunTransform(vehicle, partialTicks)
 
         val transform = Matrix4d()
         val pos = vehicle.passengerWeaponStationBarrelPosition
-        val worldPosition = transformPosition(
-            transform,
-            pos!!.x,
-            pos.y,
-            pos.z
-        )
+        val worldPosition =
+            transformPosition(
+                transform,
+                pos!!.x,
+                pos.y,
+                pos.z,
+            )
 
         transformG.translate(worldPosition.x, worldPosition.y, worldPosition.z)
 
@@ -728,7 +850,10 @@ object VehicleVecUtils {
     }
 
     @JvmStatic
-    fun getPassengerWeaponStationVector(vehicle: VehicleEntity, partialTicks: Float): Vec3 {
+    fun getPassengerWeaponStationVector(
+        vehicle: VehicleEntity,
+        partialTicks: Float,
+    ): Vec3 {
         val transform = getPassengerWeaponStationBarrelTransform(vehicle, partialTicks)
         val rootPosition = transformPosition(transform, 0.0, 0.0, 0.0)
         val targetPosition = transformPosition(transform, 0.0, 0.0, 1.0)
@@ -736,8 +861,8 @@ object VehicleVecUtils {
             Vec3(
                 targetPosition.x,
                 targetPosition.y,
-                targetPosition.z
-            )
+                targetPosition.z,
+            ),
         )
     }
 }

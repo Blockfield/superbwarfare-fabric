@@ -1,18 +1,20 @@
 package com.atsuishio.superbwarfare.client.model.item;
 
+import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
+
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.sniper.Ql1031Item;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
 
 public class Ql1031ItemModel extends CustomGunModel<Ql1031Item> {
 
@@ -23,7 +25,8 @@ public class Ql1031ItemModel extends CustomGunModel<Ql1031Item> {
     public static float rotXBipod = 0f;
 
     @Override
-    public void setCustomAnimations(Ql1031Item animatable, long instanceId, AnimationState<Ql1031Item> animationState) {
+    public void setCustomAnimations(
+            Ql1031Item animatable, long instanceId, AnimationState<Ql1031Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -35,7 +38,14 @@ public class Ql1031ItemModel extends CustomGunModel<Ql1031Item> {
         GeoBone scope3 = getAnimationProcessor().getBone("Scope3");
         GeoBone sight2fold = getAnimationProcessor().getBone("SightFold2");
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
@@ -49,28 +59,31 @@ public class Ql1031ItemModel extends CustomGunModel<Ql1031Item> {
         posZAlt = Mth.lerp(times, posZAlt, tag.getBoolean("ScopeAlt") ? 5.5f : 8.3f);
         rotXSight = Mth.lerp(1.5f * times, rotXSight, type == 0 ? 0 : 90);
 
-        float posY = switch (type) {
-            case 0 -> 0.68f;
-            case 1 -> 0.0225f;
-            case 2 -> posYAlt;
-            case 3 -> 0.29f;
-            default -> 0f;
-        };
-        float scaleZ = switch (type) {
-            case 0 -> 0.58f;
-            case 1 -> 0.6f;
-            case 2 -> scaleZAlt;
-            case 3 -> 0.94f;
-            default -> 0f;
-        };
-        float posZ = switch (type) {
-            case 0 -> 5.4f;
-            case 1 -> 5.5f;
-            case 2 -> posZAlt;
-            case 3 -> 9.15f;
-            default -> 0f;
-        };
-        
+        float posY =
+                switch (type) {
+                    case 0 -> 0.68f;
+                    case 1 -> 0.0225f;
+                    case 2 -> posYAlt;
+                    case 3 -> 0.29f;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (type) {
+                    case 0 -> 0.58f;
+                    case 1 -> 0.6f;
+                    case 2 -> scaleZAlt;
+                    case 3 -> 0.94f;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (type) {
+                    case 0 -> 5.4f;
+                    case 1 -> 5.5f;
+                    case 2 -> posZAlt;
+                    case 3 -> 9.15f;
+                    default -> 0f;
+                };
+
         sight2fold.setRotX(rotXSight * Mth.DEG_TO_RAD);
 
         gun.setPosX(2.71f * (float) zp);
@@ -81,26 +94,32 @@ public class Ql1031ItemModel extends CustomGunModel<Ql1031Item> {
         scope.setScaleZ(1f - (0.4f * (float) zp));
         scope2.setScaleZ(1f - (0.4f * (float) zp));
         scope3.setScaleZ(1f + (0.2f * (float) zp));
-        
+
         GeoBone shen;
         if (zt < 0.5) {
             shen = getAnimationProcessor().getBone("fireRootNormal");
         } else {
-            shen = switch (type) {
-                case 0 -> getAnimationProcessor().getBone("fireRoot0");
-                case 1 -> getAnimationProcessor().getBone("fireRoot1");
-                case 2 -> getAnimationProcessor().getBone("fireRoot2");
-                case 3 -> getAnimationProcessor().getBone("fireRoot3");
-                default -> getAnimationProcessor().getBone("fireRootNormal");
-            };
+            shen =
+                    switch (type) {
+                        case 0 -> getAnimationProcessor().getBone("fireRoot0");
+                        case 1 -> getAnimationProcessor().getBone("fireRoot1");
+                        case 2 -> getAnimationProcessor().getBone("fireRoot2");
+                        case 3 -> getAnimationProcessor().getBone("fireRoot3");
+                        default -> getAnimationProcessor().getBone("fireRootNormal");
+                    };
         }
 
         if (data.selectedFireModeInfo().name.equals("Hold")) {
-            ClientEventHandler.handleShootAnimation(shen, 1.25f, 2f, 3f, 2.5f, 1.3f, 1f, 0.7f, 0.55f);
+            ClientEventHandler.handleShootAnimation(
+                    shen, 1.25f, 2f, 3f, 2.5f, 1.3f, 1f, 0.7f, 0.55f);
         } else {
             switch (data.selectedFireModeInfo().mode) {
-                case SEMI -> ClientEventHandler.handleShootAnimation(shen, 2.5f, 0.5f, 2f, 1.5f, 2f, 1.4f, 0.65f, 0.7f);
-                case AUTO -> ClientEventHandler.handleShootAnimation(shen, 0.95f, -0.95f, 0.85f, 0.8f, 0.9f, 1, 0.6f, 0.75f);
+                case SEMI ->
+                        ClientEventHandler.handleShootAnimation(
+                                shen, 2.5f, 0.5f, 2f, 1.5f, 2f, 1.4f, 0.65f, 0.7f);
+                case AUTO ->
+                        ClientEventHandler.handleShootAnimation(
+                                shen, 0.95f, -0.95f, 0.85f, 0.8f, 0.9f, 1, 0.6f, 0.75f);
             }
         }
 

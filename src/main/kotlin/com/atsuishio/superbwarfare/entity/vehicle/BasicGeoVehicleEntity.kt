@@ -8,7 +8,7 @@ data class VehicleModelEntry(
     val instance: VehicleModelInstance,
     val texture: ResourceLocation,
     val emissiveTexture: ResourceLocation?,
-    val lodDistance: Int,  // 0 = main model, > 0 = LOD
+    val lodDistance: Int, // 0 = main model, > 0 = LOD
 ) {
     fun isLOD() = lodDistance > 0
 }

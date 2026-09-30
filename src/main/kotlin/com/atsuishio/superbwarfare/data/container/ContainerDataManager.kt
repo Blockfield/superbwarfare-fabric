@@ -4,15 +4,16 @@ import com.atsuishio.superbwarfare.Mod
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import it.unimi.dsi.fastutil.Pair
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.server.packs.resources.ResourceManager
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener
-import net.minecraft.server.packs.PackType
-import net.minecraft.util.profiling.ProfilerFiller
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.packs.PackType
+import net.minecraft.server.packs.resources.ResourceManager
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener
+import net.minecraft.util.profiling.ProfilerFiller
 
-object ContainerDataManager : SimpleJsonResourceReloadListener(Gson(), "sbw/containers"),
+object ContainerDataManager :
+    SimpleJsonResourceReloadListener(Gson(), "sbw/containers"),
     IdentifiableResourceReloadListener {
     override fun getFabricId(): ResourceLocation = Mod.loc("container_data")
 
@@ -25,7 +26,7 @@ object ContainerDataManager : SimpleJsonResourceReloadListener(Gson(), "sbw/cont
     override fun apply(
         pObject: MutableMap<ResourceLocation, JsonElement>,
         manager: ResourceManager,
-        profiler: ProfilerFiller
+        profiler: ProfilerFiller,
     ) {
         containerData.clear()
         pObject.forEach { (id, json) ->
@@ -50,7 +51,5 @@ object ContainerDataManager : SimpleJsonResourceReloadListener(Gson(), "sbw/cont
         }
     }
 
-    fun getEntityTypes(id: ResourceLocation): MutableList<Pair<String, Int>> {
-        return containerData[id] ?: mutableListOf()
-    }
+    fun getEntityTypes(id: ResourceLocation): MutableList<Pair<String, Int>> = containerData[id] ?: mutableListOf()
 }

@@ -13,7 +13,9 @@ import net.minecraft.network.FriendlyByteBuf
 
 private val module = SerializersModule {}
 
-class ByteBufEncoder(private val buf: FriendlyByteBuf) : AbstractEncoder() {
+class ByteBufEncoder(
+    private val buf: FriendlyByteBuf,
+) : AbstractEncoder() {
     override val serializersModule = module
 
     override fun encodeBoolean(value: Boolean) {
@@ -52,7 +54,10 @@ class ByteBufEncoder(private val buf: FriendlyByteBuf) : AbstractEncoder() {
         buf.writeUtf(value)
     }
 
-    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
+    override fun encodeEnum(
+        enumDescriptor: SerialDescriptor,
+        index: Int,
+    ) {
         buf.writeVarInt(index)
     }
 
@@ -66,30 +71,43 @@ class ByteBufEncoder(private val buf: FriendlyByteBuf) : AbstractEncoder() {
 
     override fun beginCollection(
         descriptor: SerialDescriptor,
-        collectionSize: Int
+        collectionSize: Int,
     ): CompositeEncoder {
         encodeInt(collectionSize)
         return this
     }
 }
 
-class ByteBufDecoder(private val buf: FriendlyByteBuf, var elementIndex: Int = 0) : AbstractDecoder() {
+class ByteBufDecoder(
+    private val buf: FriendlyByteBuf,
+    var elementIndex: Int = 0,
+) : AbstractDecoder() {
     private var elementsCount = 0
 
     override val serializersModule = module
 
     override fun decodeBoolean() = buf.readBoolean()
+
     override fun decodeByte() = buf.readByte()
+
     override fun decodeShort() = buf.readShort()
+
     override fun decodeInt() = buf.readVarInt()
+
     override fun decodeLong() = buf.readLong()
+
     override fun decodeFloat() = buf.readFloat()
+
     override fun decodeDouble() = buf.readDouble()
+
     override fun decodeChar() = buf.readChar()
+
     override fun decodeString(): String = buf.readUtf()
+
     override fun decodeEnum(enumDescriptor: SerialDescriptor) = decodeInt()
 
     override fun decodeNotNullMark() = decodeBoolean()
+
     override fun decodeCollectionSize(descriptor: SerialDescriptor) = decodeInt().also { elementsCount = it }
 
     override fun beginStructure(descriptor: SerialDescriptor) = ByteBufDecoder(buf, descriptor.elementsCount)

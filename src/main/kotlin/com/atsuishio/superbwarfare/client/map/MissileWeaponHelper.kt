@@ -18,19 +18,21 @@ import net.minecraft.world.level.levelgen.Heightmap
  * 弹药统计和目标筛选逻辑。所有战术地图备弹量显示都应使用此类提供的方法。
  */
 object MissileWeaponHelper {
-    fun JsonObject.gsonBool(vararg keys: String) =
-        keys.firstNotNullOfOrNull { if (has(it)) get(it).asBoolean else null } ?: false
+    fun JsonObject.gsonBool(vararg keys: String) = keys.firstNotNullOfOrNull { if (has(it)) get(it).asBoolean else null } ?: false
 
-    fun JsonObject.gsonDouble(vararg keys: String) =
-        keys.firstNotNullOfOrNull { if (has(it)) get(it).asDouble else null }
+    fun JsonObject.gsonDouble(vararg keys: String) = keys.firstNotNullOfOrNull { if (has(it)) get(it).asDouble else null }
 
     /** 对客户端 level 中已存在的实体（非超视距同步），使用高度图实时计算离地高度 */
-    private fun computeEntityHeightAboveGround(level: Level, entity: Entity): Double {
-        val surfaceY = level.getHeight(
-            Heightmap.Types.WORLD_SURFACE,
-            entity.blockX,
-            entity.blockZ
-        )
+    private fun computeEntityHeightAboveGround(
+        level: Level,
+        entity: Entity,
+    ): Double {
+        val surfaceY =
+            level.getHeight(
+                Heightmap.Types.WORLD_SURFACE,
+                entity.blockX,
+                entity.blockZ,
+            )
         return (entity.y - surfaceY).coerceAtLeast(0.0)
     }
 
@@ -52,13 +54,17 @@ object MissileWeaponHelper {
      * [queryWeaponAmmo] / [aggregateWeapons] 得到空列表。因此这里会优先把同步实体
      * 解析回客户端 level 中的真实实体（同一 ID），真实实体的弹药数据才是权威来源。
      */
-    fun getSelectedVehicles(selectedEntities: List<Entity>, localPlayer: Player?): List<VehicleEntity> {
+    fun getSelectedVehicles(
+        selectedEntities: List<Entity>,
+        localPlayer: Player?,
+    ): List<VehicleEntity> {
         val level = localPlayer?.level()
-        val sel = selectedEntities.filterIsInstance<VehicleEntity>().mapNotNull { vehicle ->
-            // 真实实体存在时优先使用真实实体，否则回退到同步实体
-            val real = level?.getEntity(vehicle.id) as? VehicleEntity
-            real ?: vehicle
-        }
+        val sel =
+            selectedEntities.filterIsInstance<VehicleEntity>().mapNotNull { vehicle ->
+                // 真实实体存在时优先使用真实实体，否则回退到同步实体
+                val real = level?.getEntity(vehicle.id) as? VehicleEntity
+                real ?: vehicle
+            }
         if (sel.isNotEmpty()) return sel
         val ridden = localPlayer?.vehicle as? VehicleEntity
         return if (ridden != null) listOf(ridden) else emptyList()
@@ -70,12 +76,11 @@ object MissileWeaponHelper {
     fun findFirstVehicleWithWeapon(
         weaponName: String,
         vehicles: List<VehicleEntity>,
-        player: Player?
-    ): VehicleEntity? {
-        return vehicles.firstOrNull { vehicle ->
+        player: Player?,
+    ): VehicleEntity? =
+        vehicles.firstOrNull { vehicle ->
             queryWeaponAmmo(weaponName, listOf(vehicle)) > 0
         }
-    }
 
     // ═══════════════════════════════════════════════════════════════
     //  通用弹药查询（所有战术地图备弹显示的权威入口）
@@ -95,7 +100,10 @@ object MissileWeaponHelper {
      * @return 可用射击次数。若弹药消耗系数 ≤0 则返回 999（视为无限弹药），
      *         若指定武器不存在或无弹药则返回 0
      */
-    fun queryWeaponAmmo(weaponName: String, vehicles: List<VehicleEntity>): Int {
+    fun queryWeaponAmmo(
+        weaponName: String,
+        vehicles: List<VehicleEntity>,
+    ): Int {
         if (vehicles.isEmpty()) return 0
         return vehicles.sumOf { vehicle ->
             val gd = vehicle.gunDataMap[weaponName] ?: return@sumOf 0
@@ -125,15 +133,21 @@ object MissileWeaponHelper {
         if (targetEntity != null && vehicles.any { it === targetEntity || it.id == targetEntity.id }) return emptyList()
 
         val level = vehicles.first().level()
-        val heightAboveGround = if (targetHeight >= 0) targetHeight
-        else if (targetEntity != null) {
-            ClientSyncedEntityHandler.getSyncedEntry(level, targetEntity.id)?.heightAboveGround
-                ?: computeEntityHeightAboveGround(level, targetEntity)
-        } else -1.0
+        val heightAboveGround =
+            if (targetHeight >= 0) {
+                targetHeight
+            } else if (targetEntity != null) {
+                ClientSyncedEntityHandler.getSyncedEntry(level, targetEntity.id)?.heightAboveGround
+                    ?: computeEntityHeightAboveGround(level, targetEntity)
+            } else {
+                -1.0
+            }
 
         data class InnerAgg(
-            val totalAmmo: Int, val canLockEntity: Boolean, val displayNameBase: String,
-            val maxGuidedRange: Double
+            val totalAmmo: Int,
+            val canLockEntity: Boolean,
+            val displayNameBase: String,
+            val maxGuidedRange: Double,
         )
 
         val weaponMap = linkedMapOf<String, InnerAgg>()
@@ -152,8 +166,9 @@ object MissileWeaponHelper {
                 val consumers = gunData.get(GunProp.AMMO_CONSUMER)
                 for (c in consumers) {
                     val o = c.override ?: continue
-                    val seekObj = o.getAsJsonObject("SeekWeaponInfo")
-                        ?: o.getAsJsonObject("seekWeaponInfo") ?: continue
+                    val seekObj =
+                        o.getAsJsonObject("SeekWeaponInfo")
+                            ?: o.getAsJsonObject("seekWeaponInfo") ?: continue
                     // 检查 override 中是否显式禁用了雷达引导
                     if (seekObj.has("CanGuidedByRadar")) {
                         canGuidedByRadar = seekObj.get("CanGuidedByRadar").asBoolean
@@ -166,8 +181,8 @@ object MissileWeaponHelper {
                         }
                     }
                     if (!canGroundStrike) {
-                        canGroundStrike = seekObj.gsonBool("OnlyLockBlock", "onlyLockBlock")
-                                || seekObj.gsonBool("InputBlockPos", "inputBlockPos")
+                        canGroundStrike = seekObj.gsonBool("OnlyLockBlock", "onlyLockBlock") ||
+                            seekObj.gsonBool("InputBlockPos", "inputBlockPos")
                     }
                     // override 中的 MaxGuidedRange
                     val overrideMgr = seekObj.gsonDouble("MaxGuidedRange", "maxGuidedRange")
@@ -197,18 +212,22 @@ object MissileWeaponHelper {
                 if (available <= 0) continue
 
                 val rawName = gunData.get(GunProp.NAME) ?: name
-                val translated = try {
-                    Component.translatable(rawName).string
-                } catch (_: Exception) {
-                    rawName
-                }
+                val translated =
+                    try {
+                        Component.translatable(rawName).string
+                    } catch (_: Exception) {
+                        rawName
+                    }
 
                 val existing = weaponMap[name]
                 if (existing != null) {
-                    weaponMap[name] = InnerAgg(
-                        existing.totalAmmo + available, existing.canLockEntity,
-                        existing.displayNameBase, minOf(existing.maxGuidedRange, maxGuidedRange)
-                    )
+                    weaponMap[name] =
+                        InnerAgg(
+                            existing.totalAmmo + available,
+                            existing.canLockEntity,
+                            existing.displayNameBase,
+                            minOf(existing.maxGuidedRange, maxGuidedRange),
+                        )
                 } else {
                     weaponMap[name] = InnerAgg(available, canLockEntity, translated, maxGuidedRange)
                 }
@@ -216,18 +235,25 @@ object MissileWeaponHelper {
         }
 
         // Check if at least one selected vehicle is within MaxGuidedRange of the target
-        val targetDist = targetEntity?.let { target ->
-            vehicles.minOfOrNull { it.distanceTo(target) }
-        }
+        val targetDist =
+            targetEntity?.let { target ->
+                vehicles.minOfOrNull { it.distanceTo(target) }
+            }
 
         return weaponMap.map { (name, agg) ->
             val inRange = targetDist == null || targetDist <= agg.maxGuidedRange
-            val ammoStr = if (inRange)
-                Component.translatable("context.superbwarfare.tactical_map.missile_ammo_count", agg.totalAmmo).string
-            else
-                Component.translatable("context.superbwarfare.tactical_map.out_of_range").string
-            val displayName = if (agg.displayNameBase.contains("%1\$s"))
-                agg.displayNameBase.replace("%1\$s", ammoStr) else "${agg.displayNameBase}  $ammoStr"
+            val ammoStr =
+                if (inRange) {
+                    Component.translatable("context.superbwarfare.tactical_map.missile_ammo_count", agg.totalAmmo).string
+                } else {
+                    Component.translatable("context.superbwarfare.tactical_map.out_of_range").string
+                }
+            val displayName =
+                if (agg.displayNameBase.contains("%1\$s")) {
+                    agg.displayNameBase.replace("%1\$s", ammoStr)
+                } else {
+                    "${agg.displayNameBase}  $ammoStr"
+                }
             AggregatedWeapon(name, displayName, agg.totalAmmo, agg.canLockEntity, agg.maxGuidedRange, inRange)
         }
     }

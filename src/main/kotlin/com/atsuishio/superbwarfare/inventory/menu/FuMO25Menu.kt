@@ -23,7 +23,7 @@ open class FuMO25Menu(
     inventory: Inventory,
     container: Container,
     access: ContainerLevelAccess,
-    containerData: ContainerEnergyData
+    containerData: ContainerEnergyData,
 ) : EnergyMenu(ModMenuTypes.FUMO_25_MENU.get(), pContainerId, containerData) {
     protected val container: Container
     protected val access: ContainerLevelAccess
@@ -38,14 +38,14 @@ open class FuMO25Menu(
         pPlayerInventory,
         SimpleContainer(1),
         ContainerLevelAccess.NULL,
-        SimpleEnergyData(FuMO25BlockEntity.MAX_DATA_COUNT)
+        SimpleEnergyData(FuMO25BlockEntity.MAX_DATA_COUNT),
     )
 
     constructor(
         pContainerId: Int,
         pPlayerInventory: Inventory,
         access: ContainerLevelAccess,
-        containerData: ContainerEnergyData
+        containerData: ContainerEnergyData,
     ) : this(pContainerId, pPlayerInventory, SimpleContainer(1), access, containerData)
 
     init {
@@ -68,7 +68,11 @@ open class FuMO25Menu(
         }
     }
 
-    fun setPos(x: Int, y: Int, z: Int) {
+    fun setPos(
+        x: Int,
+        y: Int,
+        z: Int,
+    ) {
         this.posX = x
         this.posY = y
         this.posZ = z
@@ -110,7 +114,10 @@ open class FuMO25Menu(
     val selfPos: Optional<BlockPos>
         get() = this.access.evaluate { _, pos -> pos }
 
-    override fun quickMoveStack(pPlayer: Player, pIndex: Int): ItemStack {
+    override fun quickMoveStack(
+        pPlayer: Player,
+        pIndex: Int,
+    ): ItemStack {
         var itemstack = ItemStack.EMPTY
         val slot = this.slots[pIndex]
         if (slot.hasItem()) {
@@ -146,17 +153,16 @@ open class FuMO25Menu(
         return itemstack
     }
 
-    override fun stillValid(pPlayer: Player): Boolean {
-        return this.access.evaluate({ level, pos ->
+    override fun stillValid(pPlayer: Player): Boolean =
+        this.access.evaluate({ level, pos ->
             level.getBlockState(pos).`is`(
-                ModBlocks.FUMO_25.get()
+                ModBlocks.FUMO_25.get(),
             ) && pPlayer.distanceToSqr(
                 pos!!.x.toDouble() + 0.5,
                 pos.y.toDouble() + 0.5,
-                pos.z.toDouble() + 0.5
+                pos.z.toDouble() + 0.5,
             ) <= 64
         }, true)
-    }
 
     override fun removed(pPlayer: Player) {
         super.removed(pPlayer)
@@ -182,10 +188,13 @@ open class FuMO25Menu(
     val isPowered: Boolean
         get() = this.containerData[2] == 1L
 
-    internal class ParaSlot(pContainer: Container, pSlot: Int, pX: Int, pY: Int) : Slot(pContainer, pSlot, pX, pY) {
-        override fun mayPlace(pStack: ItemStack): Boolean {
-            return pStack.`is`(ModItems.FIRING_PARAMETERS.get())
-        }
+    internal class ParaSlot(
+        pContainer: Container,
+        pSlot: Int,
+        pX: Int,
+        pY: Int,
+    ) : Slot(pContainer, pSlot, pX, pY) {
+        override fun mayPlace(pStack: ItemStack): Boolean = pStack.`is`(ModItems.FIRING_PARAMETERS.get())
     }
 
     companion object {

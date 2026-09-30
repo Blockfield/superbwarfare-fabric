@@ -1,19 +1,21 @@
 package com.atsuishio.superbwarfare.client.model.item;
 
+import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
+
 import com.atsuishio.superbwarfare.Mod;
 import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.machinegun.DevotionItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
 
 public class DevotionItemModel extends CustomGunModel<DevotionItem> {
 
@@ -43,7 +45,8 @@ public class DevotionItemModel extends CustomGunModel<DevotionItem> {
     }
 
     @Override
-    public void setCustomAnimations(DevotionItem animatable, long instanceId, AnimationState<DevotionItem> animationState) {
+    public void setCustomAnimations(
+            DevotionItem animatable, long instanceId, AnimationState<DevotionItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -87,7 +90,10 @@ public class DevotionItemModel extends CustomGunModel<DevotionItem> {
         float numP = (float) (1 - 0.78 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 1f, 0.55f);
     }
 }

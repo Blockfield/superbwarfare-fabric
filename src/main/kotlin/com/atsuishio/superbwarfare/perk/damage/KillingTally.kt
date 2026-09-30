@@ -20,7 +20,7 @@ object KillingTally : Perk("killing_tally", Type.DAMAGE) {
     override fun preReload(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         data.perk.getTag(this)?.remove("KillingTally")
     }
@@ -29,7 +29,7 @@ object KillingTally : Perk("killing_tally", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (DamageTypeTool.isGunDamage(source)) {
@@ -40,7 +40,7 @@ object KillingTally : Perk("killing_tally", Type.DAMAGE) {
     override fun onChangeSlot(
         data: GunData,
         instance: PerkInstance,
-        living: Entity?
+        living: Entity?,
     ) {
         data.perk.getTag(this)?.remove("KillingTally")
     }

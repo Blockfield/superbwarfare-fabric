@@ -5,17 +5,20 @@ import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.shotgun.M870Item;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class M870ItemModel extends CustomGunModel<M870Item> {
 
     @Override
-    public void setCustomAnimations(M870Item animatable, long instanceId, AnimationState<M870Item> animationState) {
+    public void setCustomAnimations(
+            M870Item animatable, long instanceId, AnimationState<M870Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -30,10 +33,11 @@ public class M870ItemModel extends CustomGunModel<M870Item> {
 
         int type = GunData.from(stack).attachment.get(AttachmentType.SCOPE);
 
-        float posY = switch (type) {
-            case 1 -> -0.1f;
-            default -> 1.12f;
-        };
+        float posY =
+                switch (type) {
+                    case 1 -> -0.1f;
+                    default -> 1.12f;
+                };
 
         gun.setPosX(1.7f * (float) zp);
 
@@ -68,6 +72,9 @@ public class M870ItemModel extends CustomGunModel<M870Item> {
             camera.setRotY(numR * camera.getRotY());
             camera.setRotZ(numR * camera.getRotZ());
         }
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

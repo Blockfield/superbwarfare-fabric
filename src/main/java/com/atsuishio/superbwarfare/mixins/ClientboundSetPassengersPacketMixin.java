@@ -1,8 +1,10 @@
 package com.atsuishio.superbwarfare.mixins;
 
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
+
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.world.entity.Entity;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -16,10 +18,7 @@ import java.util.List;
 @Mixin(ClientboundSetPassengersPacket.class)
 public class ClientboundSetPassengersPacketMixin {
 
-    @Mutable
-    @Shadow
-    @Final
-    private int[] passengers;
+    @Mutable @Shadow @Final private int[] passengers;
 
     @Inject(method = "<init>(Lnet/minecraft/world/entity/Entity;)V", at = @At("RETURN"))
     private void init(Entity entity, CallbackInfo ci) {

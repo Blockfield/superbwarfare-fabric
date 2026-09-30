@@ -5,9 +5,9 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Замена net.neoforged.neoforge.items.IItemHandler.
  *
- * На Java по той же причине, что и IEnergyStorage: из Kotlin нужен доступ handler.slots.
+ * <p>На Java по той же причине, что и IEnergyStorage: из Kotlin нужен доступ handler.slots.
  *
- * IItemHandlerModifiable из NeoForge слит сюда: отдельный интерфейс с тремя реализациями и без
+ * <p>IItemHandlerModifiable из NeoForge слит сюда: отдельный интерфейс с тремя реализациями и без
  * единой ссылки в моде смысла не имел, а SlotItemHandler иначе пришлось бы кастовать.
  */
 public interface IItemHandler {

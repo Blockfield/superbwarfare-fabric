@@ -12,8 +12,12 @@ import net.minecraft.core.BlockPos
 
 @Serializable
 data class FiringParametersEditMessage(
-    val x: Int, val y: Int, val z: Int,
-    val radius: Int, val isDepressed: Boolean, val mainHand: Boolean
+    val x: Int,
+    val y: Int,
+    val z: Int,
+    val radius: Int,
+    val isDepressed: Boolean,
+    val mainHand: Boolean,
 ) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
@@ -21,11 +25,12 @@ data class FiringParametersEditMessage(
         val stack = if (mainHand) player.mainHandItem else player.offhandItem
         if (!stack.`is`(ModItems.FIRING_PARAMETERS, ModItems.ARTILLERY_INDICATOR)) return
 
-        stack.firingParameters = FiringParametersItem.Parameters(
-            BlockPos(x, y, z),
-            radius,
-            isDepressed
-        )
+        stack.firingParameters =
+            FiringParametersItem.Parameters(
+                BlockPos(x, y, z),
+                radius,
+                isDepressed,
+            )
 
         val item = stack.item
         if (item is ArtilleryIndicatorItem) {

@@ -1,10 +1,10 @@
 package com.atsuishio.superbwarfare.api.event
 
+import com.atsuishio.superbwarfare.fabric.CancellableEvent
 import com.google.gson.JsonParser
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import com.atsuishio.superbwarfare.fabric.CancellableEvent
 import org.jetbrains.annotations.ApiStatus
 
 typealias GsonObject = com.google.gson.JsonObject
@@ -12,7 +12,7 @@ typealias GsonObject = com.google.gson.JsonObject
 @ApiStatus.AvailableSince("0.8.9")
 open class LoadingJsonEvent(
     val id: String,
-    var jsonStr: String
+    var jsonStr: String,
 ) : CancellableEvent() {
     val asGsonObject: GsonObject
         get() = JsonParser.parseString(jsonStr).asJsonObject

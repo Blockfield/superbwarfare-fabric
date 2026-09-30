@@ -1,8 +1,8 @@
 package com.atsuishio.superbwarfare.init
 
 import com.mojang.blaze3d.platform.InputConstants
-import net.minecraft.client.KeyMapping
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.minecraft.client.KeyMapping
 import org.lwjgl.glfw.GLFW
 
 /** Клиентская сторона: вызывать из ClientModInitializer. */
@@ -122,7 +122,7 @@ object ModKeyMappings {
     private fun registerKey(
         name: String,
         code: Int,
-        type: InputConstants.Type = InputConstants.Type.KEYSYM
+        type: InputConstants.Type = InputConstants.Type.KEYSYM,
     ): KeyMapping {
         val key = KeyMapping("key.superbwarfare.$name", type, code, CATEGORY)
         KEYS.add(key)

@@ -13,7 +13,7 @@ import java.util.*
 object EntityFindUtil {
     /**
      * 获取世界里的所有实体，对ClientLevel和ServerLevel均有效
-     * 
+     *
      * @param level 目标世界
      * @return 所有实体
      */
@@ -33,7 +33,7 @@ object EntityFindUtil {
      * path that was observed costing ~900ms cumulative in production profiling.
      * A valid UUID string is always exactly 36 characters (8-4-4-4-12 with hyphens);
      * common non-UUID sentinels like "undefined" (length 9) are rejected instantly.
-     * 
+     *
      * @param level      实体所在世界
      * @param uuidString 目标实体UUID字符串
      * @return 目标实体或null
@@ -51,7 +51,10 @@ object EntityFindUtil {
     }
 
     @JvmStatic
-    fun findEntity(level: Level, uuidString: String?): Entity? {
+    fun findEntity(
+        level: Level,
+        uuidString: String?,
+    ): Entity? {
         val uuid = parseUuid(uuidString) ?: return null
 
         return if (level is ServerLevel) {
@@ -62,9 +65,10 @@ object EntityFindUtil {
     }
 
     @JvmStatic
-    fun findPlayer(level: Level, uuidString: String): Player? {
-        return findEntity(level, uuidString) as? Player
-    }
+    fun findPlayer(
+        level: Level,
+        uuidString: String,
+    ): Player? = findEntity(level, uuidString) as? Player
 
     /**
      * Same as [findPlayer], but a player who changed dimension is still found: a Player entity
@@ -75,7 +79,10 @@ object EntityFindUtil {
      * Server-side, [ServerLevel.getServer]'s player list is authoritative across all dimensions.
      */
     @JvmStatic
-    fun findPlayerAnywhere(level: Level, uuidString: String?): Player? {
+    fun findPlayerAnywhere(
+        level: Level,
+        uuidString: String?,
+    ): Player? {
         val uuid = parseUuid(uuidString) ?: return null
         val server = (level as? ServerLevel)?.server
         return if (server != null) {
@@ -86,7 +93,8 @@ object EntityFindUtil {
     }
 
     @JvmStatic
-    fun findDrone(level: Level, uuidString: String): DroneEntity? {
-        return findEntity(level, uuidString) as? DroneEntity
-    }
+    fun findDrone(
+        level: Level,
+        uuidString: String,
+    ): DroneEntity? = findEntity(level, uuidString) as? DroneEntity
 }

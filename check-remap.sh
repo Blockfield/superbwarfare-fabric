@@ -21,8 +21,8 @@ unzip -q -o "$JAR" 'com/*' -d "$WORK"
 BENIGN='ArtilleryEntity.class  getOriginPos|ArtilleryEntity.class  getTargetPos'
 
 hits=$(cd "$WORK" && for f in $(grep -ral "net/minecraft/" . 2>/dev/null | grep -v '/mixins/'); do
-    strings "$f" | grep -oE '(get|set|is)[A-Za-z0-9_]+\([^)]*\)\[*L?net/minecraft/[a-zA-Z0-9/_$]+;' \
-        | sed "s|^|$(basename "$f")  |"
+    strings "$f" | grep -oE '(get|set|is)[A-Za-z0-9_]+\([^)]*\)\[*L?net/minecraft/[a-zA-Z0-9/_$]+;' |
+        sed "s|^|$(basename "$f")  |"
 done 2>/dev/null | sort -u | grep -vE "$BENIGN" || true)
 
 if [ -n "$hits" ]; then

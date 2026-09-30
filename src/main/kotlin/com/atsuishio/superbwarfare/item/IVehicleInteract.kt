@@ -11,6 +11,6 @@ interface IVehicleInteract {
         vehicle: VehicleEntity,
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult?
 }

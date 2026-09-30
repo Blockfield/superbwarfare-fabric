@@ -9,11 +9,12 @@ import net.minecraft.world.phys.Vec3
 interface OBBEntity {
     fun getOBBs(): MutableList<OBB>
 
-    fun enableAABB(): Boolean {
-        return this.getOBBs().isEmpty()
-    }
+    fun enableAABB(): Boolean = this.getOBBs().isEmpty()
 
-    fun isInObb(pos: BlockPos, vec3: Vec3): Boolean {
+    fun isInObb(
+        pos: BlockPos,
+        vec3: Vec3,
+    ): Boolean {
         val obbList = this.getOBBs()
         val vec = Vec3(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
         val aabb1 = AABB(vec, vec).inflate(0.3, 0.6, 0.3)
@@ -27,7 +28,10 @@ interface OBBEntity {
         return false
     }
 
-    fun isInObb(entity: Entity, vec3: Vec3): Boolean {
+    fun isInObb(
+        entity: Entity,
+        vec3: Vec3,
+    ): Boolean {
         val obbList: MutableList<OBB> = this.getOBBs()
         for (obb in obbList) {
             var obb = obb

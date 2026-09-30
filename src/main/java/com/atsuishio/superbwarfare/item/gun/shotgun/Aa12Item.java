@@ -5,8 +5,11 @@ import com.atsuishio.superbwarfare.client.model.item.Aa12ItemModel;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.init.ModRarities;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
+
 import net.minecraft.world.item.Item;
+
 import org.jetbrains.annotations.NotNull;
+
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 import java.util.function.Supplier;

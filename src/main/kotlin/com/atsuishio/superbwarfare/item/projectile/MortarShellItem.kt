@@ -17,29 +17,31 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 
-open class MortarShellItem : Item(Properties().stacksTo(8)), DispenserLaunchable {
-    override fun getLaunchBehavior(): DispenseItemBehavior {
-        return object : AbstractProjectileDispenseBehavior() {
-            override fun getPower(): Float {
-                return 0.5f
-            }
+open class MortarShellItem :
+    Item(Properties().stacksTo(8)),
+    DispenserLaunchable {
+    override fun getLaunchBehavior(): DispenseItemBehavior =
+        object : AbstractProjectileDispenseBehavior() {
+            override fun getPower(): Float = 0.5f
 
-            override fun getProjectile(level: Level, position: Position, stack: ItemStack): Projectile {
-                return MortarShellEntity(
+            override fun getProjectile(
+                level: Level,
+                position: Position,
+                stack: ItemStack,
+            ): Projectile =
+                MortarShellEntity(
                     ModEntities.MORTAR_SHELL.get(),
                     position.x(),
                     position.y(),
                     position.z(),
                     level,
-                    0.13f
+                    0.13f,
                 )
-            }
 
             override fun playSound(source: BlockSource) {
                 source.level.playSound(null, source.pos, ModSounds.MORTAR_FIRE.get(), SoundSource.BLOCKS, 1f, 1f)
             }
         }
-    }
 
     companion object {
         @JvmStatic
@@ -50,14 +52,17 @@ open class MortarShellItem : Item(Properties().stacksTo(8)), DispenserLaunchable
             gravity: Float,
             damage: Float,
             explosionDamage: Float,
-            explosionRadius: Float
+            explosionRadius: Float,
         ): MortarShellEntity {
             val shellEntity = MortarShellEntity(entity, level, damage, explosionDamage, explosionRadius)
             shellEntity.setCustomGravity(gravity)
             shellEntity.setEffectsFromItem(stack)
             shellEntity.setType(
                 when {
-                    stack.`is`(ModItems.MORTAR_SHELL_WP.get()) -> MortarShellEntity.Type.WP
+                    stack.`is`(ModItems.MORTAR_SHELL_WP.get()) -> {
+                        MortarShellEntity.Type.WP
+                    }
+
                     stack.`is`(ModItems.MORTAR_SHELL_SMOKE.get()) -> {
                         val tag = stack.tag
                         if (tag != null && tag.contains(IDyeableSmokeItem.TAG_COLOR)) {
@@ -66,15 +71,17 @@ open class MortarShellItem : Item(Properties().stacksTo(8)), DispenserLaunchable
                                 floatArrayOf(
                                     ((color shr 16) and 255).toFloat(),
                                     ((color shr 8) and 255).toFloat(),
-                                    (color and 255).toFloat()
-                                )
+                                    (color and 255).toFloat(),
+                                ),
                             )
                         }
                         MortarShellEntity.Type.SMOKE
                     }
 
-                    else -> MortarShellEntity.Type.NORMAL
-                }
+                    else -> {
+                        MortarShellEntity.Type.NORMAL
+                    }
+                },
             )
             return shellEntity
         }

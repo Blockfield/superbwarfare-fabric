@@ -6,8 +6,9 @@ import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 
-class WaveforceTowerRenderer(manager: EntityRendererProvider.Context) : BasicAutoAimableRenderer(manager) {
-
+class WaveforceTowerRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicAutoAimableRenderer(manager) {
     @Suppress("unused")
     var energy0: Float = 0f
 
@@ -18,7 +19,7 @@ class WaveforceTowerRenderer(manager: EntityRendererProvider.Context) : BasicAut
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         if (entity.energy <= 0 || !entity.active) return
         super.renderEmissive(entity, instance, yaw, partialTick, poseStack, buffer, packedLight)

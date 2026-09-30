@@ -3,6 +3,8 @@ package com.atsuishio.superbwarfare.tools
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.event.ClientEventHandler
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.core.BlockPos
 import net.minecraft.util.Mth
 import net.minecraft.util.RandomSource
@@ -10,8 +12,6 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec2
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import org.joml.Quaterniond
 import org.joml.Vector3d
 import org.joml.Vector3f
@@ -22,13 +22,19 @@ import kotlin.math.acos
 import kotlin.math.sqrt
 
 operator fun Vec3.plus(other: Vec3): Vec3 = add(other)
+
 operator fun Vec3.minus(other: Vec3): Vec3 = subtract(other)
+
 operator fun Vec3.times(factor: Double): Vec3 = scale(factor)
+
 operator fun Vec3.div(factor: Double): Vec3 = scale(1 / factor)
+
 operator fun Vec3.unaryMinus(): Vec3 = reverse()
 
 fun Vec3.toVector3d() = Vector3d(x, y, z)
+
 fun Vec3.toVector3i() = Vector3i(x.toInt(), y.toInt(), z.toInt())
+
 fun Vec3.toBlockPos() = BlockPos(x.toInt(), y.toInt(), z.toInt())
 
 fun BlockPos.toVec3f() = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
@@ -44,7 +50,14 @@ fun BlockPos.toVec3f() = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
 fun Vec3.worldToScreen(): Vec3 {
     val window = mc.window
     val camera = mc.gameRenderer.mainCamera
-    val worldPosRel = Vector4d(camera.position.reverse().add(this).toVector3f(), 1.0)
+    val worldPosRel =
+        Vector4d(
+            camera.position
+                .reverse()
+                .add(this)
+                .toVector3f(),
+            1.0,
+        )
 
     // Handle matrix nullability checks securely before multiplying
     val modelView = ClientEventHandler.modelViewMatrix
@@ -63,7 +76,7 @@ fun Vec3.worldToScreen(): Vec3 {
     return Vec3(
         window.guiScaledWidth * (0.5f + worldPosRel.x * 0.5f),
         window.guiScaledHeight * (0.5f - worldPosRel.y * 0.5f),
-        depth
+        depth,
     )
 }
 
@@ -93,60 +106,73 @@ fun Vec3.angleTo(other: Vec3): Double {
 }
 
 fun Vec3.randomPos(radius: Int) =
-    this + Vec3(
-        Math.random() * radius,
-        0.0,
-        0.0,
-    ).yRot((360 * Math.random()).toFloat() * Mth.DEG_TO_RAD)
+    this +
+        Vec3(
+            Math.random() * radius,
+            0.0,
+            0.0,
+        ).yRot((360 * Math.random()).toFloat() * Mth.DEG_TO_RAD)
 
 fun Vector3f.toVec3() = Vec3(x.toDouble(), y.toDouble(), z.toDouble())
+
 fun Vector3d.toVec3() = Vec3(x, y, z)
+
 fun Vector3i.toVec3() = Vec3(x.toDouble(), y.toDouble(), z.toDouble())
 
 operator fun Vec2.plus(other: Vec2): Vec2 = add(other)
+
 operator fun Vec2.times(factor: Float): Vec2 = scale(factor)
+
 operator fun Vec2.div(factor: Float): Vec2 = scale(1 / factor)
+
 operator fun Vec2.unaryMinus(): Vec2 = negated()
 
 object VectorTool {
     @JvmStatic
-    fun calculateAngle(start: Vec3, end: Vec3): Double {
-        return start.angleTo(end)
-    }
+    fun calculateAngle(
+        start: Vec3,
+        end: Vec3,
+    ): Double = start.angleTo(end)
 
     @JvmStatic
-    fun calculateY(x: Float): Float {
-        return if (x < -90) {
-            -(x + 180.0f) / 90.0f   // x ∈ [-180, -90)
+    fun calculateY(x: Float): Float =
+        if (x < -90) {
+            -(x + 180.0f) / 90.0f // x ∈ [-180, -90)
         } else if (x <= 90) {
-            x / 90.0f               // x ∈ [-90, 90]
+            x / 90.0f // x ∈ [-90, 90]
         } else {
-            (180.0f - x) / 90.0f    // x ∈ (90, 180]
+            (180.0f - x) / 90.0f // x ∈ (90, 180]
         }
-    }
 
     // 合并三个旋转（Yaw -> Pitch -> Roll）
     @JvmStatic
-    fun combineRotations(partialTicks: Float, entity: VehicleEntity): Quaterniond {
+    fun combineRotations(
+        partialTicks: Float,
+        entity: VehicleEntity,
+    ): Quaterniond {
         // 1. 获取三个独立的旋转四元数
         val yawRot = Axis.YP.rotationDegrees(-Mth.lerp(partialTicks, entity.yRotO, entity.yRot))
         val pitchRot = Axis.XP.rotationDegrees(Mth.lerp(partialTicks, entity.xRotO, entity.xRot))
         val rollRot = Axis.ZP.rotationDegrees(Mth.lerp(partialTicks, entity.prevRoll, entity.roll))
 
         // 2. 按照正确顺序合并：先Yaw，再Pitch，最后Roll
-        return Quaterniond(yawRot)  // 初始化为Yaw旋转
-            .mul(Quaterniond(pitchRot))     // 应用Pitch旋转
-            .mul(Quaterniond(rollRot))      // 应用Roll旋转
+        return Quaterniond(yawRot) // 初始化为Yaw旋转
+            .mul(Quaterniond(pitchRot)) // 应用Pitch旋转
+            .mul(Quaterniond(rollRot)) // 应用Roll旋转
     }
 
     // 仅水平旋转
     @JvmStatic
-    fun combineRotationsYaw(partialTicks: Float, entity: VehicleEntity) =
-        Quaterniond(Axis.YP.rotationDegrees(-Mth.lerp(partialTicks, entity.yRotO, entity.yRot)))
-
+    fun combineRotationsYaw(
+        partialTicks: Float,
+        entity: VehicleEntity,
+    ) = Quaterniond(Axis.YP.rotationDegrees(-Mth.lerp(partialTicks, entity.yRotO, entity.yRot)))
 
     @JvmStatic
-    fun combineRotationsTurret(partialTicks: Float, entity: VehicleEntity): Quaterniond {
+    fun combineRotationsTurret(
+        partialTicks: Float,
+        entity: VehicleEntity,
+    ): Quaterniond {
         val turretYawRot = Axis.YP.rotationDegrees(Mth.lerp(partialTicks, entity.turretYRotO, entity.turretYRot))
         val turretPitchRot = Axis.XP.rotationDegrees(entity.turretCustomPitch)
         return combineRotations(partialTicks, entity)
@@ -155,36 +181,50 @@ object VectorTool {
     }
 
     @JvmStatic
-    fun combineRotationsBarrel(partialTicks: Float, entity: VehicleEntity): Quaterniond {
+    fun combineRotationsBarrel(
+        partialTicks: Float,
+        entity: VehicleEntity,
+    ): Quaterniond {
         val turretPitchRot = Axis.XP.rotationDegrees(Mth.lerp(partialTicks, entity.turretXRotO, entity.turretXRot))
         return combineRotationsTurret(partialTicks, entity)
             .mul(Quaterniond(turretPitchRot))
     }
 
     @JvmStatic
-    fun combineRotationsPassengerWeaponStation(partialTicks: Float, entity: VehicleEntity): Quaterniond {
-        val passengerWeaponStationYawRot = Axis.YP.rotationDegrees(
-            Mth.lerp(partialTicks, entity.gunYRotO, entity.gunYRot)
-                    - Mth.lerp(partialTicks, entity.turretYRotO, entity.turretYRot)
-        )
+    fun combineRotationsPassengerWeaponStation(
+        partialTicks: Float,
+        entity: VehicleEntity,
+    ): Quaterniond {
+        val passengerWeaponStationYawRot =
+            Axis.YP.rotationDegrees(
+                Mth.lerp(partialTicks, entity.gunYRotO, entity.gunYRot) -
+                    Mth.lerp(partialTicks, entity.turretYRotO, entity.turretYRot),
+            )
         return combineRotationsTurret(partialTicks, entity)
             .mul(Quaterniond(passengerWeaponStationYawRot))
     }
 
     @JvmStatic
-    fun combineRotationsPassengerWeaponStationBarrel(partialTicks: Float, entity: VehicleEntity): Quaterniond {
-        val barrelPitch = Mth.clamp(
-            -Mth.lerp(partialTicks, entity.gunXRotO, entity.gunXRot),
-            entity.passengerWeaponMinPitch,
-            entity.passengerWeaponMaxPitch
-        )
+    fun combineRotationsPassengerWeaponStationBarrel(
+        partialTicks: Float,
+        entity: VehicleEntity,
+    ): Quaterniond {
+        val barrelPitch =
+            Mth.clamp(
+                -Mth.lerp(partialTicks, entity.gunXRotO, entity.gunXRot),
+                entity.passengerWeaponMinPitch,
+                entity.passengerWeaponMaxPitch,
+            )
         val passengerWeaponStationPitchRot = Axis.XP.rotationDegrees(-barrelPitch)
         return combineRotationsPassengerWeaponStation(partialTicks, entity)
             .mul(Quaterniond(passengerWeaponStationPitchRot))
     }
 
     @JvmStatic
-    fun isInLiquid(level: Level, position: Vec3): Boolean {
+    fun isInLiquid(
+        level: Level,
+        position: Vec3,
+    ): Boolean {
         // 将 Vec3 转换为 BlockPos（获取所在方块位置）
         val blockPos = BlockPos.containing(position)
 
@@ -210,39 +250,48 @@ object VectorTool {
      * @return 反射向量 v2。
      */
     @JvmStatic
-    fun calculateReflection(v1: Vec3, v0: Vec3): Vec3 {
+    fun calculateReflection(
+        v1: Vec3,
+        v0: Vec3,
+    ): Vec3 {
         val dot = v1.dot(v0)
         return v1 - v0 * (2 * dot)
     }
 
     @JvmStatic
-    fun lerpGetEntityBoundingBoxCenter(entity: Entity, partialTick: Float): Vec3 {
-        return Vec3(
+    fun lerpGetEntityBoundingBoxCenter(
+        entity: Entity,
+        partialTick: Float,
+    ): Vec3 =
+        Vec3(
             Mth.lerp(partialTick.toDouble(), entity.xo, entity.x),
             Mth.lerp(
                 partialTick.toDouble(),
                 entity.yo + entity.bbHeight / 2,
-                entity.y + entity.bbHeight / 2
+                entity.y + entity.bbHeight / 2,
             ),
-            Mth.lerp(partialTick.toDouble(), entity.zo, entity.z)
+            Mth.lerp(partialTick.toDouble(), entity.zo, entity.z),
         )
-    }
 
     /**
-    * Returns a randomly spread direction vector around [dir].
-    *
-    * Extracted from ProjectileEntity/GrapeshotEntity/GunItem — previously each
-    * class carried its own copy of this identical logic.
-    *
-    * @param rng    random source (use entity.getRandom() or item's random)
-    * @param dir    base direction vector
-    * @param spread spread angle in degrees (0 = no spread, 40 = wide scatter)
-    * @return normalised direction with applied random spread
-    */
-    fun randomSpreadVec(rng: RandomSource, dir: Vec3, spread: Double): Vec3 =
+     * Returns a randomly spread direction vector around [dir].
+     *
+     * Extracted from ProjectileEntity/GrapeshotEntity/GunItem — previously each
+     * class carried its own copy of this identical logic.
+     *
+     * @param rng    random source (use entity.getRandom() or item's random)
+     * @param dir    base direction vector
+     * @param spread spread angle in degrees (0 = no spread, 40 = wide scatter)
+     * @return normalised direction with applied random spread
+     */
+    fun randomSpreadVec(
+        rng: RandomSource,
+        dir: Vec3,
+        spread: Double,
+    ): Vec3 =
         dir.normalize().add(
             rng.triangle(0.0, 0.0172275 * spread),
             rng.triangle(0.0, 0.0172275 * spread),
-            rng.triangle(0.0, 0.0172275 * spread)
+            rng.triangle(0.0, 0.0172275 * spread),
         )
 }

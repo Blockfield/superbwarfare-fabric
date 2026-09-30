@@ -10,7 +10,7 @@ object ArmorModelReloadListener : BedrockModelReloadListener<TreeBedrockModel>("
     override fun apply(
         map: Map<ResourceLocation, BedrockModelPOJO>,
         resourceManager: ResourceManager,
-        profiler: ProfilerFiller
+        profiler: ProfilerFiller,
     ) {
         models.clear()
         map.forEach { (location, pojo) ->

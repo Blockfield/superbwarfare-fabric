@@ -4,17 +4,22 @@ import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.shotgun.HomemadeShotgunItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class HomemadeShotgunItemModel extends CustomGunModel<HomemadeShotgunItem> {
 
     @Override
-    public void setCustomAnimations(HomemadeShotgunItem animatable, long instanceId, AnimationState<HomemadeShotgunItem> animationState) {
+    public void setCustomAnimations(
+            HomemadeShotgunItem animatable,
+            long instanceId,
+            AnimationState<HomemadeShotgunItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -32,7 +37,8 @@ public class HomemadeShotgunItemModel extends CustomGunModel<HomemadeShotgunItem
         gun.setPosZ(1.2f * (float) zp + (float) (0.3f * zpz));
         gun.setRotZ((float) (0.05f * zpz));
 
-        ClientEventHandler.handleShootAnimation(fireRoot, 1.25f, -2f, 2.5f, 4.5f, 1.3f, 1f, 0.2f, 0.55f);
+        ClientEventHandler.handleShootAnimation(
+                fireRoot, 1.25f, -2f, 2.5f, 4.5f, 1.3f, 1f, 0.2f, 0.55f);
 
         CrossHairOverlay.gunRot = fireRoot.getRotZ();
 
@@ -45,6 +51,9 @@ public class HomemadeShotgunItemModel extends CustomGunModel<HomemadeShotgunItem
         float numP = (float) (1 - 0.48 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

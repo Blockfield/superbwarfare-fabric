@@ -32,11 +32,13 @@ class DPSGeneratorDeployerItem : Item(Properties()) {
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.dps_generator_deployer").withStyle(ChatFormatting.GRAY)
-                .withStyle(ChatFormatting.ITALIC)
+            Component
+                .translatable("des.superbwarfare.dps_generator_deployer")
+                .withStyle(ChatFormatting.GRAY)
+                .withStyle(ChatFormatting.ITALIC),
         )
     }
 
@@ -57,11 +59,12 @@ class DPSGeneratorDeployerItem : Item(Properties()) {
             }
 
             // 禁止堆叠
-            if (!level.getEntities(
-                    null as Entity?,
-                    ModEntities.DPS_GENERATOR.get().getSpawnAABB(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
-                    IS_GENERATOR
-                ).isEmpty()
+            if (!level
+                    .getEntities(
+                        null as Entity?,
+                        ModEntities.DPS_GENERATOR.get().getSpawnAABB(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
+                        IS_GENERATOR,
+                    ).isEmpty()
             ) {
                 return InteractionResult.FAIL
             }
@@ -73,7 +76,7 @@ class DPSGeneratorDeployerItem : Item(Properties()) {
                     pos,
                     MobSpawnType.SPAWN_EGG,
                     true,
-                    blockpos != pos && direction == Direction.UP
+                    blockpos != pos && direction == Direction.UP,
                 ) != null
             ) {
                 itemstack.shrink(1)
@@ -84,7 +87,11 @@ class DPSGeneratorDeployerItem : Item(Properties()) {
         }
     }
 
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?> {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack?> {
         val itemstack = player.getItemInHand(hand)
         val blockhitresult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY)
         if (blockhitresult.type != HitResult.Type.BLOCK) {
@@ -95,25 +102,30 @@ class DPSGeneratorDeployerItem : Item(Properties()) {
             val blockpos = blockhitresult.blockPos
             if (level.getBlockState(blockpos).block !is LiquidBlock) {
                 return InteractionResultHolder.pass<ItemStack?>(itemstack)
-            } else if (level.mayInteract(player, blockpos) && player.mayUseItemAt(
+            } else if (level.mayInteract(player, blockpos) &&
+                player.mayUseItemAt(
                     blockpos,
                     blockhitresult.direction,
-                    itemstack
+                    itemstack,
                 )
             ) {
                 // 禁止堆叠
-                if (!level.getEntities(
-                        null as Entity?,
-                        ModEntities.DPS_GENERATOR.get()
-                            .getSpawnAABB(blockpos.x + 0.5, blockpos.y + 0.5, blockpos.z + 0.5),
-                        IS_GENERATOR
-                    ).isEmpty()
+                if (!level
+                        .getEntities(
+                            null as Entity?,
+                            ModEntities.DPS_GENERATOR
+                                .get()
+                                .getSpawnAABB(blockpos.x + 0.5, blockpos.y + 0.5, blockpos.z + 0.5),
+                            IS_GENERATOR,
+                        ).isEmpty()
                 ) {
                     return InteractionResultHolder.fail(itemstack)
                 }
 
-                val entity = ModEntities.DPS_GENERATOR.get()
-                    .spawn(level, itemstack, player, blockpos, MobSpawnType.SPAWN_EGG, false, false)
+                val entity =
+                    ModEntities.DPS_GENERATOR
+                        .get()
+                        .spawn(level, itemstack, player, blockpos, MobSpawnType.SPAWN_EGG, false, false)
                 if (entity == null) {
                     return InteractionResultHolder.pass<ItemStack?>(itemstack)
                 } else {

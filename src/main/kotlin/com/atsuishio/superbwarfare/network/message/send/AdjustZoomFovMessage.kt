@@ -13,7 +13,9 @@ import net.minecraft.util.Mth
 import kotlin.math.roundToInt
 
 @Serializable
-data class AdjustZoomFovMessage(val scroll: Double) : ServerPacketPayload() {
+data class AdjustZoomFovMessage(
+    val scroll: Double,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
 
@@ -28,11 +30,12 @@ data class AdjustZoomFovMessage(val scroll: Double) : ServerPacketPayload() {
             val customRPM = data.getInt("CustomRPM")
             var targetCustomRPM = Mth.clamp(customRPM + 50 * scroll, minRpm, maxRpm).toInt()
 
-            targetCustomRPM = if (targetCustomRPM == 1150 - 1200) {
-                1145 - 1200
-            } else {
-                (targetCustomRPM / 50.0).roundToInt() * 50
-            }
+            targetCustomRPM =
+                if (targetCustomRPM == 1150 - 1200) {
+                    1145 - 1200
+                } else {
+                    (targetCustomRPM / 50.0).roundToInt() * 50
+                }
 
             data.putInt("CustomRPM", targetCustomRPM)
 

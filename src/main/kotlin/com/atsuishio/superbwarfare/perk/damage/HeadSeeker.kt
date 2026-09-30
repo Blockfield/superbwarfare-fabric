@@ -13,7 +13,7 @@ object HeadSeeker : Perk("head_seeker", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ): Float {
         val tag = data.perk.getTag(this) ?: return super.getModifiedDamage(damage, data, instance, target, source)
         if (DamageTypeTool.isHeadshotDamage(source) && tag.getInt("HeadSeeker") > 0) {
@@ -25,7 +25,7 @@ object HeadSeeker : Perk("head_seeker", Type.DAMAGE) {
     override fun tick(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         data.perk.reduceCooldown(this, "HeadSeeker")
     }
@@ -35,7 +35,7 @@ object HeadSeeker : Perk("head_seeker", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (DamageTypeTool.isGunFireDamage(source)) {

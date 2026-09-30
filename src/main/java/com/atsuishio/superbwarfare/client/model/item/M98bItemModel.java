@@ -1,17 +1,19 @@
 package com.atsuishio.superbwarfare.client.model.item;
 
+import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
+
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.sniper.M98bItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
 
 public class M98bItemModel extends CustomGunModel<M98bItem> {
     public static float rotXBipod = 0f;
@@ -22,7 +24,8 @@ public class M98bItemModel extends CustomGunModel<M98bItem> {
     public static float posZAlt = 7.6f;
 
     @Override
-    public void setCustomAnimations(M98bItem animatable, long instanceId, AnimationState<M98bItem> animationState) {
+    public void setCustomAnimations(
+            M98bItem animatable, long instanceId, AnimationState<M98bItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -41,7 +44,14 @@ public class M98bItemModel extends CustomGunModel<M98bItem> {
         var data = GunData.from(stack);
         int type = data.attachment.get(AttachmentType.SCOPE);
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
@@ -51,25 +61,28 @@ public class M98bItemModel extends CustomGunModel<M98bItem> {
         scaleZAlt = Mth.lerp(times, scaleZAlt, scopeAlt ? 0.5f : 0.92f);
         posZAlt = Mth.lerp(times, posZAlt, scopeAlt ? 2.5f : 5.5f);
 
-        float posY = switch (type) {
-            case 0 -> 0.07f;
-            case 1 -> 0.008f;
-            case 2 -> posYAlt;
-            case 3 -> -0.2f;
-            default -> 0f;
-        };
-        float scaleZ = switch (type) {
-            case 0, 1 -> 0.5f;
-            case 2 -> scaleZAlt;
-            case 3 -> 0.891f;
-            default -> 0f;
-        };
-        float posZ = switch (type) {
-            case 0, 1 -> 2.5f;
-            case 2 -> posZAlt;
-            case 3 -> 6f;
-            default -> 0f;
-        };
+        float posY =
+                switch (type) {
+                    case 0 -> 0.07f;
+                    case 1 -> 0.008f;
+                    case 2 -> posYAlt;
+                    case 3 -> -0.2f;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (type) {
+                    case 0, 1 -> 0.5f;
+                    case 2 -> scaleZAlt;
+                    case 3 -> 0.891f;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (type) {
+                    case 0, 1 -> 2.5f;
+                    case 2 -> posZAlt;
+                    case 3 -> 6f;
+                    default -> 0f;
+                };
 
         gun.setPosX(2.3f * (float) zp);
         gun.setPosY(posY * (float) zp - (float) (0.2f * zpz));
@@ -122,6 +135,9 @@ public class M98bItemModel extends CustomGunModel<M98bItem> {
             camera.setRotY(numR * camera.getRotY());
             camera.setRotZ(numR * camera.getRotZ());
         }
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

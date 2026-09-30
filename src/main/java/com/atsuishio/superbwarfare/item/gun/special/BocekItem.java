@@ -15,6 +15,8 @@ import com.atsuishio.superbwarfare.network.message.receive.ShootClientMessage;
 import com.atsuishio.superbwarfare.perk.AmmoPerk;
 import com.atsuishio.superbwarfare.perk.Perk;
 import com.atsuishio.superbwarfare.tools.SoundTool;
+
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,8 +27,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
 import org.jetbrains.annotations.NotNull;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
@@ -50,14 +53,19 @@ public class BocekItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.bocek.idle"));
 
         if (ClientEventHandler.bowPull) {
-            return event.setAndContinue(RawAnimation.begin().thenPlayAndHold("animation.bocek.pull"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlayAndHold("animation.bocek.pull"));
         }
 
-        if (player.isSprinting() && player.onGround() && ClientEventHandler.noSprintTicks == 0 && ClientEventHandler.drawTime < 0.01) {
+        if (player.isSprinting()
+                && player.onGround()
+                && ClientEventHandler.noSprintTicks == 0
+                && ClientEventHandler.drawTime < 0.01) {
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.bocek.run"));
         }
 
@@ -69,7 +77,8 @@ public class BocekItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.bocek.idle"));
 
         var data = GunData.from(stack);
@@ -86,7 +95,8 @@ public class BocekItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.bocek.idle"));
 
         var data = GunData.from(stack);
@@ -99,11 +109,14 @@ public class BocekItem extends GunGeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var idleController = new AnimationController<>(this, "idleController", 3, this::idlePredicate);
+        var idleController =
+                new AnimationController<>(this, "idleController", 3, this::idlePredicate);
         data.add(idleController);
-        var fireController = new AnimationController<>(this, "fireController", 0, this::firePredicate);
+        var fireController =
+                new AnimationController<>(this, "fireController", 0, this::firePredicate);
         data.add(fireController);
-        var reloadController = new AnimationController<>(this, "reloadController", 0, this::reloadPredicate);
+        var reloadController =
+                new AnimationController<>(this, "reloadController", 0, this::reloadPredicate);
         data.add(reloadController);
     }
 
@@ -118,11 +131,11 @@ public class BocekItem extends GunGeoItem {
     }
 
     @Override
-    public void shoot(@NotNull ShootParameters parameters) {
-    }
+    public void shoot(@NotNull ShootParameters parameters) {}
 
     @Override
-    public void onFireKeyRelease(@NotNull GunData data, @NotNull Player player, double power, boolean zoom) {
+    public void onFireKeyRelease(
+            @NotNull GunData data, @NotNull Player player, double power, boolean zoom) {
         super.onFireKeyRelease(data, player, power, zoom);
 
         if (!data.hasEnoughAmmoToShoot(player)) return;
@@ -142,7 +155,9 @@ public class BocekItem extends GunGeoItem {
                 SoundTool.playLocalSound(player, ModSounds.BOCEK_ZOOM_FIRE_1P.get(), 10, 1);
                 player.playSound(ModSounds.BOCEK_ZOOM_FIRE_3P.get(), 2, 1);
             } else {
-                for (int i = 0; i < (perk instanceof AmmoPerk ammoPerk && ammoPerk.getSlug() ? 1 : 10); i++) {
+                for (int i = 0;
+                        i < (perk instanceof AmmoPerk ammoPerk && ammoPerk.getSlug() ? 1 : 10);
+                        i++) {
                     spawnBullet(data, player, power, false);
                 }
 
@@ -172,26 +187,27 @@ public class BocekItem extends GunGeoItem {
         float bypassArmorRate = data.get(GunProp.BYPASSES_ARMOR).floatValue();
         float explosionRadius = data.get(GunProp.EXPLOSION_RADIUS).floatValue();
         float explosionDamage = data.get(GunProp.EXPLOSION_DAMAGE).floatValue();
-//        int projectileAmount = data.get(GunProp.PROJECTILE_AMOUNT);
+        //        int projectileAmount = data.get(GunProp.PROJECTILE_AMOUNT);
         int projectileAmount = 10;
 
         double damage = data.get(GunProp.DAMAGE) * power;
         float spread = 0.01f;
 
         if (!zoom) {
-//            spread = projectileAmount <= 1 ? 0.5f : 2.5f;
-//            damage /= Math.max(1, projectileAmount);
+            //            spread = projectileAmount <= 1 ? 0.5f : 2.5f;
+            //            damage /= Math.max(1, projectileAmount);
             spread = 2.5f;
             damage /= projectileAmount;
         }
 
-        ProjectileEntity projectile = new ProjectileEntity(player.level())
-                .shooter(player)
-                .headShot(headshot)
-                .zoom(zoom)
-                .bypassArmorRate(bypassArmorRate)
-                .velocity(velocity)
-                .setGunItemId(stack);
+        ProjectileEntity projectile =
+                new ProjectileEntity(player.level())
+                        .shooter(player)
+                        .headShot(headshot)
+                        .zoom(zoom)
+                        .bypassArmorRate(bypassArmorRate)
+                        .velocity(velocity)
+                        .setGunItemId(stack);
 
         projectile.setExplosionDamage(explosionDamage);
         projectile.setExplosionRadius(explosionRadius);
@@ -201,8 +217,16 @@ public class BocekItem extends GunGeoItem {
             instance.forEach(perk -> perk.perk().modifyProjectile(data, perk, projectile));
         }
 
-        projectile.setPos(player.getX() - 0.1 * player.getLookAngle().x, player.getEyeY() - 0.1 - 0.1 * player.getLookAngle().y, player.getZ() + -0.1 * player.getLookAngle().z);
-        projectile.shoot(player.getLookAngle().x, player.getLookAngle().y, player.getLookAngle().z, velocity, spread);
+        projectile.setPos(
+                player.getX() - 0.1 * player.getLookAngle().x,
+                player.getEyeY() - 0.1 - 0.1 * player.getLookAngle().y,
+                player.getZ() + -0.1 * player.getLookAngle().z);
+        projectile.shoot(
+                player.getLookAngle().x,
+                player.getLookAngle().y,
+                player.getLookAngle().z,
+                velocity,
+                spread);
         projectile.damage((float) damage);
 
         player.level().addFreshEntity(projectile);

@@ -15,11 +15,13 @@ import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
 import kotlin.math.min
 
-class SuperStarProjectileRenderer(pContext: EntityRendererProvider.Context) :
-    EntityRenderer<SuperStarProjectileEntity>(pContext) {
-    override fun getBlockLightLevel(pEntity: SuperStarProjectileEntity, pPos: BlockPos): Int {
-        return 15
-    }
+class SuperStarProjectileRenderer(
+    pContext: EntityRendererProvider.Context,
+) : EntityRenderer<SuperStarProjectileEntity>(pContext) {
+    override fun getBlockLightLevel(
+        pEntity: SuperStarProjectileEntity,
+        pPos: BlockPos,
+    ): Int = 15
 
     override fun render(
         pEntity: SuperStarProjectileEntity,
@@ -27,7 +29,7 @@ class SuperStarProjectileRenderer(pContext: EntityRendererProvider.Context) :
         pPartialTicks: Float,
         pMatrixStack: PoseStack,
         pBuffer: MultiBufferSource,
-        pPackedLight: Int
+        pPackedLight: Int,
     ) {
         pMatrixStack.pushPose()
         pMatrixStack.translate(0.0, min(-0.75 + pEntity.tickCount * 0.05, 0.0), 0.0)
@@ -46,9 +48,7 @@ class SuperStarProjectileRenderer(pContext: EntityRendererProvider.Context) :
         super.render(pEntity, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight)
     }
 
-    override fun getTextureLocation(pEntity: SuperStarProjectileEntity): ResourceLocation {
-        return TEXTURE
-    }
+    override fun getTextureLocation(pEntity: SuperStarProjectileEntity): ResourceLocation = TEXTURE
 
     companion object {
         private fun vertex(
@@ -58,10 +58,14 @@ class SuperStarProjectileRenderer(pContext: EntityRendererProvider.Context) :
             pX: Float,
             pY: Float,
             pU: Int,
-            pV: Int
+            pV: Int,
         ) {
-            pConsumer.addVertex(pose, pX, 0f, pY).setColor(255, 255, 0, 255)
-                .setUv(pU.toFloat(), pV.toFloat()).setOverlay(OverlayTexture.NO_OVERLAY).setLight(pLightmapUV)
+            pConsumer
+                .addVertex(pose, pX, 0f, pY)
+                .setColor(255, 255, 0, 255)
+                .setUv(pU.toFloat(), pV.toFloat())
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(pLightmapUV)
                 .setNormal(pose, 0f, 1f, 0f)
         }
 

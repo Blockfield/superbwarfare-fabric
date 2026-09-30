@@ -24,7 +24,7 @@ object Desperado : Perk("desperado", Type.DAMAGE) {
     override fun tick(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         data.perk.reduceCooldown(this, "DesperadoTime")
         data.perk.reduceCooldown(this, "DesperadoTimePost")
@@ -34,7 +34,7 @@ object Desperado : Perk("desperado", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         if (DamageTypeTool.isHeadshotDamage(source)) {
             data.perk.getTag(this)?.putInt("DesperadoTime", 90 + instance.level * 10)
@@ -44,7 +44,7 @@ object Desperado : Perk("desperado", Type.DAMAGE) {
     override fun preReload(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         val tag = data.perk.getTag(this) ?: return
         val time = tag.getInt("DesperadoTime")
@@ -59,7 +59,7 @@ object Desperado : Perk("desperado", Type.DAMAGE) {
     override fun postReload(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (!tag.getBoolean("Desperado")) return

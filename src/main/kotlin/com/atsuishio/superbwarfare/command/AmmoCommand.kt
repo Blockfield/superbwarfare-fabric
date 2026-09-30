@@ -6,97 +6,98 @@ import com.atsuishio.superbwarfare.data.gun.Ammo
 import net.minecraft.network.chat.Component
 
 // 再见了牛魔Builder
-val AMMO_COMMAND = buildCommand("ammo") {
-    requirePermission(0)
+val AMMO_COMMAND =
+    buildCommand("ammo") {
+        requirePermission(0)
 
-    "get" {
-        playerArg {
-            enumArg<Ammo> {
-                execute {
-                    // 权限不足时，只允许玩家查询自己的弹药数量
-                    if (source.isPlayer && !source.hasPermission(2)) {
-                        if (source.player != null && source.player?.getUUID() != playerArg.getUUID()) {
-                            fail { Component.translatable("commands.superbwarfare.ammo.no_permission") }
-                        }
-                    }
-
-                    val type = enumArg
-                    val value = type.get(playerArg)
-                    success {
-                        Component.translatable(
-                            "commands.superbwarfare.ammo.get",
-                            Component.translatable(type.translationKey),
-                            value
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    "set" {
-        requirePermission(2)
-
-        playersArg {
-            enumArg<Ammo> {
-                intArg {
+        "get" {
+            playerArg {
+                enumArg<Ammo> {
                     execute {
-                        val type = enumArg
-
-                        for (player in playersArg) {
-                            type.set(player, intArg)
+                        // 权限不足时，只允许玩家查询自己的弹药数量
+                        if (source.isPlayer && !source.hasPermission(2)) {
+                            if (source.player != null && source.player?.getUUID() != playerArg.getUUID()) {
+                                fail { Component.translatable("commands.superbwarfare.ammo.no_permission") }
+                            }
                         }
 
+                        val type = enumArg
+                        val value = type.get(playerArg)
                         success {
                             Component.translatable(
-                                "commands.superbwarfare.ammo.set",
+                                "commands.superbwarfare.ammo.get",
                                 Component.translatable(type.translationKey),
-                                intArg,
-                                playersArg.size
+                                value,
                             )
                         }
                     }
                 }
             }
         }
-    }
 
-    "add" {
-        requirePermission(2)
+        "set" {
+            requirePermission(2)
 
-        playersArg {
-            enumArg<Ammo> {
-                intArg {
-                    execute {
-                        val type = enumArg
+            playersArg {
+                enumArg<Ammo> {
+                    intArg {
+                        execute {
+                            val type = enumArg
 
-                        for (player in playersArg) {
-                            type.add(player, intArg)
-                        }
+                            for (player in playersArg) {
+                                type.set(player, intArg)
+                            }
 
-                        success {
-                            Component.translatable(
-                                "commands.superbwarfare.ammo.add",
-                                Component.translatable(type.translationKey),
-                                intArg,
-                                playersArg.size
-                            )
+                            success {
+                                Component.translatable(
+                                    "commands.superbwarfare.ammo.set",
+                                    Component.translatable(type.translationKey),
+                                    intArg,
+                                    playersArg.size,
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    "limit" {
-        "ammo" {
-            buildAmmoLimitCommand(false)
+        "add" {
+            requirePermission(2)
+
+            playersArg {
+                enumArg<Ammo> {
+                    intArg {
+                        execute {
+                            val type = enumArg
+
+                            for (player in playersArg) {
+                                type.add(player, intArg)
+                            }
+
+                            success {
+                                Component.translatable(
+                                    "commands.superbwarfare.ammo.add",
+                                    Component.translatable(type.translationKey),
+                                    intArg,
+                                    playersArg.size,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
-        "ammoBox" {
-            buildAmmoLimitCommand(true)
+
+        "limit" {
+            "ammo" {
+                buildAmmoLimitCommand(false)
+            }
+            "ammoBox" {
+                buildAmmoLimitCommand(true)
+            }
         }
     }
-}
 
 private fun CommandNode.buildAmmoLimitCommand(isAmmoBox: Boolean) {
     "get" {

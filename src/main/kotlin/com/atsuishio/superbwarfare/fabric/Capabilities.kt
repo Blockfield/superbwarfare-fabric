@@ -20,36 +20,54 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
 
 /** Маркер capability предмета: сам знает, как достать реализацию из стека. */
-class ItemCapability<T : Any> internal constructor(private val provider: (ItemStack) -> T?) {
+class ItemCapability<T : Any> internal constructor(
+    private val provider: (ItemStack) -> T?,
+) {
     /** Для Java-вызовов: Capabilities.EnergyStorage.ITEM.get(stack). */
     fun get(stack: ItemStack): T? = provider(stack)
 }
 
-class EntityCapability<T : Any> internal constructor(private val provider: (Entity, Direction?) -> T?) {
+class EntityCapability<T : Any> internal constructor(
+    private val provider: (Entity, Direction?) -> T?,
+) {
     @JvmOverloads
-    fun get(entity: Entity, context: Direction? = null): T? = provider(entity, context)
+    fun get(
+        entity: Entity,
+        context: Direction? = null,
+    ): T? = provider(entity, context)
 }
 
-class BlockCapability<T : Any> internal constructor(private val provider: (BlockEntity, Direction?) -> T?) {
+class BlockCapability<T : Any> internal constructor(
+    private val provider: (BlockEntity, Direction?) -> T?,
+) {
     @JvmOverloads
-    fun get(blockEntity: BlockEntity, context: Direction? = null): T? = provider(blockEntity, context)
+    fun get(
+        blockEntity: BlockEntity,
+        context: Direction? = null,
+    ): T? = provider(blockEntity, context)
 }
 
-fun <T : Any> ItemStack.getCapability(capability: ItemCapability<T>): T? =
-    capability.get(this)
+fun <T : Any> ItemStack.getCapability(capability: ItemCapability<T>): T? = capability.get(this)
 
-fun <T : Any> Entity.getCapability(capability: EntityCapability<T>, context: Direction? = null): T? =
-    capability.get(this, context)
+fun <T : Any> Entity.getCapability(
+    capability: EntityCapability<T>,
+    context: Direction? = null,
+): T? = capability.get(this, context)
 
-fun <T : Any> BlockEntity.getCapability(capability: BlockCapability<T>, context: Direction? = null): T? =
-    capability.get(this, context)
+fun <T : Any> BlockEntity.getCapability(
+    capability: BlockCapability<T>,
+    context: Direction? = null,
+): T? = capability.get(this, context)
 
 /**
  * Аналог ILevelExtension.getCapability. Все поставщики мода живут на BlockEntity, поэтому блок
  * без BlockEntity capability не отдаёт.
  */
-fun <T : Any> Level.getCapability(capability: BlockCapability<T>, pos: BlockPos, context: Direction? = null): T? =
-    this.getBlockEntity(pos)?.let { capability.get(it, context) }
+fun <T : Any> Level.getCapability(
+    capability: BlockCapability<T>,
+    pos: BlockPos,
+    context: Direction? = null,
+): T? = this.getBlockEntity(pos)?.let { capability.get(it, context) }
 
 /**
  * Замена системы capabilities из NeoForge с той же формой вызовов.
@@ -73,44 +91,53 @@ fun <T : Any> Level.getCapability(capability: BlockCapability<T>, pos: BlockPos,
  * team_reborn Energy поверх этих же интерфейсов, когда появится мод, с которым надо дружить.
  */
 object Capabilities {
-
     object EnergyStorage {
         /** Креативная зарядная станция как предмет + любой EnergyStorageItem. */
         @JvmField
-        val ITEM: ItemCapability<IEnergyStorage> = ItemCapability { stack ->
-            when (val item = stack.item) {
-                is CreativeChargingStationBlockItem -> item.energyStorage
-                is EnergyStorageItem -> ItemEnergyStorage(
-                    stack,
-                    { s -> item.getMaxEnergy(s) },
-                    { s -> item.getMaxReceiveEnergy(s) },
-                    { s -> item.getMaxExtractEnergy(s) },
-                )
+        val ITEM: ItemCapability<IEnergyStorage> =
+            ItemCapability { stack ->
+                when (val item = stack.item) {
+                    is CreativeChargingStationBlockItem -> {
+                        item.energyStorage
+                    }
 
-                else -> null
+                    is EnergyStorageItem -> {
+                        ItemEnergyStorage(
+                            stack,
+                            { s -> item.getMaxEnergy(s) },
+                            { s -> item.getMaxReceiveEnergy(s) },
+                            { s -> item.getMaxExtractEnergy(s) },
+                        )
+                    }
+
+                    else -> {
+                        null
+                    }
+                }
             }
-        }
 
         /** Зарядная станция, креативная зарядная станция, FuMO25. */
         @JvmField
-        val BLOCK: BlockCapability<IEnergyStorage> = BlockCapability { blockEntity, side ->
-            when (blockEntity) {
-                is ChargingStationBlockEntity -> blockEntity.getEnergyStorage(side)
-                is CreativeChargingStationBlockEntity -> blockEntity.getEnergyStorage(side)
-                is FuMO25BlockEntity -> blockEntity.getEnergyStorage()
-                else -> null
+        val BLOCK: BlockCapability<IEnergyStorage> =
+            BlockCapability { blockEntity, side ->
+                when (blockEntity) {
+                    is ChargingStationBlockEntity -> blockEntity.getEnergyStorage(side)
+                    is CreativeChargingStationBlockEntity -> blockEntity.getEnergyStorage(side)
+                    is FuMO25BlockEntity -> blockEntity.getEnergyStorage()
+                    else -> null
+                }
             }
-        }
 
         /** DPS-генератор и любая техника с батареей. */
         @JvmField
-        val ENTITY: EntityCapability<IEnergyStorage> = EntityCapability { entity, _ ->
-            when (entity) {
-                is DPSGeneratorEntity -> entity.energyStorage
-                is VehicleEntity -> if (entity.hasEnergyStorage()) entity.getEnergyStorage() else null
-                else -> null
+        val ENTITY: EntityCapability<IEnergyStorage> =
+            EntityCapability { entity, _ ->
+                when (entity) {
+                    is DPSGeneratorEntity -> entity.energyStorage
+                    is VehicleEntity -> if (entity.hasEnergyStorage()) entity.getEnergyStorage() else null
+                    else -> null
+                }
             }
-        }
     }
 
     object ItemHandler {
@@ -124,26 +151,37 @@ object Capabilities {
          * туда, когда появится мод, с которым надо стыковаться.
          */
         @JvmField
-        val BLOCK: BlockCapability<IItemHandler> = BlockCapability { blockEntity, side ->
-            when (blockEntity) {
-                is ChargingStationBlockEntity -> when {
-                    side == null || blockEntity.isRemoved -> null
-                    side == Direction.UP || side == Direction.DOWN -> SidedInvWrapper(blockEntity, side)
-                    else -> SidedInvWrapper(blockEntity, Direction.NORTH)
+        val BLOCK: BlockCapability<IItemHandler> =
+            BlockCapability { blockEntity, side ->
+                when (blockEntity) {
+                    is ChargingStationBlockEntity -> {
+                        when {
+                            side == null || blockEntity.isRemoved -> null
+                            side == Direction.UP || side == Direction.DOWN -> SidedInvWrapper(blockEntity, side)
+                            else -> SidedInvWrapper(blockEntity, Direction.NORTH)
+                        }
+                    }
+
+                    is BlueprintResearchTableBlockEntity -> {
+                        when {
+                            blockEntity.isRemoved -> null
+
+                            side == Direction.UP || side == Direction.DOWN ||
+                                side == Direction.NORTH || side == Direction.SOUTH -> SidedInvWrapper(blockEntity, side)
+
+                            else -> SidedInvWrapper(blockEntity, Direction.EAST)
+                        }
+                    }
+
+                    is SuperbItemInterfaceBlockEntity -> {
+                        InvWrapper(blockEntity)
+                    }
+
+                    else -> {
+                        null
+                    }
                 }
-
-                is BlueprintResearchTableBlockEntity -> when {
-                    blockEntity.isRemoved -> null
-                    side == Direction.UP || side == Direction.DOWN ||
-                            side == Direction.NORTH || side == Direction.SOUTH -> SidedInvWrapper(blockEntity, side)
-
-                    else -> SidedInvWrapper(blockEntity, Direction.EAST)
-                }
-
-                is SuperbItemInterfaceBlockEntity -> InvWrapper(blockEntity)
-                else -> null
             }
-        }
 
         /**
          * Техника с грузовым отсеком плюс то, что на NeoForge отдавал сам загрузчик: инвентарь
@@ -156,13 +194,14 @@ object Capabilities {
          * над EquipmentSlot.
          */
         @JvmField
-        val ENTITY: EntityCapability<IItemHandler> = EntityCapability { entity, _ ->
-            when (entity) {
-                is VehicleEntity -> if (entity.hasContainer()) entity.inventory else null
-                is Player -> InvWrapper(entity.inventory)
-                is Container -> InvWrapper(entity)
-                else -> null
+        val ENTITY: EntityCapability<IItemHandler> =
+            EntityCapability { entity, _ ->
+                when (entity) {
+                    is VehicleEntity -> if (entity.hasContainer()) entity.inventory else null
+                    is Player -> InvWrapper(entity.inventory)
+                    is Container -> InvWrapper(entity)
+                    else -> null
+                }
             }
-        }
     }
 }

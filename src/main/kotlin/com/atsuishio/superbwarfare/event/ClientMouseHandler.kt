@@ -84,8 +84,8 @@ object ClientMouseHandler {
 
         val stack = player.mainHandItem
 
-        if (stack.`is`(ModItems.MONITOR.get()) && stack.getOrCreateTag().getBoolean("Using")
-            && stack.getOrCreateTag().getBoolean("Linked")
+        if (stack.`is`(ModItems.MONITOR.get()) && stack.getOrCreateTag().getBoolean("Using") &&
+            stack.getOrCreateTag().getBoolean("Linked")
         ) {
             val drone =
                 EntityFindUtil.findDrone(player.level(), stack.getOrCreateTag().getString("LinkedDrone")) ?: return
@@ -111,15 +111,29 @@ object ClientMouseHandler {
             val y = if (ControlConfig.INVERT_AIRCRAFT_CONTROL.get()) -1 else 1
             val sensitivity = vehicle.mouseSensitivity
 
-            speedX = sensitivity * moveSpeedX * (if (ClientEventHandler.zoomVehicle && !ClientEventHandler.isNacelleCam(
-                    player
-                )
-            ) 0.3 else 1.0)
-            speedY =
-                y * sensitivity * moveSpeedY * (if (ClientEventHandler.zoomVehicle && !ClientEventHandler.isNacelleCam(
-                        player
+            speedX = sensitivity * moveSpeedX * (
+                if (ClientEventHandler.zoomVehicle &&
+                    !ClientEventHandler.isNacelleCam(
+                        player,
                     )
-                ) 0.4 else 1.0)
+                ) {
+                    0.3
+                } else {
+                    1.0
+                }
+            )
+            speedY =
+                y * sensitivity * moveSpeedY * (
+                    if (ClientEventHandler.zoomVehicle &&
+                        !ClientEventHandler.isNacelleCam(
+                            player,
+                        )
+                    ) {
+                        0.4
+                    } else {
+                        1.0
+                    }
+                )
 
             mouseXMoveTick = Mth.lerp(0.1, mouseXMoveTick, speedX)
             mouseYMoveTick = Mth.lerp(0.1, mouseYMoveTick, speedY)
@@ -164,8 +178,9 @@ object ClientMouseHandler {
                             sendPacketToServer(
                                 MouseMoveMessage(
                                     (1 - abs(vehicle.roll) / 90) * lerpSpeedX + (abs(vehicle.roll) / 90) * lerpSpeedY * i,
-                                    (1 - abs(vehicle.roll) / 90) * lerpSpeedY + (abs(vehicle.roll) / 90) * lerpSpeedX * if (vehicle.roll < 0) -1.0 else 1.0
-                                )
+                                    (1 - abs(vehicle.roll) / 90) * lerpSpeedY +
+                                        (abs(vehicle.roll) / 90) * lerpSpeedX * if (vehicle.roll < 0) -1.0 else 1.0,
+                                ),
                             )
                         }
                     } else {
@@ -175,7 +190,6 @@ object ClientMouseHandler {
                     sendPacketToServer(MouseMoveMessage(0.0, 0.0))
                 }
             }
-
         }
     }
 
@@ -252,8 +266,8 @@ object ClientMouseHandler {
         val player = localPlayer ?: return 1
         val vehicle = player.vehicle as? VehicleEntity ?: return 1
 
-        if ((vehicle.vehicleType == VehicleType.AIRPLANE || vehicle.vehicleType == VehicleType.HELICOPTER)
-            && vehicle.firstPassenger == player
+        if ((vehicle.vehicleType == VehicleType.AIRPLANE || vehicle.vehicleType == VehicleType.HELICOPTER) &&
+            vehicle.firstPassenger == player
         ) {
             return if (ControlConfig.INVERT_AIRCRAFT_CONTROL.get()) -1 else 1
         }
@@ -286,7 +300,9 @@ object ClientMouseHandler {
             }
         }
 
-        if (player.isUsingItem && player.useItem.`is`(ModItems.ARTILLERY_INDICATOR.get()) && mc.options.cameraType == CameraType.FIRST_PERSON) {
+        if (player.isUsingItem && player.useItem.`is`(ModItems.ARTILLERY_INDICATOR.get()) &&
+            mc.options.cameraType == CameraType.FIRST_PERSON
+        ) {
             return original / (1 + 0.2 * ClientEventHandler.artilleryIndicatorZoom).coerceAtLeast(0.1)
         }
 
@@ -296,7 +312,7 @@ object ClientMouseHandler {
                 original,
                 ClientEventHandler.zoomVehicle,
                 vehicle.getSeatIndex(player),
-                vehicle.onGround()
+                vehicle.onGround(),
             )
         }
 
@@ -305,8 +321,9 @@ object ClientMouseHandler {
             val customSens = data.sensitivity.get()
 
             if (!player.mainHandItem.isEmpty && mc.options.cameraType == CameraType.FIRST_PERSON) {
-                return original / (1 + (0.2 * (data.zoom() - (0.3 * customSens)) * ClientEventHandler.zoomTime))
-                    .coerceAtLeast(0.1) * (ControlConfig.MOUSE_SENSITIVITY.get() / 100f)
+                return original /
+                    (1 + (0.2 * (data.zoom() - (0.3 * customSens)) * ClientEventHandler.zoomTime))
+                        .coerceAtLeast(0.1) * (ControlConfig.MOUSE_SENSITIVITY.get() / 100f)
             }
         }
 

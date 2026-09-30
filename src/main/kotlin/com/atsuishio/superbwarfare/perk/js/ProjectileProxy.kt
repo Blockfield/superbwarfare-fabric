@@ -4,14 +4,20 @@ import com.atsuishio.superbwarfare.entity.projectile.IBulletProperties
 import com.atsuishio.superbwarfare.entity.projectile.TaserBulletEntity
 import net.minecraft.world.entity.Entity
 
-class ProjectileProxy(private val entity: Entity) {
+class ProjectileProxy(
+    private val entity: Entity,
+) {
     private val projectile: IBulletProperties?
         get() = entity as? IBulletProperties
 
     private val taser: TaserBulletEntity?
         get() = entity as? TaserBulletEntity
 
-    fun setRGB(r: Number, g: Number, b: Number) {
+    fun setRGB(
+        r: Number,
+        g: Number,
+        b: Number,
+    ) {
         projectile?.setRGB(floatArrayOf(r.toFloat(), g.toFloat(), b.toFloat()))
     }
 
@@ -19,7 +25,10 @@ class ProjectileProxy(private val entity: Entity) {
         projectile?.setBeast(true)
     }
 
-    fun fireBullet(fireLevel: Number, dragonBreath: Boolean) {
+    fun fireBullet(
+        fireLevel: Number,
+        dragonBreath: Boolean,
+    ) {
         projectile?.setFireLevel(fireLevel.toInt())
         projectile?.setDragonBreath(dragonBreath)
     }

@@ -15,10 +15,10 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 
-class TargetRenderer(renderManager: EntityRendererProvider.Context) : EntityRenderer<TargetEntity>(renderManager) {
-    override fun getTextureLocation(pEntity: TargetEntity): ResourceLocation {
-        return TEXTURE
-    }
+class TargetRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<TargetEntity>(renderManager) {
+    override fun getTextureLocation(pEntity: TargetEntity): ResourceLocation = TEXTURE
 
     override fun render(
         entity: TargetEntity,
@@ -26,7 +26,7 @@ class TargetRenderer(renderManager: EntityRendererProvider.Context) : EntityRend
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val ani = entity.animationInstance ?: return
         val instance = entity.modelInstance ?: return
@@ -46,7 +46,7 @@ class TargetRenderer(renderManager: EntityRendererProvider.Context) : EntityRend
             poseStack,
             vertexConsumer,
             packedLight,
-            OverlayTexture.pack(0f, entity.hurtTime > 0 || entity.deathTime > 0)
+            OverlayTexture.pack(0f, entity.hurtTime > 0 || entity.deathTime > 0),
         )
 
         poseStack.pushPose()
@@ -63,7 +63,7 @@ class TargetRenderer(renderManager: EntityRendererProvider.Context) : EntityRend
             1f,
             1f,
             true,
-            false
+            false,
         )
         poseStack.popPose()
 

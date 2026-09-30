@@ -11,11 +11,13 @@ import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.item.gun.machinegun.RpkItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.cache.object.GeoBone;
 
@@ -26,7 +28,18 @@ public class RpkItemRenderer extends CustomGunRenderer<RpkItem> {
     }
 
     @Override
-    public void renderRecursively(PoseStack stack, RpkItem animatable, GeoBone bone, RenderType type, MultiBufferSource buffer, VertexConsumer bufferIn, boolean isReRender, float partialTick, int packedLightIn, int packedOverlayIn, int color) {
+    public void renderRecursively(
+            PoseStack stack,
+            RpkItem animatable,
+            GeoBone bone,
+            RenderType type,
+            MultiBufferSource buffer,
+            VertexConsumer bufferIn,
+            boolean isReRender,
+            float partialTick,
+            int packedLightIn,
+            int packedOverlayIn,
+            int color) {
         Minecraft mc = Minecraft.getInstance();
         String name = bone.getName();
         boolean renderingArms = false;
@@ -43,8 +56,10 @@ public class RpkItemRenderer extends CustomGunRenderer<RpkItem> {
 
         boolean needHide = name.equals("humu2");
 
-        if (itemStack.getItem() instanceof GunItem && GeoItem.getId(itemStack) == this.getInstanceId(animatable)) {
-            if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || this.renderPerspective == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
+        if (itemStack.getItem() instanceof GunItem
+                && GeoItem.getId(itemStack) == this.getInstanceId(animatable)) {
+            if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                    || this.renderPerspective == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
                 var data = GunData.from(itemStack);
                 if (name.equals("humu1")) {
                     bone.setHidden(data.attachment.get(AttachmentType.GRIP) != 0);
@@ -55,20 +70,31 @@ public class RpkItemRenderer extends CustomGunRenderer<RpkItem> {
 
                 float height = 0.02f;
 
-                if ((data.attachment.get(AttachmentType.SCOPE) == 2 || data.attachment.get(AttachmentType.SCOPE) == 3) && ClientEventHandler.zoom) {
+                if ((data.attachment.get(AttachmentType.SCOPE) == 2
+                                || data.attachment.get(AttachmentType.SCOPE) == 3)
+                        && ClientEventHandler.zoom) {
                     height = -0.1f;
                 }
 
-                AnimationHelper.handleShootFlare(name, stack, itemStack, bone, buffer, packedLightIn, 0, height, 1.475, 0.3);
+                AnimationHelper.handleShootFlare(
+                        name, stack, itemStack, bone, buffer, packedLightIn, 0, height, 1.475, 0.3);
                 ItemModelHelper.handleGunAttachments(bone, itemStack, name);
 
                 if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
                     if (data.attachment.get(AttachmentType.SCOPE) == 2
-                            && (name.equals("hide2") || name.equals("Barrel") || name.equals("humu") || name.equals("qiangguan") || name.equals("houzhunxing"))) {
+                            && (name.equals("hide2")
+                                    || name.equals("Barrel")
+                                    || name.equals("humu")
+                                    || name.equals("qiangguan")
+                                    || name.equals("houzhunxing"))) {
                         bone.setHidden(ClientEventHandler.zoomPos > 0.7 && ClientEventHandler.zoom);
                     }
                     if (data.attachment.get(AttachmentType.SCOPE) == 3
-                            && (name.equals("jing") || name.equals("Barrel") || name.equals("humu") || name.equals("qiangguan") || name.equals("houzhunxing"))) {
+                            && (name.equals("jing")
+                                    || name.equals("Barrel")
+                                    || name.equals("humu")
+                                    || name.equals("qiangguan")
+                                    || name.equals("houzhunxing"))) {
                         bone.setHidden(ClientEventHandler.zoomPos > 0.7 && ClientEventHandler.zoom);
                     }
 
@@ -76,11 +102,59 @@ public class RpkItemRenderer extends CustomGunRenderer<RpkItem> {
 
                     switch (scopeType) {
                         case 1 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.27363125, 20, 1, 255, 0, 0, 255, "pkas", true);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.27363125,
+                                        20,
+                                        1,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "pkas",
+                                        true);
                         case 2 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.28, 13, 1, 0, 255, 0, 255, "1p78", false);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.28,
+                                        13,
+                                        1,
+                                        0,
+                                        255,
+                                        0,
+                                        255,
+                                        "1p78",
+                                        false);
                         case 3 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.28, 36, (float) ClientEventHandler.customZoom, 255, 0, 0, 255, "lpvo", true);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.28,
+                                        36,
+                                        (float) ClientEventHandler.customZoom,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "lpvo",
+                                        true);
                     }
                 }
 
@@ -98,8 +172,28 @@ public class RpkItemRenderer extends CustomGunRenderer<RpkItem> {
         }
 
         if (renderingArms) {
-            AnimationHelper.renderArms(player, this.renderPerspective, stack, name, bone, buffer, type, packedLightIn, false);
+            AnimationHelper.renderArms(
+                    player,
+                    this.renderPerspective,
+                    stack,
+                    name,
+                    bone,
+                    buffer,
+                    type,
+                    packedLightIn,
+                    false);
         }
-        super.renderRecursively(stack, animatable, bone, type, buffer, bufferIn, isReRender, partialTick, packedLightIn, packedOverlayIn, color);
+        super.renderRecursively(
+                stack,
+                animatable,
+                bone,
+                type,
+                buffer,
+                bufferIn,
+                isReRender,
+                partialTick,
+                packedLightIn,
+                packedOverlayIn,
+                color);
     }
 }

@@ -14,12 +14,17 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 
 open class DetonatorItem : Item(Properties().stacksTo(1)) {
-    override fun use(world: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        world: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
         player.cooldowns.addCooldown(stack.item, 10)
 
         if (player is ServerPlayer) {
-            player.level()
+            player
+                .level()
                 .playSound(null, player.onPos, ModSounds.C4_DETONATOR_CLICK.get(), SoundSource.PLAYERS, 1f, 1f)
         }
 
@@ -37,9 +42,15 @@ open class DetonatorItem : Item(Properties().stacksTo(1)) {
 
     companion object {
         @JvmStatic
-        fun getC4(player: Player?, level: Level): MutableList<Entity> {
-            return EntityFindUtil.getEntities(level)?.all?.asSequence()?.filter { it is C4Entity && it.owner == player }
+        fun getC4(
+            player: Player?,
+            level: Level,
+        ): MutableList<Entity> =
+            EntityFindUtil
+                .getEntities(level)
+                ?.all
+                ?.asSequence()
+                ?.filter { it is C4Entity && it.owner == player }
                 ?.toMutableList() ?: mutableListOf()
-        }
     }
 }

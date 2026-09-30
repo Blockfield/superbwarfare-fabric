@@ -4,6 +4,8 @@ import com.atsuishio.superbwarfare.item.LungeMine
 import com.atsuishio.superbwarfare.item.gun.launcher.SuperStarShooterItem
 import com.atsuishio.superbwarfare.item.gun.machinegun.M2HBItem
 import com.atsuishio.superbwarfare.item.gun.machinegun.MinigunItem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.model.HumanoidModel
 import net.minecraft.client.model.HumanoidModel.ArmPose
 import net.minecraft.util.Mth
@@ -11,8 +13,6 @@ import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.HumanoidArm
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.Rarity
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 /**
  * Расширения ванильных енумов: у NeoForge это RegisterEnumExtensionsEvent + EnumProxy,
@@ -72,7 +72,11 @@ object ModEnumExtensions {
          * «главная рука -- левая» позы не будет, как и в апстриме на левой руке.
          */
         @JvmStatic
-        fun applyCustomArmPose(model: HumanoidModel<*>, entity: LivingEntity, arm: HumanoidArm): Boolean {
+        fun applyCustomArmPose(
+            model: HumanoidModel<*>,
+            entity: LivingEntity,
+            arm: HumanoidArm,
+        ): Boolean {
             if (entity.usedItemHand != InteractionHand.MAIN_HAND) return false
 
             val item = entity.getItemInHand(InteractionHand.MAIN_HAND).item
@@ -101,31 +105,35 @@ object ModEnumExtensions {
         private fun minigunArms(model: HumanoidModel<*>) {
             model.rightArm.xRot = 22.5f * Mth.DEG_TO_RAD + model.head.xRot
             model.rightArm.yRot = model.head.yRot
-            model.leftArm.xRot = Mth.clamp(
-                -45f * Mth.DEG_TO_RAD + model.head.xRot,
-                -67.5f * Mth.DEG_TO_RAD,
-                0f
-            )
-            model.leftArm.yRot = Mth.clamp(
-                45f * Mth.DEG_TO_RAD + model.head.yRot,
-                45f * Mth.DEG_TO_RAD,
-                80f * Mth.DEG_TO_RAD
-            )
+            model.leftArm.xRot =
+                Mth.clamp(
+                    -45f * Mth.DEG_TO_RAD + model.head.xRot,
+                    -67.5f * Mth.DEG_TO_RAD,
+                    0f,
+                )
+            model.leftArm.yRot =
+                Mth.clamp(
+                    45f * Mth.DEG_TO_RAD + model.head.yRot,
+                    45f * Mth.DEG_TO_RAD,
+                    80f * Mth.DEG_TO_RAD,
+                )
         }
 
         private fun m2Arms(model: HumanoidModel<*>) {
             model.rightArm.xRot = 45f * Mth.DEG_TO_RAD + model.head.xRot
             model.rightArm.yRot = model.head.yRot
-            model.leftArm.xRot = Mth.clamp(
-                -45f * Mth.DEG_TO_RAD + model.head.xRot,
-                -67.5f * Mth.DEG_TO_RAD,
-                0f
-            )
-            model.leftArm.yRot = Mth.clamp(
-                45f * Mth.DEG_TO_RAD + model.head.yRot,
-                45f * Mth.DEG_TO_RAD,
-                80f * Mth.DEG_TO_RAD
-            )
+            model.leftArm.xRot =
+                Mth.clamp(
+                    -45f * Mth.DEG_TO_RAD + model.head.xRot,
+                    -67.5f * Mth.DEG_TO_RAD,
+                    0f,
+                )
+            model.leftArm.yRot =
+                Mth.clamp(
+                    45f * Mth.DEG_TO_RAD + model.head.yRot,
+                    45f * Mth.DEG_TO_RAD,
+                    80f * Mth.DEG_TO_RAD,
+                )
         }
 
         private fun superStarShooterArms(model: HumanoidModel<*>) {

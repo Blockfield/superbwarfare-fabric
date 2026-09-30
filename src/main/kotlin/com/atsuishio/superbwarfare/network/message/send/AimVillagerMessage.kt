@@ -9,7 +9,9 @@ import net.minecraft.world.entity.npc.Villager
 import net.minecraft.world.entity.schedule.Activity
 
 @Serializable
-data class AimVillagerMessage(val villagerId: Int) : ServerPacketPayload() {
+data class AimVillagerMessage(
+    val villagerId: Int,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val sender = sender()
         val entity = sender.level().getEntity(villagerId) as? AbstractVillager ?: return

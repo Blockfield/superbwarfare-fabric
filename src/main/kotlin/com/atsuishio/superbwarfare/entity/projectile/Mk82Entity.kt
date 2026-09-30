@@ -4,7 +4,10 @@ import com.atsuishio.superbwarfare.client.animation.entity.BasicProjectileAnimat
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.level.Level
 
-open class Mk82Entity(type: EntityType<out Mk82Entity>, level: Level) : AerialBombEntity(type, level),
+open class Mk82Entity(
+    type: EntityType<out Mk82Entity>,
+    level: Level,
+) : AerialBombEntity(type, level),
     BasicGeoProjectileEntity {
     val anim: BasicProjectileAnimationInstance<*>? =
         if (this.level().isClientSide) BasicProjectileAnimationInstance(this) else null
@@ -17,7 +20,5 @@ open class Mk82Entity(type: EntityType<out Mk82Entity>, level: Level) : AerialBo
     override val maxHealth: Float
         get() = 50f
 
-    override fun getAnimationInstance(): BasicProjectileAnimationInstance<*>? {
-        return this.anim
-    }
+    override fun getAnimationInstance(): BasicProjectileAnimationInstance<*>? = this.anim
 }

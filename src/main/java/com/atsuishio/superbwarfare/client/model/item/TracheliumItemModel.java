@@ -1,5 +1,7 @@
 package com.atsuishio.superbwarfare.client.model.item;
 
+import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
+
 import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
@@ -7,14 +9,14 @@ import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.handgun.TracheliumItem;
 import com.atsuishio.superbwarfare.tools.NBTTool;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
 
 public class TracheliumItemModel extends CustomGunModel<TracheliumItem> {
 
@@ -25,7 +27,10 @@ public class TracheliumItemModel extends CustomGunModel<TracheliumItem> {
     public static float rotXBipod = 0f;
 
     @Override
-    public void setCustomAnimations(TracheliumItem animatable, long instanceId, AnimationState<TracheliumItem> animationState) {
+    public void setCustomAnimations(
+            TracheliumItem animatable,
+            long instanceId,
+            AnimationState<TracheliumItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -41,7 +46,14 @@ public class TracheliumItemModel extends CustomGunModel<TracheliumItem> {
         GeoBone main = getAnimationProcessor().getBone("0");
         GeoBone scope2 = getAnimationProcessor().getBone("Scope2");
 
-        float times = 0.4f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.4f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
@@ -52,28 +64,43 @@ public class TracheliumItemModel extends CustomGunModel<TracheliumItem> {
         int scopeType = data.attachment.get(AttachmentType.SCOPE);
         int gripType = data.attachment.get(AttachmentType.GRIP);
 
-        posYAlt = Mth.lerp(times, posYAlt, NBTTool.getTag(stack).getBoolean("ScopeAlt") ? -1.98f : -0.83f);
-        scaleZAlt = Mth.lerp(times, scaleZAlt, NBTTool.getTag(stack).getBoolean("ScopeAlt") ? 0.4f : 0.8f);
-        posZAlt = Mth.lerp(times, posZAlt, NBTTool.getTag(stack).getBoolean("ScopeAlt") ? 7.5f : 13.7f);
+        posYAlt =
+                Mth.lerp(
+                        times,
+                        posYAlt,
+                        NBTTool.getTag(stack).getBoolean("ScopeAlt") ? -1.98f : -0.83f);
+        scaleZAlt =
+                Mth.lerp(
+                        times,
+                        scaleZAlt,
+                        NBTTool.getTag(stack).getBoolean("ScopeAlt") ? 0.4f : 0.8f);
+        posZAlt =
+                Mth.lerp(
+                        times,
+                        posZAlt,
+                        NBTTool.getTag(stack).getBoolean("ScopeAlt") ? 7.5f : 13.7f);
 
-        float posY = switch (scopeType) {
-            case 0, 3 -> 1.1f;
-            case 1 -> -0.18f;
-            case 2 -> posYAlt;
-            default -> 0f;
-        };
-        float scaleZ = switch (scopeType) {
-            case 0, 3 -> 0.2f;
-            case 1 -> 0.6f;
-            case 2 -> scaleZAlt;
-            default -> 0f;
-        };
-        float posZ = switch (scopeType) {
-            case 0, 3 -> 1f;
-            case 1 -> 6f;
-            case 2 -> posZAlt;
-            default -> 0f;
-        };
+        float posY =
+                switch (scopeType) {
+                    case 0, 3 -> 1.1f;
+                    case 1 -> -0.18f;
+                    case 2 -> posYAlt;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (scopeType) {
+                    case 0, 3 -> 0.2f;
+                    case 1 -> 0.6f;
+                    case 2 -> scaleZAlt;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (scopeType) {
+                    case 0, 3 -> 1f;
+                    case 1 -> 6f;
+                    case 2 -> posZAlt;
+                    default -> 0f;
+                };
 
         float posZAlt = stockType == 2 ? 1 : 0;
 
@@ -88,16 +115,18 @@ public class TracheliumItemModel extends CustomGunModel<TracheliumItem> {
         if (zt < 0.5) {
             shen = getAnimationProcessor().getBone("fireRootNormal");
         } else {
-            shen = switch (scopeType) {
-                case 0 -> getAnimationProcessor().getBone("fireRoot0");
-                case 1 -> getAnimationProcessor().getBone("fireRoot1");
-                case 2 -> getAnimationProcessor().getBone("fireRoot2");
-                case 3 -> getAnimationProcessor().getBone("fireRoot3");
-                default -> getAnimationProcessor().getBone("fireRootNormal");
-            };
+            shen =
+                    switch (scopeType) {
+                        case 0 -> getAnimationProcessor().getBone("fireRoot0");
+                        case 1 -> getAnimationProcessor().getBone("fireRoot1");
+                        case 2 -> getAnimationProcessor().getBone("fireRoot2");
+                        case 3 -> getAnimationProcessor().getBone("fireRoot3");
+                        default -> getAnimationProcessor().getBone("fireRootNormal");
+                    };
         }
 
-        ClientEventHandler.handleShootAnimation(shen, 1.25f, -2f, 1.85f, 3.5f, 1.3f, 1f, 0.2f, 0.75f);
+        ClientEventHandler.handleShootAnimation(
+                shen, 1.25f, -2f, 1.85f, 3.5f, 1.3f, 1f, 0.2f, 0.75f);
 
         CrossHairOverlay.gunRot = shen.getRotZ();
 
@@ -126,7 +155,10 @@ public class TracheliumItemModel extends CustomGunModel<TracheliumItem> {
         float numP = (float) (1 - 0.48 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
 
         barrel1.setPosZ((scopeType == 0 && gripType == 0) ? 17.9f : 0);
         barrel2.setPosZ((scopeType == 0 && gripType == 0) ? 15.3f : 3);

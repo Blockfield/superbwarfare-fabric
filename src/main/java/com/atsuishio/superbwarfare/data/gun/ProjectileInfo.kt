@@ -11,7 +11,9 @@ import kotlinx.serialization.Serializable
 
 @STOFactory(ProjectileInfo.ProjectileInfoInstanceBuilder::class)
 @Serializable
-class ProjectileInfo : IDBasedData<ProjectileInfo>, DeserializeFromString {
+class ProjectileInfo :
+    IDBasedData<ProjectileInfo>,
+    DeserializeFromString {
     @SerializedName("Type")
     @SerialName("Type")
     var itemId: String = "superbwarfare:projectile"
@@ -32,8 +34,9 @@ class ProjectileInfo : IDBasedData<ProjectileInfo>, DeserializeFromString {
     }
 
     object ProjectileInfoInstanceBuilder : StringInstanceBuilder<ProjectileInfo> {
-        override fun fromString(value: String) = ProjectileInfo().apply {
-            this.itemId = value
-        }
+        override fun fromString(value: String) =
+            ProjectileInfo().apply {
+                this.itemId = value
+            }
     }
 }

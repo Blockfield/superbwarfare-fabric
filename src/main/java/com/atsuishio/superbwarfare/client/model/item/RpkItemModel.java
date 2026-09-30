@@ -6,17 +6,20 @@ import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.machinegun.RpkItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class RpkItemModel extends CustomGunModel<RpkItem> {
 
     @Override
-    public void setCustomAnimations(RpkItem animatable, long instanceId, AnimationState<RpkItem> animationState) {
+    public void setCustomAnimations(
+            RpkItem animatable, long instanceId, AnimationState<RpkItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -39,30 +42,34 @@ public class RpkItemModel extends CustomGunModel<RpkItem> {
 
         int type = GunData.from(stack).attachment.get(AttachmentType.SCOPE);
 
-        float posYAlt = switch (type) {
-            case 2, 3 -> 0.5f;
-            default -> 0f;
-        };
-        float posY = switch (type) {
-            case 0 -> 1.071f;
-            case 1 -> -0.101f;
-            case 2 -> 0.11f + posYAlt;
-            case 3 -> 0.099f + posYAlt;
-            default -> 0f;
-        };
-        float scaleZ = switch (type) {
-            case 0, 1 -> 0.7f;
-            case 2 -> 0.74f;
-            case 3 -> 0.8f;
-            default -> 0f;
-        };
-        float posZ = switch (type) {
-            case 0 -> 3.3f;
-            case 1 -> 4.2f;
-            case 2 -> 4.4f;
-            case 3 -> 4.6f;
-            default -> 0f;
-        };
+        float posYAlt =
+                switch (type) {
+                    case 2, 3 -> 0.5f;
+                    default -> 0f;
+                };
+        float posY =
+                switch (type) {
+                    case 0 -> 1.071f;
+                    case 1 -> -0.101f;
+                    case 2 -> 0.11f + posYAlt;
+                    case 3 -> 0.099f + posYAlt;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (type) {
+                    case 0, 1 -> 0.7f;
+                    case 2 -> 0.74f;
+                    case 3 -> 0.8f;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (type) {
+                    case 0 -> 3.3f;
+                    case 1 -> 4.2f;
+                    case 2 -> 4.4f;
+                    case 3 -> 4.6f;
+                    default -> 0f;
+                };
 
         gun.setPosX(2.462f * (float) zp);
         gun.setPosY((posY) * (float) zp - (float) (0.2f * zpz) - posYAlt);
@@ -81,13 +88,14 @@ public class RpkItemModel extends CustomGunModel<RpkItem> {
         if (zt < 0.5) {
             shen = getAnimationProcessor().getBone("fireRootNormal");
         } else {
-            shen = switch (type) {
-                case 0 -> getAnimationProcessor().getBone("fireRoot0");
-                case 1 -> getAnimationProcessor().getBone("fireRoot1");
-                case 2 -> getAnimationProcessor().getBone("fireRoot2");
-                case 3 -> getAnimationProcessor().getBone("fireRoot3");
-                default -> getAnimationProcessor().getBone("fireRootNormal");
-            };
+            shen =
+                    switch (type) {
+                        case 0 -> getAnimationProcessor().getBone("fireRoot0");
+                        case 1 -> getAnimationProcessor().getBone("fireRoot1");
+                        case 2 -> getAnimationProcessor().getBone("fireRoot2");
+                        case 3 -> getAnimationProcessor().getBone("fireRoot3");
+                        default -> getAnimationProcessor().getBone("fireRootNormal");
+                    };
         }
 
         ClientEventHandler.handleShootAnimation(shen, 1, -1, 1, 1, 1, 1, 0.5f, 0.8f);
@@ -104,7 +112,10 @@ public class RpkItemModel extends CustomGunModel<RpkItem> {
         float numP = (float) (1 - 0.92 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 1f, 0.35f);
     }
 }

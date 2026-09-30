@@ -19,7 +19,7 @@ open class EDDItem : Item(Properties()) {
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(Component.translatable("des.superbwarfare.edd").withStyle(ChatFormatting.GRAY))
     }
@@ -37,13 +37,14 @@ open class EDDItem : Item(Properties()) {
             if (direction.axis.isVertical) return InteractionResult.FAIL
 
             val level = context.level
-            val entity = EDDEntity(
-                owner = player,
-                level = level,
-                pos = relative,
-                direction = direction,
-                corner = this.getCornerFromHit(direction, pos, context.clickLocation)
-            )
+            val entity =
+                EDDEntity(
+                    owner = player,
+                    level = level,
+                    pos = relative,
+                    direction = direction,
+                    corner = this.getCornerFromHit(direction, pos, context.clickLocation),
+                )
 
             if (entity.survives()) {
                 if (!level.isClientSide) {
@@ -64,24 +65,27 @@ open class EDDItem : Item(Properties()) {
         player: Player,
         direction: Direction,
         stack: ItemStack,
-        pos: BlockPos
-    ): Boolean {
-        return !player.level().isOutsideBuildHeight(pos) && player.mayUseItemAt(pos, direction, stack)
-    }
+        pos: BlockPos,
+    ): Boolean = !player.level().isOutsideBuildHeight(pos) && player.mayUseItemAt(pos, direction, stack)
 
-    fun getCornerFromHit(face: Direction, pos: BlockPos, hitVec: Vec3): Int {
+    fun getCornerFromHit(
+        face: Direction,
+        pos: BlockPos,
+        hitVec: Vec3,
+    ): Int {
         val x = hitVec.x
         val y = hitVec.y
         val z = hitVec.z
 
         val top = y > pos.y + 0.5
-        val left = when (face) {
-            Direction.WEST -> z < pos.z + 0.5
-            Direction.EAST -> z > pos.z + 0.5
-            Direction.SOUTH -> x < pos.x + 0.5
-            Direction.NORTH -> x > pos.x + 0.5
-            else -> false
-        }
+        val left =
+            when (face) {
+                Direction.WEST -> z < pos.z + 0.5
+                Direction.EAST -> z > pos.z + 0.5
+                Direction.SOUTH -> x < pos.x + 0.5
+                Direction.NORTH -> x > pos.x + 0.5
+                else -> false
+            }
 
         return if (left && top) {
             0

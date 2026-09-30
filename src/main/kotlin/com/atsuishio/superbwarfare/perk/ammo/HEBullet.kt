@@ -7,7 +7,12 @@ import com.atsuishio.superbwarfare.data.gun.GunProp
 import com.atsuishio.superbwarfare.perk.AmmoPerk
 
 object HEBullet : AmmoPerk(
-    Builder("he_bullet", Type.AMMO).bypassArmorRate(-0.3).damageRate(0.5).speedRate(0.85).slug().rgb(240, 20, 10)
+    Builder("he_bullet", Type.AMMO)
+        .bypassArmorRate(-0.3)
+        .damageRate(0.5)
+        .speedRate(0.85)
+        .slug()
+        .rgb(240, 20, 10),
 ) {
     override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) {
         super.modifyProperty(modifier)

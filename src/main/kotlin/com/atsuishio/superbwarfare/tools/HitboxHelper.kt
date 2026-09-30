@@ -64,7 +64,10 @@ object HitboxHelper {
     }
 
     @JvmStatic
-    fun getBoundingBox(entity: Player, ping: Int): AABB {
+    fun getBoundingBox(
+        entity: Player,
+        ping: Int,
+    ): AABB {
         if (PLAYER_HITBOXES.containsKey(entity)) {
             val boxes = PLAYER_HITBOXES[entity]!!
             val index = ping.coerceIn(0, boxes.size - 1)
@@ -74,7 +77,10 @@ object HitboxHelper {
     }
 
     @JvmStatic
-    fun getVelocity(entity: Player, ping: Int): Vec3 {
+    fun getVelocity(
+        entity: Player,
+        ping: Int,
+    ): Vec3 {
         if (PLAYER_VELOCITY.containsKey(entity)) {
             val velocities = PLAYER_VELOCITY[entity]!!
             val index = ping.coerceIn(0, velocities.size - 1)

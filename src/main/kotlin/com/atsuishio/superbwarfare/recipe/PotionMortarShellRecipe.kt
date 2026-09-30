@@ -14,8 +14,13 @@ import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.level.Level
 import javax.annotation.ParametersAreNonnullByDefault
 
-class PotionMortarShellRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pCategory) {
-    override fun matches(input: CraftingInput, pLevel: Level): Boolean {
+class PotionMortarShellRecipe(
+    pCategory: CraftingBookCategory,
+) : CustomRecipe(pCategory) {
+    override fun matches(
+        input: CraftingInput,
+        pLevel: Level,
+    ): Boolean {
         if (input.width() == 3 && input.height() == 3) {
             for (i in 0..<input.width()) {
                 for (j in 0..<input.height()) {
@@ -43,7 +48,10 @@ class PotionMortarShellRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pC
     }
 
     @ParametersAreNonnullByDefault
-    override fun assemble(input: CraftingInput, registries: HolderLookup.Provider): ItemStack {
+    override fun assemble(
+        input: CraftingInput,
+        registries: HolderLookup.Provider,
+    ): ItemStack {
         val stack = input.getItem(1 + input.width())
         if (!stack.`is`(Items.LINGERING_POTION)) {
             return ItemStack.EMPTY
@@ -51,18 +59,17 @@ class PotionMortarShellRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pC
             val res = ItemStack(ModItems.POTION_MORTAR_SHELL.get(), 4)
             res.set(
                 DataComponents.POTION_CONTENTS,
-                stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)
+                stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY),
             )
 
             return res
         }
     }
 
-    override fun canCraftInDimensions(pWidth: Int, pHeight: Int): Boolean {
-        return pWidth >= 2 && pHeight >= 2
-    }
+    override fun canCraftInDimensions(
+        pWidth: Int,
+        pHeight: Int,
+    ): Boolean = pWidth >= 2 && pHeight >= 2
 
-    override fun getSerializer(): RecipeSerializer<*> {
-        return ModRecipes.POTION_MORTAR_SHELL_SERIALIZER.get()
-    }
+    override fun getSerializer(): RecipeSerializer<*> = ModRecipes.POTION_MORTAR_SHELL_SERIALIZER.get()
 }

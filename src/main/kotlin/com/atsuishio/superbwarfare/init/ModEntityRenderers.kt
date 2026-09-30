@@ -39,7 +39,7 @@ object ModEntityRenderers {
         EntityRendererRegistry.register(ModEntities.CATAPULT_SHUTTLE.get(), ::CatapultShuttleRenderer)
         EntityRendererRegistry.register(
             ModEntities.WHITE_PHOSPHORUS_PROJECTILE.get(),
-            ::WhitePhosphorusProjectileEntityRenderer
+            ::WhitePhosphorusProjectileEntityRenderer,
         )
         EntityRendererRegistry.register(ModEntities.PRISMATIC_BOLT.get(), ::PrismaticBoltEntityRenderer)
         EntityRendererRegistry.register(ModEntities.SMOKE_DECOY.get(), ::SmokeDecoyEntityRenderer)

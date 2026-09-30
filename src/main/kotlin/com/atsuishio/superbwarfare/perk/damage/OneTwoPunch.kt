@@ -24,7 +24,7 @@ object OneTwoPunch : Perk("one_two_punch", Type.DAMAGE) {
         attacker: LivingEntity,
         data: GunData,
         instance: PerkInstance,
-        target: Entity
+        target: Entity,
     ) {
         val tag = data.perk.getTag(this) ?: return
         tag.putInt("OneTwoPunchCount", tag.getInt("OneTwoPunchCount") + 1)
@@ -42,7 +42,7 @@ object OneTwoPunch : Perk("one_two_punch", Type.DAMAGE) {
     override fun onChangeSlot(
         data: GunData,
         instance: PerkInstance,
-        living: Entity?
+        living: Entity?,
     ) {
         val tag = data.perk.getTag(this) ?: return
         tag.remove("OneTwoPunchTime")
@@ -54,7 +54,7 @@ object OneTwoPunch : Perk("one_two_punch", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val tag = data.perk.getTag(this) ?: return
         tag.remove("OneTwoPunchTime")
@@ -65,7 +65,7 @@ object OneTwoPunch : Perk("one_two_punch", Type.DAMAGE) {
     override fun tick(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         data.perk.reduceCooldown(this, "OneTwoPunchTime")
         data.perk.reduceCooldown(this, "OneTwoPunchCountTime")

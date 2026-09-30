@@ -22,7 +22,6 @@ import net.minecraft.world.phys.Vec3
  * 处理载具特效、粒子、低血量警告等方法的工具类
  */
 object VehicleEffectUtils {
-
     /**
      * 在载具位置添加随机粒子
      */
@@ -34,7 +33,7 @@ object VehicleEffectUtils {
         randomPos: Float,
         level: Level,
         speed: Float,
-        count: Int
+        count: Int,
     ) {
         val randomX = 2 * (vehicle.getRandom().nextFloat() - 0.5f)
         val randomY = 2 * (vehicle.getRandom().nextFloat() - 0.5f)
@@ -48,7 +47,7 @@ object VehicleEffectUtils {
                 pos.z + randomPos * randomZ,
                 (randomX * speed).toDouble(),
                 (randomY * speed).toDouble(),
-                (randomZ * speed).toDouble()
+                (randomZ * speed).toDouble(),
             )
         }
     }
@@ -64,7 +63,7 @@ object VehicleEffectUtils {
         randomPos: Float,
         level: Level,
         count: Int,
-        vec3: Vec3
+        vec3: Vec3,
     ) {
         val randomX = 2 * (vehicle.getRandom().nextFloat() - 0.5f)
         val randomY = 2 * (vehicle.getRandom().nextFloat() - 0.5f)
@@ -78,7 +77,7 @@ object VehicleEffectUtils {
                 pos.z + randomPos * randomZ,
                 vec3.x,
                 vec3.y,
-                vec3.z
+                vec3.z,
             )
         }
     }
@@ -87,7 +86,10 @@ object VehicleEffectUtils {
      * 默认的部件损坏粒子效果
      */
     @JvmStatic
-    fun defaultPartDamageEffect(vehicle: VehicleEntity, pos: Vec3) {
+    fun defaultPartDamageEffect(
+        vehicle: VehicleEntity,
+        pos: Vec3,
+    ) {
         if (vehicle.level().isClientSide) {
             addRandomParticle(vehicle, ModParticleTypes.FIRE_STAR.get(), pos, 0f, vehicle.level(), 0.25f, 1)
             addRandomParticle(vehicle, ParticleTypes.LARGE_SMOKE, pos, 0.5f, vehicle.level(), 0.001f, 1)
@@ -98,7 +100,10 @@ object VehicleEffectUtils {
      * 处理载具部件损坏
      */
     @JvmStatic
-    fun handlePartDamaged(vehicle: VehicleEntity, obbEntity: OBBEntity) {
+    fun handlePartDamaged(
+        vehicle: VehicleEntity,
+        obbEntity: OBBEntity,
+    ) {
         val obbList = obbEntity.getOBBs()
         for (obb in obbList) {
             val pos = obb.center.toVec3()
@@ -143,12 +148,20 @@ object VehicleEffectUtils {
      */
     @JvmStatic
     fun handlePartHealth(vehicle: VehicleEntity) {
-        if (vehicle.hasTurret() && (vehicle.vehicleType == VehicleType.AA || vehicle.vehicleType == VehicleType.APC || vehicle.vehicleType == VehicleType.TANK) && vehicle.health < 0.05 * vehicle.getMaxHealth()) {
+        if (vehicle.hasTurret() &&
+            (vehicle.vehicleType == VehicleType.AA || vehicle.vehicleType == VehicleType.APC || vehicle.vehicleType == VehicleType.TANK) &&
+            vehicle.health < 0.05 * vehicle.getMaxHealth()
+        ) {
             vehicle.turretHealth = 0f
             vehicle.mainEngineHealth = 0f
             vehicle.subEngineHealth = 0f
         }
-        if ((vehicle.vehicleType == VehicleType.HELICOPTER || vehicle.vehicleType == VehicleType.AIRPLANE || vehicle.vehicleType == VehicleType.AIRSHIP) && vehicle.health < 0.05 * vehicle.getMaxHealth()) {
+        if ((
+                vehicle.vehicleType == VehicleType.HELICOPTER || vehicle.vehicleType == VehicleType.AIRPLANE ||
+                    vehicle.vehicleType == VehicleType.AIRSHIP
+            ) &&
+            vehicle.health < 0.05 * vehicle.getMaxHealth()
+        ) {
             vehicle.mainEngineHealth = 0f
             vehicle.subEngineHealth = 0f
         }
@@ -184,26 +197,31 @@ object VehicleEffectUtils {
         }
 
         if (!vehicle.isWreck) {
-            vehicle.turretHealth = kotlin.math.min(
-                vehicle.turretHealth + 0.0025f * vehicle.getTurretMaxHealth(),
-                vehicle.getTurretMaxHealth()
-            )
-            vehicle.leftWheelHealth = kotlin.math.min(
-                vehicle.leftWheelHealth + 0.0025f * vehicle.getLeftWheelMaxHealth(),
-                vehicle.getLeftWheelMaxHealth()
-            )
-            vehicle.rightWheelHealth = kotlin.math.min(
-                vehicle.rightWheelHealth + 0.0025f * vehicle.getRightWheelMaxHealth(),
-                vehicle.getRightWheelMaxHealth()
-            )
-            vehicle.mainEngineHealth = kotlin.math.min(
-                vehicle.mainEngineHealth + 0.0025f * vehicle.getMainEngineMaxHealth(),
-                vehicle.getMainEngineMaxHealth()
-            )
-            vehicle.subEngineHealth = kotlin.math.min(
-                vehicle.subEngineHealth + 0.0025f * vehicle.getSubEngineMaxHealth(),
-                vehicle.getSubEngineMaxHealth()
-            )
+            vehicle.turretHealth =
+                kotlin.math.min(
+                    vehicle.turretHealth + 0.0025f * vehicle.getTurretMaxHealth(),
+                    vehicle.getTurretMaxHealth(),
+                )
+            vehicle.leftWheelHealth =
+                kotlin.math.min(
+                    vehicle.leftWheelHealth + 0.0025f * vehicle.getLeftWheelMaxHealth(),
+                    vehicle.getLeftWheelMaxHealth(),
+                )
+            vehicle.rightWheelHealth =
+                kotlin.math.min(
+                    vehicle.rightWheelHealth + 0.0025f * vehicle.getRightWheelMaxHealth(),
+                    vehicle.getRightWheelMaxHealth(),
+                )
+            vehicle.mainEngineHealth =
+                kotlin.math.min(
+                    vehicle.mainEngineHealth + 0.0025f * vehicle.getMainEngineMaxHealth(),
+                    vehicle.getMainEngineMaxHealth(),
+                )
+            vehicle.subEngineHealth =
+                kotlin.math.min(
+                    vehicle.subEngineHealth + 0.0025f * vehicle.getSubEngineMaxHealth(),
+                    vehicle.getSubEngineMaxHealth(),
+                )
         }
     }
 
@@ -220,7 +238,7 @@ object VehicleEffectUtils {
                 0.35f * vehicle.bbWidth,
                 vehicle.level(),
                 0.01f,
-                1
+                1,
             )
             addRandomParticle(
                 vehicle,
@@ -229,7 +247,7 @@ object VehicleEffectUtils {
                 0.35f * vehicle.bbWidth,
                 vehicle.level(),
                 0.01f,
-                1
+                1,
             )
         }
     }
@@ -240,10 +258,13 @@ object VehicleEffectUtils {
     @JvmStatic
     fun turretBurnEffectPos(vehicle: VehicleEntity): Vec3? {
         val pos = vehicle.turretPos ?: return null
-        val worldPosition = VehicleVecUtils.transformPosition(
-            vehicle.getVehicleTransform(1f),
-            pos.x, pos.y, pos.z
-        )
+        val worldPosition =
+            VehicleVecUtils.transformPosition(
+                vehicle.getVehicleTransform(1f),
+                pos.x,
+                pos.y,
+                pos.z,
+            )
         return Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
     }
 
@@ -266,7 +287,7 @@ object VehicleEffectUtils {
                 0.35f * vehicle.bbWidth,
                 vehicle.level(),
                 0.01f,
-                1
+                1,
             )
         }
 
@@ -287,7 +308,7 @@ object VehicleEffectUtils {
                     0.35f * vehicle.bbWidth,
                     vehicle.level(),
                     0.01f,
-                    2
+                    2,
                 )
                 addRandomParticle(
                     vehicle,
@@ -296,7 +317,7 @@ object VehicleEffectUtils {
                     0.35f * vehicle.bbWidth,
                     vehicle.level(),
                     0.01f,
-                    2
+                    2,
                 )
                 addRandomParticle(
                     vehicle,
@@ -308,13 +329,13 @@ object VehicleEffectUtils {
                         2.5f + 0.5f * random,
                         -0.07f,
                         cooldown = true,
-                        light = true
+                        light = true,
                     ),
                     Vec3(vehicle.x, vehicle.y + 0.85f * vehicle.bbHeight, vehicle.z),
                     0.35f * vehicle.bbWidth,
                     vehicle.level(),
                     0.01f,
-                    1
+                    1,
                 )
                 addRandomParticle(
                     vehicle,
@@ -326,21 +347,24 @@ object VehicleEffectUtils {
                         1.5f + 0.5f * random,
                         -0.07f,
                         cooldown = false,
-                        light = true
+                        light = true,
                     ),
                     Vec3(vehicle.x, vehicle.y + 0.85f * vehicle.bbHeight, vehicle.z),
                     0.3f * vehicle.bbWidth,
                     vehicle.level(),
                     0.01f,
-                    1
+                    1,
                 )
             }
 
-            if (vehicle.computed().destroyInfo.sympatheticDetonation
-                && vehicle.health < 0.05 * vehicle.getMaxHealth() && vehicle.hasTurret()
-                && (vehicle.vehicleType == VehicleType.AA || vehicle.vehicleType == VehicleType.APC || vehicle.vehicleType == VehicleType.TANK)
-                && !vehicle.sympatheticDetonated
-                && !vehicle.turretBurned
+            if (vehicle.computed().destroyInfo.sympatheticDetonation &&
+                vehicle.health < 0.05 * vehicle.getMaxHealth() && vehicle.hasTurret() &&
+                (
+                    vehicle.vehicleType == VehicleType.AA || vehicle.vehicleType == VehicleType.APC ||
+                        vehicle.vehicleType == VehicleType.TANK
+                ) &&
+                !vehicle.sympatheticDetonated &&
+                !vehicle.turretBurned
             ) {
                 vehicle.turretBurned = true
                 vehicle.turretBurnTimer = 400
@@ -357,7 +381,7 @@ object VehicleEffectUtils {
                         CannonMuzzleFlareOption(1f, 0.97f, 0.97f, 4, 0.5f, 1, 0.3f),
                         dir,
                         pos,
-                        4.5 + random
+                        4.5 + random,
                     )
                     ParticleTool.spawnDirectionalParticles(
                         (4 + 4 * random).toInt(),
@@ -366,7 +390,7 @@ object VehicleEffectUtils {
                         ModParticleTypes.FIRE_STAR.get(),
                         dir,
                         pos,
-                        0.4 + random
+                        0.4 + random,
                     )
                     ParticleTool.spawnDirectionalParticles(
                         (4 + 4 * random).toInt(),
@@ -375,7 +399,7 @@ object VehicleEffectUtils {
                         ParticleTypes.LAVA,
                         dir,
                         pos,
-                        0.4 + random
+                        0.4 + random,
                     )
                     ParticleTool.spawnDirectionalParticles(
                         (4 + 4 * random).toInt(),
@@ -384,7 +408,7 @@ object VehicleEffectUtils {
                         ParticleTypes.FLAME,
                         dir,
                         pos,
-                        0.4 + random
+                        0.4 + random,
                     )
                 }
 
@@ -395,7 +419,7 @@ object VehicleEffectUtils {
                         ModSounds.TURRET_BURN_START.get(),
                         SoundSource.BLOCKS,
                         4f,
-                        1f + 0.05f * random
+                        1f + 0.05f * random,
                     )
                 }
                 if (vehicle.turretBurnTimer % 5 == 0) {
@@ -405,7 +429,7 @@ object VehicleEffectUtils {
                         ModSounds.TURRET_BURN.get(),
                         SoundSource.BLOCKS,
                         1.5f,
-                        1f + 0.05f * random
+                        1f + 0.05f * random,
                     )
                 }
             }

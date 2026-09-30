@@ -1,5 +1,6 @@
 package com.atsuishio.superbwarfare.event
 
+import com.atsuishio.superbwarfare.client.boundKey
 import com.atsuishio.superbwarfare.client.overlay.OverlayTraceHandler
 import com.atsuishio.superbwarfare.client.screens.LoiterConfigScreen
 import com.atsuishio.superbwarfare.client.screens.MissilePosInputScreen
@@ -17,6 +18,7 @@ import com.atsuishio.superbwarfare.data.vehicle.subdata.EngineType
 import com.atsuishio.superbwarfare.entity.vehicle.DroneEntity
 import com.atsuishio.superbwarfare.entity.vehicle.MortarEntity
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import com.atsuishio.superbwarfare.fabric.isAccessoryEquipped
 import com.atsuishio.superbwarfare.init.*
 import com.atsuishio.superbwarfare.item.ItemScreenProvider
 import com.atsuishio.superbwarfare.item.curio.TacticalTerminalItem
@@ -26,6 +28,7 @@ import com.atsuishio.superbwarfare.resource.gun.GunResource
 import com.atsuishio.superbwarfare.tools.*
 import com.mojang.blaze3d.platform.InputConstants
 import io.github.fabricators_of_create.porting_lib.client_events.event.client.InputEvent
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.ChatFormatting
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
@@ -38,18 +41,17 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.loader.api.FabricLoader
 import org.lwjgl.glfw.GLFW
-import com.atsuishio.superbwarfare.fabric.isAccessoryEquipped
-import com.atsuishio.superbwarfare.client.boundKey
 
 object ClickEventHandler {
     @JvmField
     var switchZoom: Boolean = false
 
     fun init() {
-        InputEvent.MouseButton.Pre.EVENT.register { onButtonReleased(it) }
-        InputEvent.MouseButton.Pre.EVENT.register { onButtonPressed(it) }
+        InputEvent.MouseButton.Pre.EVENT
+            .register { onButtonReleased(it) }
+        InputEvent.MouseButton.Pre.EVENT
+            .register { onButtonPressed(it) }
         InputEvent.InteractionKeyMappingTriggered.EVENT.register { stopSwing(it) }
         InputEvent.MouseScrollingEvent.EVENT.register { onMouseScrolling(it) }
         InputEvent.Key.EVENT.register { onKeyPressed(it) }
@@ -74,14 +76,20 @@ object ClickEventHandler {
         }
     }
 
-    private fun cancelFireKey(player: Player, stack: ItemStack): Boolean {
+    private fun cancelFireKey(
+        player: Player,
+        stack: ItemStack,
+    ): Boolean {
         val vehicle = player.vehicle
-        return stack.item is GunItem || stack.`is`(ModItems.MONITOR.get()) || stack.`is`(ModItems.LUNGE_MINE.get())
-                || stack.`is`(ModItems.ARTILLERY_INDICATOR.get()) || player.hasEffect(ModMobEffects.SHOCK)
-                || (vehicle is VehicleEntity && vehicle.banHand(player))
+        return stack.item is GunItem || stack.`is`(ModItems.MONITOR.get()) || stack.`is`(ModItems.LUNGE_MINE.get()) ||
+            stack.`is`(ModItems.ARTILLERY_INDICATOR.get()) || player.hasEffect(ModMobEffects.SHOCK) ||
+            (vehicle is VehicleEntity && vehicle.banHand(player))
     }
 
-    private fun cancelZoomKey(player: Player, stack: ItemStack): Boolean {
+    private fun cancelZoomKey(
+        player: Player,
+        stack: ItemStack,
+    ): Boolean {
         val vehicle = player.vehicle
         return stack.item is GunItem || (vehicle is VehicleEntity && vehicle.banHand(player) && !stack.isEdible)
     }
@@ -102,17 +110,17 @@ object ClickEventHandler {
         val button = event.button
 
         val fireKey = ModKeyMappings.FIRE.boundKey
-        if (fireKey.type == InputConstants.Type.MOUSE
-            && fireKey.value == button
-            && cancelFireKey(player, stack)
+        if (fireKey.type == InputConstants.Type.MOUSE &&
+            fireKey.value == button &&
+            cancelFireKey(player, stack)
         ) {
             event.isCanceled = true
         }
 
         val zoomKey = ModKeyMappings.HOLD_ZOOM.boundKey
-        if (zoomKey.type == InputConstants.Type.MOUSE
-            && zoomKey.value == button
-            && cancelZoomKey(player, stack)
+        if (zoomKey.type == InputConstants.Type.MOUSE &&
+            zoomKey.value == button &&
+            cancelZoomKey(player, stack)
         ) {
             event.isCanceled = true
         }
@@ -135,12 +143,12 @@ object ClickEventHandler {
             }
         }
 
-        if (stack.item is GunItem
-            || player.vehicle is VehicleEntity
-            || stack.`is`(ModItems.MONITOR.get())
-            || stack.`is`(ModItems.LUNGE_MINE.get())
-            || (stack.`is`(Items.SPYGLASS) && player.isScoping && player.offhandItem.`is`(ModItems.FIRING_PARAMETERS.get()))
-            || stack.`is`(ModItems.ARTILLERY_INDICATOR.get())
+        if (stack.item is GunItem ||
+            player.vehicle is VehicleEntity ||
+            stack.`is`(ModItems.MONITOR.get()) ||
+            stack.`is`(ModItems.LUNGE_MINE.get()) ||
+            (stack.`is`(Items.SPYGLASS) && player.isScoping && player.offhandItem.`is`(ModItems.FIRING_PARAMETERS.get())) ||
+            stack.`is`(ModItems.ARTILLERY_INDICATOR.get())
         ) {
             if (button == ModKeyMappings.FIRE.boundKey.value) {
                 handleWeaponFirePress(player, stack)
@@ -200,10 +208,10 @@ object ClickEventHandler {
         }
 
         // 未按下shift时，为有武器的载具切换武器
-        if (!Screen.hasShiftDown()
-            && vehicle is VehicleEntity
-            && vehicle.hasWeapon(vehicle.getSeatIndex(player))
-            && vehicle.banHand(player)
+        if (!Screen.hasShiftDown() &&
+            vehicle is VehicleEntity &&
+            vehicle.hasWeapon(vehicle.getSeatIndex(player)) &&
+            vehicle.banHand(player)
         ) {
             if (ClientEventHandler.switchVehicleWeaponCooldown <= 0) {
                 val index = vehicle.getSeatIndex(player)
@@ -225,8 +233,8 @@ object ClickEventHandler {
 
         val tag = NBTTool.getTag(stack)
 
-        if (stack.`is`(ModItems.MONITOR.get()) && tag.getBoolean("Using")
-            && tag.getBoolean("Linked")
+        if (stack.`is`(ModItems.MONITOR.get()) && tag.getBoolean("Using") &&
+            tag.getBoolean("Linked")
         ) {
             ClientEventHandler.droneFov = (ClientEventHandler.droneFov + 0.4 * scroll).coerceIn(1.0, 6.0)
             event.isCanceled = true
@@ -295,7 +303,11 @@ object ClickEventHandler {
                 }
             }
 
-            if (key == Minecraft.getInstance().options.keyJump.boundKey.value) {
+            if (key ==
+                Minecraft
+                    .getInstance()
+                    .options.keyJump.boundKey.value
+            ) {
                 handleDoubleJump(player)
                 handleParachute()
             }
@@ -417,11 +429,11 @@ object ClickEventHandler {
                 sendPacketToServer(SensitivityMessage(false))
             }
 
-            if (stack.item is GunItem
-                || (vehicle is VehicleEntity && vehicle.firstPassenger == player)
-                || stack.`is`(ModItems.MONITOR.get())
-                || (stack.`is`(Items.SPYGLASS) && player.isScoping && player.offhandItem.`is`(ModItems.FIRING_PARAMETERS.get()))
-                || (stack.`is`(ModItems.ARTILLERY_INDICATOR.get()))
+            if (stack.item is GunItem ||
+                (vehicle is VehicleEntity && vehicle.firstPassenger == player) ||
+                stack.`is`(ModItems.MONITOR.get()) ||
+                (stack.`is`(Items.SPYGLASS) && player.isScoping && player.offhandItem.`is`(ModItems.FIRING_PARAMETERS.get())) ||
+                (stack.`is`(ModItems.ARTILLERY_INDICATOR.get()))
             ) {
                 if (key == ModKeyMappings.FIRE.boundKey.value) {
                     handleWeaponFirePress(player, stack)
@@ -466,7 +478,10 @@ object ClickEventHandler {
         }
     }
 
-    fun handleWeaponFirePress(player: Player, stack: ItemStack) {
+    fun handleWeaponFirePress(
+        player: Player,
+        stack: ItemStack,
+    ) {
         ClientEventHandler.isEditing = false
 
         if (player.hasEffect(ModMobEffects.SHOCK)) return
@@ -501,9 +516,9 @@ object ClickEventHandler {
         }
 
         val item = stack.item
-        if (item is GunItem
-            && ClientEventHandler.clientTimer.progress == 0L
-            && !notInGame
+        if (item is GunItem &&
+            ClientEventHandler.clientTimer.progress == 0L &&
+            !notInGame
         ) {
             val data = GunData.from(stack)
             val resource = GunResource.compute(stack)
@@ -512,8 +527,8 @@ object ClickEventHandler {
             if (!(stack.`is`(ModItems.BOCEK.get()))) {
                 if (!data.meleeOnly()) {
                     // 普通枪（？）
-                    if (stack.`is`(ModItems.QL_1031.get()) && data.selectedFireModeInfo().name == "Hold"
-                        && item.canShoot(data, player)
+                    if (stack.`is`(ModItems.QL_1031.get()) && data.selectedFireModeInfo().name == "Hold" &&
+                        item.canShoot(data, player)
                     ) {
                         player.playSound(ModSounds.QL_1031_CHARGE.get(), 1f, 1f)
                         ClientEventHandler.shouldPlayDischargeSound = true
@@ -600,7 +615,10 @@ object ClickEventHandler {
         }
     }
 
-    fun handleWeaponZoomPress(player: Player, stack: ItemStack) {
+    fun handleWeaponZoomPress(
+        player: Player,
+        stack: ItemStack,
+    ) {
         sendPacketToServer(ZoomMessage(0))
 
         ClientEventHandler.isEditing = false
@@ -672,11 +690,12 @@ object ClickEventHandler {
     fun handleConfigScreen(player: Player) {
         if (FabricLoader.getInstance().isModLoaded(CompatHolder.CLOTH_CONFIG)) {
             CompatHolder.hasMod(
-                CompatHolder.CLOTH_CONFIG
+                CompatHolder.CLOTH_CONFIG,
             ) { mc.setScreen(ClothConfigHelper.getConfigScreen(null)) }
         } else {
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.no_cloth_config").withStyle(ChatFormatting.RED), true
+                Component.translatable("tips.superbwarfare.no_cloth_config").withStyle(ChatFormatting.RED),
+                true,
             )
         }
     }
@@ -689,15 +708,17 @@ object ClickEventHandler {
                 player.displayClientMessage(
                     Component.translatable(
                         "tips.superbwarfare.mount.onboard",
-                        ModKeyMappings.DISMOUNT.translatedKeyMessage
-                    ), true
+                        ModKeyMappings.DISMOUNT.translatedKeyMessage,
+                    ),
+                    true,
                 )
             } else {
                 player.displayClientMessage(
                     Component.translatable(
                         "mount.onboard",
-                        ModKeyMappings.DISMOUNT.translatedKeyMessage
-                    ), true
+                        ModKeyMappings.DISMOUNT.translatedKeyMessage,
+                    ),
+                    true,
                 )
             }
 
@@ -708,23 +729,27 @@ object ClickEventHandler {
         ClientEventHandler.stopVehicleReloadSound(player)
     }
 
-    fun droneLeftClick(stack: ItemStack, player: Player) {
-        if (stack.`is`(ModItems.MONITOR.get()) && stack.getOrCreateTag().getBoolean("Using")
-            && stack.getOrCreateTag().getBoolean("Linked")
+    fun droneLeftClick(
+        stack: ItemStack,
+        player: Player,
+    ) {
+        if (stack.`is`(ModItems.MONITOR.get()) && stack.getOrCreateTag().getBoolean("Using") &&
+            stack.getOrCreateTag().getBoolean("Linked")
         ) {
             val drone =
                 EntityFindUtil.findDrone(player.level(), stack.getOrCreateTag().getString("LinkedDrone")) ?: return
             val lookingEntity = SeekTool.seekLivingEntity(drone, 512.0, 2 / ClientEventHandler.droneFovLerp)
 
-            val result = player.level().clip(
-                ClipContext(
-                    drone.eyePosition,
-                    drone.eyePosition.add(drone.lookAngle.scale(512.0)),
-                    ClipContext.Block.OUTLINE,
-                    ClipContext.Fluid.NONE,
-                    drone
+            val result =
+                player.level().clip(
+                    ClipContext(
+                        drone.eyePosition,
+                        drone.eyePosition.add(drone.lookAngle.scale(512.0)),
+                        ClipContext.Block.OUTLINE,
+                        ClipContext.Fluid.NONE,
+                        drone,
+                    ),
                 )
-            )
 
             var pos = result.location
             if (lookingEntity != null && !player.isShiftKeyDown) {
@@ -732,7 +757,7 @@ object ClickEventHandler {
             }
 
             sendPacketToServer(
-                DroneFireMessage(pos.toVector3f(), drone.entityData.get(DroneEntity.SESSION), drone.nextClientSequence())
+                DroneFireMessage(pos.toVector3f(), drone.entityData.get(DroneEntity.SESSION), drone.nextClientSequence()),
             )
         }
     }

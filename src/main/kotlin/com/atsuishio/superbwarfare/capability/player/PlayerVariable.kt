@@ -9,13 +9,13 @@ import com.atsuishio.superbwarfare.init.setData
 import com.atsuishio.superbwarfare.network.message.receive.PlayerVariablesSyncMessage
 import com.atsuishio.superbwarfare.tools.sendPacket
 import com.mojang.serialization.Codec
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import java.util.*
 import java.util.function.Consumer
 
@@ -119,10 +119,11 @@ class PlayerVariable {
     companion object {
         /** Хранится тем же тегом, что и на NeoForge, — чтобы старые миры читались без миграции. */
         @JvmField
-        val CODEC: Codec<PlayerVariable> = CompoundTag.CODEC.xmap(
-            { tag -> PlayerVariable().apply { readFromNBT(tag) } },
-            PlayerVariable::writeToNBT
-        )
+        val CODEC: Codec<PlayerVariable> =
+            CompoundTag.CODEC.xmap(
+                { tag -> PlayerVariable().apply { readFromNBT(tag) } },
+                PlayerVariable::writeToNBT,
+            )
 
         fun init() {
             ServerPlayConnectionEvents.JOIN.register { handler, _, _ -> onPlayerLoggedIn(handler.player) }
@@ -134,16 +135,17 @@ class PlayerVariable {
         }
 
         @JvmStatic
-        fun modify(player: Player, consumer: Consumer<PlayerVariable>) {
+        fun modify(
+            player: Player,
+            consumer: Consumer<PlayerVariable>,
+        ) {
             val cap = player.getData(ModAttachments.PLAYER_VARIABLE).watch()
             consumer.accept(cap)
             cap.sync(player)
         }
 
         @JvmStatic
-        fun getOrDefault(entity: Entity): PlayerVariable {
-            return entity.getData(ModAttachments.PLAYER_VARIABLE)
-        }
+        fun getOrDefault(entity: Entity): PlayerVariable = entity.getData(ModAttachments.PLAYER_VARIABLE)
 
         private fun onPlayerLoggedIn(player: ServerPlayer) {
             player.sendPacket(PlayerVariablesSyncMessage(player.id, getOrDefault(player).compareAndUpdate()))
@@ -168,7 +170,10 @@ class PlayerVariable {
             player.sendPacket(PlayerVariablesSyncMessage(player.id, getOrDefault(player).forceUpdate()))
         }
 
-        private fun clonePlayer(oldPlayer: ServerPlayer, newPlayer: ServerPlayer) {
+        private fun clonePlayer(
+            oldPlayer: ServerPlayer,
+            newPlayer: ServerPlayer,
+        ) {
             val original = oldPlayer.getData(ModAttachments.PLAYER_VARIABLE)
             if (newPlayer.level().isClientSide()) return
             newPlayer.setData(ModAttachments.PLAYER_VARIABLE, original.copy())

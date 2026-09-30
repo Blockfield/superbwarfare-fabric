@@ -1,9 +1,9 @@
 package com.atsuishio.superbwarfare.client.particle
 
-import net.minecraft.client.multiplayer.ClientLevel
-import net.minecraft.client.particle.*
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.client.particle.*
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -19,7 +19,7 @@ open class CustomSmokeParticle protected constructor(
     rCol: Float,
     gCol: Float,
     bCol: Float,
-    startAge: Int
+    startAge: Int,
 ) : TextureSheetParticle(level, x, y, z) {
     init {
         this.setSize(0.4f, 0.4f)
@@ -41,7 +41,9 @@ open class CustomSmokeParticle protected constructor(
     }
 
     @Environment(EnvType.CLIENT)
-    class Provider(private val spriteSet: SpriteSet) : ParticleProvider<CustomSmokeOption> {
+    class Provider(
+        private val spriteSet: SpriteSet,
+    ) : ParticleProvider<CustomSmokeOption> {
         override fun createParticle(
             pType: CustomSmokeOption,
             pLevel: ClientLevel,
@@ -50,9 +52,9 @@ open class CustomSmokeParticle protected constructor(
             z: Double,
             xSpeed: Double,
             ySpeed: Double,
-            zSpeed: Double
-        ): Particle {
-            return CustomSmokeParticle(
+            zSpeed: Double,
+        ): Particle =
+            CustomSmokeParticle(
                 pLevel,
                 x,
                 y,
@@ -64,14 +66,11 @@ open class CustomSmokeParticle protected constructor(
                 pType.red,
                 pType.green,
                 pType.blue,
-                pType.age
+                pType.age,
             )
-        }
     }
 
-    override fun getRenderType(): ParticleRenderType {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-    }
+    override fun getRenderType(): ParticleRenderType = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
 
     override fun tick() {
         super.tick()

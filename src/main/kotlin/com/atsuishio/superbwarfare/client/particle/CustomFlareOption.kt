@@ -16,7 +16,7 @@ class CustomFlareOption(
     val fade: Float,
     val size: Float,
     val animationSpeed: Int,
-    val sizeAdd: Float
+    val sizeAdd: Float,
 ) : ParticleOptions {
     constructor(
         r: Float,
@@ -26,14 +26,14 @@ class CustomFlareOption(
         fade: Float,
         animationSpeed: Int,
         sizeAdd: Float,
-        size: Float = 1f
+        size: Float = 1f,
     ) : this(
         (r * 255).roundToInt() shl 16 or ((g * 255).roundToInt() shl 8) or (b * 255).roundToInt(),
         life,
         fade,
         size,
         animationSpeed,
-        sizeAdd
+        sizeAdd,
     )
 
     val red: Float
@@ -45,9 +45,7 @@ class CustomFlareOption(
     val blue: Float
         get() = (this.color and 255) / 255f
 
-    override fun getType(): ParticleType<*> {
-        return ModParticleTypes.CUSTOM_FLARE.get()
-    }
+    override fun getType(): ParticleType<*> = ModParticleTypes.CUSTOM_FLARE.get()
 
     companion object {
         val STREAM_CODEC = createStreamCodec<CustomFlareOption>()

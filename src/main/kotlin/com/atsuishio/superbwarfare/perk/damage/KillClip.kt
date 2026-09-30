@@ -22,7 +22,7 @@ object KillClip : Perk("kill_clip", Type.DAMAGE) {
     override fun tick(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         data.perk.reduceCooldown(this, "KillClipReloadTime")
         data.perk.reduceCooldown(this, "KillClipTime")
@@ -31,7 +31,7 @@ object KillClip : Perk("kill_clip", Type.DAMAGE) {
     override fun preReload(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         val tag = data.perk.getTag(this) ?: return
         val time = tag.getInt("KillClipReloadTime")
@@ -46,7 +46,7 @@ object KillClip : Perk("kill_clip", Type.DAMAGE) {
     override fun postReload(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (!tag.getBoolean("KillClip")) return
@@ -58,7 +58,7 @@ object KillClip : Perk("kill_clip", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val tag = data.perk.getTag(this) ?: return
         if (DamageTypeTool.isGunDamage(source)) {

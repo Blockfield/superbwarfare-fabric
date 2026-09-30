@@ -5,6 +5,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 
@@ -23,7 +24,10 @@ public class SoundEventAdapter extends TypeAdapter<SoundEvent> {
         out.value(value.getLocation().toString());
     }
 
-    private static final Pattern PATTERN = Pattern.compile("^(?<location>\\S+)( (?<range>-?\\d*(\\.(?=\\d))?\\d*))?$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN =
+            Pattern.compile(
+                    "^(?<location>\\S+)( (?<range>-?\\d*(\\.(?=\\d))?\\d*))?$",
+                    Pattern.CASE_INSENSITIVE);
 
     @Override
     public SoundEvent read(JsonReader in) throws IOException {
@@ -33,7 +37,8 @@ public class SoundEventAdapter extends TypeAdapter<SoundEvent> {
         }
 
         if (in.peek() != JsonToken.STRING) {
-            throw new IllegalStateException("excepted SoundEvent to be String but was " + in.peek());
+            throw new IllegalStateException(
+                    "excepted SoundEvent to be String but was " + in.peek());
         }
 
         var str = in.nextString().trim();

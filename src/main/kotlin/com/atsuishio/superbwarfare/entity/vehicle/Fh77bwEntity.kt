@@ -24,7 +24,10 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 
-open class Fh77bwEntity(type: EntityType<Fh77bwEntity>, world: Level) : SpArtilleryEntity(type, world) {
+open class Fh77bwEntity(
+    type: EntityType<Fh77bwEntity>,
+    world: Level,
+) : SpArtilleryEntity(type, world) {
     private var wasClose = false
     private var wasOut = false
     private var wasHoeUp = false
@@ -110,7 +113,10 @@ open class Fh77bwEntity(type: EntityType<Fh77bwEntity>, world: Level) : SpArtill
         }
     }
 
-    override fun beforeShoot(living: LivingEntity?, weaponName: String?) {
+    override fun beforeShoot(
+        living: LivingEntity?,
+        weaponName: String?,
+    ) {
         val level = living?.level()
         if (level is ServerLevel && weaponName == "Main") {
             ParticleTool.spawnBigCannonMuzzleParticles(getShootVec("Main", 1f), getShootPos("Main", 1f), level, this)
@@ -124,7 +130,14 @@ open class Fh77bwEntity(type: EntityType<Fh77bwEntity>, world: Level) : SpArtill
         get() = if (lockTurret) 0f else super.turretTurnYSpeed
 
     override val customTurretMinPitch: Float
-        get() = if (Mth.abs(turretYRot) < 18 && !lockTurret && shootVec != getViewVec(this, 1f).toVector3f()) 10f * Mth.clamp((18 - Mth.abs(turretYRot)) * 0.4f, 0f, 1f) else 0f
+        get() =
+            if (Mth.abs(turretYRot) < 18 && !lockTurret &&
+                shootVec != getViewVec(this, 1f).toVector3f()
+            ) {
+                10f * Mth.clamp((18 - Mth.abs(turretYRot)) * 0.4f, 0f, 1f)
+            } else {
+                0f
+            }
 
     override fun canShoot(living: LivingEntity?): Boolean {
         if (living == getNthEntity(1)) {
@@ -132,7 +145,7 @@ open class Fh77bwEntity(type: EntityType<Fh77bwEntity>, world: Level) : SpArtill
                 if (living is Player) {
                     living.displayClientMessage(
                         Component.translatable("tips.superbwarfare.fh77bw.body_tilted").withStyle(ChatFormatting.RED),
-                        true
+                        true,
                     )
                 }
                 return false
@@ -141,7 +154,7 @@ open class Fh77bwEntity(type: EntityType<Fh77bwEntity>, world: Level) : SpArtill
                 if (living is Player) {
                     living.displayClientMessage(
                         Component.translatable("tips.superbwarfare.fh77bw.not_stopped").withStyle(ChatFormatting.RED),
-                        true
+                        true,
                     )
                 }
                 return false

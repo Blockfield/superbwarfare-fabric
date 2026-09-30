@@ -12,7 +12,6 @@ data class ClientSetMotionMessage(
     val motion: SerializedVector3f,
     val position: SerializedVector3f,
 ) : ClientPacketPayload() {
-
     override fun PayloadContext.handler() {
         val player = localPlayer ?: return
 

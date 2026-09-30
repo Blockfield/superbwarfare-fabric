@@ -39,12 +39,18 @@ import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils.getYRotF
 import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleWeaponUtils.reloadDecoy
 import com.atsuishio.superbwarfare.event.ClientMouseHandler
 import com.atsuishio.superbwarfare.event.GunEventHandler
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.IEnergyStorage
+import com.atsuishio.superbwarfare.fabric.IEntityWithComplexSpawn
+import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.*
 import com.atsuishio.superbwarfare.inventory.handler.VehicleContainerHandler
 import com.atsuishio.superbwarfare.inventory.menu.*
 import com.atsuishio.superbwarfare.item.IVehicleInteract
 import com.atsuishio.superbwarfare.item.container.ContainerBlockItem
 import com.atsuishio.superbwarfare.item.misc.VehicleKeyItem
+import com.atsuishio.superbwarfare.mixins.EntityAccessor
 import com.atsuishio.superbwarfare.mixins.EntityOnGroundAccessor
 import com.atsuishio.superbwarfare.network.message.receive.ClientIndicatorMessage
 import com.atsuishio.superbwarfare.network.message.receive.ClientVehicleItemMessage
@@ -59,6 +65,10 @@ import com.atsuishio.superbwarfare.tools.VectorTool.combineRotationsTurret
 import com.atsuishio.superbwarfare.world.saveddata.TDMSavedData
 import com.google.common.collect.ImmutableList
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.entity.FakePlayer
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.ChatFormatting
 import net.minecraft.client.CameraType
 import net.minecraft.core.BlockPos
@@ -81,6 +91,7 @@ import net.minecraft.server.level.TicketType
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
+import net.minecraft.tags.FluidTags
 import net.minecraft.util.Mth
 import net.minecraft.util.RandomSource
 import net.minecraft.world.ContainerHelper
@@ -100,23 +111,12 @@ import net.minecraft.world.item.NameTagItem
 import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.level.material.FluidState
-import net.minecraft.tags.FluidTags
 import net.minecraft.world.level.gameevent.GameEvent
+import net.minecraft.world.level.material.FluidState
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec2
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
-import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.mixins.EntityAccessor
-import com.atsuishio.superbwarfare.fabric.getCapability
-import net.fabricmc.fabric.api.entity.FakePlayer
-import com.atsuishio.superbwarfare.fabric.IEnergyStorage
-import com.atsuishio.superbwarfare.fabric.IEntityWithComplexSpawn
-import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import org.joml.*
 import java.util.*
 import java.util.function.BiConsumer
@@ -124,10 +124,16 @@ import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.math.*
 
-open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEntityType, pLevel),
-    VehiclePropertyModifier, HasCustomInventoryScreen, OBBEntity, BasicGeoVehicleEntity, IBvrSyncableEntity,
+open class VehicleEntity(
+    pEntityType: EntityType<*>,
+    pLevel: Level,
+) : Entity(pEntityType, pLevel),
+    VehiclePropertyModifier,
+    HasCustomInventoryScreen,
+    OBBEntity,
+    BasicGeoVehicleEntity,
+    IBvrSyncableEntity,
     IEntityWithComplexSpawn {
-
     val anim: VehicleAnimationInstance<VehicleEntity>? =
         if (pLevel.isClientSide) VehicleAnimationInstance.create(this) else null
 
@@ -143,8 +149,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             val modelPath = pojo.model ?: return@mapNotNull null
             val texture = pojo.texture ?: return@mapNotNull null
             val distance = pojo.distance
-            val bakedModel = if (distance > 0) VehicleLODModelReloadListener.getModel(modelPath)
-            else VehicleModelReloadListener.getModel(modelPath)
+            val bakedModel =
+                if (distance > 0) {
+                    VehicleLODModelReloadListener.getModel(modelPath)
+                } else {
+                    VehicleModelReloadListener.getModel(modelPath)
+                }
             val instance = bakedModel?.let { VehicleModelInstance(it) } ?: return@mapNotNull null
             VehicleModelEntry(instance, texture, pojo.emissiveTexture, distance)
         }
@@ -199,9 +209,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     newMap[kv.key] = existing
                 } else {
                     // First encounter: allocate once, never again for this slot.
-                    newMap[kv.key] = GunData.from(
-                        ItemStack(ModItems.VEHICLE_GUN.get())
-                    ) { kv.value }
+                    newMap[kv.key] =
+                        GunData.from(
+                            ItemStack(ModItems.VEHICLE_GUN.get()),
+                        ) { kv.value }
                 }
             }
 
@@ -216,12 +227,9 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             this.gunDataMapWeaponKeys = null
         }
 
-    open fun getSeat(seatIndex: Int) =
-        computed().seats().getOrNull(seatIndex)
+    open fun getSeat(seatIndex: Int) = computed().seats().getOrNull(seatIndex)
 
-    open fun getSeat(passenger: Entity?): SeatInfo? {
-        return getSeat(getSeatIndex(passenger))
-    }
+    open fun getSeat(passenger: Entity?): SeatInfo? = getSeat(getSeatIndex(passenger))
 
     /**
      * 获取载具座位上选中的武器
@@ -240,7 +248,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param weaponIndex 武器号
      * @return 武器数据
      */
-    open fun getGunData(seatIndex: Int, weaponIndex: Int): GunData? {
+    open fun getGunData(
+        seatIndex: Int,
+        weaponIndex: Int,
+    ): GunData? {
         val seat = getSeat(seatIndex) ?: return null
 
         val name = seat.weapons().getOrNull(weaponIndex) ?: return null
@@ -255,7 +266,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param weaponIndex 武器号
      * @return 武器数据
      */
-    open fun getGunData(passenger: Entity?, weaponIndex: Int) = getGunData(getSeatIndex(passenger), weaponIndex)
+    open fun getGunData(
+        passenger: Entity?,
+        weaponIndex: Int,
+    ) = getGunData(getSeatIndex(passenger), weaponIndex)
 
     /**
      * 获取载具的乘客座位上选中的武器
@@ -263,8 +277,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param passenger 乘客
      * @return 武器数据
      */
-    open fun getGunData(passenger: Entity?) =
-        getGunData(passenger, this.getSelectedWeapon(this.getSeatIndex(passenger)))
+    open fun getGunData(passenger: Entity?) = getGunData(passenger, this.getSelectedWeapon(this.getSeatIndex(passenger)))
 
     /**
      * 根据名称获取武器
@@ -287,19 +300,30 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return getGunName(seatIndex, weaponIndex)
     }
 
-    open fun getGunName(seatIndex: Int, weaponIndex: Int): String? {
-        return getSeat(seatIndex)?.weapons()?.getOrNull(weaponIndex)
-    }
+    open fun getGunName(
+        seatIndex: Int,
+        weaponIndex: Int,
+    ): String? = getSeat(seatIndex)?.weapons()?.getOrNull(weaponIndex)
 
-    open fun modifyGunData(seatIndex: Int, weaponIndex: Int, consumer: Consumer<GunData>) {
+    open fun modifyGunData(
+        seatIndex: Int,
+        weaponIndex: Int,
+        consumer: Consumer<GunData>,
+    ) {
         modifyGunData(getGunName(seatIndex, weaponIndex), consumer)
     }
 
-    open fun modifyGunData(seatIndex: Int, consumer: Consumer<GunData>) {
+    open fun modifyGunData(
+        seatIndex: Int,
+        consumer: Consumer<GunData>,
+    ) {
         modifyGunData(getGunName(seatIndex), consumer)
     }
 
-    open fun modifyGunData(name: String?, consumer: Consumer<GunData>) {
+    open fun modifyGunData(
+        name: String?,
+        consumer: Consumer<GunData>,
+    ) {
         if (name == null) return
 
         val map = this.gunDataMap
@@ -493,7 +517,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     private fun initOBB() {
         this.obbCache = null
         this.invalidateAABBCache()
-        this.obb = data().getDefault().copy().obb.toList()
+        this.obb =
+            data()
+                .getDefault()
+                .copy()
+                .obb
+                .toList()
     }
 
     /**
@@ -568,7 +597,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     @get:JvmName("sprintInputDown")
     open var sprintInputDown by SPRINT_INPUT_DOWN
 
-    open fun mouseInput(x: Double, y: Double) {
+    open fun mouseInput(
+        x: Double,
+        y: Double,
+    ) {
         mouseMoveSpeedX = x.toFloat()
         mouseMoveSpeedY = y.toFloat()
     }
@@ -609,23 +641,27 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
     }
 
-    open fun getContainerSize(): Int {
-        return computed().vehicleContainerType.size
-    }
+    open fun getContainerSize(): Int = computed().vehicleContainerType.size
 
     fun getItem(slot: Int): ItemStack {
         if (!this.hasContainer() || slot >= this.getContainerSize() || slot < 0) return ItemStack.EMPTY
         return this.inventory.getStackInSlot(slot)
     }
 
-    fun removeItem(slot: Int, pAmount: Int): ItemStack {
+    fun removeItem(
+        slot: Int,
+        pAmount: Int,
+    ): ItemStack {
         if (!this.hasContainer() || slot >= this.getContainerSize() || slot < 0) return ItemStack.EMPTY
         return this.inventory.extractItem(slot, pAmount, false)
     }
 
     open var maxStackSize: Int = 64
 
-    fun setItem(slot: Int, pStack: ItemStack) {
+    fun setItem(
+        slot: Int,
+        pStack: ItemStack,
+    ) {
         if (!this.hasContainer() || slot >= this.getContainerSize() || slot < 0) return
 
         val limit = min(this.maxStackSize, pStack.maxStackSize)
@@ -634,7 +670,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 "try inserting ItemStack {} exceeding the maximum stack size: {}, clamped to {}",
                 pStack.item,
                 limit,
-                limit
+                limit,
             )
             pStack.count = limit
         }
@@ -648,8 +684,8 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         sendPacketToTrackingThis(
             ClientVehicleItemMessage(
                 this.id,
-                inventory.serializeNBT(this.level().registryAccess())
-            )
+                inventory.serializeNBT(this.level().registryAccess()),
+            ),
         )
     }
 
@@ -659,7 +695,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
     open fun hasContainer() = this.getContainerSize() > 0
 
-    open fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
+    open fun canPlaceItem(
+        slot: Int,
+        stack: ItemStack,
+    ): Boolean {
         if (!this.hasContainer() || slot >= this.getContainerSize() || slot < 0) return false
 
         val currentStack = this.inventory.getStackInSlot(slot)
@@ -671,9 +710,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return !(combinedCount > this.maxStackSize || combinedCount > stack.maxStackSize)
     }
 
-    fun canTakeItem(slot: Int): Boolean {
-        return this.hasContainer() && slot in 0 until this.getContainerSize()
-    }
+    fun canTakeItem(slot: Int): Boolean = this.hasContainer() && slot in 0 until this.getContainerSize()
 
     override fun remove(reason: RemovalReason) {
         if (!this.level().isClientSide) {
@@ -688,7 +725,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             }
         }
         this.clearTowingInfo()
-        vehicleDataStrong = null  // Release strong ref, allow GC
+        vehicleDataStrong = null // Release strong ref, allow GC
         super.remove(reason)
     }
 
@@ -728,21 +765,25 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
         // Fabric сам сериализует данные открытия по кодеку типа меню (VAR_INT — id сущности),
         // писать в буфер вручную, как на NeoForge, нечем.
-        player.openMenu(object : ExtendedScreenHandlerFactory<Int> {
-            override fun getScreenOpeningData(serverPlayer: ServerPlayer) = this@VehicleEntity.id
+        player.openMenu(
+            object : ExtendedScreenHandlerFactory<Int> {
+                override fun getScreenOpeningData(serverPlayer: ServerPlayer) = this@VehicleEntity.id
 
-            override fun getDisplayName(): Component =
-                Component.translatable(this@VehicleEntity.type.descriptionId)
+                override fun getDisplayName(): Component = Component.translatable(this@VehicleEntity.type.descriptionId)
 
-            override fun createMenu(containerId: Int, inv: Inventory, menuPlayer: Player): AbstractContainerMenu? =
-                this@VehicleEntity.createMenu(containerId, inv, menuPlayer)
-        })
+                override fun createMenu(
+                    containerId: Int,
+                    inv: Inventory,
+                    menuPlayer: Player,
+                ): AbstractContainerMenu? = this@VehicleEntity.createMenu(containerId, inv, menuPlayer)
+            },
+        )
     }
 
     open fun createMenu(
         pContainerId: Int,
         pPlayerInventory: Inventory,
-        pPlayer: Player
+        pPlayer: Player,
     ): AbstractContainerMenu? {
         if (!pPlayer.isSpectator && this.hasMenu()) {
             val computed = computed()
@@ -770,7 +811,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         padList(orderedPassengers, targetSize, null, null)
     }
 
-    protected fun <T> padList(list: MutableList<T?>, targetSize: Int, defaultValue: T?, onRemove: Consumer<T>?) {
+    protected fun <T> padList(
+        list: MutableList<T?>,
+        targetSize: Int,
+        defaultValue: T?,
+        onRemove: Consumer<T>?,
+    ) {
         while (targetSize != list.size) {
             if (targetSize > list.size) {
                 list.add(defaultValue)
@@ -909,7 +955,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param index  目标座位
      * @return 是否切换成功
      */
-    open fun changeSeat(entity: Entity, index: Int): Boolean {
+    open fun changeSeat(
+        entity: Entity,
+        index: Int,
+    ): Boolean {
         if (index < 0 || index >= this.maxPassengers) return false
         checkSeatsSize()
         if (orderedPassengers[index] != null) return false
@@ -923,7 +972,8 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         // 在服务端运行时，向所有玩家同步载具座位信息
         val level = this.level()
         if (level is ServerLevel) {
-            level.getPlayers { true }
+            level
+                .getPlayers { true }
                 .forEach { p -> p!!.connection.send(ClientboundSetPassengersPacket(this)) }
         }
 
@@ -957,14 +1007,20 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
 
     open fun getRoll(tickDelta: Float) = Mth.lerp(tickDelta, prevRoll, roll)
+
     open fun getYaw(tickDelta: Float) = Mth.lerp(tickDelta, yRotO, yRot)
+
     open fun getPitch(tickDelta: Float) = Mth.lerp(tickDelta, xRotO, xRot)
 
     open fun setZRot(rot: Float) {
         roll = rot
     }
 
-    open fun turretTurnSound(diffX: Float, diffY: Float, pitch: Float) {
+    open fun turretTurnSound(
+        diffX: Float,
+        diffY: Float,
+        pitch: Float,
+    ) {
         if (this is MortarEntity) return
         if (level().isClientSide && (Math.abs(diffY) > 0.5 || Math.abs(diffX) > 0.5)) {
             level().playLocalSound(
@@ -975,7 +1031,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 this.soundSource,
                 min(0.15 * (max(Mth.abs(diffX), Mth.abs(diffY))), 0.75).toFloat(),
                 (random.nextFloat() * 0.05f + pitch),
-                false
+                false,
             )
         }
     }
@@ -1071,6 +1127,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     }
 
     // energy start
+
     /**
      * 消耗指定电量
      *
@@ -1090,7 +1147,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         if (!this.hasEnergyStorage()) {
             Mod.LOGGER.warn(
                 "Trying to check if can consume energy of vehicle {}, but it has no energy storage",
-                this.name
+                this.name,
             )
             return false
         }
@@ -1102,7 +1159,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             if (!this.hasEnergyStorage()) {
                 Mod.LOGGER.warn(
                     "Trying to get energy of vehicle {}, but it has no energy storage",
-                    this.name
+                    this.name,
                 )
                 return Int.MAX_VALUE
             }
@@ -1112,7 +1169,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             if (!this.hasEnergyStorage()) {
                 Mod.LOGGER.warn(
                     "Trying to set energy of vehicle {}, but it has no energy storage",
-                    this.name
+                    this.name,
                 )
                 return
             }
@@ -1133,18 +1190,21 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     }
 
     open val maxEnergy: Int
-        get() = if (!this.hasEnergyStorage()) {
-            Mod.LOGGER.warn(
-                "Trying to get max energy of vehicle {}, but it has no energy storage",
-                this.name
-            )
-            Int.MAX_VALUE
-        } else computed().maxEnergy
-
+        get() =
+            if (!this.hasEnergyStorage()) {
+                Mod.LOGGER.warn(
+                    "Trying to get max energy of vehicle {}, but it has no energy storage",
+                    this.name,
+                )
+                Int.MAX_VALUE
+            } else {
+                computed().maxEnergy
+            }
 
     open fun hasEnergyStorage() = this.computed().maxEnergy > 0
 
     // energy end
+
     /**
      * 当前情况载具是否可以开火
      *
@@ -1193,7 +1253,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return Math.round(gunData.heat.get()).toInt()
     }
 
-    open fun getWeaponHeat(seatIndex: Int, weaponIndex: Int): Int {
+    open fun getWeaponHeat(
+        seatIndex: Int,
+        weaponIndex: Int,
+    ): Int {
         val gunData = getGunData(seatIndex, weaponIndex) ?: return 0
         return Math.round(gunData.heat.get()).toInt()
     }
@@ -1203,12 +1266,19 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return gunData.shootAnimationTimer.get()
     }
 
-    open fun getShootAnimationTimer(seatIndex: Int, weaponIndex: Int): Int {
+    open fun getShootAnimationTimer(
+        seatIndex: Int,
+        weaponIndex: Int,
+    ): Int {
         val gunData = getGunData(seatIndex, weaponIndex) ?: return 0
         return gunData.shootAnimationTimer.get()
     }
 
-    open fun vehicleShoot(living: LivingEntity?, weaponName: String, targetPos: Vec3?) {
+    open fun vehicleShoot(
+        living: LivingEntity?,
+        weaponName: String,
+        targetPos: Vec3?,
+    ) {
         if (isWreck) return
         if (this.level().isClientSide) return
 
@@ -1228,8 +1298,8 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                         data.get(GunProp.SPREAD),
                         true,
                         null,
-                        targetPos
-                    )
+                        targetPos,
+                    ),
                 )
             }
         }
@@ -1242,25 +1312,31 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             val list = shootPos.positions
             val size = list.size
 
-            val index: Int = if (shootPos.boundUpWithAmmoAmount) {
-                Mth.clamp(gunData.ammo.get() - 1, 0, size)
-            } else {
-                gunData.fireIndex.get() % size
-            }
+            val index: Int =
+                if (shootPos.boundUpWithAmmoAmount) {
+                    Mth.clamp(gunData.ammo.get() - 1, 0, size)
+                } else {
+                    gunData.fireIndex.get() % size
+                }
 
             sendPacketToAll(
                 VehicleShootClientMessage(
                     living.uuid,
                     this.uuid,
                     index,
-                    weaponName
-                )
+                    weaponName,
+                ),
             )
         }
     }
 
     /** 按武器名发射，同时支持锁定实体 UUID 和指定目标位置 */
-    open fun vehicleShoot(living: LivingEntity?, weaponName: String, uuid: UUID?, targetPos: Vec3?) {
+    open fun vehicleShoot(
+        living: LivingEntity?,
+        weaponName: String,
+        uuid: UUID?,
+        targetPos: Vec3?,
+    ) {
         if (isWreck) return
         val gunData = getGunData(weaponName)
 
@@ -1269,11 +1345,17 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 if (!data.canShoot(this.ammoSupplier)) return@modifyGunData
                 data.shoot(
                     ShootParameters(
-                        this.ammoSupplier, living, this.level() as ServerLevel,
-                        getShootPos(weaponName, 1f), getShootVec(weaponName, 1f),
-                        data, data.get(GunProp.SPREAD), true,
-                        uuid, targetPos
-                    )
+                        this.ammoSupplier,
+                        living,
+                        this.level() as ServerLevel,
+                        getShootPos(weaponName, 1f),
+                        getShootVec(weaponName, 1f),
+                        data,
+                        data.get(GunProp.SPREAD),
+                        true,
+                        uuid,
+                        targetPos,
+                    ),
                 )
             }
         }
@@ -1285,16 +1367,21 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             val shootPos = gunData.get(GunProp.SHOOT_POS)
             val list = shootPos.positions
             val size = list.size
-            val index: Int = if (shootPos.boundUpWithAmmoAmount) {
-                Mth.clamp(gunData.ammo.get() - 1, 0, size)
-            } else {
-                gunData.fireIndex.get() % size
-            }
+            val index: Int =
+                if (shootPos.boundUpWithAmmoAmount) {
+                    Mth.clamp(gunData.ammo.get() - 1, 0, size)
+                } else {
+                    gunData.fireIndex.get() % size
+                }
             sendPacketToAll(VehicleShootClientMessage(living.uuid, this.uuid, index, weaponName))
         }
     }
 
-    open fun vehicleShoot(living: LivingEntity?, uuid: UUID?, targetPos: Vec3?) {
+    open fun vehicleShoot(
+        living: LivingEntity?,
+        uuid: UUID?,
+        targetPos: Vec3?,
+    ) {
         if (isWreck) return
         val seatIndex = getSeatIndex(living)
 
@@ -1314,8 +1401,8 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                         data.get(GunProp.SPREAD),
                         true,
                         uuid,
-                        targetPos
-                    )
+                        targetPos,
+                    ),
                 )
             }
         }
@@ -1328,24 +1415,28 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             val list = shootPos.positions
             val size = list.size
 
-            val index: Int = if (shootPos.boundUpWithAmmoAmount) {
-                Mth.clamp(gunData.ammo.get() - 1, 0, size)
-            } else {
-                gunData.fireIndex.get() % size
-            }
+            val index: Int =
+                if (shootPos.boundUpWithAmmoAmount) {
+                    Mth.clamp(gunData.ammo.get() - 1, 0, size)
+                } else {
+                    gunData.fireIndex.get() % size
+                }
 
             sendPacketToAll(
                 VehicleShootClientMessage(
                     living.uuid,
                     this.uuid,
                     index,
-                    getGunName(seatIndex) ?: ""
-                )
+                    getGunName(seatIndex) ?: "",
+                ),
             )
         }
     }
 
-    open fun afterShoot(gunData: GunData?, shootVec: Vec3) {
+    open fun afterShoot(
+        gunData: GunData?,
+        shootVec: Vec3,
+    ) {
         if (gunData != null) {
             val recoilTime = gunData.get(GunProp.RECOIL_TIME)
             if (recoilTime > 0) {
@@ -1353,9 +1444,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     cannonRecoilTime = recoilTime
                 }
 
-                val angle = Mth.wrapDegrees(
-                    -getYRotFromVector(getViewVector(1f)) + getYRotFromVector(shootVec)
-                ).toFloat()
+                val angle =
+                    Mth
+                        .wrapDegrees(
+                            -getYRotFromVector(getViewVector(1f)) + getYRotFromVector(shootVec),
+                        ).toFloat()
 
                 val vo = Vec3(0.0, 0.0, 1.0)
                 val f =
@@ -1365,7 +1458,8 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 val v3 = v1.add(v2)
 
                 yawWhileShoot =
-                    Mth.wrapDegrees(-getYRotFromVector(vo) + getYRotFromVector(v3))
+                    Mth
+                        .wrapDegrees(-getYRotFromVector(vo) + getYRotFromVector(v3))
                         .toFloat()
                 cannonRecoilForce = v3.length().toFloat()
 
@@ -1374,21 +1468,31 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
     }
 
-    open fun playShootSound3p(living: LivingEntity?, weaponName: String) {
+    open fun playShootSound3p(
+        living: LivingEntity?,
+        weaponName: String,
+    ) {
         val gunData = this.getGunData(weaponName) ?: return
         val pos = getShootPos(weaponName, 1f)
 
         playShootSound3p(living, gunData, pos)
     }
 
-    open fun playShootSound3p(living: LivingEntity?, seatIndex: Int) {
+    open fun playShootSound3p(
+        living: LivingEntity?,
+        seatIndex: Int,
+    ) {
         val gunData = this.getGunData(seatIndex) ?: return
         val pos = getShootPos(living, 1f)
 
         playShootSound3p(living, gunData, pos)
     }
 
-    open fun playShootSound3p(living: LivingEntity?, gunData: GunData?, pos: Vec3?) {
+    open fun playShootSound3p(
+        living: LivingEntity?,
+        gunData: GunData?,
+        pos: Vec3?,
+    ) {
         val serverLevel = this.level() as? ServerLevel ?: return
 
         if (gunData == null) return
@@ -1402,11 +1506,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             listener = null
         } else {
             val shootGunData = getGunData(living)
-            listener = if (shootGunData != null && shootGunData == gunData) {
-                living
-            } else {
-                null
-            }
+            listener =
+                if (shootGunData != null && shootGunData == gunData) {
+                    living
+                } else {
+                    null
+                }
         }
 
         val soundRadius = gunData.get(GunProp.SOUND_RADIUS)
@@ -1419,7 +1524,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     it,
                     (soundRadius * 0.4f).toFloat(),
                     pitch,
-                    listener
+                    listener,
                 )
             }
         }
@@ -1433,7 +1538,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     it,
                     (soundRadius * 0.7f).toFloat(),
                     pitch,
-                    listener
+                    listener,
                 )
             }
         }
@@ -1447,7 +1552,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     it,
                     soundRadius.toFloat(),
                     pitch,
-                    listener
+                    listener,
                 )
             }
         }
@@ -1459,21 +1564,22 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param seatIndex 槽位
      * @return 武器类型
      */
-    open fun getWeaponIndex(seatIndex: Int) =
-        selectedWeapon.getOrElse(seatIndex) { -1 }
+    open fun getWeaponIndex(seatIndex: Int) = selectedWeapon.getOrElse(seatIndex) { -1 }
 
     /**
      * 检测载具是否有武器
      *
      * @return 是否有武器
      */
-    open fun hasWeapon(): Boolean {
-        return this.computed().seats().stream()
+    open fun hasWeapon(): Boolean =
+        this
+            .computed()
+            .seats()
+            .stream()
             .filter { seat: SeatInfo? -> seat!!.weapons().isNotEmpty() }
             .flatMap { seat: SeatInfo? -> seat!!.weapons().stream() }
             .filter { name: String? -> !name.isNullOrEmpty() }
             .anyMatch { name -> this.getGunData(name) != null }
-    }
 
     /**
      * 检测该槽位是否有可用武器
@@ -1492,7 +1598,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param seatIndex      武器槽位
      * @param selectedWeaponIndex 武器类型
      */
-    open fun setWeaponIndex(seatIndex: Int, selectedWeaponIndex: Int) {
+    open fun setWeaponIndex(
+        seatIndex: Int,
+        selectedWeaponIndex: Int,
+    ) {
         val oldIndex = selectedWeapon.getOrNull(seatIndex) ?: return
         if (oldIndex == selectedWeaponIndex) return
 
@@ -1519,7 +1628,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param value     数值（可能为-1~1之间的滚动，或绝对数值）
      * @param isScroll  是否是滚动事件
      */
-    open fun changeWeapon(seatIndex: Int, value: Int, isScroll: Boolean) {
+    open fun changeWeapon(
+        seatIndex: Int,
+        value: Int,
+        isScroll: Boolean,
+    ) {
         if (seatIndex < 0 || seatIndex >= this.maxPassengers) return
 
         val weapons = this.computed().seats()[seatIndex].weapons()
@@ -1601,32 +1714,49 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             tag.putString("id", "superbwarfare:vehicle_gun")
             tag.putInt("count", 1)
 
-            ItemStack.parse(this.level().registryAccess(), tag)
+            ItemStack
+                .parse(this.level().registryAccess(), tag)
                 .ifPresent { stack -> newMap[key] = GunData.from(stack) }
         }
         gunDataMap = newMap
 
-        health = if (compound.contains("Health")) {
-            compound.getFloat("Health")
-        } else {
-            this.getMaxHealth()
-        }
+        health =
+            if (compound.contains("Health")) {
+                compound.getFloat("Health")
+            } else {
+                this.getMaxHealth()
+            }
 
-        turretHealth = if (compound.contains("TurretHealth")) {
-            compound.getFloat("TurretHealth")
-        } else this.getTurretMaxHealth()
-        leftWheelHealth = if (compound.contains("LeftWheelHealth")) {
-            compound.getFloat("LeftWheelHealth")
-        } else this.getLeftWheelMaxHealth()
-        rightWheelHealth = if (compound.contains("RightWheelHealth")) {
-            compound.getFloat("RightWheelHealth")
-        } else this.getRightWheelMaxHealth()
-        mainEngineHealth = if (compound.contains("MainEngineHealth")) {
-            compound.getFloat("MainEngineHealth")
-        } else this.getMainEngineMaxHealth()
-        subEngineHealth = if (compound.contains("SubEngineHealth")) {
-            compound.getFloat("SubEngineHealth")
-        } else this.getSubEngineMaxHealth()
+        turretHealth =
+            if (compound.contains("TurretHealth")) {
+                compound.getFloat("TurretHealth")
+            } else {
+                this.getTurretMaxHealth()
+            }
+        leftWheelHealth =
+            if (compound.contains("LeftWheelHealth")) {
+                compound.getFloat("LeftWheelHealth")
+            } else {
+                this.getLeftWheelMaxHealth()
+            }
+        rightWheelHealth =
+            if (compound.contains("RightWheelHealth")) {
+                compound.getFloat("RightWheelHealth")
+            } else {
+                this.getRightWheelMaxHealth()
+            }
+        mainEngineHealth =
+            if (compound.contains("MainEngineHealth")) {
+                compound.getFloat("MainEngineHealth")
+            } else {
+                this.getMainEngineMaxHealth()
+            }
+        subEngineHealth =
+            if (compound.contains("SubEngineHealth")) {
+                compound.getFloat("SubEngineHealth")
+            } else {
+                this.getSubEngineMaxHealth()
+            }
 
         turretDamaged = compound.getBoolean("TurretDamaged")
         leftWheelDamaged = compound.getBoolean("LeftWheelDamaged")
@@ -1685,18 +1815,20 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         turretBurnTimer = compound.getInt("TurretBurnTimer")
 
         val selectedWeaponTag = compound.get("SelectedWeapon")
-        val selected = if (selectedWeaponTag is IntArrayTag) {
-            selectedWeaponTag.asIntArray
-        } else {
-            IntArray(this.maxPassengers)
-        }
+        val selected =
+            if (selectedWeaponTag is IntArrayTag) {
+                selectedWeaponTag.asIntArray
+            } else {
+                IntArray(this.maxPassengers)
+            }
 
-        selectedWeapon = if (selected.size != this.maxPassengers) {
-            // 数量不符时（可能是更新或遇到损坏数据），重新初始化已选择武器
-            MutableList(maxPassengers) { 0 }
-        } else {
-            selected.toMutableList()
-        }
+        selectedWeapon =
+            if (selected.size != this.maxPassengers) {
+                // 数量不符时（可能是更新或遇到损坏数据），重新初始化已选择武器
+                MutableList(maxPassengers) { 0 }
+            } else {
+                selected.toMutableList()
+            }
 
         val energyNBT = compound.get("Energy")
         if (this.hasEnergyStorage() && energyNBT is IntTag) {
@@ -1715,12 +1847,13 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         locked = compound.getBoolean("Locked")
 
         if (compound.contains("LoiterX")) {
-            loiterParams = Quaternionf(
-                compound.getFloat("LoiterX"),
-                compound.getFloat("LoiterY"),
-                compound.getFloat("LoiterZ"),
-                compound.getFloat("LoiterR")
-            )
+            loiterParams =
+                Quaternionf(
+                    compound.getFloat("LoiterX"),
+                    compound.getFloat("LoiterY"),
+                    compound.getFloat("LoiterZ"),
+                    compound.getFloat("LoiterR"),
+                )
         }
         if (compound.contains("LoiterActive")) {
             loiterActive = compound.getBoolean("LoiterActive")
@@ -1911,7 +2044,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         tag.putUUID("UUID", this.uuid)
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (player.vehicle === this) return InteractionResult.PASS
 
         val mainStack = player.mainHandItem
@@ -1919,17 +2055,22 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
         if (this.locked && mainItem !is VehicleKeyItem) {
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.vehicle.locked")
-                    .withStyle(ChatFormatting.RED), true
+                Component
+                    .translatable("tips.superbwarfare.vehicle.locked")
+                    .withStyle(ChatFormatting.RED),
+                true,
             )
             return InteractionResult.FAIL
         }
 
-        val mainRes = if (mainStack.`is`(ModTags.Items.TOOLS_CROWBAR)) {
-            this.onCrowbarInteract(mainStack, player, hand)
-        } else if (mainItem is IVehicleInteract) {
-            mainItem.onInteractVehicle(this, mainStack, player, hand)
-        } else null
+        val mainRes =
+            if (mainStack.`is`(ModTags.Items.TOOLS_CROWBAR)) {
+                this.onCrowbarInteract(mainStack, player, hand)
+            } else if (mainItem is IVehicleInteract) {
+                mainItem.onInteractVehicle(this, mainStack, player, hand)
+            } else {
+                null
+            }
         if (mainRes != null) return mainRes
 
         if (mainStack.item is NameTagItem && mainStack.hasCustomHoverName()) {
@@ -1943,9 +2084,9 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             return InteractionResult.sidedSuccess(player.level().isClientSide)
         }
 
-        if (!player.isShiftKeyDown
-            && (mainStack.`is`(ModItems.C4_BOMB.get()) || mainStack.`is`(ModItems.DETONATOR.get()))
-            && this.maxPassengers > 0
+        if (!player.isShiftKeyDown &&
+            (mainStack.`is`(ModItems.C4_BOMB.get()) || mainStack.`is`(ModItems.DETONATOR.get())) &&
+            this.maxPassengers > 0
         ) {
             // Player is holding C4 — don't mount, let the item's use() handle the interaction
             return InteractionResult.PASS
@@ -1957,9 +2098,9 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     }
                 }
 
-                if (this.lastDriver != null
-                    && !SeekTool.IN_SAME_TEAM.test(player, this.lastDriver)
-                    && this.lastDriver?.team != null
+                if (this.lastDriver != null &&
+                    !SeekTool.IN_SAME_TEAM.test(player, this.lastDriver) &&
+                    this.lastDriver?.team != null
                 ) {
                     return InteractionResult.PASS
                 }
@@ -1996,7 +2137,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return InteractionResult.PASS
     }
 
-    open fun onCrowbarInteract(stack: ItemStack, player: Player, hand: InteractionHand): InteractionResult? {
+    open fun onCrowbarInteract(
+        stack: ItemStack,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult? {
         if (!player.isShiftKeyDown || this.passengers.isNotEmpty()) return null
         if (this.isWreck) {
             return InteractionResult.PASS
@@ -2018,28 +2163,33 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         VehicleVecUtils.setDriverAngle(this, player)
     }
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         if (source.`is`(ModTags.DamageTypes.VEHICLE_IMMUNE)) return false
 
-        if (DamageTypeTool.isGunDamage(source)
-            && source.entity != null
-            && source.entity!!.vehicle === this
-            && !source.`is`(ModDamageTypes.CUSTOM_EXPLOSION)
+        if (DamageTypeTool.isGunDamage(source) &&
+            source.entity != null &&
+            source.entity!!.vehicle === this &&
+            !source.`is`(ModDamageTypes.CUSTOM_EXPLOSION)
         ) {
             return false
         }
 
         val lastDriver = if (this is OwnableEntity) this.owner else this.lastDriver
         val entity = source.entity
-        if (entity != null && lastDriver != null
-            && SeekTool.IS_FRIENDLY.test(lastDriver, entity)
-            && lastDriver.team != null
-            && entity.team != null
-            && entity.team === lastDriver.team
-            && !entity.team!!.isAllowFriendlyFire
-            || (entity === lastDriver
-                    && !source.`is`(ModDamageTypes.VEHICLE_STRIKE)
-                    && !source.`is`(ModDamageTypes.CUSTOM_EXPLOSION))
+        if (entity != null && lastDriver != null &&
+            SeekTool.IS_FRIENDLY.test(lastDriver, entity) &&
+            lastDriver.team != null &&
+            entity.team != null &&
+            entity.team === lastDriver.team &&
+            !entity.team!!.isAllowFriendlyFire ||
+            (
+                entity === lastDriver &&
+                    !source.`is`(ModDamageTypes.VEHICLE_STRIKE) &&
+                    !source.`is`(ModDamageTypes.CUSTOM_EXPLOSION)
+            )
         ) {
             return false
         }
@@ -2067,11 +2217,25 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
             if (part != null) {
                 when (part) {
-                    TURRET -> turretHealth -= computedAmount
-                    WHEEL_LEFT -> leftWheelHealth -= computedAmount
-                    WHEEL_RIGHT -> rightWheelHealth -= computedAmount
-                    MAIN_ENGINE -> mainEngineHealth -= computedAmount
-                    SUB_ENGINE -> subEngineHealth -= computedAmount
+                    TURRET -> {
+                        turretHealth -= computedAmount
+                    }
+
+                    WHEEL_LEFT -> {
+                        leftWheelHealth -= computedAmount
+                    }
+
+                    WHEEL_RIGHT -> {
+                        rightWheelHealth -= computedAmount
+                    }
+
+                    MAIN_ENGINE -> {
+                        mainEngineHealth -= computedAmount
+                    }
+
+                    SUB_ENGINE -> {
+                        subEngineHealth -= computedAmount
+                    }
 
                     else -> {}
                 }
@@ -2098,9 +2262,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      */
     open fun getDamageModifier(): DamageModifier = data().damageModifier()
 
-    open fun getSourceAngle(source: DamageSource, multiplier: Float): Float {
-        return VehicleVecUtils.getDamageSourceAngle(this, source, multiplier)
-    }
+    open fun getSourceAngle(
+        source: DamageSource,
+        multiplier: Float,
+    ): Float = VehicleVecUtils.getDamageSourceAngle(this, source, multiplier)
 
     open fun heal(pHealAmount: Float) {
         if (this.level() is ServerLevel) {
@@ -2110,7 +2275,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
     }
 
-    open fun onHurt(pHealAmount: Float, attacker: Entity?, send: Boolean) {
+    open fun onHurt(
+        pHealAmount: Float,
+        attacker: Entity?,
+        send: Boolean,
+    ) {
         if (this.level() is ServerLevel) {
             val holder = Holder.direct(ModSounds.INDICATION_VEHICLE.get())
             for (player in server!!.playerList.players) {
@@ -2124,8 +2293,8 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                             player.z,
                             0.25f + (2.75f * pHealAmount / this.getMaxHealth()),
                             random.nextFloat() * 0.1f + 0.9f,
-                            player.level().random.nextLong()
-                        )
+                            player.level().random.nextLong(),
+                        ),
                     )
                     player.sendPacket(ClientIndicatorMessage(3, 5))
                 }
@@ -2145,8 +2314,8 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                                 entity.z,
                                 0.25f + (4.75f * pHealAmount / this.getMaxHealth()),
                                 random.nextFloat() * 0.1f + 0.6f,
-                                entity.level().random.nextLong()
-                            )
+                                entity.level().random.nextLong(),
+                            ),
                         )
                     }
                 }
@@ -2159,13 +2328,15 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         if (this.locked && driver is Player && attacker != driver && hurtWarnCoolDown <= 0 && !this.isWreck) {
             if (this.level() is ServerLevel) {
                 driver.displayClientMessage(
-                    Component.translatable(
-                        "tips.superbwarfare.vehicle.lock_hurt",
-                        FormatTool.format1D(this.x),
-                        FormatTool.format1D(this.y),
-                        FormatTool.format1D(this.z),
-                        this.displayName
-                    ).withStyle(ChatFormatting.YELLOW), false
+                    Component
+                        .translatable(
+                            "tips.superbwarfare.vehicle.lock_hurt",
+                            FormatTool.format1D(this.x),
+                            FormatTool.format1D(this.y),
+                            FormatTool.format1D(this.z),
+                            this.displayName,
+                        ).withStyle(ChatFormatting.YELLOW),
+                    false,
                 )
             }
             hurtWarnCoolDown = 60
@@ -2192,14 +2363,16 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             return super.updateInWaterStateAndDoFluidPushing()
         }
 
-        val interval = when {
-            engineInfo is Ship -> 1
-            vehicleType == VehicleType.AIRPLANE ||
+        val interval =
+            when {
+                engineInfo is Ship -> 1
+
+                vehicleType == VehicleType.AIRPLANE ||
                     vehicleType == VehicleType.HELICOPTER ||
                     vehicleType == VehicleType.AIRSHIP -> 20
 
-            else -> 4
-        }
+                else -> 4
+            }
 
         if (tickCount % interval != 0) {
             return isInWater
@@ -2240,10 +2413,15 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     if (!fluidState.isEmpty) {
                         val height = (y + fluidState.getHeight(level, pos)).toDouble()
                         if (height >= obbAABB.minY) {
-                            val blockAABB = AABB(
-                                x.toDouble(), y.toDouble(), z.toDouble(),
-                                (x + 1).toDouble(), height, (z + 1).toDouble()
-                            )
+                            val blockAABB =
+                                AABB(
+                                    x.toDouble(),
+                                    y.toDouble(),
+                                    z.toDouble(),
+                                    (x + 1).toDouble(),
+                                    height,
+                                    (z + 1).toDouble(),
+                                )
                             if (OBB.isColliding(collisionOBB, blockAABB) && predicate(fluidState)) {
                                 return true
                             }
@@ -2267,22 +2445,28 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
 
     open fun getMaxHealth() = computed().maxHealth
+
     open fun getDecoyReloadTime() = computed().decoyReloadTime
+
     open fun getTurretMaxHealth() = computed().partHealth.turret
+
     open fun getLeftWheelMaxHealth() = computed().partHealth.leftWheel
+
     open fun getRightWheelMaxHealth() = computed().partHealth.rightWheel
+
     open fun getMainEngineMaxHealth() = computed().partHealth.mainEngine
+
     open fun getSubEngineMaxHealth() = computed().partHealth.subEngine
 
     @Deprecated(
         "Use vehicle data or getLeft/RightWheelMaxHealth() instead",
-        replaceWith = ReplaceWith("computed().partHealth.leftWheel")
+        replaceWith = ReplaceWith("computed().partHealth.leftWheel"),
     )
     open fun getWheelMaxHealth() = 50f
 
     @Deprecated(
         "Use vehicle data or getMain/SubEngineMaxHealth() instead",
-        replaceWith = ReplaceWith("computed().partHealth.mainEngine")
+        replaceWith = ReplaceWith("computed().partHealth.mainEngine"),
     )
     open fun getEngineMaxHealth() = 50f
 
@@ -2292,33 +2476,31 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
     }
 
-    override fun makeStuckInBlock(pState: BlockState, pMotionMultiplier: Vec3) {
-        //留空
+    override fun makeStuckInBlock(
+        pState: BlockState,
+        pMotionMultiplier: Vec3,
+    ) {
+        // 留空
     }
 
-    override fun playStepSound(pPos: BlockPos, pState: BlockState) {
+    override fun playStepSound(
+        pPos: BlockPos,
+        pState: BlockState,
+    ) {
         this.playSound(
             ModSounds.WHEEL_VEHICLE_STEP.get(),
             (deltaMovement.length() * 0.1).toFloat(),
-            random.nextFloat() * 0.15f + 1.05f
+            random.nextFloat() * 0.15f + 1.05f,
         )
     }
 
-    override fun canBeCollidedWith(): Boolean {
-        return this.enableAABB()
-    }
+    override fun canBeCollidedWith(): Boolean = this.enableAABB()
 
-    override fun isPickable(): Boolean {
-        return !this.isRemoved
-    }
+    override fun isPickable(): Boolean = !this.isRemoved
 
-    override fun skipAttackInteraction(attacker: Entity): Boolean {
-        return hasPassenger(attacker) || super.skipAttackInteraction(attacker)
-    }
+    override fun skipAttackInteraction(attacker: Entity): Boolean = hasPassenger(attacker) || super.skipAttackInteraction(attacker)
 
-    override fun canAddPassenger(pPassenger: Entity): Boolean {
-        return this.getPassengers().size < this.maxPassengers
-    }
+    override fun canAddPassenger(pPassenger: Entity): Boolean = this.getPassengers().size < this.maxPassengers
 
     open val maxPassengers: Int
         get() = computed().seats().size
@@ -2326,16 +2508,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     /**
      * 呼吸回血冷却时长(单位:tick)，设为小于0的值以禁用呼吸回血
      */
-    open fun maxRepairCoolDown(): Int {
-        return computed().repairCooldown
-    }
+    open fun maxRepairCoolDown(): Int = computed().repairCooldown
 
     /**
      * 呼吸回血回血量
      */
-    open fun repairAmount(): Float {
-        return computed().repairAmount
-    }
+    open fun repairAmount(): Float = computed().repairAmount
 
     override fun baseTick() {
         // Cache computed vehicle data for this tick.
@@ -2392,7 +2570,6 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     weaponFiringState[weaponName] = firing
                 }
             }
-
         } else {
             // Server side: tick all gun data with cached environment rate.
             // Computing fluid state (isInLava, isInWaterOrRain) is expensive for
@@ -2406,7 +2583,8 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 // isInLava / isInWaterOrRain scan the full bounding box — for large vehicles
                 // (KirovEntity) this can touch hundreds of blocks per call.
                 if (tickCount - envRateCachedTick >= ENV_RATE_RECOMPUTE_INTERVAL) {
-                    cachedEnvRate = map.values.firstOrNull()
+                    cachedEnvRate = map.values
+                        .firstOrNull()
                         ?.let { GunEventHandler.computeEnvironmentRate(this, it) }
                         ?: 1.0
                     envRateCachedTick = tickCount
@@ -2533,7 +2711,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
 
         if (isWreck) {
-            if ((vehicleType == VehicleType.AIRPLANE || vehicleType == VehicleType.HELICOPTER || vehicleType == VehicleType.AIRSHIP) && (onGround() || isInFluidType) && !sympatheticDetonated) {
+            if ((vehicleType == VehicleType.AIRPLANE || vehicleType == VehicleType.HELICOPTER || vehicleType == VehicleType.AIRSHIP) &&
+                (onGround() || isInFluidType) &&
+                !sympatheticDetonated
+            ) {
                 sympatheticDetonated = true
                 val destroyInfo = computed.destroyInfo
                 if (destroyInfo.explodePassengers) {
@@ -2569,9 +2750,9 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         vehicleRadar()
 
         // 固定翼飞机自动盘旋：空中、引擎启动、有能量、未坠毁、有乘客、盘旋开关已开启
-        if (!onGround() && engineStartOver && energy > 1024 && !isWreck
-            && getPassengers().isNotEmpty() && computed.engineType == EngineType.AIRCRAFT
-            && loiterActive
+        if (!onGround() && engineStartOver && energy > 1024 && !isWreck &&
+            getPassengers().isNotEmpty() && computed.engineType == EngineType.AIRCRAFT &&
+            loiterActive
         ) {
             aircraftLoiter()
         }
@@ -2633,7 +2814,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 val rpm = Math.ceil(20f / (vehicleWeaponRpm(mob).toFloat() / 60)).toInt()
                 if (tickCount % rpm == 0 && canShoot(mob) &&
                     getShootDirectionForHud(mob, 1f).angleTo(
-                        getShootPos(mob, 1f).vectorTo(VectorTool.lerpGetEntityBoundingBoxCenter(target, 1f))
+                        getShootPos(mob, 1f).vectorTo(VectorTool.lerpGetEntityBoundingBoxCenter(target, 1f)),
                     ) < 4
                 ) {
                     vehicleShoot(mob, target.getUUID(), null)
@@ -2647,18 +2828,23 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                             if (!canConsume(gunData.get(GunProp.AMMO_COST_PER_SHOOT))) {
                                 mob.displayClientMessage(
                                     Component.translatable("tips.superbwarfare.not.enough.energy"),
-                                    true
+                                    true,
                                 )
                             }
                         } else if (getAmmoCount(mob) < gunData.get(GunProp.AMMO_COST_PER_SHOOT)) {
                             val stack = gunData.selectedAmmoConsumer().stack()
                             if (stack != ItemStack.EMPTY && !InventoryTool.hasCreativeAmmoBox(this) && !gunData.reloading()) {
                                 mob.displayClientMessage(
-                                    Component.translatable("tips.superbwarfare.need.ammo")
+                                    Component
+                                        .translatable("tips.superbwarfare.need.ammo")
                                         .append(
-                                            Component.literal("[").append(stack.hoverName).append("]")
-                                                .withStyle(ChatFormatting.YELLOW)
-                                        ), true
+                                            Component
+                                                .literal("[")
+                                                .append(stack.hoverName)
+                                                .append("]")
+                                                .withStyle(ChatFormatting.YELLOW),
+                                        ),
+                                    true,
                                 )
                             }
                         }
@@ -2691,8 +2877,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             cannonRecoilTime -= 1
         }
 
-        this.recoilShake = Mth.abs(cannonRecoilForce) * 0.0000007 * cannonRecoilTime.toDouble()
-            .pow(4.0) * sin(0.2 * Math.PI * (cannonRecoilTime - 2.5))
+        this.recoilShake = Mth.abs(cannonRecoilForce) * 0.0000007 *
+            cannonRecoilTime
+                .toDouble()
+                .pow(4.0) * sin(0.2 * Math.PI * (cannonRecoilTime - 2.5))
         cannonRecoilForce *= 0.93f
 
         if (tickCount % 4 == 0) {
@@ -2778,7 +2966,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
         val terrainCompat = computed.terrainCompat
         if (terrainCompat.isNotEmpty()) {
-            if (!((vehicleType == VehicleType.AIRPLANE || vehicleType == VehicleType.HELICOPTER || vehicleType == VehicleType.AIRSHIP) && isWreck)) {
+            if (!(
+                    (vehicleType == VehicleType.AIRPLANE || vehicleType == VehicleType.HELICOPTER || vehicleType == VehicleType.AIRSHIP) &&
+                        isWreck
+                )
+            ) {
                 this.terrainCompact(terrainCompat)
             }
         }
@@ -2904,7 +3096,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      */
     private fun keepChunkLoaded(chunkPos: ChunkPos) {
         (level() as ServerLevel).chunkSource.addRegionTicket(
-            TicketType.POST_TELEPORT, chunkPos, 3, this.id
+            TicketType.POST_TELEPORT,
+            chunkPos,
+            3,
+            this.id,
         )
     }
 
@@ -2942,47 +3137,53 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             val dirVec = getRadarVec(1f, stringOrVec3)
             val baseYRot = -getYRotFromVector(dirVec) + 180
 
-            val config = RadarScanner.RadarConfig(
-                owner = player,
-                center = position(),
-                radius = radarInfo.range.toDouble(),
-                sweepAngle = radarInfo.angle.toDouble(),
-                yRot = baseYRot,
-                rotationSpeed = radarInfo.rotateSpeed.toDouble(),
-                searchType = RadarScanner.SearchType.VEHICLES,
-                minTargetHeight = radarInfo.minTargetHeight,
-                maxTargetHeight = radarInfo.maxTargetHeight,
-                shareWithTeammates = radarInfo.shareWithTeammates,
-                showIcon = false,
-                sourceId = "vehicle_${this.id}",
-                affectedByStealthTarget = radarInfo.affectedByStealthTarget
-            )
+            val config =
+                RadarScanner.RadarConfig(
+                    owner = player,
+                    center = position(),
+                    radius = radarInfo.range.toDouble(),
+                    sweepAngle = radarInfo.angle.toDouble(),
+                    yRot = baseYRot,
+                    rotationSpeed = radarInfo.rotateSpeed.toDouble(),
+                    searchType = RadarScanner.SearchType.VEHICLES,
+                    minTargetHeight = radarInfo.minTargetHeight,
+                    maxTargetHeight = radarInfo.maxTargetHeight,
+                    shareWithTeammates = radarInfo.shareWithTeammates,
+                    showIcon = false,
+                    sourceId = "vehicle_${this.id}",
+                    affectedByStealthTarget = radarInfo.affectedByStealthTarget,
+                )
 
             RadarScanner.sendRadarConfig(config, level)
             RadarScanner.scan(level, config).sendToClients(player, level, config.shareWithTeammates)
         }
     }
 
-    fun getRadarVec(partialTicks: Float, stringOrVec3: StringOrVec3?): Vec3 {
+    fun getRadarVec(
+        partialTicks: Float,
+        stringOrVec3: StringOrVec3?,
+    ): Vec3 {
         if (stringOrVec3 == null) {
             return getViewVector(partialTicks)
         } else if (stringOrVec3.isString) {
             return getVectorFromString(stringOrVec3.string!!, partialTicks)
         } else {
             val vec3 = stringOrVec3.vec3!!
-            val worldPosition = VehicleVecUtils.transformPosition(
-                getVehicleTransform(partialTicks),
-                vec3.x + stringOrVec3.vec3.x,
-                vec3.y + stringOrVec3.vec3.y,
-                vec3.z + stringOrVec3.vec3.z
-            )
+            val worldPosition =
+                VehicleVecUtils.transformPosition(
+                    getVehicleTransform(partialTicks),
+                    vec3.x + stringOrVec3.vec3.x,
+                    vec3.y + stringOrVec3.vec3.y,
+                    vec3.z + stringOrVec3.vec3.z,
+                )
 
-            val worldPositionO = VehicleVecUtils.transformPosition(
-                getVehicleTransform(partialTicks),
-                vec3.x,
-                vec3.y,
-                vec3.z
-            )
+            val worldPositionO =
+                VehicleVecUtils.transformPosition(
+                    getVehicleTransform(partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -3020,18 +3221,23 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
         this.obb.forEach { obbInfo ->
             // Compute or retrieve cached transform for this key.
-            val transform = transformCache.getOrPut(obbInfo.transform) {
-                this.getTransformFromString(obbInfo.transform)
-            }
+            val transform =
+                transformCache.getOrPut(obbInfo.transform) {
+                    this.getTransformFromString(obbInfo.transform)
+                }
 
             val obb = obbInfo.getOBB()
-            val worldPos = this.transformPosition(
-                transform, obbInfo.position.x, obbInfo.position.y, obbInfo.position.z
-            )
+            val worldPos =
+                this.transformPosition(
+                    transform,
+                    obbInfo.position.x,
+                    obbInfo.position.y,
+                    obbInfo.position.z,
+                )
 
             // Zero out turret/barrel OBBs after sympathetic detonation.
-            if (hasTurret() && sympatheticDetonated
-                && (obbInfo.transform.equals("Turret") || obbInfo.transform.equals("Barrel"))
+            if (hasTurret() && sympatheticDetonated &&
+                (obbInfo.transform.equals("Turret") || obbInfo.transform.equals("Barrel"))
             ) {
                 obb.setExtents(Vector3d(0.0, 0.0, 0.0))
             }
@@ -3073,7 +3279,17 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
     open fun weaponShootingPitch(weaponName: String): Float {
         val gunData = getGunData(weaponName) ?: return 1f
-        return (0.98f + gunData.shootTimer.get() * 0.01f - (if (gunData.heat.get() > 80) (gunData.heat.get() - 80) * 0.01 else 0.0)).toFloat()
+        return (
+            0.98f + gunData.shootTimer.get() * 0.01f - (
+                if (gunData.heat.get() >
+                    80
+                ) {
+                    (gunData.heat.get() - 80) * 0.01
+                } else {
+                    0.0
+                }
+            )
+        ).toFloat()
     }
 
     open val isFiring: Boolean
@@ -3104,7 +3320,17 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             val gunData = getGunData(seatIndex) ?: continue
             val instance = gunData.get(GunProp.SOUND_INFO).fireSoundInstances
             if (instance != null) {
-                return (0.98f + gunData.shootTimer.get() * 0.01f - (if (gunData.heat.get() > 80) (gunData.heat.get() - 80) * 0.01 else 0.0)).toFloat()
+                return (
+                    0.98f + gunData.shootTimer.get() * 0.01f - (
+                        if (gunData.heat.get() >
+                            80
+                        ) {
+                            (gunData.heat.get() - 80) * 0.01
+                        } else {
+                            0.0
+                        }
+                    )
+                ).toFloat()
             }
         }
         return 1f
@@ -3152,7 +3378,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         randomPos: Float,
         level: Level,
         speed: Float,
-        count: Int
+        count: Int,
     ) {
         VehicleEffectUtils.addRandomParticle(this, particleOptions, pos, randomPos, level, speed, count)
     }
@@ -3163,7 +3389,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         randomPos: Float,
         level: Level,
         count: Int,
-        vec3: Vec3
+        vec3: Vec3,
     ) {
         VehicleEffectUtils.addRandomParticle(this, particleOptions, pos, randomPos, level, count, vec3)
     }
@@ -3194,10 +3420,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
     open fun clearArrow() {
         if (tickCount % 5 != 0) return
-        this.level().getEntities(
-            this,
-            this.boundingBox.inflate(0.0, 0.5, 0.0)
-        ) { e -> e is AbstractArrow }
+        this
+            .level()
+            .getEntities(
+                this,
+                this.boundingBox.inflate(0.0, 0.5, 0.0),
+            ) { e -> e is AbstractArrow }
             .forEach { obj -> obj.discard() }
     }
 
@@ -3205,9 +3433,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         VehicleEffectUtils.lowHealthWarning(this)
     }
 
-    open fun turretBurnEffectPos(): Vec3? {
-        return VehicleEffectUtils.turretBurnEffectPos(this)
-    }
+    open fun turretBurnEffectPos(): Vec3? = VehicleEffectUtils.turretBurnEffectPos(this)
 
     open fun playLowHealthParticle() {
         VehicleEffectUtils.playLowHealthParticle(this)
@@ -3217,14 +3443,16 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         VehicleWeaponUtils.adjustTurretAngle(this)
     }
 
-    open fun getSelectedWeapon(seatIndex: Int) =
-        selectedWeapon.getOrElse(seatIndex) { -1 }
+    open fun getSelectedWeapon(seatIndex: Int) = selectedWeapon.getOrElse(seatIndex) { -1 }
 
     open fun turretAutoAimFromVector(shootVec: Vec3) {
         VehicleWeaponUtils.turretAutoAimFromVector(this, shootVec)
     }
 
-    open fun turretAutoAimFromUuid(uuid: String, pLiving: LivingEntity) {
+    open fun turretAutoAimFromUuid(
+        uuid: String,
+        pLiving: LivingEntity,
+    ) {
         VehicleWeaponUtils.turretAutoAimFromUuid(this, uuid, pLiving)
     }
 
@@ -3306,7 +3534,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
     }
 
-    open fun getTransformDirection(ticks: Float, entity: Entity): Vec3 {
+    open fun getTransformDirection(
+        ticks: Float,
+        entity: Entity,
+    ): Vec3 {
         val index = getSeatIndex(entity)
         val seat = computed().seats()[index]
         val passengerRot = seat.orientation
@@ -3316,7 +3547,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return Vec3(posO.x, posO.y, posO.z).vectorTo(Vec3(pos.x, pos.y, pos.z))
     }
 
-    open fun getTransformDirectionNoOrientation(ticks: Float, entity: Entity): Vec3 {
+    open fun getTransformDirectionNoOrientation(
+        ticks: Float,
+        entity: Entity,
+    ): Vec3 {
         val index = getSeatIndex(entity)
         val seat = computed().seats()[index]
         val transform = getTransformFromString(seat.transform, ticks)
@@ -3325,7 +3559,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return Vec3(posO.x, posO.y, posO.z).vectorTo(Vec3(pos.x, pos.y, pos.z))
     }
 
-    open fun getTransformDirectionFromString(ticks: Float, entity: Entity, string: String): Vec3 {
+    open fun getTransformDirectionFromString(
+        ticks: Float,
+        entity: Entity,
+        string: String,
+    ): Vec3 {
         val index = getSeatIndex(entity)
         val seat = computed().seats()[index]
         val passengerRot = seat.orientation
@@ -3335,7 +3573,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return Vec3(posO.x, posO.y, posO.z).vectorTo(Vec3(pos.x, pos.y, pos.z))
     }
 
-    public override fun positionRider(passenger: Entity, callback: MoveFunction) {
+    public override fun positionRider(
+        passenger: Entity,
+        callback: MoveFunction,
+    ) {
         if (!this.hasPassenger(passenger)) {
             return
         }
@@ -3348,7 +3589,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         passengerPos(passenger, callback, seat.position, seat.transform)
     }
 
-    open fun passengerPos(passenger: Entity, callback: MoveFunction, vec3: Vec3, string: String?) {
+    open fun passengerPos(
+        passenger: Entity,
+        callback: MoveFunction,
+        vec3: Vec3,
+        string: String?,
+    ) {
         val worldPosition = transformPosition(getTransformFromString(string), vec3.x, vec3.y, vec3.z)
         val yOffset = VehicleConfig.getPassengerYOffset(passenger.type)
         passenger.setPos(worldPosition.x, worldPosition.y + yOffset, worldPosition.z)
@@ -3403,59 +3649,76 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         rotationTransform["Default"] = Function { tick -> VectorTool.combineRotations(tick, this) }
     }
 
-    open fun getTransformFromString(string: String?): Matrix4d {
-        return getTransformFromString(string, 1f)
-    }
+    open fun getTransformFromString(string: String?): Matrix4d = getTransformFromString(string, 1f)
 
-    open fun getTransformFromString(string: String?, ticks: Float): Matrix4d {
-        return positionTransform
+    open fun getTransformFromString(
+        string: String?,
+        ticks: Float,
+    ): Matrix4d =
+        positionTransform
             .getOrDefault(string, positionTransform["Default"])!!
             .apply(ticks)
-    }
 
-    open fun getVectorFromString(string: String?): Vec3 {
-        return getVectorFromString(string, 0f)
-    }
+    open fun getVectorFromString(string: String?): Vec3 = getVectorFromString(string, 0f)
 
-    open fun getVectorFromString(string: String?, ticks: Float): Vec3 {
-        return vectorTransform
+    open fun getVectorFromString(
+        string: String?,
+        ticks: Float,
+    ): Vec3 =
+        vectorTransform
             .getOrDefault(string, vectorTransform["Default"])!!
             .apply(ticks)
-    }
 
-    open fun getVectorFromString(string: String, ticks: Float, seatIndex: Int): Vec3 {
+    open fun getVectorFromString(
+        string: String,
+        ticks: Float,
+        seatIndex: Int,
+    ): Vec3 {
         val entity = getNthEntity(seatIndex)
         return when (string) {
-            "Bomb" -> bombHitPos(getNthEntity(seatIndex)).subtract(getShootPosForHud(getNthEntity(seatIndex), 1f))
-            "Passenger" -> if (entity != null) entity.getViewVector(ticks) else getViewVector(ticks)
-            "ClientCamera" -> if (entity != null && entity.level().isClientSide) cameraDirection() else getViewVector(
-                ticks
-            )
+            "Bomb" -> {
+                bombHitPos(getNthEntity(seatIndex)).subtract(getShootPosForHud(getNthEntity(seatIndex), 1f))
+            }
 
-            else -> getVectorFromString(string, ticks)
+            "Passenger" -> {
+                if (entity != null) entity.getViewVector(ticks) else getViewVector(ticks)
+            }
+
+            "ClientCamera" -> {
+                if (entity != null && entity.level().isClientSide) {
+                    cameraDirection()
+                } else {
+                    getViewVector(
+                        ticks,
+                    )
+                }
+            }
+
+            else -> {
+                getVectorFromString(string, ticks)
+            }
         }
     }
 
-    open fun cameraDirection(): Vec3 {
-        return Vec3(mc.gameRenderer.mainCamera.lookVector)
-    }
+    open fun cameraDirection(): Vec3 = Vec3(mc.gameRenderer.mainCamera.lookVector)
 
-    open fun getRotationFromString(string: String?): Quaterniond {
-        return getRotationFromString(string, 0f)
-    }
+    open fun getRotationFromString(string: String?): Quaterniond = getRotationFromString(string, 0f)
 
-    open fun getRotationFromString(string: String?, ticks: Float): Quaterniond {
-        return rotationTransform
+    open fun getRotationFromString(
+        string: String?,
+        ticks: Float,
+    ): Quaterniond =
+        rotationTransform
             .getOrDefault(string, rotationTransform["Default"])!!
             .apply(ticks)
-    }
 
     /**
      * @return 炮弹发射位置
      */
-    open fun getShootPos(seatIndex: Int, ticks: Float): Vec3 {
-        return getShootPos(getNthEntity(seatIndex), ticks)
-    }
+    open fun getShootPos(
+        seatIndex: Int,
+        ticks: Float,
+    ): Vec3 = getShootPos(getNthEntity(seatIndex), ticks)
 
     open fun bombHitPos(entity: Entity?): Vec3 {
         val gunData = getGunData(entity)
@@ -3465,7 +3728,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 getShootPosForHud(entity, 1f),
                 getShootVec(entity, 1f),
                 deltaMovement.length() * gunData.get(GunProp.VELOCITY),
-                -getProjectileGravity(entity).toDouble()
+                -getProjectileGravity(entity).toDouble(),
             )
         } else {
             Vec3.ZERO
@@ -3476,30 +3739,42 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param entity 操控载具的实体
      * @return 炮弹发射位置
      */
-    open fun getShootPos(entity: Entity?, ticks: Float): Vec3 {
+    open fun getShootPos(
+        entity: Entity?,
+        ticks: Float,
+    ): Vec3 {
         val data = getGunData(getSeatIndex(entity))
         if (data != null) {
             val vec3 = data.firePosition()
 
-            val worldPosition = transformPosition(
-                this.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, ticks),
-                vec3.x, vec3.y, vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    this.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, ticks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             return Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
         }
         return getEyePosition(ticks)
     }
 
-    open fun getShootPos(weaponName: String, ticks: Float): Vec3 {
+    open fun getShootPos(
+        weaponName: String,
+        ticks: Float,
+    ): Vec3 {
         val data = getGunData(weaponName)
         if (data != null) {
             val vec3 = data.firePosition()
 
-            val worldPosition = transformPosition(
-                this.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, ticks),
-                vec3.x, vec3.y, vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    this.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, ticks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             return Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
         }
@@ -3510,15 +3785,21 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param entity 操控载具的实体
      * @return 所有炮弹发射位置的中心点，用于HUD瞄准
      */
-    open fun getShootPosForHud(entity: Entity?, ticks: Float): Vec3 {
+    open fun getShootPosForHud(
+        entity: Entity?,
+        ticks: Float,
+    ): Vec3 {
         val data = getGunData(getSeatIndex(entity))
         if (data != null) {
             val vec3 = data.firePositionForHud()
 
-            val worldPosition = transformPosition(
-                this.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, ticks),
-                vec3.x, vec3.y, vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    this.getTransformFromString(data.get(GunProp.SHOOT_POS).transform, ticks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             return Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
         }
@@ -3529,7 +3810,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param entity 操控载具的实体
      * @return 所有炮弹发射位置的方向，用于HUD瞄准
      */
-    open fun getShootDirectionForHud(entity: Entity, partialTicks: Float): Vec3 {
+    open fun getShootDirectionForHud(
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 {
         val data = getGunData(getSeatIndex(entity)) ?: return getViewVector(partialTicks)
 
         val stringOrVec3 = data.fireDirectionForHud()
@@ -3540,17 +3824,21 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             return getVectorFromString(stringOrVec3.string!!, partialTicks, getSeatIndex(entity))
         } else {
             val vec3 = stringOrVec3.vec3!!
-            val worldPosition = transformPosition(
-                getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x + stringOrVec3.vec3.x,
-                vec3.y + stringOrVec3.vec3.y,
-                vec3.z + stringOrVec3.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x + stringOrVec3.vec3.x,
+                    vec3.y + stringOrVec3.vec3.y,
+                    vec3.z + stringOrVec3.vec3.z,
+                )
 
-            val worldPositionO = transformPosition(
-                getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
-                vec3.x, vec3.y, vec3.z
-            )
+            val worldPositionO =
+                transformPosition(
+                    getTransformFromString(data.get(GunProp.SHOOT_POS).transform, partialTicks),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -3558,48 +3846,61 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
     }
 
-    open fun getDefaultBarrelDirection(seatIndex: Int, ticks: Float): Vec3? {
-        return getDefaultBarrelDirection(getNthEntity(seatIndex), ticks)
-    }
+    open fun getDefaultBarrelDirection(
+        seatIndex: Int,
+        ticks: Float,
+    ): Vec3? = getDefaultBarrelDirection(getNthEntity(seatIndex), ticks)
 
-    open fun getDefaultBarrelDirection(entity: Entity?, partialTicks: Float): Vec3? {
-        return VehicleVecUtils.getDefaultBarrelDirection(this, entity, partialTicks)
-    }
+    open fun getDefaultBarrelDirection(
+        entity: Entity?,
+        partialTicks: Float,
+    ): Vec3? = VehicleVecUtils.getDefaultBarrelDirection(this, entity, partialTicks)
 
-    open fun getDefaultBarrelDirection(weaponName: String, partialTicks: Float): Vec3? {
-        return VehicleVecUtils.getDefaultBarrelDirection(this, weaponName, partialTicks)
-    }
+    open fun getDefaultBarrelDirection(
+        weaponName: String,
+        partialTicks: Float,
+    ): Vec3? = VehicleVecUtils.getDefaultBarrelDirection(this, weaponName, partialTicks)
 
+    open fun getShootVec(
+        seatIndex: Int,
+        ticks: Float,
+    ): Vec3? = getShootVec(getNthEntity(seatIndex), ticks)
 
-    open fun getShootVec(seatIndex: Int, ticks: Float): Vec3? {
-        return getShootVec(getNthEntity(seatIndex), ticks)
-    }
+    open fun getShootVec(
+        entity: Entity?,
+        partialTicks: Float,
+    ): Vec3 = VehicleVecUtils.getShootVec(this, entity, partialTicks)
 
-    open fun getShootVec(entity: Entity?, partialTicks: Float): Vec3 {
-        return VehicleVecUtils.getShootVec(this, entity, partialTicks)
-    }
+    open fun getShootVec(
+        weaponName: String,
+        partialTicks: Float,
+    ): Vec3 = VehicleVecUtils.getShootVec(this, weaponName, partialTicks)
 
-    open fun getShootVec(weaponName: String, partialTicks: Float): Vec3 {
-        return VehicleVecUtils.getShootVec(this, weaponName, partialTicks)
-    }
+    open fun getViewVec(
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 = VehicleVecUtils.getViewVec(this, entity, partialTicks)
 
-    open fun getViewVec(entity: Entity, partialTicks: Float): Vec3 {
-        return VehicleVecUtils.getViewVec(this, entity, partialTicks)
-    }
+    open fun getViewPos(
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3? = VehicleVecUtils.getViewPos(this, entity, partialTicks)
 
-    open fun getViewPos(entity: Entity, partialTicks: Float): Vec3? {
-        return VehicleVecUtils.getViewPos(this, entity, partialTicks)
-    }
+    open fun getSeekVec(
+        entity: Entity?,
+        partialTicks: Float,
+    ): Vec3? = VehicleVecUtils.getSeekVec(this, entity, partialTicks)
 
-    open fun getSeekVec(entity: Entity?, partialTicks: Float): Vec3? {
-        return VehicleVecUtils.getSeekVec(this, entity, partialTicks)
-    }
+    open fun getSeekVec(
+        seatIndex: Int,
+        partialTicks: Float,
+    ): Vec3? = VehicleVecUtils.getSeekVec(this, getNthEntity(seatIndex), partialTicks)
 
-    open fun getSeekVec(seatIndex: Int, partialTicks: Float): Vec3? {
-        return VehicleVecUtils.getSeekVec(this, getNthEntity(seatIndex), partialTicks)
-    }
-
-    open fun getPlayerLookAtEntityOnVehicle(shooter: Entity, entityReach: Double, partialTick: Float): Entity? {
+    open fun getPlayerLookAtEntityOnVehicle(
+        shooter: Entity,
+        entityReach: Double,
+        partialTick: Float,
+    ): Entity? {
         val eye = getShootPosForHud(shooter, partialTick)
         val distance = entityReach * entityReach
         var hitResult = TraceTool.pickNew(eye, 512.0, this)
@@ -3607,19 +3908,24 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         val viewVec = getViewVec(shooter, partialTick)
         val toVec = eye.add(viewVec.x * entityReach, viewVec.y * entityReach, viewVec.z * entityReach)
         val aabb = boundingBox.expandTowards(viewVec.scale(entityReach)).inflate(1.0)
-        val entityHitResult = ProjectileUtil.getEntityHitResult(
-            this, eye, toVec, aabb,
-            { p ->
-                !p!!.isSpectator
-                        && p.isAlive
-                        && SeekTool.BASIC_FILTER.test(p)
-                        && !p.type.`is`(ModTags.EntityTypes.DECOY)
-                        && SeekTool.NOT_IN_SMOKE.test(p)
-                        && p !== shooter
-                        && p.vehicle != shooter.vehicle
-                        && (p !is Projectile)
-            }, distance
-        )
+        val entityHitResult =
+            ProjectileUtil.getEntityHitResult(
+                this,
+                eye,
+                toVec,
+                aabb,
+                { p ->
+                    !p!!.isSpectator &&
+                        p.isAlive &&
+                        SeekTool.BASIC_FILTER.test(p) &&
+                        !p.type.`is`(ModTags.EntityTypes.DECOY) &&
+                        SeekTool.NOT_IN_SMOKE.test(p) &&
+                        p !== shooter &&
+                        p.vehicle != shooter.vehicle &&
+                        (p !is Projectile)
+                },
+                distance,
+            )
         if (entityHitResult != null) {
             hitResult = entityHitResult
         }
@@ -3730,7 +4036,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param uuid    目标的UUID字符串
      * @param pLiving 操控载具的实体
      */
-    open fun passengerWeaponAutoAimFormUuid(uuid: String?, pLiving: LivingEntity) {
+    open fun passengerWeaponAutoAimFormUuid(
+        uuid: String?,
+        pLiving: LivingEntity,
+    ) {
         VehicleWeaponUtils.passengerWeaponAutoAimFormUuid(this, uuid, pLiving)
     }
 
@@ -3751,13 +4060,15 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         val driver = this.lastDriver
         if (this.locked && driver is Player) {
             driver.displayClientMessage(
-                Component.translatable(
-                    "tips.superbwarfare.vehicle.lock_destroy",
-                    FormatTool.format1D(this.x),
-                    FormatTool.format1D(this.y),
-                    FormatTool.format1D(this.z),
-                    this.displayName
-                ).withStyle(ChatFormatting.RED), false
+                Component
+                    .translatable(
+                        "tips.superbwarfare.vehicle.lock_destroy",
+                        FormatTool.format1D(this.x),
+                        FormatTool.format1D(this.y),
+                        FormatTool.format1D(this.z),
+                        this.displayName,
+                    ).withStyle(ChatFormatting.RED),
+                false,
             )
         }
 
@@ -3768,8 +4079,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         VehicleDestroyUtils.vehicleExplosion(this, destroyInfo)
     }
 
-    open fun createCustomExplosion(): CustomExplosion.Builder = CustomExplosion.Builder(this)
-        .attacker(this.lastAttacker)
+    open fun createCustomExplosion(): CustomExplosion.Builder =
+        CustomExplosion
+            .Builder(this)
+            .attacker(this.lastAttacker)
 
     open fun crashPassengers() {
         VehicleDestroyUtils.crashPassengers(this)
@@ -3792,24 +4105,25 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         if (this.engineInfo == null) {
             val engineInfo = computed.engineInfo
             try {
-                val serializer = when (engineType) {
-                    EngineType.WHEEL -> Wheel.serializer()
-                    EngineType.TRACK -> Track.serializer()
-                    EngineType.HELICOPTER -> Helicopter.serializer()
-                    EngineType.SHIP -> Ship.serializer()
-                    EngineType.AIRCRAFT -> Aircraft.serializer()
-                    EngineType.WHEELCHAIR -> WheelChair.serializer()
-                    EngineType.TOM6 -> Tom6.serializer()
-                    EngineType.AIRSHIP -> AirShip.serializer()
+                val serializer =
+                    when (engineType) {
+                        EngineType.WHEEL -> Wheel.serializer()
+                        EngineType.TRACK -> Track.serializer()
+                        EngineType.HELICOPTER -> Helicopter.serializer()
+                        EngineType.SHIP -> Ship.serializer()
+                        EngineType.AIRCRAFT -> Aircraft.serializer()
+                        EngineType.WHEELCHAIR -> WheelChair.serializer()
+                        EngineType.TOM6 -> Tom6.serializer()
+                        EngineType.AIRSHIP -> AirShip.serializer()
+                        else -> null
+                    }
 
-                    else -> null
-                }
-
-                this.engineInfo = if (serializer == null) {
-                    null
-                } else {
-                    DataLoader.JSON.decodeFromJsonElement(serializer, engineInfo.toKxJson())
-                }
+                this.engineInfo =
+                    if (serializer == null) {
+                        null
+                    } else {
+                        DataLoader.JSON.decodeFromJsonElement(serializer, engineInfo.toKxJson())
+                    }
             } catch (e: Exception) {
                 Mod.LOGGER.error("Failed to parse engine info for vehicle {}, {}", this, e)
             }
@@ -3825,24 +4139,34 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         if (engineType == EngineType.EMPTY || engineType == EngineType.FIXED) return 0f
 
         // Fallback to computed engineInfo JSON when runtime engineInfo is not yet initialized (e.g. phantom entities)
-        val engineSoundVolume = this.engineInfo?.engineSoundVolume
-            ?: computed.engineInfo.get("EngineSoundVolume")?.asFloat
-            ?: 0.4f
+        val engineSoundVolume =
+            this.engineInfo?.engineSoundVolume
+                ?: computed.engineInfo.get("EngineSoundVolume")?.asFloat
+                ?: 0.4f
 
         return when (engineType) {
-            EngineType.TRACK -> Math.max(
-                Mth.abs(power),
-                Mth.abs(1.4f * deltaRot)
-            ) * engineSoundVolume
+            EngineType.TRACK -> {
+                Math.max(
+                    Mth.abs(power),
+                    Mth.abs(1.4f * deltaRot),
+                ) * engineSoundVolume
+            }
 
-            EngineType.HELICOPTER -> synchedPropellerRot * engineSoundVolume
-            EngineType.AIRSHIP -> Mth.clamp(
-                Mth.abs(power) * engineSoundVolume + engineSoundVolume,
-                engineSoundVolume,
-                1.5f
-            )
+            EngineType.HELICOPTER -> {
+                synchedPropellerRot * engineSoundVolume
+            }
 
-            else -> Mth.abs(power) * engineSoundVolume
+            EngineType.AIRSHIP -> {
+                Mth.clamp(
+                    Mth.abs(power) * engineSoundVolume + engineSoundVolume,
+                    engineSoundVolume,
+                    1.5f,
+                )
+            }
+
+            else -> {
+                Mth.abs(power) * engineSoundVolume
+            }
         }
     }
 
@@ -3864,9 +4188,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     }
 
     // From Immersive_Aircraft
-    open fun getVehicleYOffsetTransform(partialTicks: Float): Matrix4d {
-        return VehicleVecUtils.getVehicleYOffsetTransform(this, partialTicks)
-    }
+    open fun getVehicleYOffsetTransform(partialTicks: Float): Matrix4d = VehicleVecUtils.getVehicleYOffsetTransform(this, partialTicks)
 
     open val rotateOffsetHeight: Double
         get() = computed().rotateOffsetHeight.toDouble()
@@ -3874,13 +4196,9 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     open val laserBaseScale: Double
         get() = computed().laserScale.toDouble()
 
-    open fun getVehicleFlatTransform(partialTicks: Float): Matrix4d {
-        return VehicleVecUtils.getVehicleFlatTransform(this, partialTicks)
-    }
+    open fun getVehicleFlatTransform(partialTicks: Float): Matrix4d = VehicleVecUtils.getVehicleFlatTransform(this, partialTicks)
 
-    open fun getClientVehicleTransform(partialTicks: Float): Matrix4d {
-        return VehicleVecUtils.getClientVehicleTransform(this, partialTicks)
-    }
+    open fun getClientVehicleTransform(partialTicks: Float): Matrix4d = VehicleVecUtils.getClientVehicleTransform(this, partialTicks)
 
     open fun hasTurret() = this.turretPos != null
 
@@ -3929,9 +4247,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     open val barrelPosition: Vec3?
         get() = computed().barrelPos
 
-    open fun hasPassengerWeaponStation(): Boolean {
-        return this.passengerWeaponStationPosition != null
-    }
+    open fun hasPassengerWeaponStation(): Boolean = this.passengerWeaponStationPosition != null
 
     open val passengerWeaponStationPosition: Vec3?
         get() = computed().passengerWeaponStationPos
@@ -3978,40 +4294,30 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
          */
         get() = computed().passengerWeaponStationYawRange.y
 
-
     open val turretCustomPitch: Float
         /**
          * @return 炮塔自定义俯仰
          */
         get() = computed().turretCustomPitch
 
-    open fun getTurretTransform(partialTicks: Float): Matrix4d {
-        return VehicleVecUtils.getTurretTransform(this, partialTicks)
-    }
+    open fun getTurretTransform(partialTicks: Float): Matrix4d = VehicleVecUtils.getTurretTransform(this, partialTicks)
 
-    open fun getTurretVector(pPartialTicks: Float): Vec3 {
-        return VehicleVecUtils.getTurretVector(this, pPartialTicks)
-    }
+    open fun getTurretVector(pPartialTicks: Float): Vec3 = VehicleVecUtils.getTurretVector(this, pPartialTicks)
 
-    open fun getBarrelTransform(partialTicks: Float): Matrix4d {
-        return VehicleVecUtils.getBarrelTransform(this, partialTicks)
-    }
+    open fun getBarrelTransform(partialTicks: Float): Matrix4d = VehicleVecUtils.getBarrelTransform(this, partialTicks)
 
-    open fun getGunTransform(partialTicks: Float): Matrix4d {
-        return VehicleVecUtils.getGunTransform(this, partialTicks)
-    }
+    open fun getGunTransform(partialTicks: Float): Matrix4d = VehicleVecUtils.getGunTransform(this, partialTicks)
 
-    open fun getPassengerWeaponStationBarrelTransform(partialTicks: Float): Matrix4d {
-        return VehicleVecUtils.getPassengerWeaponStationBarrelTransform(this, partialTicks)
-    }
+    open fun getPassengerWeaponStationBarrelTransform(partialTicks: Float): Matrix4d = VehicleVecUtils.getPassengerWeaponStationBarrelTransform(this, partialTicks)
 
-    open fun getPassengerWeaponStationVector(partialTicks: Float): Vec3 {
-        return VehicleVecUtils.getPassengerWeaponStationVector(this, partialTicks)
-    }
+    open fun getPassengerWeaponStationVector(partialTicks: Float): Vec3 = VehicleVecUtils.getPassengerWeaponStationVector(this, partialTicks)
 
-    open fun transformPosition(transform: Matrix4d, x: Double, y: Double, z: Double): Vector4d {
-        return transform.transform(Vector4d(x, y, z, 1.0))
-    }
+    open fun transformPosition(
+        transform: Matrix4d,
+        x: Double,
+        y: Double,
+        z: Double,
+    ): Vector4d = transform.transform(Vector4d(x, y, z, 1.0))
 
     open fun handleClientSync() {
         // Dont replace client values
@@ -4043,7 +4349,14 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         --interpolationSteps
     }
 
-    override fun lerpTo(x: Double, y: Double, z: Double, yRot: Float, xRot: Float, steps: Int) {
+    override fun lerpTo(
+        x: Double,
+        y: Double,
+        z: Double,
+        yRot: Float,
+        xRot: Float,
+        steps: Int,
+    ) {
         this.xO = x
         this.yO = y
         this.zO = z
@@ -4053,9 +4366,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     }
 
     @Deprecated("")
-    protected fun getDismountOffset(vehicleWidth: Double, passengerWidth: Double): Vec3 {
-        return VehicleMiscUtils.getDismountOffset(this, vehicleWidth, passengerWidth)
-    }
+    protected fun getDismountOffset(
+        vehicleWidth: Double,
+        passengerWidth: Double,
+    ): Vec3 = VehicleMiscUtils.getDismountOffset(this, vehicleWidth, passengerWidth)
 
     override fun getDismountLocationForPassenger(passenger: LivingEntity): Vec3 {
         val index = this.getTagSeatIndex(passenger)
@@ -4073,7 +4387,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param index     座位
      * @return 下车的位置
      */
-    open fun getDismountLocationForIndex(passenger: LivingEntity, index: Int): Vec3 {
+    open fun getDismountLocationForIndex(
+        passenger: LivingEntity,
+        index: Int,
+    ): Vec3 {
         val seats = this.computed().seats()
         if (index >= seats.size) return dismount(passenger)
 
@@ -4081,10 +4398,13 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         if (dismountInfo != null) {
             val vec3 = dismountInfo.position
             if (vec3 != null) {
-                val worldPosition = transformPosition(
-                    this.getTransformFromString(dismountInfo.transform),
-                    vec3.x, vec3.y, vec3.z
-                )
+                val worldPosition =
+                    transformPosition(
+                        this.getTransformFromString(dismountInfo.transform),
+                        vec3.x,
+                        vec3.y,
+                        vec3.z,
+                    )
                 return Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
             } else {
                 return dismount(passenger)
@@ -4095,11 +4415,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     }
 
     open fun dismount(passenger: LivingEntity): Vec3 {
-        val vec3d = VehicleMiscUtils.getDismountOffset(
-            this,
-            (bbWidth * Mth.SQRT_OF_TWO).toDouble(),
-            (passenger.bbWidth * Mth.SQRT_OF_TWO).toDouble()
-        )
+        val vec3d =
+            VehicleMiscUtils.getDismountOffset(
+                this,
+                (bbWidth * Mth.SQRT_OF_TWO).toDouble(),
+                (passenger.bbWidth * Mth.SQRT_OF_TWO).toDouble(),
+            )
         val ox = x - vec3d.x
         val oz = z + vec3d.z
         val exitPos = BlockPos(ox.toInt(), y.toInt(), oz.toInt())
@@ -4125,17 +4446,23 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return super.getDismountLocationForPassenger(passenger)
     }
 
-    open fun getEjectionPosition(passenger: LivingEntity, index: Int): Vec3 {
+    open fun getEjectionPosition(
+        passenger: LivingEntity,
+        index: Int,
+    ): Vec3 {
         val seats = this.computed().seats()
         if (index >= seats.size) return passenger.position()
 
         val dismountInfo = seats[index].dismountInfo
         if (dismountInfo != null) {
             val vec3 = dismountInfo.ejectPosition ?: return passenger.position()
-            val worldPosition = transformPosition(
-                this.getTransformFromString(dismountInfo.transform),
-                vec3.x, vec3.y, vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    this.getTransformFromString(dismountInfo.transform),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             return Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
         }
@@ -4143,14 +4470,26 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     }
 
     open fun allowEjection(seatIndex: Int) =
-        computed().seats().getOrNull(seatIndex)?.dismountInfo?.canEject ?: false
+        computed()
+            .seats()
+            .getOrNull(seatIndex)
+            ?.dismountInfo
+            ?.canEject ?: false
 
     open fun removeSeatIndexTag(entity: Entity) {
         entity.persistentData.remove(TAG_SEAT_INDEX)
     }
 
-    open fun getEjectionMovement(entity: LivingEntity?, index: Int): Vec3 {
-        val dismountInfo = this.computed().seats().getOrNull(index)?.dismountInfo ?: return deltaMovement
+    open fun getEjectionMovement(
+        entity: LivingEntity?,
+        index: Int,
+    ): Vec3 {
+        val dismountInfo =
+            this
+                .computed()
+                .seats()
+                .getOrNull(index)
+                ?.dismountInfo ?: return deltaMovement
 
         val force = dismountInfo.ejectForce
         val stringOrVec3 = dismountInfo.ejectDirection
@@ -4162,24 +4501,26 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 getVectorFromString(
                     stringOrVec3.string!!,
                     1f,
-                    getSeatIndex(entity)
-                ).scale(force)
+                    getSeatIndex(entity),
+                ).scale(force),
             )
         } else {
             val vec3 = stringOrVec3.vec3!!
-            val worldPosition = transformPosition(
-                getTransformFromString(dismountInfo.transform),
-                vec3.x + stringOrVec3.vec3.x,
-                vec3.y + stringOrVec3.vec3.y,
-                vec3.z + stringOrVec3.vec3.z
-            )
+            val worldPosition =
+                transformPosition(
+                    getTransformFromString(dismountInfo.transform),
+                    vec3.x + stringOrVec3.vec3.x,
+                    vec3.y + stringOrVec3.vec3.y,
+                    vec3.z + stringOrVec3.vec3.z,
+                )
 
-            val worldPositionO = transformPosition(
-                getTransformFromString(dismountInfo.transform),
-                vec3.x,
-                vec3.y,
-                vec3.z
-            )
+            val worldPositionO =
+                transformPosition(
+                    getTransformFromString(dismountInfo.transform),
+                    vec3.x,
+                    vec3.y,
+                    vec3.z,
+                )
 
             val startPos = Vec3(worldPositionO.x, worldPositionO.y, worldPositionO.z)
             val endPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
@@ -4207,7 +4548,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     }
 
     // 本方法留空
-    override fun push(pX: Double, pY: Double, pZ: Double) {}
+    override fun push(
+        pX: Double,
+        pY: Double,
+        pZ: Double,
+    ) {}
 
     open fun getBarrelVector(pPartialTicks: Float): Vec3 {
         val transform = getBarrelTransform(pPartialTicks)
@@ -4217,54 +4562,44 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             Vec3(
                 targetPosition.x,
                 targetPosition.y,
-                targetPosition.z
-            )
+                targetPosition.z,
+            ),
         )
     }
 
-    open fun getBarrelXRot(pPartialTicks: Float): Float {
-        return Mth.lerp(pPartialTicks, turretXRotO - this.xRotO, this.turretXRot - this.xRot)
-    }
+    open fun getBarrelXRot(pPartialTicks: Float): Float = Mth.lerp(pPartialTicks, turretXRotO - this.xRotO, this.turretXRot - this.xRot)
 
-    open fun getBarrelYRot(pPartialTick: Float): Float {
-        return -Mth.lerp(pPartialTick, turretYRotO - this.yRotO, this.turretYRot - this.yRot)
-    }
+    open fun getBarrelYRot(pPartialTick: Float): Float = -Mth.lerp(pPartialTick, turretYRotO - this.yRotO, this.turretYRot - this.yRot)
 
-    open fun getGunXRot(pPartialTicks: Float): Float {
-        return Mth.lerp(pPartialTicks, gunXRotO - this.xRotO, this.gunXRot - this.xRot)
-    }
+    open fun getGunXRot(pPartialTicks: Float): Float = Mth.lerp(pPartialTicks, gunXRotO - this.xRotO, this.gunXRot - this.xRot)
 
-    open fun getGunYRot(pPartialTick: Float): Float {
-        return -Mth.lerp(pPartialTick, gunYRotO - this.yRotO, this.gunYRot - this.yRot)
-    }
+    open fun getGunYRot(pPartialTick: Float): Float = -Mth.lerp(pPartialTick, gunYRotO - this.yRotO, this.gunYRot - this.yRot)
 
-    open fun getTurretYaw(pPartialTick: Float): Float {
-        return Mth.lerp(pPartialTick, turretYRotO, this.turretYRot)
-    }
+    open fun getTurretYaw(pPartialTick: Float): Float = Mth.lerp(pPartialTick, turretYRotO, this.turretYRot)
 
-    open fun getTurretPitch(pPartialTick: Float): Float {
-        return Mth.lerp(pPartialTick, turretXRotO, this.turretXRot)
-    }
+    open fun getTurretPitch(pPartialTick: Float): Float = Mth.lerp(pPartialTick, turretXRotO, this.turretXRot)
 
-    open fun getCameraPos(entity: Entity, partialTicks: Float): Vec3 {
-        return VehicleVecUtils.getCameraPos(this, entity, partialTicks)
-    }
+    open fun getCameraPos(
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 = VehicleVecUtils.getCameraPos(this, entity, partialTicks)
 
-    open fun cameraDirection(entity: Entity, partialTicks: Float): Vec3 {
-        return VehicleVecUtils.getCameraDirection(this, entity, partialTicks)
-    }
+    open fun cameraDirection(
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 = VehicleVecUtils.getCameraDirection(this, entity, partialTicks)
 
-    open fun getZoomPos(entity: Entity, partialTicks: Float): Vec3 {
-        return VehicleVecUtils.getZoomPos(this, entity, partialTicks)
-    }
+    open fun getZoomPos(
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 = VehicleVecUtils.getZoomPos(this, entity, partialTicks)
 
-    open fun getZoomDirection(entity: Entity, partialTicks: Float): Vec3 {
-        return VehicleVecUtils.getZoomDirection(this, entity, partialTicks)
-    }
+    open fun getZoomDirection(
+        entity: Entity,
+        partialTicks: Float,
+    ): Vec3 = VehicleVecUtils.getZoomDirection(this, entity, partialTicks)
 
-    override fun isAlwaysTicking(): Boolean {
-        return true
-    }
+    override fun isAlwaysTicking(): Boolean = true
 
     open val mouseSensitivity: Double
         get() = computed().mouseSensitivity
@@ -4318,12 +4653,23 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param isOnGround 载具是否在地面
      * @return 调整后的灵敏度
      */
-    open fun getSensitivity(original: Double, zoom: Boolean, seatIndex: Int, isOnGround: Boolean): Double {
+    open fun getSensitivity(
+        original: Double,
+        zoom: Boolean,
+        seatIndex: Int,
+        isOnGround: Boolean,
+    ): Double {
         val seat = computed().seats()[seatIndex]
         val sensitivity = seat.sensitivity
-        return if (zoom) sensitivity.x * original else if (mc.options.cameraType
+        return if (zoom) {
+            sensitivity.x * original
+        } else if (mc.options.cameraType
                 .isFirstPerson
-        ) sensitivity.y * original else sensitivity.z * original
+        ) {
+            sensitivity.y * original
+        } else {
+            sensitivity.z * original
+        }
     }
 
     open val vehicleItemIcon: ResourceLocation?
@@ -4349,9 +4695,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return seat.isEnclosed!!
     }
 
-    open fun isEnclosed(passenger: Entity?): Boolean {
-        return isEnclosed(getSeatIndex(passenger))
-    }
+    open fun isEnclosed(passenger: Entity?): Boolean = isEnclosed(getSeatIndex(passenger))
 
     /**
      * 是否禁用玩家手臂
@@ -4422,9 +4766,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param isFirstPerson 是否是第一人称视角
      */
     @Environment(EnvType.CLIENT)
-    open fun getCameraRotation(partialTicks: Float, player: Player, zoom: Boolean, isFirstPerson: Boolean): Vec2? {
-        return VehicleClientUtils.getCameraRotation(this, partialTicks, player, zoom, isFirstPerson)
-    }
+    open fun getCameraRotation(
+        partialTicks: Float,
+        player: Player,
+        zoom: Boolean,
+        isFirstPerson: Boolean,
+    ): Vec2? = VehicleClientUtils.getCameraRotation(this, partialTicks, player, zoom, isFirstPerson)
 
     /**
      * 获取视角位置
@@ -4433,17 +4780,18 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param isFirstPerson 是否是第一人称视角
      */
     @Environment(EnvType.CLIENT)
-    open fun getCameraPosition(partialTicks: Float, player: Player, zoom: Boolean, isFirstPerson: Boolean): Vec3? {
-        return VehicleClientUtils.getCameraPosition(this, partialTicks, player, zoom, isFirstPerson)
-    }
+    open fun getCameraPosition(
+        partialTicks: Float,
+        player: Player,
+        zoom: Boolean,
+        isFirstPerson: Boolean,
+    ): Vec3? = VehicleClientUtils.getCameraPosition(this, partialTicks, player, zoom, isFirstPerson)
 
     /**
      * 是否使用载具固定视角
      */
     @Environment(EnvType.CLIENT)
-    open fun useFixedCameraPos(entity: Entity?): Boolean {
-        return VehicleClientUtils.useFixedCameraPos(this, entity)
-    }
+    open fun useFixedCameraPos(entity: Entity?): Boolean = VehicleClientUtils.useFixedCameraPos(this, entity)
 
     /**
      * 瞄准时的放大倍率
@@ -4470,21 +4818,18 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
     open fun releaseDecoy() = VehicleWeaponUtils.releaseDecoy(this)
 
-    open fun countDecoyItem(): Int {
-        return if (this.hasSmokeDecoy()) {
+    open fun countDecoyItem(): Int =
+        if (this.hasSmokeDecoy()) {
             InventoryTool.countItem(this, ModItems.VEHICLE_SMOKE_AMMO.get())
         } else {
             InventoryTool.countItem(this, ModItems.FLYING_FLARE_AMMO.get())
         }
-    }
 
     open fun terrainCompact(positions: MutableList<Vec3>) {
         VehicleMotionUtils.terrainCompact(this, positions)
     }
 
-    open fun getWheelsTransform(partialTicks: Float): Matrix4d {
-        return VehicleMotionUtils.getWheelsTransform(this, partialTicks)
-    }
+    open fun getWheelsTransform(partialTicks: Float): Matrix4d = VehicleMotionUtils.getWheelsTransform(this, partialTicks)
 
     open fun moveOnDragonTeeth() {
         VehicleMotionUtils.handleVehicleMoveOnDragonTeeth(this)
@@ -4507,12 +4852,13 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         // Compute effective ground state for the step-up check below without
         // calling the expensive setOnGround(true) which triggers findSupportingBlock
         // via checkSupportingBlock.
-        val effectiveOnGround = if (ignoreEntityGroundCheckStepping) {
-            ignoreEntityGroundCheckStepping = false
-            true
-        } else {
-            this.onGround()
-        }
+        val effectiveOnGround =
+            if (ignoreEntityGroundCheckStepping) {
+                ignoreEntityGroundCheckStepping = false
+                true
+            } else {
+                this.onGround()
+            }
 
         // Use OBB collision resolution instead of vanilla AABB collision
         val vec3 = VehicleMotionUtils.resolveObbWorldCollision(this, pVec)
@@ -4524,12 +4870,16 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
         if (stepHeight > 0.0f && flag3 && (flag || flag2)) {
             // Try step-up
-            var vec31 = VehicleMotionUtils.resolveObbWorldCollision(
-                this, Vec3(pVec.x, stepHeight.toDouble(), pVec.z)
-            )
-            val vec32 = VehicleMotionUtils.resolveObbWorldCollision(
-                this, Vec3(0.0, stepHeight.toDouble(), 0.0)
-            )
+            var vec31 =
+                VehicleMotionUtils.resolveObbWorldCollision(
+                    this,
+                    Vec3(pVec.x, stepHeight.toDouble(), pVec.z),
+                )
+            val vec32 =
+                VehicleMotionUtils.resolveObbWorldCollision(
+                    this,
+                    Vec3(0.0, stepHeight.toDouble(), 0.0),
+                )
             if (vec32.y < stepHeight.toDouble()) {
                 // Ceiling obstruction — try moving up by vec32, then horizontally
                 val collisionObb = this.getCollisionOBB()
@@ -4554,9 +4904,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 var stepDown: Vec3
                 if (collisionObb != null) {
                     val stepUpObbs = listOf(collisionObb.move(Vec3(vec31.x, vec31.y, vec31.z)))
-                    stepDown = VehicleMotionUtils.resolveObbWorldCollision(
-                        this, Vec3(0.0, -vec31.y + pVec.y, 0.0), stepUpObbs
-                    )
+                    stepDown =
+                        VehicleMotionUtils.resolveObbWorldCollision(
+                            this,
+                            Vec3(0.0, -vec31.y + pVec.y, 0.0),
+                            stepUpObbs,
+                        )
 
                     // Support-aware: prevent OBB step-down from clipping into small potholes.
                     // When most of the OBB bottom has block support, limit the sink amount.
@@ -4579,7 +4932,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         return vec3
     }
 
-    open fun vMove(pType: MoverType, pPos: Vec3) {
+    open fun vMove(
+        pType: MoverType,
+        pPos: Vec3,
+    ) {
         var pPos = pPos
 
         level().profiler.push("move")
@@ -4622,7 +4978,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                     this.setDeltaMovement(
                         if (flag4) vec31.x * 0.3 else vec31.x,
                         vec31.y,
-                        if (flag) vec31.z * 0.3 else vec31.z
+                        if (flag) vec31.z * 0.3 else vec31.z,
                     )
                 } else {
                     this.setDeltaMovement(if (flag4) 0.0 else vec31.x, vec31.y, if (flag) 0.0 else vec31.z)
@@ -4642,7 +4998,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
     }
 
-    override fun move(movementType: MoverType, movement: Vec3) {
+    override fun move(
+        movementType: MoverType,
+        movement: Vec3,
+    ) {
         if (!this.level().isClientSide()) {
             ignoreEntityGroundCheckStepping = true
         }
@@ -4653,42 +5012,51 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         val driver = this.lastDriver
 
         if (verticalCollision) {
-            if (this.vehicleType == VehicleType.AIRPLANE
-                && ((synchedGearRot > 0.15 && this !is Tom6Entity) || Mth.abs(this.roll) > 20 || Mth.abs(xRot) > 30)
+            if (this.vehicleType == VehicleType.AIRPLANE &&
+                ((synchedGearRot > 0.15 && this !is Tom6Entity) || Mth.abs(this.roll) > 20 || Mth.abs(xRot) > 30)
             ) {
                 this.hurt(
                     ModDamageTypes.causeVehicleStrikeDamage(
                         this.level().registryAccess(),
                         this,
-                        driver ?: this
+                        driver ?: this,
                     ),
-                    if (isWreck) 0f else ((8 + Mth.abs(this.roll * 0.2f)) * (lastTickSpeed - 0.4) * (lastTickSpeed - 0.4)).toFloat()
+                    if (isWreck) 0f else ((8 + Mth.abs(this.roll * 0.2f)) * (lastTickSpeed - 0.4) * (lastTickSpeed - 0.4)).toFloat(),
                 )
                 this.bounceVertical(
-                    Direction.getNearest(
-                        this.deltaMovement.x(),
-                        this.deltaMovement.y(),
-                        this.deltaMovement.z()
-                    ).opposite
+                    Direction
+                        .getNearest(
+                            this.deltaMovement.x(),
+                            this.deltaMovement.y(),
+                            this.deltaMovement.z(),
+                        ).opposite,
                 )
             } else if (Mth.abs(lastTickVerticalSpeed.toFloat()) > 0.4) {
                 this.hurt(
                     ModDamageTypes.causeVehicleStrikeDamage(
                         this.level().registryAccess(),
                         this,
-                        driver ?: this
+                        driver ?: this,
                     ),
-                    if (isWreck) 0f else (24 * ((Mth.abs(lastTickVerticalSpeed.toFloat()) - 0.4) * (lastTickSpeed - 0.4) * (lastTickSpeed - 0.4))).toFloat()
+                    if (isWreck) {
+                        0f
+                    } else {
+                        (
+                            24 *
+                                ((Mth.abs(lastTickVerticalSpeed.toFloat()) - 0.4) * (lastTickSpeed - 0.4) * (lastTickSpeed - 0.4))
+                        ).toFloat()
+                    },
                 )
                 if (!this.level().isClientSide) {
                     this.level().playSound(null, this, ModSounds.VEHICLE_STRIKE.get(), this.soundSource, 1f, 1f)
                 }
                 this.bounceVertical(
-                    Direction.getNearest(
-                        this.deltaMovement.x(),
-                        this.deltaMovement.y(),
-                        this.deltaMovement.z()
-                    ).opposite
+                    Direction
+                        .getNearest(
+                            this.deltaMovement.x(),
+                            this.deltaMovement.y(),
+                            this.deltaMovement.z(),
+                        ).opposite,
                 )
             }
         }
@@ -4698,15 +5066,17 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
                 ModDamageTypes.causeVehicleStrikeDamage(
                     this.level().registryAccess(),
                     this,
-                    driver ?: this
-                ), (18 * ((lastTickSpeed - 0.2) * (lastTickSpeed - 0.2))).toFloat()
+                    driver ?: this,
+                ),
+                (18 * ((lastTickSpeed - 0.2) * (lastTickSpeed - 0.2))).toFloat(),
             )
             this.bounceHorizontal(
-                Direction.getNearest(
-                    this.deltaMovement.x(),
-                    this.deltaMovement.y(),
-                    this.deltaMovement.z()
-                ).opposite
+                Direction
+                    .getNearest(
+                        this.deltaMovement.x(),
+                        this.deltaMovement.y(),
+                        this.deltaMovement.z(),
+                    ).opposite,
             )
             if (!this.level().isClientSide) {
                 this.level().playSound(null, this, ModSounds.VEHICLE_STRIKE.get(), this.soundSource, 1f, 1f)
@@ -4724,7 +5094,10 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * @param onGround whether the entity should be considered on the ground
      * @param movement the movement vector that led to this ground state
      */
-    override fun setOnGroundWithMovement(onGround: Boolean, movement: Vec3) {
+    override fun setOnGroundWithMovement(
+        onGround: Boolean,
+        movement: Vec3,
+    ) {
         if (getCollisionOBBInfo() != null) {
             // Direct field write via Mixin @Accessor — bypasses Entity.setOnGround()
             // which would call the private checkSupportingBlock() and trigger a full
@@ -4747,7 +5120,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         VehicleMotionUtils.preventStacking(this)
     }
 
-    open fun pushNew(pX: Double, pY: Double, pZ: Double) {
+    open fun pushNew(
+        pX: Double,
+        pY: Double,
+        pZ: Double,
+    ) {
         this.setDeltaMovement(this.deltaMovement.add(pX, pY, pZ))
     }
 
@@ -4759,17 +5136,19 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
     open fun crushEntities() = VehicleMotionUtils.crushEntities(this)
 
-    open fun getForwardDirection(): Vector3f = Vector3f(
-        Mth.sin(-yRot * (Math.PI.toFloat() / 180)),
-        0.0f,
-        Mth.cos(yRot * (Math.PI.toFloat() / 180))
-    ).normalize()
+    open fun getForwardDirection(): Vector3f =
+        Vector3f(
+            Mth.sin(-yRot * (Math.PI.toFloat() / 180)),
+            0.0f,
+            Mth.cos(yRot * (Math.PI.toFloat() / 180)),
+        ).normalize()
 
-    open fun getRightDirection(): Vector3f = Vector3f(
-        Mth.cos(-yRot * (Math.PI.toFloat() / 180)),
-        0.0f,
-        Mth.sin(yRot * (Math.PI.toFloat() / 180))
-    ).normalize()
+    open fun getRightDirection(): Vector3f =
+        Vector3f(
+            Mth.cos(-yRot * (Math.PI.toFloat() / 180)),
+            0.0f,
+            Mth.sin(yRot * (Math.PI.toFloat() / 180)),
+        ).normalize()
 
     open fun getEngineSound(): SoundEvent? = this.computed().engineSound
 
@@ -4881,10 +5260,14 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
     /** 所有被牵引实体列表 */
     open val towingEntities: List<Entity>
-        get() = towingUUIDs.mapNotNull { uuid ->
-            if (uuid.isBlank()) null
-            else EntityFindUtil.findEntity(level(), uuid)
-        }
+        get() =
+            towingUUIDs.mapNotNull { uuid ->
+                if (uuid.isBlank()) {
+                    null
+                } else {
+                    EntityFindUtil.findEntity(level(), uuid)
+                }
+            }
 
     /** 向后兼容：返回第一个被牵引实体 */
     open val towingEntity: Entity?
@@ -4901,8 +5284,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         }
 
     /** 检查是否正在牵引指定实体 */
-    open fun isTowing(entity: Entity): Boolean =
-        entity.stringUUID in towingUUIDs
+    open fun isTowing(entity: Entity): Boolean = entity.stringUUID in towingUUIDs
 
     /** 是否有任何牵引目标 */
     open fun isTowingAny(): Boolean = towingUUIDs.isNotEmpty()
@@ -4943,9 +5325,12 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     open fun hornWorking() = Math.abs(this.hornVolume) > 0.05
 
     open fun stuka() = xRot > 5 && xRot < 175 && deltaMovement.y < -0.4 && !onGround()
+
     open fun heliCrash() = vehicleType == VehicleType.HELICOPTER && health < getMaxHealth() * 0.1f && !onGround()
+
     open fun vehicleSkip() =
-        engineInfo is Wheel && engineInfo !is WheelChair && (if (engineInfo is Track) drift() else upInputDown) && onGround() && deltaMovement.horizontalDistanceSqr() > (if (engineInfo is Track) 0.0004 else 0.01)
+        engineInfo is Wheel && engineInfo !is WheelChair && (if (engineInfo is Track) drift() else upInputDown) && onGround() &&
+            deltaMovement.horizontalDistanceSqr() > (if (engineInfo is Track) 0.0004 else 0.01)
 
     open fun drift() = upInputDown && (rightInputDown || leftInputDown)
 
@@ -4956,18 +5341,24 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
         get() = VehicleMiscUtils.isAmphibious(this)
 
     @Environment(EnvType.CLIENT)
-    open fun firstPersonAmmoComponent(data: GunData, player: Player?): Component {
-        return VehicleClientUtils.firstPersonAmmoComponent(this, data, player)
-    }
+    open fun firstPersonAmmoComponent(
+        data: GunData,
+        player: Player?,
+    ): Component = VehicleClientUtils.firstPersonAmmoComponent(this, data, player)
 
     @Environment(EnvType.CLIENT)
-    open fun thirdPersonAmmoComponent(data: GunData, player: Player?): Component {
-        return VehicleClientUtils.thirdPersonAmmoComponent(this, data, player)
-    }
+    open fun thirdPersonAmmoComponent(
+        data: GunData,
+        player: Player?,
+    ): Component = VehicleClientUtils.thirdPersonAmmoComponent(this, data, player)
 
     override fun getOBBs(): MutableList<OBB> {
         if (this.obbCache == null) {
-            this.obbCache = this.obb.asSequence().map { it.getOBB() }.toMutableList()
+            this.obbCache =
+                this.obb
+                    .asSequence()
+                    .map { it.getOBB() }
+                    .toMutableList()
         }
         return this.obbCache!!
     }
@@ -5012,9 +5403,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
     /**
      * 获取用于碰撞和旋转物理的单个COLLISION类型OBB
      */
-    open fun getCollisionOBB(): OBB? {
-        return getOBBs().firstOrNull { it.part == COLLISION }
-    }
+    open fun getCollisionOBB(): OBB? = getOBBs().firstOrNull { it.part == COLLISION }
 
     /**
      * 获取COLLISION类型OBB的定义信息（局部中心位置与半长）
@@ -5022,9 +5411,7 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
      * 与[getCollisionOBB]不同，这里返回的是数据定义而非世界空间实例，
      * 因此其局部位置/半长不受车身pitch/roll影响，可用于构建稳定的地形采样footprint
      */
-    open fun getCollisionOBBInfo(): OBBInfo? {
-        return obb.firstOrNull { it.part == COLLISION }
-    }
+    open fun getCollisionOBBInfo(): OBBInfo? = obb.firstOrNull { it.part == COLLISION }
 
     open fun getEnergyDataAccessor() = ENERGY
 
@@ -5097,9 +5484,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             SynchedEntityData.defineId(VehicleEntity::class.java, EntityDataSerializers.STRING)
 
         @JvmField
-        val AI_PASSENGER_WEAPON_TARGET_UUID: EntityDataAccessor<String> = SynchedEntityData.defineId(
-            VehicleEntity::class.java, EntityDataSerializers.STRING
-        )
+        val AI_PASSENGER_WEAPON_TARGET_UUID: EntityDataAccessor<String> =
+            SynchedEntityData.defineId(
+                VehicleEntity::class.java,
+                EntityDataSerializers.STRING,
+            )
 
         @JvmField
         val DELTA_ROT: EntityDataAccessor<Float> =
@@ -5115,9 +5504,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
 
         @JvmField
         @ExcludeBvrSync("SelectedWeapon")
-        val SELECTED_WEAPON: EntityDataAccessor<List<Int>> = SynchedEntityData.defineId(
-            VehicleEntity::class.java, ModSerializers.INT_LIST_SERIALIZER.get()
-        )
+        val SELECTED_WEAPON: EntityDataAccessor<List<Int>> =
+            SynchedEntityData.defineId(
+                VehicleEntity::class.java,
+                ModSerializers.INT_LIST_SERIALIZER.get(),
+            )
 
         @JvmField
         @ExcludeBvrSync("TurretHealth")
@@ -5380,8 +5771,11 @@ open class VehicleEntity(pEntityType: EntityType<*>, pLevel: Level) : Entity(pEn
             BvrSyncExclusion.registerDirectKeys(
                 VehicleEntity::class.java,
                 "Inventory",
-                "LoiterX", "LoiterY", "LoiterZ", "LoiterR",
-                "PropellerRotO"
+                "LoiterX",
+                "LoiterY",
+                "LoiterZ",
+                "LoiterR",
+                "PropellerRotO",
             )
         }
     }

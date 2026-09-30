@@ -9,8 +9,23 @@ import net.minecraft.world.level.Level
 object NBTTool {
     // Copy semantics deliberately model custom-data tags; mutating a read does not save it.
     fun getTag(stack: ItemStack) = stack.data.copy()
-    fun saveTag(stack: ItemStack, tag: CompoundTag) { stack.data = tag.copy() }
+
+    fun saveTag(
+        stack: ItemStack,
+        tag: CompoundTag,
+    ) {
+        stack.data = tag.copy()
+    }
 }
-object EntityFindUtil { fun findDrone(world: Level, id: String) = world.drones[id] }
+
+object EntityFindUtil {
+    fun findDrone(
+        world: Level,
+        id: String,
+    ) = world.drones[id]
+}
+
 @Suppress("UNUSED_PARAMETER")
-fun ServerPlayer.sendPacket(packet: ResetCameraTypeMessage) { resetPackets++ }
+fun ServerPlayer.sendPacket(packet: ResetCameraTypeMessage) {
+    resetPackets++
+}

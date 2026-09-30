@@ -15,12 +15,16 @@ import net.minecraft.world.entity.player.Player
 /**
  * Proxy that exposes Entity properties and methods to JS perk scripts.
  */
-class EntityProxy(val entity: Entity?) {
-
+class EntityProxy(
+    val entity: Entity?,
+) {
     // ── Type checks ──
     fun isNull(): Boolean = entity == null
+
     fun isPlayer(): Boolean = entity is Player
+
     fun isLivingEntity(): Boolean = entity is LivingEntity
+
     fun isProjectile(): Boolean = entity is ProjectileEntity
 
     fun isZoom(): Boolean = (entity as? ProjectileEntity)?.isZoom() ?: false
@@ -50,7 +54,10 @@ class EntityProxy(val entity: Entity?) {
      * Absorb overflow healing as absorption health.
      * Used by HealClip postReload.
      */
-    fun absorbExtraHealth(healAmount: Float, absorptionRate: Float) {
+    fun absorbExtraHealth(
+        healAmount: Float,
+        absorptionRate: Float,
+    ) {
         val e = entity as? LivingEntity ?: return
         val absorption = healAmount - e.maxHealth + e.health
         if (absorption > 0) {
@@ -62,13 +69,17 @@ class EntityProxy(val entity: Entity?) {
      * Heal nearby allied players within range.
      * Used by HealClip postReload.
      */
-    fun healNearbyAllies(range: Double, amount: Float) {
+    fun healNearbyAllies(
+        range: Double,
+        amount: Float,
+    ) {
         val e = entity as? LivingEntity ?: return
-        e.level().getEntitiesOfClass(
-            Player::class.java,
-            e.boundingBox.inflate(range)
-        )
-            .filter { it.isAlliedTo(e) || (e is OwnableEntity && e.owner == it) }
+        e
+            .level()
+            .getEntitiesOfClass(
+                Player::class.java,
+                e.boundingBox.inflate(range),
+            ).filter { it.isAlliedTo(e) || (e is OwnableEntity && e.owner == it) }
             .forEach { it.heal(amount) }
     }
 
@@ -84,33 +95,35 @@ class EntityProxy(val entity: Entity?) {
         return EntityProxy(lookedAt)
     }
 
-    fun isSameAs(other: EntityProxy): Boolean {
-        return entity != null && entity == other.entity
-    }
+    fun isSameAs(other: EntityProxy): Boolean = entity != null && entity == other.entity
 
     /**
      * Check if this entity is ownable and is the same as the target entity.
      * Used by FieldDoctor for self-owned entity checks.
      */
-    fun isOwnableAndEquals(target: EntityProxy): Boolean {
-        return entity is OwnableEntity && entity == target.entity
-    }
+    fun isOwnableAndEquals(target: EntityProxy): Boolean = entity is OwnableEntity && entity == target.entity
 
     // ── Projectile ──
-    fun getBypassArmorRate(): Double {
-        return (entity as? ProjectileEntity)?.getBypassArmorRate()?.toDouble() ?: 0.0
-    }
+    fun getBypassArmorRate(): Double = (entity as? ProjectileEntity)?.getBypassArmorRate()?.toDouble() ?: 0.0
 
     // ── Explosion ──
-    fun createExplosion(damage: Number, radius: Number, attackerProxy: EntityProxy, keepBlocks: Boolean, fireTime: Number) {
+    fun createExplosion(
+        damage: Number,
+        radius: Number,
+        attackerProxy: EntityProxy,
+        keepBlocks: Boolean,
+        fireTime: Number,
+    ) {
         val target = entity ?: return
         val attacker = attackerProxy.entity ?: return
-        val builder = CustomExplosion.Builder(target)
-            .damage(damage.toFloat())
-            .radius(radius.toFloat())
-            .directSource(attacker)
-            .source(null)
-            .fireTime(fireTime.toInt())
+        val builder =
+            CustomExplosion
+                .Builder(target)
+                .damage(damage.toFloat())
+                .radius(radius.toFloat())
+                .directSource(attacker)
+                .source(null)
+                .fireTime(fireTime.toInt())
         if (keepBlocks) {
             builder.keepBlock()
         }
@@ -119,7 +132,11 @@ class EntityProxy(val entity: Entity?) {
     }
 
     // ── Motion / Velocity ──
-    fun push(x: Double, y: Double, z: Double) {
+    fun push(
+        x: Double,
+        y: Double,
+        z: Double,
+    ) {
         val e = entity ?: return
         if (e is ServerPlayer) {
             val newMotion = e.deltaMovement.add(x, y, z)

@@ -7,7 +7,9 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WeaponZoomingMessage(val zooming: Boolean) : ServerPacketPayload() {
+data class WeaponZoomingMessage(
+    val zooming: Boolean,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val stack = sender().mainHandItem
         if (stack.item !is GunItem) return

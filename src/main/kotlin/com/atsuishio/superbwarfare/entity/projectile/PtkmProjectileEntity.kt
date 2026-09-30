@@ -26,7 +26,9 @@ import net.minecraft.world.phys.Vec3
 import kotlin.math.cos
 import kotlin.math.sin
 
-open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEntity {
+open class PtkmProjectileEntity :
+    FastThrowableProjectile,
+    BasicGeoProjectileEntity {
     private var shootTime = 3
     private var target: Entity? = null
 
@@ -40,18 +42,14 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
 
     constructor(entity: LivingEntity?, level: Level) : super(ModEntities.PTKM_PROJECTILE.get(), entity, level)
 
-    override fun getDefaultItem(): Item {
-        return ModItems.PTKM_1R.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.PTKM_1R.get()
 
-    override fun isPickable(): Boolean {
-        return !this.isRemoved
-    }
+    override fun isPickable(): Boolean = !this.isRemoved
 
     override fun performDamage(
         entity: Entity,
         damage: Float,
-        isHeadshot: Boolean
+        isHeadshot: Boolean,
     ) {
         entity.invulnerableTime = 0
 
@@ -60,11 +58,12 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
             val finalDamage = damage * headShotModifier * if (target != null && tickCount > shootTime) 1f else 0.04f
 
             entity.forceHurt(
-                if (isHeadshot)
+                if (isHeadshot) {
                     ModDamageTypes.causeProjectileHitHeadshotDamage(this.level().registryAccess(), this, this.owner)
-                else
-                    ModDamageTypes.causeProjectileHitDamage(this.level().registryAccess(), this, this.owner),
-                finalDamage
+                } else {
+                    ModDamageTypes.causeProjectileHitDamage(this.level().registryAccess(), this, this.owner)
+                },
+                finalDamage,
             )
             entity.invulnerableTime = 0
         }
@@ -104,16 +103,34 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
                         ModSounds.EXPLOSION_AIR.get(),
                         SoundSource.BLOCKS,
                         8f,
-                        1f
+                        1f,
                     )
                     ParticleTool.spawnSmallExplosionParticles(level, position())
                     ParticleTool.sendParticle(
-                        level, ParticleTypes.LARGE_SMOKE, position().x, position().y, position().z,
-                        40, 0.5, 0.25, 0.5, 0.01, true
+                        level,
+                        ParticleTypes.LARGE_SMOKE,
+                        position().x,
+                        position().y,
+                        position().z,
+                        40,
+                        0.5,
+                        0.25,
+                        0.5,
+                        0.01,
+                        true,
                     )
                     ParticleTool.sendParticle(
-                        level, ParticleTypes.CAMPFIRE_COSY_SMOKE, position().x, position().y, position().z,
-                        30, 0.5, 0.25, 0.5, 0.005, true
+                        level,
+                        ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                        position().x,
+                        position().y,
+                        position().z,
+                        30,
+                        0.5,
+                        0.25,
+                        0.5,
+                        0.005,
+                        true,
                     )
                     spawnDirectionalParticles(this, 55, 3.25, level, ParticleTypes.CAMPFIRE_COSY_SMOKE)
                     spawnDirectionalParticles(this, 50, 3.0, level, ParticleTypes.CAMPFIRE_COSY_SMOKE)
@@ -125,18 +142,30 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
                     var i = 0f
                     while (i < this.distanceTo(target!!)) {
                         ParticleTool.sendParticle(
-                            level, ParticleTypes.CLOUD,
+                            level,
+                            ParticleTypes.CLOUD,
                             position().x + i * deltaMovement.normalize().x,
                             position().y + i * deltaMovement.normalize().y,
                             position().z + i * deltaMovement.normalize().z,
-                            (--count).coerceIn(2, 8), 0.25, 0.25, 0.25, 0.0025, true
+                            (--count).coerceIn(2, 8),
+                            0.25,
+                            0.25,
+                            0.25,
+                            0.0025,
+                            true,
                         )
                         ParticleTool.sendParticle(
-                            level, ParticleTypes.FLAME,
+                            level,
+                            ParticleTypes.FLAME,
                             position().x + i * deltaMovement.normalize().x,
                             position().y + i * deltaMovement.normalize().y,
                             position().z + i * deltaMovement.normalize().z,
-                            (--count).coerceIn(2, 8), 0.25, 0.25, 0.25, 0.0025, true
+                            (--count).coerceIn(2, 8),
+                            0.25,
+                            0.25,
+                            0.25,
+                            0.0025,
+                            true,
                         )
                         i += .5f
                     }
@@ -144,11 +173,17 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
                     var j = 0f
                     while (j < 16) {
                         ParticleTool.sendParticle(
-                            level, ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                            level,
+                            ParticleTypes.CAMPFIRE_COSY_SMOKE,
                             position().x + j * deltaMovement.scale(-1.0).normalize().x,
                             position().y + j * deltaMovement.scale(-1.0).normalize().y,
                             position().z + j * deltaMovement.scale(-1.0).normalize().z,
-                            (--count).coerceIn(2, 8), 0.25, 0.25, 0.25, 0.0025, true
+                            (--count).coerceIn(2, 8),
+                            0.25,
+                            0.25,
+                            0.25,
+                            0.0025,
+                            true,
                         )
                         j += .5f
                     }
@@ -162,7 +197,8 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
     }
 
     fun explode(pos: Vec3) {
-        CustomExplosion.Builder(this)
+        CustomExplosion
+            .Builder(this)
             .damageSource(causeCustomExplosionDamage(level().registryAccess(), this, this.owner))
             .damage(explosionDamageValue)
             .radius(explosionRadiusValue)
@@ -194,9 +230,7 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
         }
     }
 
-    override fun isFastMoving(): Boolean {
-        return false
-    }
+    override fun isFastMoving(): Boolean = false
 
     companion object {
         fun spawnDirectionalParticles(
@@ -204,7 +238,7 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
             count: Int,
             radius: Double,
             level: ServerLevel,
-            particle: SimpleParticleType
+            particle: SimpleParticleType,
         ) {
             val deltaMovement = projectile.deltaMovement
 
@@ -232,7 +266,7 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
             v: Vec3,
             count: Int,
             radius: Double,
-            particle: SimpleParticleType
+            particle: SimpleParticleType,
         ) {
             for (i in 0..<count) {
                 val theta = 2 * Math.PI * i / count
@@ -245,10 +279,23 @@ open class PtkmProjectileEntity : FastThrowableProjectile, BasicGeoProjectileEnt
             }
         }
 
-        private fun spawnParticle(level: ServerLevel, pos: Vec3, particle: SimpleParticleType) {
+        private fun spawnParticle(
+            level: ServerLevel,
+            pos: Vec3,
+            particle: SimpleParticleType,
+        ) {
             ParticleTool.sendParticle(
-                level, particle, pos.x, pos.y, pos.z,
-                1, 0.02, 0.02, 0.02, 0.0001, true
+                level,
+                particle,
+                pos.x,
+                pos.y,
+                pos.z,
+                1,
+                0.02,
+                0.02,
+                0.02,
+                0.0001,
+                true,
             )
         }
     }

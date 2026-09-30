@@ -9,6 +9,7 @@ import com.atsuishio.superbwarfare.init.ModTags;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Final;
@@ -31,22 +33,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
 
-    @Inject(method = "bobView(Lcom/mojang/blaze3d/vertex/PoseStack;F)V", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "bobView(Lcom/mojang/blaze3d/vertex/PoseStack;F)V",
+            at = @At("HEAD"),
+            cancellable = true)
     public void bobView(PoseStack p_109139_, float p_109140_, CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player != null) {
             ItemStack stack = player.getMainHandItem();
-            if (stack.getItem() instanceof GunItem && Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON) {
+            if (stack.getItem() instanceof GunItem
+                    && Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON) {
                 ci.cancel();
             }
         }
     }
 
     // From Immersive_Aircraft
-    @Shadow
-    @Final
-    private Camera mainCamera;
+    @Shadow @Final private Camera mainCamera;
 
     @SuppressWarnings("ConstantValue")
     @Inject(method = "bobHurt(Lcom/mojang/blaze3d/vertex/PoseStack;F)V", at = @At("HEAD"))
@@ -57,13 +61,19 @@ public abstract class GameRendererMixin {
         Entity entity = mainCamera.getEntity();
         matrices.mulPose(Axis.ZP.rotationDegrees(ClientEventHandler.cameraRoll));
 
-        if (entity instanceof Player player && !player.isSpectator() && player.hasEffect(ModMobEffects.SHOCK)) {
+        if (entity instanceof Player player
+                && !player.isSpectator()
+                && player.hasEffect(ModMobEffects.SHOCK)) {
             float shakeStrength = (float) DisplayConfig.SHOCK_SCREEN_SHAKE.get() / 100.0f;
             if (shakeStrength <= 0.0f) return;
-            matrices.mulPose(Axis.ZP.rotationDegrees((float) Mth.nextDouble(RandomSource.create(), 8, 12) * shakeStrength));
+            matrices.mulPose(
+                    Axis.ZP.rotationDegrees(
+                            (float) Mth.nextDouble(RandomSource.create(), 8, 12) * shakeStrength));
         }
 
-        if (entity != null && entity.getRootVehicle() instanceof VehicleEntity vehicle && (!mainCamera.isDetached() || ClientEventHandler.zoomVehicle)) {
+        if (entity != null
+                && entity.getRootVehicle() instanceof VehicleEntity vehicle
+                && (!mainCamera.isDetached() || ClientEventHandler.zoomVehicle)) {
             var seats = VehicleData.compute(vehicle).seats();
             int index = vehicle.getSeatIndex(entity);
             if (index < 0 || index >= seats.size()) return;
@@ -73,7 +83,10 @@ public abstract class GameRendererMixin {
             ClientEventHandler.vehiclePoseStack = matrices;
 
             // rotate camera
-            float a = Mth.wrapDegrees(mainCamera.getYRot() - Mth.lerp(tickDelta, vehicle.yRotO, vehicle.getYRot()));
+            float a =
+                    Mth.wrapDegrees(
+                            mainCamera.getYRot()
+                                    - Mth.lerp(tickDelta, vehicle.yRotO, vehicle.getYRot()));
 
             var seat = seats.get(index);
 
@@ -93,7 +106,9 @@ public abstract class GameRendererMixin {
                 }
             }
 
-            matrices.mulPose(Axis.ZP.rotationDegrees(-r * vehicle.getRoll(tickDelta) - r2 * vehicle.getViewXRot(tickDelta)));
+            matrices.mulPose(
+                    Axis.ZP.rotationDegrees(
+                            -r * vehicle.getRoll(tickDelta) - r2 * vehicle.getViewXRot(tickDelta)));
 
             if (!vehicle.useFixedCameraPos(entity)) {
                 // fetch eye offset

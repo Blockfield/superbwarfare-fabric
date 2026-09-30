@@ -13,9 +13,10 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
 
-class BlueprintResearchingTableBlockItemRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityModelSet) :
-    BlockEntityWithoutLevelRenderer(dispatcher, set) {
-
+class BlueprintResearchingTableBlockItemRenderer(
+    dispatcher: BlockEntityRenderDispatcher,
+    set: EntityModelSet,
+) : BlockEntityWithoutLevelRenderer(dispatcher, set) {
     private val modelInstance by lazy { BlockModelReloadListener.getModel(MODEL)?.createInstance() }
 
     override fun renderByItem(
@@ -24,7 +25,7 @@ class BlueprintResearchingTableBlockItemRenderer(dispatcher: BlockEntityRenderDi
         poseStack: PoseStack,
         buffer: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         if (stack.item !is BlueprintResearchTableBlockItem) return
         val instance = modelInstance ?: return
@@ -53,7 +54,7 @@ class BlueprintResearchingTableBlockItemRenderer(dispatcher: BlockEntityRenderDi
             poseStack,
             buffer.getBuffer(RenderType.entityCutout(TEXTURE)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         poseStack.popPose()

@@ -17,6 +17,7 @@ Simple Bedrock Model 渲染，Curios 做饰品栏位，Cloth Config 做配置界
 ### 属性修改链（PMC）
 
 这是整个武器系统的核心。`GunData.get(prop)` 计算最终属性值时，按以下顺序叠加修改：
+
 1. NBT 中 JSON 格式的属性覆写
 2. GunItem 级别的修改（`PropertyModifier`）
 3. 当前开火模式的修改
@@ -36,49 +37,49 @@ Simple Bedrock Model 渲染，Curios 做饰品栏位，Cloth Config 做配置界
 
 ### `src/main/kotlin/.../` (Kotlin，主要代码)
 
-| 包              | 说明                                                                          |
-|----------------|-----------------------------------------------------------------------------|
-| `Mod.kt`       | 模组入口，注册 Registry、生命周期事件、tick 队列                                             |
-| `init/`        | 33 个注册/初始化文件（ModItems, ModBlocks, ModEntities, ModPerks, ModAttachments...） |
-| `data/`        | Kotlin 数据层（ContainerDataManager, WreckageLootData）                          |
-| `item/`        | Kotlin 物品类（弹药、护甲、容器、饰品、武器、弹射物、杂项）+ `item/gun/GunItem.kt`（枪械抽象基类）            |
-| `entity/`      | 实体系统（见下文实体层级）                                                               |
-| `event/`       | 11 个事件处理器（客户端的、枪械 tick、玩家事件、生物伤害、鼠标点击等）                                     |
-| `client/`      | 全部客户端代码（渲染、模型、GUI、粒子、overlay、shader）                                        |
-| `network/`     | 网络消息 + 注册（message/send/ 客户端→服务端，message/receive/ 服务端→客户端）                   |
-| `resource/`    | 资源加载（GunResource, VehicleResource）                                          |
-| `perk/`        | 枪械 Perk 系统（弹药 Perk、伤害 Perk、功能 Perk 三类）                                      |
-| `capability/`  | NeoForge Attachment 系统 + Capabilities API（PlayerVariable, 物品/实体能量存储）        |
-| `config/`      | 配置文件定义（ClientConfig, CommonConfig, ServerConfig）                            |
-| `compat/`      | 模组兼容层（JEI, Jade, KubeJS, Cloth Config, Cold Sweat 等）                        |
-| `api/event/`   | 自定义 NeoForge 事件（ShootEvent, PreKillEvent, ProjectileHitEvent 等）             |
-| `tools/`       | 工具类（HitboxHelper, MathTool, OBB, CustomExplosion, VectorTool 等）             |
-| `datagen/`     | 20 个数据生成器（物品模型、配方、战利品表、标签、进度）                                               |
-| `block/`       | 自定义方块及其方块实体                                                                 |
-| `command/`     | 服务端命令                                                                       |
-| `recipe/`      | 自定义配方类型                                                                     |
-| `procedures/`  | 纪念用彩蛋代码，无意义                                                                 |
-| `script/`      | Rhino JS 脚本引擎集成                                                             |
-| `world/`       | 世界数据（TDMSavedData, phys/ 射线追踪扩展）                                            |
-| `advancement/` | 自定义进度触发器                                                                    |
+| 包             | 说明                                                                                               |
+| -------------- | -------------------------------------------------------------------------------------------------- |
+| `Mod.kt`       | 模组入口，注册 Registry、生命周期事件、tick 队列                                                   |
+| `init/`        | 33 个注册/初始化文件（ModItems, ModBlocks, ModEntities, ModPerks, ModAttachments...）              |
+| `data/`        | Kotlin 数据层（ContainerDataManager, WreckageLootData）                                            |
+| `item/`        | Kotlin 物品类（弹药、护甲、容器、饰品、武器、弹射物、杂项）+ `item/gun/GunItem.kt`（枪械抽象基类） |
+| `entity/`      | 实体系统（见下文实体层级）                                                                         |
+| `event/`       | 11 个事件处理器（客户端的、枪械 tick、玩家事件、生物伤害、鼠标点击等）                             |
+| `client/`      | 全部客户端代码（渲染、模型、GUI、粒子、overlay、shader）                                           |
+| `network/`     | 网络消息 + 注册（message/send/ 客户端→服务端，message/receive/ 服务端→客户端）                     |
+| `resource/`    | 资源加载（GunResource, VehicleResource）                                                           |
+| `perk/`        | 枪械 Perk 系统（弹药 Perk、伤害 Perk、功能 Perk 三类）                                             |
+| `capability/`  | NeoForge Attachment 系统 + Capabilities API（PlayerVariable, 物品/实体能量存储）                   |
+| `config/`      | 配置文件定义（ClientConfig, CommonConfig, ServerConfig）                                           |
+| `compat/`      | 模组兼容层（JEI, Jade, KubeJS, Cloth Config, Cold Sweat 等）                                       |
+| `api/event/`   | 自定义 NeoForge 事件（ShootEvent, PreKillEvent, ProjectileHitEvent 等）                            |
+| `tools/`       | 工具类（HitboxHelper, MathTool, OBB, CustomExplosion, VectorTool 等）                              |
+| `datagen/`     | 20 个数据生成器（物品模型、配方、战利品表、标签、进度）                                            |
+| `block/`       | 自定义方块及其方块实体                                                                             |
+| `command/`     | 服务端命令                                                                                         |
+| `recipe/`      | 自定义配方类型                                                                                     |
+| `procedures/`  | 纪念用彩蛋代码，无意义                                                                             |
+| `script/`      | Rhino JS 脚本引擎集成                                                                              |
+| `world/`       | 世界数据（TDMSavedData, phys/ 射线追踪扩展）                                                       |
+| `advancement/` | 自定义进度触发器                                                                                   |
 
 ### `src/main/java/.../` (Java + 部分 Kotlin 混放)
 
-| 包                                | 说明                                                                                           |
-|----------------------------------|----------------------------------------------------------------------------------------------|
-| `data/`                          | 数据基类（DataMap, IDBasedData, 序列化适配器）                                                           |
-| `data/gun/`                      | 枪械数据类型（GunData.kt 978行, DefaultGunData.kt, GunProp.kt, Ammo.java, ShootPos.kt, FireMode 等）   |
-| `data/vehicle/`                  | VehicleData, VehiclePropertyModifier                                                         |
-| `data/launchable/`               | ShootData, LaunchableEntityTool                                                              |
-| `data/mob_guns/`                 | 生物用枪数据                                                                                       |
-| `data/drone_attachment/`         | 无人机挂载数据                                                                                      |
-| `item/gun/`                      | 全部具体枪械物品类（约45把枪，按类型分目录）                                                                      |
-| `item/gun/vehicle/`              | VehicleGun.kt（载具武器的抽象基类）                                                                     |
-| `resource/gun/`                  | GunResource, DefaultGunResource, GunAnimation                                                |
-| `entity/vehicle/utils/` (kotlin) | VehicleMiscUtils, VehicleWeaponUtils, VehicleEngineUtils 等                                   |
+| 包                               | 说明                                                                                                  |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `data/`                          | 数据基类（DataMap, IDBasedData, 序列化适配器）                                                        |
+| `data/gun/`                      | 枪械数据类型（GunData.kt 978行, DefaultGunData.kt, GunProp.kt, Ammo.java, ShootPos.kt, FireMode 等）  |
+| `data/vehicle/`                  | VehicleData, VehiclePropertyModifier                                                                  |
+| `data/launchable/`               | ShootData, LaunchableEntityTool                                                                       |
+| `data/mob_guns/`                 | 生物用枪数据                                                                                          |
+| `data/drone_attachment/`         | 无人机挂载数据                                                                                        |
+| `item/gun/`                      | 全部具体枪械物品类（约45把枪，按类型分目录）                                                          |
+| `item/gun/vehicle/`              | VehicleGun.kt（载具武器的抽象基类）                                                                   |
+| `resource/gun/`                  | GunResource, DefaultGunResource, GunAnimation                                                         |
+| `entity/vehicle/utils/` (kotlin) | VehicleMiscUtils, VehicleWeaponUtils, VehicleEngineUtils 等                                           |
 | `client/`                        | Java 客户端代码（GunRendererBuilder, PoseTool, 30+ 枪械 ItemRenderer, 50+ ItemModel, layer/vehicle/） |
-| `mixins/`                        | 34 个 Mixin（Player, Villager, Mob, KeyMapping, LightTexture 等）                                |
-| `compat/netmusic/`               | NetMusic 兼容内部持有类（未完成）                                                                        |
+| `mixins/`                        | 34 个 Mixin（Player, Villager, Mob, KeyMapping, LightTexture 等）                                     |
+| `compat/netmusic/`               | NetMusic 兼容内部持有类（未完成）                                                                     |
 
 ## 实体层级
 
@@ -115,6 +116,7 @@ ProjectileEntity 特色：OBB 支持的自定义射线追踪、爆头/腿伤检�
 ### GunGeoItem（GeckoLib 枪械，未来要删除）
 
 `item/gun/GunGeoItem.java:35` — 继承 GunItem + GeoItem（Java）
+
 - 提供动画控制器：idle, edit, bolt, reload, melee, fire, run/sprint
 - 依赖 GunResource 数据 + ClientEventHandler 状态驱动
 
@@ -123,6 +125,7 @@ ProjectileEntity 特色：OBB 支持的自定义射线追踪、爆头/腿伤检�
 `item/gun/vehicle/VehicleGun.kt:23` — 载具武器抽象基类
 
 ### 弹药系统
+
 - `AmmoConsumer` — 定义弹药消耗方式（弹药类型/槽位/装填量）
 - `AmmoBoxItem` — 弹药盒（按弹药种类分类）
 - `CreativeAmmoBoxItem` — 创造模式弹药盒
@@ -150,16 +153,16 @@ ItemStack NBT ↔ GunData.from(stack) 获取运行时实例
 
 ## 关键技术栈
 
-| 技术                               | 用途                           |
-|----------------------------------|------------------------------|
-| GeckoLib 4.7.5                   | 动画控制器 + Bedrock 模型渲染         |
-| Simple Bedrock Model 2.3.3       | Bedrock 模型加载器 (jar-in-jar)   |
+| 技术                             | 用途                             |
+| -------------------------------- | -------------------------------- |
+| GeckoLib 4.7.5                   | 动画控制器 + Bedrock 模型渲染    |
+| Simple Bedrock Model 2.3.3       | Bedrock 模型加载器 (jar-in-jar)  |
 | Rhino 1.8.1-SNAPSHOT (ywzj fork) | JavaScript 脚本引擎 (jar-in-jar) |
 | Kotlin for Forge 5.10.0          | Kotlin 语言支持                  |
 | Curios 9.2.0+1.21.1              | 饰品栏位                         |
-| Cloth Config                     | 配置 GUI                       |
-| JEI + Jade + Patchouli           | 配方查看 / HUD / 指南书             |
-| KubeJS                           | JS 自定义内容                     |
+| Cloth Config                     | 配置 GUI                         |
+| JEI + Jade + Patchouli           | 配方查看 / HUD / 指南书          |
+| KubeJS                           | JS 自定义内容                    |
 
 ## 编码约定
 
@@ -201,7 +204,7 @@ class SomeItem : Item {
     @SubscribeEvent
     fun registerRender(event: RegisterClientExtensionsEvent) {
       event.registerItem(object : IClientItemExtensions {
-        // ... 
+        // ...
       }, ModItems.SOME_ITEM)
     }
   }

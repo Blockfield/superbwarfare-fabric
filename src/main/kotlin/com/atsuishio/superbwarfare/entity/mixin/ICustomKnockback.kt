@@ -15,8 +15,6 @@ interface ICustomKnockback {
 
     companion object {
         @JvmStatic
-        fun getInstance(entity: LivingEntity): ICustomKnockback {
-            return entity as ICustomKnockback
-        }
+        fun getInstance(entity: LivingEntity): ICustomKnockback = entity as ICustomKnockback
     }
 }

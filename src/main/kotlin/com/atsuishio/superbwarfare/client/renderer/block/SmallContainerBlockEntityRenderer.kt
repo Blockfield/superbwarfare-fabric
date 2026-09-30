@@ -22,7 +22,7 @@ class SmallContainerBlockEntityRenderer : BlockEntityRenderer<SmallContainerBloc
         poseStack: PoseStack,
         buffer: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         val instance = blockEntity.modelInstance ?: return
         if (blockEntity.animationInstance == null) {
@@ -32,12 +32,13 @@ class SmallContainerBlockEntityRenderer : BlockEntityRenderer<SmallContainerBloc
 
         poseStack.pushPose()
 
-        val rot = when (blockEntity.blockState.getValue(SmallContainerBlock.FACING)) {
-            Direction.EAST -> -90f
-            Direction.SOUTH -> 180f
-            Direction.WEST -> 90f
-            else -> 0f
-        }
+        val rot =
+            when (blockEntity.blockState.getValue(SmallContainerBlock.FACING)) {
+                Direction.EAST -> -90f
+                Direction.SOUTH -> 180f
+                Direction.WEST -> 90f
+                else -> 0f
+            }
 
         poseStack.translate(0.5, 0.0, 0.5)
         poseStack.mulPose(Axis.YP.rotationDegrees(rot))
@@ -46,17 +47,18 @@ class SmallContainerBlockEntityRenderer : BlockEntityRenderer<SmallContainerBloc
         ani.tick()
         instance.applyPose(BLENDER.blend(instance.bindPose, ani.getPose()))
 
-        val texture = if (blockEntity.lootTableSeed != 0L && blockEntity.lootTableSeed % 205 == 0L) {
-            TEXTURE_SUI
-        } else {
-            TEXTURE
-        }
+        val texture =
+            if (blockEntity.lootTableSeed != 0L && blockEntity.lootTableSeed % 205 == 0L) {
+                TEXTURE_SUI
+            } else {
+                TEXTURE
+            }
 
         instance.renderToBuffer(
             poseStack,
             buffer.getBuffer(RenderType.entityTranslucent(texture)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         poseStack.popPose()

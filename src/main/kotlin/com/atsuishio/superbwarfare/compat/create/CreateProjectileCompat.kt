@@ -17,7 +17,11 @@ import java.lang.reflect.Method
  * зависимости от Create при сборке.
  */
 object CreateProjectileCompat {
-    data class ContraptionHit(val entity: Entity, val location: Vec3, val blockState: BlockState?)
+    data class ContraptionHit(
+        val entity: Entity,
+        val location: Vec3,
+        val blockState: BlockState?,
+    )
 
     private val contraptionClass: Class<*>?
     private val rayTraceMethod: Method?
@@ -53,7 +57,12 @@ object CreateProjectileCompat {
 
     /** Ближайший блок контрапшена на отрезке [start, end] в мировых координатах, либо null. */
     @JvmStatic
-    fun rayTraceContraption(level: Level, start: Vec3, end: Vec3, owner: Entity?): ContraptionHit? {
+    fun rayTraceContraption(
+        level: Level,
+        start: Vec3,
+        end: Vec3,
+        owner: Entity?,
+    ): ContraptionHit? {
         val cls = contraptionClass ?: return null
         val rayTrace = rayTraceMethod ?: return null
         if (level !is ServerLevel) return null
@@ -66,17 +75,19 @@ object CreateProjectileCompat {
             if (!cls.isInstance(entity)) continue
             if (owner != null && (entity == owner.vehicle || entity.rootVehicle === owner.rootVehicle)) continue
 
-            val result = try {
-                rayTrace.invoke(null, start, end, entity) as? BlockHitResult ?: continue
-            } catch (t: Throwable) {
-                continue
-            }
+            val result =
+                try {
+                    rayTrace.invoke(null, start, end, entity) as? BlockHitResult ?: continue
+                } catch (t: Throwable) {
+                    continue
+                }
 
-            val global = try {
-                toGlobalMethod!!.invoke(entity, result.location, 1.0f) as? Vec3 ?: continue
-            } catch (t: Throwable) {
-                continue
-            }
+            val global =
+                try {
+                    toGlobalMethod!!.invoke(entity, result.location, 1.0f) as? Vec3 ?: continue
+                } catch (t: Throwable) {
+                    continue
+                }
 
             val dist = start.distanceToSqr(global)
             if (dist < bestDist) {
@@ -87,7 +98,10 @@ object CreateProjectileCompat {
         return best
     }
 
-    private fun blockStateOf(entity: Entity, localPos: BlockPos): BlockState? {
+    private fun blockStateOf(
+        entity: Entity,
+        localPos: BlockPos,
+    ): BlockState? {
         return try {
             val contraption = getContraptionMethod!!.invoke(entity)
             val blocks = getBlocksMethod!!.invoke(contraption) as? Map<*, *> ?: return null

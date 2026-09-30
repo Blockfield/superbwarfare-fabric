@@ -13,9 +13,10 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
 
-class ContainerBlockItemRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityModelSet) :
-    BlockEntityWithoutLevelRenderer(dispatcher, set) {
-
+class ContainerBlockItemRenderer(
+    dispatcher: BlockEntityRenderDispatcher,
+    set: EntityModelSet,
+) : BlockEntityWithoutLevelRenderer(dispatcher, set) {
     private val modelInstance by lazy { BlockModelReloadListener.getModel(MODEL)?.createInstance() }
 
     override fun renderByItem(
@@ -24,7 +25,7 @@ class ContainerBlockItemRenderer(dispatcher: BlockEntityRenderDispatcher, set: E
         poseStack: PoseStack,
         bufferSource: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         if (stack.item !is ContainerBlockItem) return
 
@@ -42,7 +43,7 @@ class ContainerBlockItemRenderer(dispatcher: BlockEntityRenderDispatcher, set: E
             poseStack,
             bufferSource.getBuffer(RenderType.entityCutout(TEXTURE)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         poseStack.popPose()

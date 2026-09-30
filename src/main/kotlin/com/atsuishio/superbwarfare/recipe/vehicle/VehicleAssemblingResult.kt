@@ -77,23 +77,29 @@ class VehicleAssemblingResult {
 
     companion object {
         val CODEC: Codec<VehicleAssemblingResult> =
-            RecordCodecBuilder.mapCodec { builder: RecordCodecBuilder.Instance<VehicleAssemblingResult> ->
-                builder.group(
-                    Codec.STRING.optionalFieldOf(
-                        "item",
-                        BuiltInRegistries.ITEM.getKey(ModItems.CONTAINER.value()).toString()
-                    ).forGetter { it.itemString },
-                    Codec.STRING.optionalFieldOf("entity", "").forGetter { it.entityTypeString },
-                    Codec.INT.optionalFieldOf("count", 1).forGetter { it.count }
-                ).apply(builder, ::VehicleAssemblingResult)
-            }.codec()
+            RecordCodecBuilder
+                .mapCodec { builder: RecordCodecBuilder.Instance<VehicleAssemblingResult> ->
+                    builder
+                        .group(
+                            Codec.STRING
+                                .optionalFieldOf(
+                                    "item",
+                                    BuiltInRegistries.ITEM.getKey(ModItems.CONTAINER.value()).toString(),
+                                ).forGetter { it.itemString },
+                            Codec.STRING.optionalFieldOf("entity", "").forGetter { it.entityTypeString },
+                            Codec.INT.optionalFieldOf("count", 1).forGetter { it.count },
+                        ).apply(builder, ::VehicleAssemblingResult)
+                }.codec()
 
         val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, VehicleAssemblingResult> =
             StreamCodec.composite(
-                ByteBufCodecs.STRING_UTF8, { it.itemString },
-                ByteBufCodecs.STRING_UTF8, { it.entityTypeString },
-                ByteBufCodecs.VAR_INT, { it.count },
-                ::VehicleAssemblingResult
+                ByteBufCodecs.STRING_UTF8,
+                { it.itemString },
+                ByteBufCodecs.STRING_UTF8,
+                { it.entityTypeString },
+                ByteBufCodecs.VAR_INT,
+                { it.count },
+                ::VehicleAssemblingResult,
             )
     }
 }

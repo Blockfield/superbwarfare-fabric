@@ -16,8 +16,9 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.BlockPos
 import net.minecraft.util.Mth
 
-class SmallCannonShellEntityRenderer(manager: EntityRendererProvider.Context) :
-    EntityRenderer<SmallCannonShellEntity>(manager) {
+class SmallCannonShellEntityRenderer(
+    manager: EntityRendererProvider.Context,
+) : EntityRenderer<SmallCannonShellEntity>(manager) {
     override fun getTextureLocation(pEntity: SmallCannonShellEntity) = loc("textures/entity/empty.png")
 
     override fun shouldRender(
@@ -25,10 +26,8 @@ class SmallCannonShellEntityRenderer(manager: EntityRendererProvider.Context) :
         pCamera: Frustum,
         pCamX: Double,
         pCamY: Double,
-        pCamZ: Double
-    ): Boolean {
-        return true
-    }
+        pCamZ: Double,
+    ): Boolean = true
 
     // 渲染方式参考 ywzj_vehicle
     // 非常的永无，非常的止境（嗯OC）
@@ -38,7 +37,7 @@ class SmallCannonShellEntityRenderer(manager: EntityRendererProvider.Context) :
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val instance = entity.modelInstance ?: return
         val eyePos = localPlayer?.eyePosition ?: return
@@ -66,14 +65,17 @@ class SmallCannonShellEntityRenderer(manager: EntityRendererProvider.Context) :
                 1.0f,
                 222f / 255f,
                 39f / 255f,
-                1.0f
+                1.0f,
             )
         }
 
         poseStack.popPose()
     }
 
-    override fun getBlockLightLevel(pEntity: SmallCannonShellEntity, pPos: BlockPos): Int = 15
+    override fun getBlockLightLevel(
+        pEntity: SmallCannonShellEntity,
+        pPos: BlockPos,
+    ): Int = 15
 
     companion object {
         val TEXTURE = loc("textures/bedrock/projectile/small_cannon_shell.png")

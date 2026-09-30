@@ -22,9 +22,7 @@ class DefaultVehicleResource : IDBasedData<DefaultVehicleResource> {
     @kotlin.jvm.Transient
     private var id = ""
 
-    override fun getId(): String {
-        return this.id
-    }
+    override fun getId(): String = this.id
 
     override fun setId(id: String) {
         this.id = id

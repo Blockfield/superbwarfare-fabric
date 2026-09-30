@@ -7,7 +7,10 @@ import com.atsuishio.superbwarfare.serialization.kserializer.SerializedResourceL
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AssembleVehicleMessage(val id: SerializedResourceLocation, val containerId: Int) : ServerPacketPayload() {
+data class AssembleVehicleMessage(
+    val id: SerializedResourceLocation,
+    val containerId: Int,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         val menu = player.containerMenu as? VehicleAssemblingMenu ?: return

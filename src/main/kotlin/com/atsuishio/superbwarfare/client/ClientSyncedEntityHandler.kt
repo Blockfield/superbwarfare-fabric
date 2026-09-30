@@ -18,8 +18,10 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 object ClientSyncedEntityHandler {
-
-    data class SyncedKey(val dim: ResourceLocation, val id: Int)
+    data class SyncedKey(
+        val dim: ResourceLocation,
+        val id: Int,
+    )
 
     data class ClientSyncedEntity(
         val entity: Entity,
@@ -32,11 +34,18 @@ object ClientSyncedEntityHandler {
         val shouldWorldRender: Boolean = false,
     )
 
-    data class SyncedPlayerKey(val dim: ResourceLocation, val uuid: UUID)
+    data class SyncedPlayerKey(
+        val dim: ResourceLocation,
+        val uuid: UUID,
+    )
 
     data class ClientSyncedPlayer(
-        val timeStamp: Long, val uuid: UUID, val pos: Vec3, val name: String,
-        val onVehicle: Boolean, val isDriver: Boolean,
+        val timeStamp: Long,
+        val uuid: UUID,
+        val pos: Vec3,
+        val name: String,
+        val onVehicle: Boolean,
+        val isDriver: Boolean,
         /** 关系标识："friendly" / "hostile" / "neutral" */
         val relation: String = "friendly",
         /** 服务端实体 ID，用于管理员清除等操作（-1 表示未知） */
@@ -71,10 +80,19 @@ object ClientSyncedEntityHandler {
      * 雷达将探测到的敌对/中立实体 ID 发送给友方。
      */
     @JvmStatic
-    fun syncEntityRelations(dim: ResourceLocation, friendly: List<Int>, hostile: List<Int>, neutral: List<Int>) {
+    fun syncEntityRelations(
+        dim: ResourceLocation,
+        friendly: List<Int>,
+        hostile: List<Int>,
+        neutral: List<Int>,
+    ) {
         val dimStr = dim.toString()
         val now = System.currentTimeMillis()
-        fun addTo(pool: ConcurrentHashMap<String, ConcurrentHashMap<Int, Long>>, ids: List<Int>) {
+
+        fun addTo(
+            pool: ConcurrentHashMap<String, ConcurrentHashMap<Int, Long>>,
+            ids: List<Int>,
+        ) {
             if (ids.isEmpty()) return
             val map = pool.getOrPut(dimStr) { ConcurrentHashMap() }
             for (id in ids) {
@@ -87,7 +105,10 @@ object ClientSyncedEntityHandler {
     }
 
     @JvmStatic
-    fun syncPlayerInfo(dim: ResourceLocation, list: List<SyncedPlayerInfo>) {
+    fun syncPlayerInfo(
+        dim: ResourceLocation,
+        list: List<SyncedPlayerInfo>,
+    ) {
         if (mc.level == null) return
         val time = System.currentTimeMillis()
         for (info in list) {
@@ -118,13 +139,17 @@ object ClientSyncedEntityHandler {
             if (id !in activeIds) {
                 mc.soundManager.stop(sound)
                 true
-            } else false
+            } else {
+                false
+            }
         }
         phantomStukaSounds.entries.removeIf { (id, sound) ->
             if (id !in activeIds) {
                 mc.soundManager.stop(sound)
                 true
-            } else false
+            } else {
+                false
+            }
         }
     }
 
@@ -169,7 +194,10 @@ object ClientSyncedEntityHandler {
      * 无条件同步实体到超视距世界渲染池。
      */
     @JvmStatic
-    fun syncWorldRender(dim: ResourceLocation, list: List<SyncedEntity>) {
+    fun syncWorldRender(
+        dim: ResourceLocation,
+        list: List<SyncedEntity>,
+    ) {
         val level = mc.level ?: return
         val time = System.currentTimeMillis()
         for (syncedEntity in list) {
@@ -186,16 +214,17 @@ object ClientSyncedEntityHandler {
             val realEntityExists = level.getEntity(syncedEntity.id) != null
 
             val existedEntry = SYNCED_WORLD_RENDER[key]
-            val vel = if (existedEntry != null) {
-                val dt = ((time - existedEntry.timeStamp) / 50.0).coerceAtLeast(0.5)
-                Vec3(
-                    (syncedEntity.pos.x - existedEntry.entity.x) / dt,
-                    (syncedEntity.pos.y - existedEntry.entity.y) / dt,
-                    (syncedEntity.pos.z - existedEntry.entity.z) / dt,
-                )
-            } else {
-                Vec3.ZERO
-            }
+            val vel =
+                if (existedEntry != null) {
+                    val dt = ((time - existedEntry.timeStamp) / 50.0).coerceAtLeast(0.5)
+                    Vec3(
+                        (syncedEntity.pos.x - existedEntry.entity.x) / dt,
+                        (syncedEntity.pos.y - existedEntry.entity.y) / dt,
+                        (syncedEntity.pos.z - existedEntry.entity.z) / dt,
+                    )
+                } else {
+                    Vec3.ZERO
+                }
 
             val entity: Entity
             if (existedEntry != null) {
@@ -225,16 +254,24 @@ object ClientSyncedEntityHandler {
                         val ammoCost = gd.get(GunProp.AMMO_COST_PER_SHOOT)
                         // 无限弹药武器由 queryWeaponAmmo 直接返回 999，无需写入
                         if (ammoCost <= 0) continue
-                        if (gd.useBackpackAmmo()) gd.virtualAmmo.set(shots * ammoCost)
-                        else gd.ammo.set(shots * ammoCost)
+                        if (gd.useBackpackAmmo()) {
+                            gd.virtualAmmo.set(shots * ammoCost)
+                        } else {
+                            gd.ammo.set(shots * ammoCost)
+                        }
                     }
                 }
             }
 
-            SYNCED_WORLD_RENDER[key] = ClientSyncedEntity(
-                entity, time, syncedEntity.targetPos, syncedEntity.heightAboveGround, vel,
-                shouldWorldRender = true
-            )
+            SYNCED_WORLD_RENDER[key] =
+                ClientSyncedEntity(
+                    entity,
+                    time,
+                    syncedEntity.targetPos,
+                    syncedEntity.heightAboveGround,
+                    vel,
+                    shouldWorldRender = true,
+                )
             // 为超视距载具假实体管理引擎音效和斯图卡音效
             // 若真实实体已存在，只停止残留的假实体音效（真实实体会通过 baseTick 自行创建音效）
             if (entity is VehicleEntity) {
@@ -250,7 +287,10 @@ object ClientSyncedEntityHandler {
     }
 
     /** 为超视距载具假实体创建或移除引擎音效 */
-    private fun managePhantomEngineSound(vehicle: VehicleEntity, id: Int) {
+    private fun managePhantomEngineSound(
+        vehicle: VehicleEntity,
+        id: Int,
+    ) {
         val existingSound = phantomEngineSounds[id]
         val shouldPlay = vehicle.engineRunning()
 
@@ -265,8 +305,16 @@ object ClientSyncedEntityHandler {
     }
 
     /** 为超视距载具假实体创建或移除斯图卡尖啸音效 */
-    private fun managePhantomStukaSound(vehicle: VehicleEntity, id: Int) {
-        val hasStukaConfig = vehicle.computed().engineInfo.get("HasStukaSound")?.asBoolean ?: false
+    private fun managePhantomStukaSound(
+        vehicle: VehicleEntity,
+        id: Int,
+    ) {
+        val hasStukaConfig =
+            vehicle
+                .computed()
+                .engineInfo
+                .get("HasStukaSound")
+                ?.asBoolean ?: false
         if (!hasStukaConfig) {
             phantomStukaSounds.remove(id)?.let { mc.soundManager.stop(it) }
             return
@@ -286,24 +334,27 @@ object ClientSyncedEntityHandler {
 
     /** 返回超视距世界渲染池中当前维度的所有实体 */
     @JvmStatic
-    fun getSyncedWorldRenderEntities(level: Level): List<Entity> =
-        SYNCED_WORLD_RENDER.filterKeys { it.dim == level.dimension().location() }.map { it.value.entity }
+    fun getSyncedWorldRenderEntities(level: Level): List<Entity> = SYNCED_WORLD_RENDER.filterKeys { it.dim == level.dimension().location() }.map { it.value.entity }
 
     /** 按 ID 从世界渲染池中查找条目 */
     @JvmStatic
-    fun getWorldRenderEntry(level: Level, entityId: Int): ClientSyncedEntity? =
-        SYNCED_WORLD_RENDER[SyncedKey(level.dimension().location(), entityId)]
+    fun getWorldRenderEntry(
+        level: Level,
+        entityId: Int,
+    ): ClientSyncedEntity? = SYNCED_WORLD_RENDER[SyncedKey(level.dimension().location(), entityId)]
 
     @JvmStatic
-    fun getSyncedPlayerInfo(level: Level): List<ClientSyncedPlayer> =
-        SYNCED_PLAYERS.filterKeys { it.dim == level.dimension().location() }.map { it.value }
+    fun getSyncedPlayerInfo(level: Level): List<ClientSyncedPlayer> = SYNCED_PLAYERS.filterKeys { it.dim == level.dimension().location() }.map { it.value }
 
     /**
      * 获取实体的外推位置（速度 × 距离上次同步的时间），用于平滑渲染。
      * 如果实体已在客户端 level 中则返回原位置（由原版插值处理）。
      */
     @JvmStatic
-    fun getExtrapolatedPos(level: Level, entity: Entity): Vec3 {
+    fun getExtrapolatedPos(
+        level: Level,
+        entity: Entity,
+    ): Vec3 {
         if (level.getEntity(entity.id) != null) return entity.position()
         val entry = getSyncedEntry(level, entity.id) ?: return entity.position()
         if (entry.velocity.lengthSqr() <= 0.0) return entity.position()
@@ -311,15 +362,16 @@ object ClientSyncedEntityHandler {
         return Vec3(
             entity.x + entry.velocity.x * elapsed,
             entity.y + entry.velocity.y * elapsed,
-            entity.z + entry.velocity.z * elapsed
+            entity.z + entry.velocity.z * elapsed,
         )
     }
 
     /** 按 ID 从世界渲染池中查找条目 */
     @JvmStatic
-    fun getSyncedEntry(level: Level, entityId: Int): ClientSyncedEntity? {
-        return SYNCED_WORLD_RENDER[SyncedKey(level.dimension().location(), entityId)]
-    }
+    fun getSyncedEntry(
+        level: Level,
+        entityId: Int,
+    ): ClientSyncedEntity? = SYNCED_WORLD_RENDER[SyncedKey(level.dimension().location(), entityId)]
 
     // ── 雷达配置同步 ──
 
@@ -344,21 +396,28 @@ object ClientSyncedEntityHandler {
     private val phantomStukaSounds = ConcurrentHashMap<Int, VehicleSoundInstance>()
 
     @JvmStatic
-    fun syncRadars(dim: ResourceLocation, radars: List<RadarSyncMessage.SyncedRadar>) {
+    fun syncRadars(
+        dim: ResourceLocation,
+        radars: List<RadarSyncMessage.SyncedRadar>,
+    ) {
         val time = System.currentTimeMillis()
         for (r in radars) {
             // 用 sourceId 作为 key，同一雷达每次更新覆盖旧位置，避免移动拖影
             val key = SyncedKey(dim, r.sourceId.hashCode())
-            SYNCED_RADARS[key] = SyncedRadar(
-                pos = r.pos, radius = r.radius, sweepAngle = r.sweepAngle,
-                yRot = r.yRot, ownerName = r.ownerName, showIcon = r.showIcon,
-                sourceId = r.sourceId, timeStamp = time,
-            )
+            SYNCED_RADARS[key] =
+                SyncedRadar(
+                    pos = r.pos,
+                    radius = r.radius,
+                    sweepAngle = r.sweepAngle,
+                    yRot = r.yRot,
+                    ownerName = r.ownerName,
+                    showIcon = r.showIcon,
+                    sourceId = r.sourceId,
+                    timeStamp = time,
+                )
         }
     }
 
     @JvmStatic
-    fun getSyncedRadars(level: Level): List<SyncedRadar> {
-        return SYNCED_RADARS.filterKeys { it.dim == level.dimension().location() }.values.toList()
-    }
+    fun getSyncedRadars(level: Level): List<SyncedRadar> = SYNCED_RADARS.filterKeys { it.dim == level.dimension().location() }.values.toList()
 }

@@ -19,54 +19,63 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
 
-class SmokeMortarShellItem : MortarShellItem(), IDyeableSmokeItem {
-    override fun setColor(stack: ItemStack, color: Int) {
+class SmokeMortarShellItem :
+    MortarShellItem(),
+    IDyeableSmokeItem {
+    override fun setColor(
+        stack: ItemStack,
+        color: Int,
+    ) {
         stack.getOrCreateTag().putInt(TAG_COLOR, color)
     }
 
-    override fun getColor(stack: ItemStack): Int {
-        return if (stack.tag != null && stack.tag!!.contains(TAG_COLOR)) stack.tag!!.getInt(TAG_COLOR) else 0xFFFFFF
-    }
+    override fun getColor(stack: ItemStack): Int = if (stack.tag != null && stack.tag!!.contains(TAG_COLOR)) stack.tag!!.getInt(TAG_COLOR) else 0xFFFFFF
 
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.m18_smoke_grenade").withStyle(ChatFormatting.GRAY)
+            Component
+                .translatable("des.superbwarfare.m18_smoke_grenade")
+                .withStyle(ChatFormatting.GRAY)
                 .append(Component.empty().withStyle(ChatFormatting.RESET))
                 .append(
-                    Component.literal("#" + Integer.toHexString(this.getColor(stack)))
-                        .withStyle(Style.EMPTY.withColor(this.getColor(stack)))
-                )
+                    Component
+                        .literal("#" + Integer.toHexString(this.getColor(stack)))
+                        .withStyle(Style.EMPTY.withColor(this.getColor(stack))),
+                ),
         )
     }
 
     override fun getLaunchBehavior(): DispenseItemBehavior {
         return object : AbstractProjectileDispenseBehavior() {
-            override fun getPower(): Float {
-                return 0.5f
-            }
+            override fun getPower(): Float = 0.5f
 
-            override fun getProjectile(level: Level, position: Position, stack: ItemStack): Projectile {
+            override fun getProjectile(
+                level: Level,
+                position: Position,
+                stack: ItemStack,
+            ): Projectile {
                 val color = this@SmokeMortarShellItem.getColor(stack)
-                val shell = MortarShellEntity(
-                    ModEntities.MORTAR_SHELL.get(),
-                    position.x(),
-                    position.y(),
-                    position.z(),
-                    level,
-                    0.13f
-                )
+                val shell =
+                    MortarShellEntity(
+                        ModEntities.MORTAR_SHELL.get(),
+                        position.x(),
+                        position.y(),
+                        position.z(),
+                        level,
+                        0.13f,
+                    )
                 shell.setType(MortarShellEntity.Type.SMOKE)
                 shell.setRGB(
                     floatArrayOf(
                         ((color shr 16) and 255).toFloat(),
                         ((color shr 8) and 255).toFloat(),
-                        (color and 255).toFloat()
-                    )
+                        (color and 255).toFloat(),
+                    ),
                 )
                 return shell
             }

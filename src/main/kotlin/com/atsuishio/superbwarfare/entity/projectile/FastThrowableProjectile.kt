@@ -1,6 +1,5 @@
 package com.atsuishio.superbwarfare.entity.projectile
 
-import com.atsuishio.superbwarfare.fabric.LevelLifecycleListener
 import com.atsuishio.superbwarfare.Mod.queueServerWork
 import com.atsuishio.superbwarfare.api.event.ProjectileHitEvent.HitBlock
 import com.atsuishio.superbwarfare.api.event.ProjectileHitEvent.HitEntity
@@ -12,6 +11,9 @@ import com.atsuishio.superbwarfare.config.server.ProjectileConfig
 import com.atsuishio.superbwarfare.entity.getValue
 import com.atsuishio.superbwarfare.entity.projectile.IAdvancedHitDetection.Companion.rayTraceBlocks
 import com.atsuishio.superbwarfare.entity.setValue
+import com.atsuishio.superbwarfare.fabric.IEntityWithComplexSpawn
+import com.atsuishio.superbwarfare.fabric.LevelLifecycleListener
+import com.atsuishio.superbwarfare.fabric.MultipartEntities
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.weapon.BeastItem.Companion.beastKill
@@ -51,14 +53,16 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.IEntityWithComplexSpawn
-import com.atsuishio.superbwarfare.fabric.MultipartEntities
 import java.util.function.Consumer
 import java.util.function.Predicate
 
-abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSync, IEntityWithComplexSpawn,
+abstract class FastThrowableProjectile :
+    ThrowableItemProjectile,
+    IFastMotionSync,
+    IEntityWithComplexSpawn,
     LevelLifecycleListener,
-    IBulletProperties, IAdvancedHitDetection {
+    IBulletProperties,
+    IAdvancedHitDetection {
     protected var damageValue: Float = 0f
     protected var explosionDamageValue: Float = 0f
     protected var explosionRadiusValue: Float = 0f
@@ -76,61 +80,73 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
     protected var explosionDestroyValue = true
 
     override fun getDamage(): Float = damageValue
+
     override fun setDamage(value: Float) {
         damageValue = value
     }
 
     override fun getExplosionDamage(): Float = explosionDamageValue
+
     override fun setExplosionDamage(value: Float) {
         explosionDamageValue = value
     }
 
     override fun getExplosionRadius(): Float = explosionRadiusValue
+
     override fun setExplosionRadius(value: Float) {
         explosionRadiusValue = value
     }
 
     override fun getLife(): Int = lifeValue
+
     override fun setLife(value: Int) {
         lifeValue = value
     }
 
     override fun getVelocity(): Float = velocityValue
+
     override fun setVelocity(value: Float) {
         velocityValue = value
     }
 
     override fun isBeast(): Boolean = beastValue
+
     override fun setBeast(value: Boolean) {
         beastValue = value
     }
 
     override fun isPenetrating(): Boolean = penetratingValue
+
     override fun setPenetrating(value: Boolean) {
         penetratingValue = value
     }
 
     override fun getHeadShot(): Float = headShotValue
+
     override fun setHeadShot(value: Float) {
         headShotValue = value
     }
 
     override fun getLegShot(): Float = legShotValue
+
     override fun setLegShot(value: Float) {
         legShotValue = value
     }
 
     override fun getEffects(): Set<MobEffectInstance> = effectsValue
+
     override fun setEffects(effects: List<MobEffectInstance>) {
         this.effectsValue.addAll(effects)
     }
 
     override fun getUnderwaterMotionScale(): Float = underwaterMotionScaleValue
+
     override fun setUnderwaterMotionScale(value: Float) {
         underwaterMotionScaleValue = value
     }
 
     override fun hasExplosionDestroy(): Boolean = explosionDestroyValue
+
     override fun setExplosionDestroy(value: Boolean) {
         explosionDestroyValue = value
     }
@@ -146,13 +162,13 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
         x: Double,
         y: Double,
         z: Double,
-        level: Level
+        level: Level,
     ) : super(entityType, level) {
         this.setPos(x, y, z)
     }
 
     constructor(entityType: EntityType<out ThrowableItemProjectile>, shooter: Entity?, level: Level) :
-            super(entityType, level) {
+        super(entityType, level) {
         this.owner = shooter
         if (shooter != null) {
             this.setPos(shooter.x, shooter.eyeY - 0.1, shooter.z)
@@ -245,22 +261,27 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
             ClientLightingHandler.handleProjectileTick(this)
         }
 
-        if (!level.isClientSide() && this.tickCount > this.getNoHitTicks() && this.y.toInt() in level.minBuildHeight..level.maxBuildHeight) {
+        if (!level.isClientSide() && this.tickCount > this.getNoHitTicks() &&
+            this.y.toInt() in level.minBuildHeight..level.maxBuildHeight
+        ) {
             val startVec = this.position()
             val fullEndVec = startVec.add(this.deltaMovement)
 
             // 1. 查找最近的方块碰撞点
-            val blockHit = (
+            val blockHit =
+                (
                     rayTraceBlocks(
                         level,
                         ClipContext(
-                            startVec, fullEndVec, ClipContext.Block.COLLIDER,
+                            startVec,
+                            fullEndVec,
+                            ClipContext.Block.COLLIDER,
                             if (this.canPassThroughFluid()) ClipContext.Fluid.NONE else ClipContext.Fluid.ANY,
-                            this
+                            this,
                         ),
-                        if (this.isPenetrating()) Predicate { true } else Predicate { false }
+                        if (this.isPenetrating()) Predicate { true } else Predicate { false },
                     )
-            ).takeIf { it.type != HitResult.Type.MISS }
+                ).takeIf { it.type != HitResult.Type.MISS }
 
             // 2. 在路径上查找实体（仅在方块碰撞点之前）
             val searchEnd = blockHit?.location ?: fullEndVec
@@ -351,21 +372,21 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
         }
     }
 
-    open fun canPassThroughFluid(): Boolean {
-        return false
-    }
+    open fun canPassThroughFluid(): Boolean = false
 
     override fun updateRotation() {
         val vec3 = this.deltaMovement
         val d0 = vec3.horizontalDistance()
-        this.xRot = lerpRotation(
-            this.xRotO,
-            -(Mth.atan2(vec3.y, d0) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-        )
-        this.yRot = lerpRotation(
-            this.yRotO,
-            -(Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-        )
+        this.xRot =
+            lerpRotation(
+                this.xRotO,
+                -(Mth.atan2(vec3.y, d0) * (180f / Math.PI.toFloat()).toDouble()).toFloat(),
+            )
+        this.yRot =
+            lerpRotation(
+                this.yRotO,
+                -(Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat(),
+            )
     }
 
     public override fun onHit(result: HitResult) {
@@ -387,13 +408,13 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
                 event,
                 SoundSource.AMBIENT,
                 1f,
-                1f
+                1f,
             )
 
             this.level().gameEvent(
                 GameEvent.PROJECTILE_LAND,
                 hitVec,
-                GameEvent.Context.of(this, state)
+                GameEvent.Context.of(this, state),
             )
 
             this.onHitBlock(result)
@@ -411,7 +432,7 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
             this.level().gameEvent(
                 GameEvent.PROJECTILE_LAND,
                 result.location,
-                GameEvent.Context.of(this, null)
+                GameEvent.Context.of(this, null),
             )
 
             this.onHitEntity(result)
@@ -441,7 +462,8 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
             if (shooter is ServerPlayer) {
                 val holder = Holder.direct(ModSounds.HEADSHOT.get())
                 sendPacketTo(
-                    shooter, ClientboundSoundPacket(
+                    shooter,
+                    ClientboundSoundPacket(
                         holder,
                         SoundSource.PLAYERS,
                         shooter.x,
@@ -449,8 +471,8 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
                         shooter.z,
                         1f,
                         1f,
-                        shooter.level().random.nextLong()
-                    )
+                        shooter.level().random.nextLong(),
+                    ),
                 )
                 sendPacketTo(shooter, ClientIndicatorMessage(1, 5))
             }
@@ -459,7 +481,8 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
             if (shooter is ServerPlayer) {
                 val holder = Holder.direct(ModSounds.INDICATION.get())
                 sendPacketTo(
-                    shooter, ClientboundSoundPacket(
+                    shooter,
+                    ClientboundSoundPacket(
                         holder,
                         SoundSource.PLAYERS,
                         shooter.x,
@@ -467,8 +490,8 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
                         shooter.z,
                         1f,
                         1f,
-                        shooter.level().random.nextLong()
-                    )
+                        shooter.level().random.nextLong(),
+                    ),
                 )
                 sendPacketTo(shooter, ClientIndicatorMessage(0, 5))
             }
@@ -522,18 +545,19 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
     override fun performDamage(
         entity: Entity,
         damage: Float,
-        isHeadshot: Boolean
+        isHeadshot: Boolean,
     ) {
         entity.invulnerableTime = 0
 
         val headShotModifier = if (isHeadshot) this.getHeadShot() else 1f
         if (damage > 0) {
             entity.forceHurt(
-                if (isHeadshot)
+                if (isHeadshot) {
                     ModDamageTypes.causeProjectileHitHeadshotDamage(this.level().registryAccess(), this, this.owner)
-                else
-                    ModDamageTypes.causeProjectileHitDamage(this.level().registryAccess(), this, this.owner),
-                damage * headShotModifier
+                } else {
+                    ModDamageTypes.causeProjectileHitDamage(this.level().registryAccess(), this, this.owner)
+                },
+                damage * headShotModifier,
             )
             entity.invulnerableTime = 0
         }
@@ -541,7 +565,12 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
 
     open fun destroyBlock(blockHitResult: BlockHitResult) {
         val resultPos = blockHitResult.blockPos
-        val hardness = this.level().getBlockState(resultPos).block.defaultDestroyTime()
+        val hardness =
+            this
+                .level()
+                .getBlockState(resultPos)
+                .block
+                .defaultDestroyTime()
         if (hardness != -1f) {
             if (firstHit) {
                 causeExplode(blockHitResult.location)
@@ -557,41 +586,45 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
         }
     }
 
-    open fun buildExplosion(vec3: Vec3): CustomExplosion.Builder {
-        return CustomExplosion.Builder(this)
+    open fun buildExplosion(vec3: Vec3): CustomExplosion.Builder =
+        CustomExplosion
+            .Builder(this)
             .attacker(this.owner)
             .damage(explosionDamageValue)
             .radius(explosionRadiusValue)
             .position(vec3)
             .beast(this.isBeast())
             .destroyBlock(explosionDestroyValue)
-    }
 
     open fun causeRangedEffects(vec3: Vec3) {
         if (this.owner == null) return
         if (this.level() is ServerLevel) {
-            val entities = SeekTool.Builder(this.owner!!)
-                .withinRange(vec3, explosionRadiusValue.toDouble())
-                .notItsVehicle()
-                .baseFilter()
-                .noVehicle()
-                .build()
+            val entities =
+                SeekTool
+                    .Builder(this.owner!!)
+                    .withinRange(vec3, explosionRadiusValue.toDouble())
+                    .notItsVehicle()
+                    .baseFilter()
+                    .noVehicle()
+                    .build()
 
-            entities.asSequence()
+            entities
+                .asSequence()
                 .filter { it is LivingEntity && !(it is Player && it.isCreative) }
                 .forEach { entity ->
                     val dis = vec3.distanceTo(entity.position())
                     if (!checkNoClip(entity, vec3)) return@forEach
 
                     this.getEffects().forEach {
-                        val instance = MobEffectInstance(
-                            it.effect,
-                            (it.duration * (dis / explosionRadiusValue)).toInt(),
-                            it.amplifier,
-                            it.isAmbient,
-                            it.isVisible,
-                            it.showIcon()
-                        )
+                        val instance =
+                            MobEffectInstance(
+                                it.effect,
+                                (it.duration * (dis / explosionRadiusValue)).toInt(),
+                                it.amplifier,
+                                it.isAmbient,
+                                it.isVisible,
+                                it.showIcon(),
+                            )
                         (entity as LivingEntity).addEffect(instance, this.owner)
                     }
                 }
@@ -609,13 +642,9 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
         }
     }
 
-    open fun discardAfterExplode(): Boolean {
-        return false
-    }
+    open fun discardAfterExplode(): Boolean = false
 
-    override fun isFastMoving(): Boolean {
-        return this.deltaMovement.length() >= 0.5
-    }
+    override fun isFastMoving(): Boolean = this.deltaMovement.length() >= 0.5
 
     override fun writeSpawnData(buffer: RegistryFriendlyByteBuf) {
         val motion = this.deltaMovement
@@ -631,7 +660,7 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
         this.setDeltaMovement(
             additionalData.readFloat().toDouble(),
             additionalData.readFloat().toDouble(),
-            additionalData.readFloat().toDouble()
+            additionalData.readFloat().toDouble(),
         )
         // Must match the write order in writeSpawnData()
         this.explosionRadiusValue = additionalData.readFloat()
@@ -641,13 +670,9 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
 
     open fun getVolume(): Float = 0.5f
 
-    override fun isAlwaysTicking(): Boolean {
-        return !this.level().isClientSide && forceLoadChunk()
-    }
+    override fun isAlwaysTicking(): Boolean = !this.level().isClientSide && forceLoadChunk()
 
-    open fun forceLoadChunk(): Boolean {
-        return false
-    }
+    open fun forceLoadChunk(): Boolean = false
 
     private fun updateManualTickRegistration() {
         if (!forceLoadChunk()) return
@@ -665,26 +690,26 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
         }
     }
 
-    override fun shouldRenderAtSqrDistance(pDistance: Double): Boolean {
-        return true
-    }
+    override fun shouldRenderAtSqrDistance(pDistance: Double): Boolean = true
 
     override fun setCustomGravity(gravity: Float) {
         this.gravityValue = gravity
     }
 
-    override fun getCustomGravity(): Float {
-        return this.gravityValue
-    }
+    override fun getCustomGravity(): Float = this.gravityValue
 
     open fun hugeMissileTrail() {
         val level = this.level()
         if (level is ServerLevel && this.y.toInt() in level.minBuildHeight..level.maxBuildHeight * 2) {
             MissileTrailParticleMessage.sendToNearbyPlayers(
                 level,
-                x, y, z,
+                x,
+                y,
+                z,
                 bbHeight.toDouble(),
-                deltaMovement.x, deltaMovement.y, deltaMovement.z
+                deltaMovement.x,
+                deltaMovement.y,
+                deltaMovement.z,
             )
         }
     }
@@ -707,8 +732,14 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
                         0.93f,
                         (10 + 8 * random).toInt(),
                         0.03f,
-                        size = 0.75f
-                    ), pos.x + random * 0.2, pos.y + random * 0.2, pos.z + random * 0.2, 0.0, 0.0, 0.0
+                        size = 0.75f,
+                    ),
+                    pos.x + random * 0.2,
+                    pos.y + random * 0.2,
+                    pos.z + random * 0.2,
+                    0.0,
+                    0.0,
+                    0.0,
                 )
                 i += 2
             }
@@ -733,8 +764,14 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
                         0.93f,
                         (10 + 8 * random).toInt(),
                         0.03f,
-                        size = 0.4f
-                    ), pos.x + random * 0.125, pos.y + random * 0.125, pos.z + random * 0.125, 0.0, 0.0, 0.0
+                        size = 0.4f,
+                    ),
+                    pos.x + random * 0.125,
+                    pos.y + random * 0.125,
+                    pos.z + random * 0.125,
+                    0.0,
+                    0.0,
+                    0.0,
                 )
                 i += 1.5
             }
@@ -759,8 +796,14 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
                         1.5f + 0.5f * random,
                         0f,
                         cooldown = false,
-                        light = false
-                    ), pos.x + 0.25f * random, pos.y + 0.25f * random, pos.z + 0.25f * random, 0.0, 0.0, 0.0
+                        light = false,
+                    ),
+                    pos.x + 0.25f * random,
+                    pos.y + 0.25f * random,
+                    pos.z + 0.25f * random,
+                    0.0,
+                    0.0,
+                    0.0,
                 )
                 i += 2.0
             }
@@ -785,29 +828,51 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
                         0.9f,
                         (10 + 8 * random).toInt(),
                         0.01f,
-                        size = 0.25f
-                    ), pos.x + random * 0.1, pos.y + random * 0.1, pos.z + random * 0.1, 0.0, 0.0, 0.0
+                        size = 0.25f,
+                    ),
+                    pos.x + random * 0.1,
+                    pos.y + random * 0.1,
+                    pos.z + random * 0.1,
+                    0.0,
+                    0.0,
+                    0.0,
                 )
                 i += 1
             }
         }
     }
 
-    fun checkNoClip(target: Entity, pos: Vec3): Boolean {
-        return this.level().clip(
-            ClipContext(
-                pos, target.boundingBox.center,
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this
-            )
-        ).type != HitResult.Type.BLOCK
-    }
+    fun checkNoClip(
+        target: Entity,
+        pos: Vec3,
+    ): Boolean =
+        this
+            .level()
+            .clip(
+                ClipContext(
+                    pos,
+                    target.boundingBox.center,
+                    ClipContext.Block.COLLIDER,
+                    ClipContext.Fluid.ANY,
+                    this,
+                ),
+            ).type != HitResult.Type.BLOCK
 
-    override fun shoot(pX: Double, pY: Double, pZ: Double, pVelocity: Float, pInaccuracy: Float) {
-        val vec3 = (Vec3(pX, pY, pZ)).normalize().add(
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble())
-        ).scale(pVelocity.toDouble())
+    override fun shoot(
+        pX: Double,
+        pY: Double,
+        pZ: Double,
+        pVelocity: Float,
+        pInaccuracy: Float,
+    ) {
+        val vec3 =
+            (Vec3(pX, pY, pZ))
+                .normalize()
+                .add(
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                ).scale(pVelocity.toDouble())
         this.deltaMovement = vec3
         val d0 = vec3.horizontalDistance()
         this.yRot = (-Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
@@ -851,7 +916,8 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
         //  就手动调用 tick() 推进其飞行——这样即使不加载沿途区块也不会冻结。
         // ─────────────────────────────────────────────────────────────
         private val manualTickSet: MutableSet<FastThrowableProjectile> =
-            java.util.concurrent.ConcurrentHashMap.newKeySet()
+            java.util.concurrent.ConcurrentHashMap
+                .newKeySet()
         private val lastTickCounts: MutableMap<Int, Int> =
             java.util.concurrent.ConcurrentHashMap()
 
@@ -872,12 +938,17 @@ abstract class FastThrowableProjectile : ThrowableItemProjectile, IFastMotionSyn
         internal fun forgetLevel(level: Level) {
             for (p in manualTickSet.filter { it.level() === level }) unregisterForManualTick(p)
         }
+
         internal fun unregisterForManualTickInternal(projectile: FastThrowableProjectile) {
             unregisterForManualTick(projectile)
         }
 
         internal fun lastManualTickCount(id: Int): Int? = lastTickCounts[id]
-        internal fun setLastManualTickCount(id: Int, value: Int) {
+
+        internal fun setLastManualTickCount(
+            id: Int,
+            value: Int,
+        ) {
             if (lastTickCounts.containsKey(id)) {
                 lastTickCounts[id] = value
             }

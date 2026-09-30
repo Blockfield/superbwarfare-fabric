@@ -8,15 +8,15 @@ open class StringEnumValue<T : Enum<T>>(
     private val tag: CompoundTag,
     private val name: String,
     override val defaultValue: T,
-    private val toEnum: Function<String, T>
+    private val toEnum: Function<String, T>,
 ) : TagValue<T> {
-
     override fun get(): T {
-        val value = if (tag.contains(name)) {
-            tag.getString(name)
-        } else {
-            defaultValue.toString()
-        }
+        val value =
+            if (tag.contains(name)) {
+                tag.getString(name)
+            } else {
+                defaultValue.toString()
+            }
         return toEnum.apply(value)
     }
 

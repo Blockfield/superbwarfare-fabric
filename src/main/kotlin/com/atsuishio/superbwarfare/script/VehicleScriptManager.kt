@@ -13,7 +13,10 @@ object VehicleScriptManager {
     val RHINO_CONTEXT: Context = Context.enter()
     val SHARED_SCOPE: ScriptableObject = RHINO_CONTEXT.initStandardObjects()
 
-    class ScriptFunction(val script: Script, val scope: Scriptable)
+    class ScriptFunction(
+        val script: Script,
+        val scope: Scriptable,
+    )
 
     fun invokeTransform(
         scriptFunc: ScriptFunction,
@@ -22,7 +25,7 @@ object VehicleScriptManager {
         poseStack: PoseStack,
         entityYaw: Float,
         partialTicks: Float,
-        renderer: Any
+        renderer: Any,
     ) {
         val ctx = RHINO_CONTEXT
         val scope = scriptFunc.scope

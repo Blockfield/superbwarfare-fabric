@@ -13,12 +13,17 @@ import net.minecraft.world.level.block.state.BlockState
 import org.joml.Math
 import java.util.*
 
-open class VehicleDeployerBlockEntity(pPos: BlockPos, pBlockState: BlockState) :
-    BlockEntity(ModBlockEntities.VEHICLE_DEPLOYER.get(), pPos, pBlockState) {
+open class VehicleDeployerBlockEntity(
+    pPos: BlockPos,
+    pBlockState: BlockState,
+) : BlockEntity(ModBlockEntities.VEHICLE_DEPLOYER.get(), pPos, pBlockState) {
     @JvmField
     var entityData: CompoundTag = CompoundTag()
 
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun saveAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveAdditional(tag, registries)
 
         if (this.entityData.contains("EntityType")) {
@@ -29,7 +34,10 @@ open class VehicleDeployerBlockEntity(pPos: BlockPos, pBlockState: BlockState) :
         }
     }
 
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun loadAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.loadAdditional(tag, registries)
 
         this.entityData = tag.copy()
@@ -55,7 +63,7 @@ open class VehicleDeployerBlockEntity(pPos: BlockPos, pBlockState: BlockState) :
             entity.setPos(
                 this.blockPos.x + 0.5 + (2 * Math.random() - 1) * 0.1f,
                 this.blockPos.y + 1.5 + (2 * Math.random() - 1) * 0.1f,
-                this.blockPos.z + 0.5 + (2 * Math.random() - 1) * 0.1f
+                this.blockPos.z + 0.5 + (2 * Math.random() - 1) * 0.1f,
             )
             entity.yRot = direction.toYRot()
             level.addFreshEntity(entity)

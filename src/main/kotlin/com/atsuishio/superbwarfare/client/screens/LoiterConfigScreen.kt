@@ -1,9 +1,12 @@
 package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.Mod.loc
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.network.message.send.LoiterConfigMessage
 import com.atsuishio.superbwarfare.tools.sendPacketToServer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.GameNarrator
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
@@ -11,10 +14,7 @@ import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import org.lwjgl.glfw.GLFW
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 /**
  * 自动绕点盘旋配置 GUI
@@ -25,9 +25,9 @@ import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStu
  * 暂时使用色块绘制，后续替换为贴图。
  */
 @Environment(EnvType.CLIENT)
-class LoiterConfigScreen(private val vehicle: VehicleEntity) :
-    Screen(GameNarrator.NO_TITLE) {
-
+class LoiterConfigScreen(
+    private val vehicle: VehicleEntity,
+) : Screen(GameNarrator.NO_TITLE) {
     // ==================== Layout ====================
 
     private val imageWidth = 176
@@ -97,7 +97,12 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
         super.tick()
     }
 
-    override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+    override fun render(
+        guiGraphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+        partialTick: Float,
+    ) {
         this.renderBlurredBackground(partialTick)
 
         val i = (this.width - imageWidth) / 2
@@ -124,8 +129,11 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
             guiGraphics.blit(TEXTURE, toggleButton.x, toggleButton.y, 177f, 100f, 51, 24, 256, 256)
             guiGraphics.renderTooltip(
                 this.font,
-                Component.translatable(if (active) "container.superbwarfare.loiter_config.loiter_on" else "container.superbwarfare.loiter_config.loiter_off"),
-                mouseX, mouseY
+                Component.translatable(
+                    if (active) "container.superbwarfare.loiter_config.loiter_on" else "container.superbwarfare.loiter_config.loiter_off",
+                ),
+                mouseX,
+                mouseY,
             )
         }
 
@@ -135,7 +143,8 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
             guiGraphics.renderTooltip(
                 this.font,
                 Component.translatable("container.superbwarfare.loiter_config.skip_terrain"),
-                mouseX, mouseY
+                mouseX,
+                mouseY,
             )
         }
     }
@@ -144,11 +153,15 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+    override fun keyPressed(
+        keyCode: Int,
+        scanCode: Int,
+        modifiers: Int,
+    ): Boolean {
         // Enter = Confirm (send + close)
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
             sendLoiterConfigToServer()
@@ -192,8 +205,8 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
                 centerZ = z,
                 radius = r,
                 active = active,
-                skipTerrain = skipTerrain
-            )
+                skipTerrain = skipTerrain,
+            ),
         )
     }
 
@@ -201,8 +214,11 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
 
     private fun drawRectBorder(
         guiGraphics: GuiGraphics,
-        left: Int, top: Int, width: Int, height: Int,
-        color: Int
+        left: Int,
+        top: Int,
+        width: Int,
+        height: Int,
+        color: Int,
     ) {
         guiGraphics.fill(left, top, left + width, top + 1, color)
         guiGraphics.fill(left, top + height - 1, left + width, top + height, color)
@@ -213,15 +229,24 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
     // ==================== Inner Button Classes ====================
 
     @Environment(EnvType.CLIENT)
-    private inner class ToggleButton(x: Int, y: Int, width: Int, height: Int) :
-        AbstractButton(x, y, width, height, Component.empty()), AccessoriesButtonStub {
-
+    private inner class ToggleButton(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+    ) : AbstractButton(x, y, width, height, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             this@LoiterConfigScreen.active = !this@LoiterConfigScreen.active
             this@LoiterConfigScreen.sendLoiterConfigToServer()
         }
 
-        override fun renderWidget(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+        override fun renderWidget(
+            guiGraphics: GuiGraphics,
+            mouseX: Int,
+            mouseY: Int,
+            partialTick: Float,
+        ) {
             val on = this@LoiterConfigScreen.active
             // ON: (177,0)  OFF: (177,25)  each 51x24
             val vOffset = if (on) 0 else 25
@@ -232,15 +257,24 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
     }
 
     @Environment(EnvType.CLIENT)
-    private inner class ConfirmButton(x: Int, y: Int, width: Int, height: Int) :
-        AbstractButton(x, y, width, height, Component.empty()), AccessoriesButtonStub {
-
+    private inner class ConfirmButton(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+    ) : AbstractButton(x, y, width, height, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             this@LoiterConfigScreen.sendLoiterConfigToServer()
             this@LoiterConfigScreen.onClose()
         }
 
-        override fun renderWidget(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+        override fun renderWidget(
+            guiGraphics: GuiGraphics,
+            mouseX: Int,
+            mouseY: Int,
+            partialTick: Float,
+        ) {
             // Normal: (178,50)  Hover: (178,75)  each 51x24
             val vOffset = if (this.isHovered) 75 else 50
             guiGraphics.blit(TEXTURE, this.x, this.y, 177f, vOffset.toFloat(), 51, 24, 256, 256)
@@ -250,14 +284,22 @@ class LoiterConfigScreen(private val vehicle: VehicleEntity) :
     }
 
     @Environment(EnvType.CLIENT)
-    private inner class TerrainCheckbox(x: Int, y: Int, size: Int) :
-        AbstractButton(x, y, size, size, Component.empty()), AccessoriesButtonStub {
-
+    private inner class TerrainCheckbox(
+        x: Int,
+        y: Int,
+        size: Int,
+    ) : AbstractButton(x, y, size, size, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             this@LoiterConfigScreen.skipTerrain = !this@LoiterConfigScreen.skipTerrain
         }
 
-        override fun renderWidget(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+        override fun renderWidget(
+            guiGraphics: GuiGraphics,
+            mouseX: Int,
+            mouseY: Int,
+            partialTick: Float,
+        ) {
             // Only render checked state here; hover prompt is drawn as overlay in render()
             if (this@LoiterConfigScreen.skipTerrain) {
                 guiGraphics.blit(TEXTURE, this.x, this.y, 229f, 16f, 15, 15, 256, 256)

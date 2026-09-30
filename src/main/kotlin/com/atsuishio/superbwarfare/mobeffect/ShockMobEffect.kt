@@ -7,6 +7,9 @@ import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.network.message.receive.ClientIndicatorMessage
 import com.atsuishio.superbwarfare.tools.forceHurt
 import com.atsuishio.superbwarfare.tools.sendPacket
+import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingAttackEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.living.MobEffectEvent
+import io.github.fabricators_of_create.porting_lib.entity.events.tick.EntityTickEvent
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
@@ -20,9 +23,6 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.player.Player
-import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingAttackEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.living.MobEffectEvent
-import io.github.fabricators_of_create.porting_lib.entity.events.tick.EntityTickEvent
 
 object ShockMobEffect : MobEffect(MobEffectCategory.HARMFUL, -256) {
     // 为什么这里还是 Target
@@ -41,20 +41,24 @@ object ShockMobEffect : MobEffect(MobEffectCategory.HARMFUL, -256) {
             Attributes.MOVEMENT_SPEED,
             ResourceLocation.withDefaultNamespace("effect.speed"),
             -10.0,
-            AttributeModifier.Operation.ADD_VALUE
+            AttributeModifier.Operation.ADD_VALUE,
         )
     }
 
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
-        val attacker = if (!entity.persistentData.contains(TAG_ATTACKER)) {
-            null
-        } else {
-            entity.level().getEntity(entity.persistentData.getInt(TAG_ATTACKER))
-        }
+    override fun applyEffectTick(
+        entity: LivingEntity,
+        amplifier: Int,
+    ): Boolean {
+        val attacker =
+            if (!entity.persistentData.contains(TAG_ATTACKER)) {
+                null
+            } else {
+                entity.level().getEntity(entity.persistentData.getInt(TAG_ATTACKER))
+            }
 
         entity.forceHurt(
             ModDamageTypes.causeShockDamage(entity.level().registryAccess(), attacker),
-            2 + (1.25f * amplifier)
+            2 + (1.25f * amplifier),
         )
         entity.level().playSound(null, entity.onPos, ModSounds.ELECTRIC.get(), SoundSource.PLAYERS, 1f, 1f)
 
@@ -67,9 +71,10 @@ object ShockMobEffect : MobEffect(MobEffectCategory.HARMFUL, -256) {
         return true
     }
 
-    override fun shouldApplyEffectTickThisTick(pDuration: Int, pAmplifier: Int): Boolean {
-        return pDuration % 20 == 0
-    }
+    override fun shouldApplyEffectTickThisTick(
+        pDuration: Int,
+        pAmplifier: Int,
+    ): Boolean = pDuration % 20 == 0
 
     private fun onEffectAdded(event: MobEffectEvent.Added) {
         val living = event.entity
@@ -86,7 +91,7 @@ object ShockMobEffect : MobEffect(MobEffectCategory.HARMFUL, -256) {
                     ModSounds.SHOCK.get(),
                     SoundSource.HOSTILE,
                     1f,
-                    1f
+                    1f,
                 )
             } else {
                 living.level().playLocalSound(
@@ -97,7 +102,7 @@ object ShockMobEffect : MobEffect(MobEffectCategory.HARMFUL, -256) {
                     SoundSource.HOSTILE,
                     1f,
                     1f,
-                    false
+                    false,
                 )
             }
         }
@@ -105,8 +110,9 @@ object ShockMobEffect : MobEffect(MobEffectCategory.HARMFUL, -256) {
         living.forceHurt(
             ModDamageTypes.causeShockDamage(
                 living.level().registryAccess(),
-                event.effectSource
-            ), 2 + (1.25f * instance.amplifier)
+                event.effectSource,
+            ),
+            2 + (1.25f * instance.amplifier),
         )
 
         val source = event.effectSource

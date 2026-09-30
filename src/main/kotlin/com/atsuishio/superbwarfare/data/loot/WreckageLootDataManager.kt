@@ -6,17 +6,18 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.packs.PackType
 import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener
 import net.minecraft.util.profiling.ProfilerFiller
-import net.minecraft.server.packs.PackType
 import net.minecraft.world.entity.EntityType
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 
-object WreckageLootDataManager : SimpleJsonResourceReloadListener(Gson(), "sbw/loot"),
+object WreckageLootDataManager :
+    SimpleJsonResourceReloadListener(Gson(), "sbw/loot"),
     IdentifiableResourceReloadListener {
     override fun getFabricId(): ResourceLocation = Mod.loc("wreckage_loot_data")
 
@@ -29,7 +30,7 @@ object WreckageLootDataManager : SimpleJsonResourceReloadListener(Gson(), "sbw/l
     override fun apply(
         pObject: Map<ResourceLocation, JsonElement>,
         pResourceManager: ResourceManager,
-        pProfiler: ProfilerFiller
+        pProfiler: ProfilerFiller,
     ) {
         data.clear()
         pObject.forEach { (id, json) ->
@@ -43,11 +44,7 @@ object WreckageLootDataManager : SimpleJsonResourceReloadListener(Gson(), "sbw/l
         }
     }
 
-    fun getLootData(id: ResourceLocation): WreckageLootData? {
-        return data[id]
-    }
+    fun getLootData(id: ResourceLocation): WreckageLootData? = data[id]
 
-    fun getLootData(type: EntityType<*>): WreckageLootData? {
-        return data[BuiltInRegistries.ENTITY_TYPE.getKey(type)]
-    }
+    fun getLootData(type: EntityType<*>): WreckageLootData? = data[BuiltInRegistries.ENTITY_TYPE.getKey(type)]
 }

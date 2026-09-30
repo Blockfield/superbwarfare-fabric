@@ -24,27 +24,32 @@ import net.minecraft.world.item.ItemStack
  */
 
 /** Аналог `CuriosApi.getCuriosInventory(entity)`. */
-fun accessoriesOf(entity: LivingEntity?): AccessoriesCapability? =
-    entity?.let { AccessoriesCapability.getOptionally(it).orElse(null) }
+fun accessoriesOf(entity: LivingEntity?): AccessoriesCapability? = entity?.let { AccessoriesCapability.getOptionally(it).orElse(null) }
 
 /** Аналог `ICuriosItemHandler.findFirstCurio(item)`; null, если не надет. */
-fun findFirstEquipped(entity: LivingEntity?, item: Item): SlotEntryReference? =
-    accessoriesOf(entity)?.getFirstEquipped(item)
+fun findFirstEquipped(
+    entity: LivingEntity?,
+    item: Item,
+): SlotEntryReference? = accessoriesOf(entity)?.getFirstEquipped(item)
 
 /** Аналог `findFirstCurio(item).isPresent`. */
-fun isAccessoryEquipped(entity: LivingEntity?, item: Item): Boolean =
-    accessoriesOf(entity)?.isEquipped(item) == true
+fun isAccessoryEquipped(
+    entity: LivingEntity?,
+    item: Item,
+): Boolean = accessoriesOf(entity)?.isEquipped(item) == true
 
 /** Все надетые аксессуары — замена обхода `equippedCurios` по индексам слотов. */
-fun equippedAccessories(entity: LivingEntity?): List<SlotEntryReference> =
-    accessoriesOf(entity)?.getAllEquipped() ?: emptyList()
+fun equippedAccessories(entity: LivingEntity?): List<SlotEntryReference> = accessoriesOf(entity)?.getAllEquipped() ?: emptyList()
 
 /**
  * Замена Curios-идиомы `findFirstCurio(this).isEmpty` внутри `canEquip`: у Accessories
  * проверяемый стак уже привязан к слоту, поэтому нужен именно «надет ли ещё один экземпляр».
  */
-fun isAnotherEquipped(stack: ItemStack, reference: SlotReference, item: Item): Boolean =
-    reference.capability()?.isAnotherEquipped(stack, reference, item) == true
+fun isAnotherEquipped(
+    stack: ItemStack,
+    reference: SlotReference,
+    item: Item,
+): Boolean = reference.capability()?.isAnotherEquipped(stack, reference, item) == true
 
 /** Аналог `SlotContext.visible()`: рендерится ли содержимое слота. */
 val SlotReference.isSlotVisible: Boolean

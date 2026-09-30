@@ -13,13 +13,13 @@ import com.atsuishio.superbwarfare.tools.VectorTool.lerpGetEntityBoundingBoxCent
 import com.atsuishio.superbwarfare.tools.worldToScreen
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -51,14 +51,24 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
             poseStack.pushPose()
 
             val moveX =
-                (-32 * ClientEventHandler.turnRot[1] - (if (player.isSprinting) 100 else 67) * ClientEventHandler.movePosX + 3 * ClientEventHandler.cameraRot[2]).toFloat()
+                (
+                    -32 * ClientEventHandler.turnRot[1] - (if (player.isSprinting) 100 else 67) * ClientEventHandler.movePosX +
+                        3 * ClientEventHandler.cameraRot[2]
+                ).toFloat()
             val moveY =
-                (-32 * ClientEventHandler.turnRot[0] + 100 * ClientEventHandler.velocityY.toFloat() - (if (player.isSprinting) 100 else 67) * ClientEventHandler.movePosY - 12 * ClientEventHandler.boltMove + 3 * ClientEventHandler.cameraRot[1]).toFloat()
-            scopeScale = Mth.lerp(
-                (0.5f * deltaFrame).toDouble(),
-                scopeScale.toDouble(),
-                1.35f + (0.2f * ClientEventHandler.boltMove)
-            ).toFloat()
+                (
+                    -32 * ClientEventHandler.turnRot[0] + 100 * ClientEventHandler.velocityY.toFloat() -
+                        (if (player.isSprinting) 100 else 67) * ClientEventHandler.movePosY -
+                        12 * ClientEventHandler.boltMove +
+                        3 * ClientEventHandler.cameraRot[1]
+                ).toFloat()
+            scopeScale =
+                Mth
+                    .lerp(
+                        (0.5f * deltaFrame).toDouble(),
+                        scopeScale.toDouble(),
+                        1.35f + (0.2f * ClientEventHandler.boltMove),
+                    ).toFloat()
             val f = min(screenWidth, screenHeight).toFloat()
             val f1: Float = min(screenWidth.toFloat() / f, screenHeight.toFloat() / f) * scopeScale
             val i = Mth.floor(f * f1).toFloat()
@@ -78,13 +88,13 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(
                 combinedLightLevel.toFloat() / 15,
                 combinedLightLevel.toFloat() / 15,
                 combinedLightLevel.toFloat() / 15,
-                1f
+                1f,
             )
 
             RenderHelper.preciseBlit(
@@ -97,7 +107,7 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                 3 * i,
                 3 * j,
                 3 * i,
-                3 * j
+                3 * j,
             )
 
             RenderSystem.disableDepthTest()
@@ -108,7 +118,7 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -118,11 +128,12 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                 val targetEntity =
                     if (ClientEventHandler.lockOn) ClientEventHandler.lockingEntity else ClientEventHandler.seekingEntity
                 val seekingTime = ClientEventHandler.seekingTime
-                lerpSeeking = Mth.lerp(
-                    deltaFrame,
-                    lerpSeeking,
-                    Mth.clamp(data.get(GunProp.SEEK_TIME) - seekingTime, 0, data.get(GunProp.SEEK_TIME)) * 0.6f
-                )
+                lerpSeeking =
+                    Mth.lerp(
+                        deltaFrame,
+                        lerpSeeking,
+                        Mth.clamp(data.get(GunProp.SEEK_TIME) - seekingTime, 0, data.get(GunProp.SEEK_TIME)) * 0.6f,
+                    )
 
                 if (targetEntity != null) {
                     val pos = lerpGetEntityBoundingBoxCenter(targetEntity, partialTick)
@@ -132,10 +143,10 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                     poseStack.pushPose()
 
                     poseStack.translate(x, y, 0f)
-                    //框
+                    // 框
                     RenderHelper.preciseBlit(guiGraphics, FRAME, -12f, -12f, 0f, 0f, 24f, 24f, 24f, 24f)
 
-                    //锁定进度
+                    // 锁定进度
                     RenderHelper.preciseBlit(
                         guiGraphics,
                         PART_1,
@@ -146,7 +157,7 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                         24f,
                         24f,
                         24f,
-                        24f
+                        24f,
                     )
                     RenderHelper.preciseBlit(
                         guiGraphics,
@@ -158,7 +169,7 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                         24f,
                         24f,
                         24f,
-                        24f
+                        24f,
                     )
                     RenderHelper.preciseBlit(
                         guiGraphics,
@@ -170,7 +181,7 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                         24f,
                         24f,
                         24f,
-                        24f
+                        24f,
                     )
                     RenderHelper.preciseBlit(
                         guiGraphics,
@@ -182,17 +193,17 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                         24f,
                         24f,
                         24f,
-                        24f
+                        24f,
                     )
 
-                    //状态
+                    // 状态
                     if (seekingTime >= data.get(GunProp.SEEK_TIME) && data.ammo.get() > 0) {
                         RenderHelper.preciseBlit(guiGraphics, SHOOT, -12f, -26f, 0f, 0f, 24f, 24f, 24f, 24f)
                     } else {
                         RenderHelper.preciseBlit(guiGraphics, HOLD, -12f, -26f, 0f, 0f, 24f, 24f, 24f, 24f)
                     }
 
-                    //测距
+                    // 测距
                     poseStack.pushPose()
                     val range = format0D(player.distanceTo(targetEntity).toDouble())
                     val width = Minecraft.getInstance().font.width(range)
@@ -204,7 +215,7 @@ object IglaHudOverlay : CommonOverlay("igla_9k38_hud") {
                         (-width.toFloat() / 2).toInt(),
                         14,
                         0xFFD6B6,
-                        false
+                        false,
                     )
                     poseStack.popPose()
 

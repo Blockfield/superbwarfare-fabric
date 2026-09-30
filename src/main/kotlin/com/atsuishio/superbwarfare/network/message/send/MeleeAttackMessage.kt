@@ -34,7 +34,9 @@ import kotlin.math.*
 import kotlin.random.Random
 
 @Serializable
-data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacketPayload() {
+data class MeleeAttackMessage(
+    val uuidList: List<SerializedUUID>,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         if (player.isSpectator || !player.isAlive) return
@@ -49,9 +51,11 @@ data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacket
         val reach = player.entityInteractionRange() + data.get(GunProp.MELEE_RANGE) + REACH_SLACK
         val eye = player.eyePosition
 
-        val entities = uuidList.distinct()
-            .mapNotNull { EntityFindUtil.findEntity(player.level(), it.toString()) }
-            .filter { it !== player && !it.isRemoved && hitboxDistanceSqr(eye, it) <= reach * reach }
+        val entities =
+            uuidList
+                .distinct()
+                .mapNotNull { EntityFindUtil.findEntity(player.level(), it.toString()) }
+                .filter { it !== player && !it.isRemoved && hitboxDistanceSqr(eye, it) <= reach * reach }
 
         for (type in Perk.Type.entries) {
             val instances = data.perk.getInstances(type)
@@ -76,24 +80,36 @@ data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacket
 
         /** Squared distance from [eye] to the hitbox the client melee ray tests (see ProjectileUtilMixin). */
         @JvmStatic
-        fun hitboxDistanceSqr(eye: Vec3, target: Entity): Double {
+        fun hitboxDistanceSqr(
+            eye: Vec3,
+            target: Entity,
+        ): Double {
             val obbs = (target as? OBBEntity)?.takeUnless { it.enableAABB() }?.getOBBs().orEmpty()
             val pick = target.pickRadius.toDouble()
             // Vehicles with a collision OBB are hit only through their part OBBs, the rest also through the AABB.
-            val aabb = target.boundingBox.inflate(pick)
-                .takeUnless { obbs.isNotEmpty() && target is VehicleEntity && target.getCollisionOBB() != null }
+            val aabb =
+                target.boundingBox
+                    .inflate(pick)
+                    .takeUnless { obbs.isNotEmpty() && target is VehicleEntity && target.getCollisionOBB() != null }
             return hitboxDistanceSqr(eye, aabb, obbs.filter { it.part != OBB.Part.COLLISION }.map { it.inflate(pick * 2) })
         }
 
         @JvmStatic
-        fun hitboxDistanceSqr(eye: Vec3, aabb: AABB?, parts: List<OBB>): Double {
+        fun hitboxDistanceSqr(
+            eye: Vec3,
+            aabb: AABB?,
+            parts: List<OBB>,
+        ): Double {
             val point = OBB.vec3ToVector3d(eye)
             val toParts = parts.minOfOrNull { OBB.getClosestPointOBB(point, it).distanceSquared(point) } ?: Double.MAX_VALUE
             return min(aabb?.distanceToSqr(eye) ?: Double.MAX_VALUE, toParts)
         }
     }
 
-    fun attack(attacker: Player, targets: List<Entity>) {
+    fun attack(
+        attacker: Player,
+        targets: List<Entity>,
+    ) {
         var hurtCount = 0
         targets.forEachIndexed { index, target ->
             if (AttackEntityEvent(attacker, target).post()) return@forEachIndexed
@@ -112,7 +128,7 @@ data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacket
                 SoundEvents.PLAYER_ATTACK_KNOCKBACK,
                 attacker.soundSource,
                 1.0f,
-                1.0f
+                1.0f,
             )
 
             val currentHealth = (target as? LivingEntity)?.health ?: 0.0F
@@ -128,7 +144,7 @@ data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacket
                     SoundEvents.PLAYER_ATTACK_NODAMAGE,
                     attacker.soundSource,
                     1.0f,
-                    1.0f
+                    1.0f,
                 )
             } else {
                 hurtCount++
@@ -142,13 +158,13 @@ data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacket
                         target.knockback(
                             knockback * 0.5,
                             sin(attacker.yRot * PI / 180.0),
-                            -cos(attacker.yRot * PI / 180.0)
+                            -cos(attacker.yRot * PI / 180.0),
                         )
                     } else {
                         target.push(
                             -sin(attacker.yRot * PI / 180.0) * knockback / 2.0,
                             0.1,
-                            cos(attacker.yRot * PI / 180.0) * knockback / 2.0
+                            cos(attacker.yRot * PI / 180.0) * knockback / 2.0,
                         )
                     }
 
@@ -169,7 +185,7 @@ data class MeleeAttackMessage(val uuidList: List<SerializedUUID>) : ServerPacket
                         ModSounds.MELEE_HIT.get(),
                         SoundSource.PLAYERS,
                         1f,
-                        ((2 * Random.nextDouble() - 1) * 0.1f + 1.0f).toFloat()
+                        ((2 * Random.nextDouble() - 1) * 0.1f + 1.0f).toFloat(),
                     )
                     attacker.crit(target)
                 }

@@ -6,17 +6,16 @@ import com.mojang.blaze3d.vertex.BufferBuilder
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.Tesselator
 import com.mojang.blaze3d.vertex.VertexFormat
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback
 import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.client.renderer.ShaderInstance
 import net.minecraft.client.renderer.texture.TextureAtlas
 import net.minecraft.client.renderer.texture.TextureManager
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback
 
 @Environment(EnvType.CLIENT)
 object ModParticleRenderTypes {
-
     private var softParticleShader: ShaderInstance? = null
 
     /**
@@ -39,24 +38,28 @@ object ModParticleRenderTypes {
      * This prevents hard transparency edges on high-resolution soft-edged
      * semi-transparent particle textures (e.g. flares, smoke, explosions).
      */
-    val PARTICLE_SHEET_SOFT_TRANSLUCENT: ParticleRenderType = object : ParticleRenderType {
-        override fun begin(builder: Tesselator, textureManager: TextureManager): BufferBuilder {
-            // Override the shader set by ParticleEngine with our no-discard variant
-            val shader = softParticleShader
-            if (shader != null) {
-                RenderSystem.setShader { shader }
+    val PARTICLE_SHEET_SOFT_TRANSLUCENT: ParticleRenderType =
+        object : ParticleRenderType {
+            override fun begin(
+                builder: Tesselator,
+                textureManager: TextureManager,
+            ): BufferBuilder {
+                // Override the shader set by ParticleEngine with our no-discard variant
+                val shader = softParticleShader
+                if (shader != null) {
+                    RenderSystem.setShader { shader }
+                }
+                // Use standard alpha blending but disable depth writing.
+                // depthMask(false) is essential here because our shader no longer
+                // discards low-alpha pixels — without it, semi-transparent edge pixels
+                // would write depth and occlude particles behind them.
+                RenderSystem.enableBlend()
+                RenderSystem.defaultBlendFunc()
+                RenderSystem.depthMask(false)
+                RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES)
+                return builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE)
             }
-            // Use standard alpha blending but disable depth writing.
-            // depthMask(false) is essential here because our shader no longer
-            // discards low-alpha pixels — without it, semi-transparent edge pixels
-            // would write depth and occlude particles behind them.
-            RenderSystem.enableBlend()
-            RenderSystem.defaultBlendFunc()
-            RenderSystem.depthMask(false)
-            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES)
-            return builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE)
-        }
 
-        override fun toString(): String = "PARTICLE_SHEET_SOFT_TRANSLUCENT"
-    }
+            override fun toString(): String = "PARTICLE_SHEET_SOFT_TRANSLUCENT"
+        }
 }

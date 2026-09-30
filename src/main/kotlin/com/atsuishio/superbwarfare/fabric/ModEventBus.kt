@@ -15,14 +15,20 @@ object ModEventBus {
     private val listeners = mutableMapOf<Class<*>, MutableList<Pair<Int, (Any) -> Unit>>>()
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any> register(type: Class<T>, priority: Int = 0, listener: (T) -> Unit) {
+    fun <T : Any> register(
+        type: Class<T>,
+        priority: Int = 0,
+        listener: (T) -> Unit,
+    ) {
         val list = listeners.getOrPut(type) { mutableListOf() }
         val index = list.indexOfFirst { it.first < priority }.takeIf { it >= 0 } ?: list.size
         list.add(index, priority to (listener as (Any) -> Unit))
     }
 
-    inline fun <reified T : Any> register(priority: Int = 0, noinline listener: (T) -> Unit) =
-        register(T::class.java, priority, listener)
+    inline fun <reified T : Any> register(
+        priority: Int = 0,
+        noinline listener: (T) -> Unit,
+    ) = register(T::class.java, priority, listener)
 
     fun <T : Any> post(event: T): T {
         var type: Class<*>? = event::class.java

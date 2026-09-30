@@ -20,9 +20,7 @@ class ModelResource {
     @SerialName("LODModel")
     private var lodModel: ObjectToList<SerializedResourceLocation>? = ObjectToList()
 
-    fun hasLOD(): Boolean {
-        return lodModel != null && !lodModel!!.list.isEmpty()
-    }
+    fun hasLOD(): Boolean = lodModel != null && !lodModel!!.list.isEmpty()
 
     // LOD的最小等级为1
     fun getLODModel(level: Int): ResourceLocation? {

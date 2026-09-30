@@ -47,7 +47,10 @@ interface IEntityWithComplexSpawn {
  * ванильный пакет несёт только один int, а технике нужны углы башни и состояние шасси.
  */
 @Serializable
-data class EntitySpawnDataMessage(val entityId: Int, val data: ByteArray) : ClientPacketPayload() {
+data class EntitySpawnDataMessage(
+    val entityId: Int,
+    val data: ByteArray,
+) : ClientPacketPayload() {
     override fun PayloadContext.handler() {
         val level = player().level()
         // START_TRACKING у Fabric стреляет в HEAD ServerEntity.addPairing, то есть этот пакет
@@ -60,7 +63,8 @@ data class EntitySpawnDataMessage(val entityId: Int, val data: ByteArray) : Clie
         entity.readSpawnData(RegistryFriendlyByteBuf(Unpooled.wrappedBuffer(data), level.registryAccess()))
     }
 
-    override fun equals(other: Any?) = this === other ||
+    override fun equals(other: Any?) =
+        this === other ||
             (other is EntitySpawnDataMessage && entityId == other.entityId && data.contentEquals(other.data))
 
     override fun hashCode() = 31 * entityId + data.contentHashCode()

@@ -2,11 +2,17 @@
 
 package com.atsuishio.superbwarfare.tools
 
-import com.atsuishio.superbwarfare.fabric.ModEventBus
-
 import com.atsuishio.superbwarfare.Mod
+import com.atsuishio.superbwarfare.fabric.DeferredHolder
+import com.atsuishio.superbwarfare.fabric.EntityHooks
+import com.atsuishio.superbwarfare.fabric.ModEventBus
 import com.atsuishio.superbwarfare.tools.FormatTool.format0D
 import com.mojang.blaze3d.vertex.PoseStack
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.client.Minecraft
 import net.minecraft.client.Options
 import net.minecraft.client.gui.Font
@@ -27,13 +33,6 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import com.atsuishio.superbwarfare.fabric.EntityHooks
-import com.atsuishio.superbwarfare.fabric.DeferredHolder
 import org.joml.Matrix4f
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -64,10 +63,13 @@ val notInGame: Boolean
     }
 
 operator fun BlockPos.component1() = this.x
+
 operator fun BlockPos.component2() = this.y
+
 operator fun BlockPos.component3() = this.z
 
 operator fun MutableComponent.plus(other: Component): MutableComponent = this.append(other)
+
 operator fun MutableComponent.plus(other: String): MutableComponent = this.append(Component.literal(other))
 
 @OptIn(ExperimentalContracts::class)
@@ -101,17 +103,27 @@ infix fun ItemStack.sameWith(that: ItemStack?): Boolean {
 }
 
 // Keeps the existing public alias working without changes at call sites.
-fun isSameItemStack(a: ItemStack, b: ItemStack) = a sameWith b
+fun isSameItemStack(
+    a: ItemStack,
+    b: ItemStack,
+) = a sameWith b
 
 fun Player.sendPacket(packet: CustomPacketPayload) = sendPacketTo(this, packet)
+
 fun Player.sendPacket(packet: Packet<*>) = sendPacketTo(this, packet)
 
-fun sendPacketTo(player: Player, packet: Packet<*>) {
+fun sendPacketTo(
+    player: Player,
+    packet: Packet<*>,
+) {
     if (player !is ServerPlayer) return
     player.connection.send(packet)
 }
 
-fun sendPacketTo(player: Player, packet: CustomPacketPayload) {
+fun sendPacketTo(
+    player: Player,
+    packet: CustomPacketPayload,
+) {
     if (player !is ServerPlayer) return
 
     ServerPlayNetworking.send(player, packet)
@@ -127,7 +139,10 @@ fun sendPacketToServer(packet: CustomPacketPayload) {
     ClientPlayNetworking.send(packet)
 }
 
-fun sendPacketToTrackingEntity(entity: Entity, packet: CustomPacketPayload) {
+fun sendPacketToTrackingEntity(
+    entity: Entity,
+    packet: CustomPacketPayload,
+) {
     PlayerLookup.tracking(entity).forEach { ServerPlayNetworking.send(it, packet) }
 }
 
@@ -137,7 +152,10 @@ fun Entity.sendPacketToTrackingThis(packet: CustomPacketPayload) {
 
 fun <T : Any> postEvent(event: T): T = ModEventBus.post(event)
 
-inline fun queueClientWorkIfDelayed(delay: Int, crossinline block: () -> Unit) {
+inline fun queueClientWorkIfDelayed(
+    delay: Int,
+    crossinline block: () -> Unit,
+) {
     if (delay > 0) {
         Mod.queueClientWork(delay) { block() }
     } else {
@@ -145,17 +163,14 @@ inline fun queueClientWorkIfDelayed(delay: Int, crossinline block: () -> Unit) {
     }
 }
 
-fun ItemStack.`is`(vararg itemsRegistry: DeferredHolder<Item, out Item>): Boolean {
-    return itemsRegistry.any { `is`(it.value()) }
-}
+fun ItemStack.`is`(vararg itemsRegistry: DeferredHolder<Item, out Item>): Boolean = itemsRegistry.any { `is`(it.value()) }
 
-fun ItemStack.`is`(vararg items: Item): Boolean {
-    return items.any { `is`(it) }
-}
+fun ItemStack.`is`(vararg items: Item): Boolean = items.any { `is`(it) }
 
 // 1.20 compat
 
 fun ItemStack.getOrCreateTag(): CompoundTag = NBTTool.getTag(this)
+
 var ItemStack.tag
     get() = get(DataComponents.CUSTOM_DATA)?.copyTag()
     set(value) {
@@ -167,11 +182,20 @@ var ItemStack.tag
     }
 
 fun LivingEntity.hasEffect(effect: MobEffect) = hasEffect(Holder.direct(effect))
+
 val Entity.stepHeight get() = this.maxUpStep()
-fun Entity.setOnGroundWithKnownMovement(onGround: Boolean, movement: Vec3) = setOnGroundWithMovement(onGround, movement)
+
+fun Entity.setOnGroundWithKnownMovement(
+    onGround: Boolean,
+    movement: Vec3,
+) = setOnGroundWithMovement(onGround, movement)
+
 val ItemStack.isEdible get() = this.get(DataComponents.FOOD) != null
+
 fun Player.getEntityReach() = entityInteractionRange()
+
 fun Player.getBlockReach() = blockInteractionRange()
+
 val ServerPlayer.latency get() = connection.latency()
 val Minecraft.deltaFrameTime get() = timer.gameTimeDeltaTicks
 

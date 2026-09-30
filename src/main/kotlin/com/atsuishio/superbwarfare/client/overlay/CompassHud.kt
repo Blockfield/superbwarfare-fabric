@@ -4,10 +4,10 @@ import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.client.RenderHelper
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.mojang.math.Axis
-import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.resources.ResourceLocation
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.resources.ResourceLocation
 
 /**
  * 载具指南针HUD组件
@@ -55,7 +55,7 @@ class CompassHud {
         vehicle: VehicleEntity,
         screenWidth: Int,
         screenHeight: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
         val actualX = if (x < 0) screenWidth + x else x
         val actualY = if (y < 0) screenHeight + y else y
@@ -71,10 +71,14 @@ class CompassHud {
         RenderHelper.preciseBlit(
             guiGraphics,
             baseTexture,
-            actualX, actualY,
-            0f, 0f,
-            size, size,
-            size, size
+            actualX,
+            actualY,
+            0f,
+            0f,
+            size,
+            size,
+            size,
+            size,
         )
         poseStack.popPose()
 
@@ -82,10 +86,14 @@ class CompassHud {
         RenderHelper.preciseBlit(
             guiGraphics,
             needleTexture,
-            actualX, actualY,
-            0f, 0f,
-            size, size,
-            size, size
+            actualX,
+            actualY,
+            0f,
+            0f,
+            size,
+            size,
+            size,
+            size,
         )
     }
 }

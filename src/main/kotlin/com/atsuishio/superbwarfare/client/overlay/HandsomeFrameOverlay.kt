@@ -11,11 +11,11 @@ import com.atsuishio.superbwarfare.tools.SeekTool
 import com.atsuishio.superbwarfare.tools.worldToScreen
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.util.Mth
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 object HandsomeFrameOverlay : CommonOverlay("handsome_frame") {
@@ -45,7 +45,7 @@ object HandsomeFrameOverlay : CommonOverlay("handsome_frame") {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -56,15 +56,16 @@ object HandsomeFrameOverlay : CommonOverlay("handsome_frame") {
             val targetEntity = ClientEventHandler.lockedEntity
 
             for (e in allEntities) {
-                val pos = Vec3(
-                    Mth.lerp(deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(), e.xo, e.x),
-                    Mth.lerp(
-                        deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(),
-                        e.yo + e.eyeHeight,
-                        e.eyeY
-                    ),
-                    Mth.lerp(deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(), e.zo, e.z)
-                )
+                val pos =
+                    Vec3(
+                        Mth.lerp(deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(), e.xo, e.x),
+                        Mth.lerp(
+                            deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(),
+                            e.yo + e.eyeHeight,
+                            e.eyeY,
+                        ),
+                        Mth.lerp(deltaTracker.getGameTimeDeltaPartialTick(true).toDouble(), e.zo, e.z),
+                    )
                 val point = pos.worldToScreen()
 
                 val lockOn = e === targetEntity
@@ -75,17 +76,18 @@ object HandsomeFrameOverlay : CommonOverlay("handsome_frame") {
                 val y = point.y.toFloat()
 
                 val canBeSeen = visibleEntities.contains(e)
-                val icon = if (lockOn) {
-                    FRAME_LOCK
-                } else if (canBeSeen) {
-                    if (isNearestEntity) {
-                        FRAME_TARGET
+                val icon =
+                    if (lockOn) {
+                        FRAME_LOCK
+                    } else if (canBeSeen) {
+                        if (isNearestEntity) {
+                            FRAME_TARGET
+                        } else {
+                            FRAME
+                        }
                     } else {
-                        FRAME
+                        FRAME_WEAK
                     }
-                } else {
-                    FRAME_WEAK
-                }
 
                 RenderHelper.preciseBlit(guiGraphics, icon, x - 12, y - 12, 24f, 24f, 0f, 0f, 24f, 24f, 24f, 24f)
                 poseStack.popPose()

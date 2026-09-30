@@ -8,20 +8,27 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class Ju87Renderer(manager: EntityRendererProvider.Context) : GeoVehicleRenderer<Ju87Entity>(manager) {
+class Ju87Renderer(
+    manager: EntityRendererProvider.Context,
+) : GeoVehicleRenderer<Ju87Entity>(manager) {
     override fun transformCustomModelPart(
         entity: Ju87Entity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 
         val root = instance.getBone("root")
-        root?.visible = !(ClientEventHandler.zoomVehicle && entity.firstPassenger == Minecraft.getInstance().player
-                && (entity.getWeaponIndex(0) == 1
-                || entity.getWeaponIndex(0) == 2))
+        root?.visible =
+            !(
+                ClientEventHandler.zoomVehicle && entity.firstPassenger == Minecraft.getInstance().player &&
+                    (
+                        entity.getWeaponIndex(0) == 1 ||
+                            entity.getWeaponIndex(0) == 2
+                    )
+            )
 
         if (entity.isWreck) return
 
@@ -30,27 +37,30 @@ class Ju87Renderer(manager: EntityRendererProvider.Context) : GeoVehicleRenderer
         val wingLR3 = instance.getBone("move_wingLR3")
 
         wingLR?.rotation?.rotateX(
-            1.5f * Mth.lerp(
-                partialTicks,
-                entity.flap2LRotO,
-                entity.flap2LRot
-            ) * Mth.DEG_TO_RAD
+            1.5f *
+                Mth.lerp(
+                    partialTicks,
+                    entity.flap2LRotO,
+                    entity.flap2LRot,
+                ) * Mth.DEG_TO_RAD,
         )
 
         wingLR2?.rotation?.rotateX(
-            1.5f * Mth.lerp(
-                partialTicks,
-                entity.flap2LRotO,
-                entity.flap2LRot
-            ) * Mth.DEG_TO_RAD
+            1.5f *
+                Mth.lerp(
+                    partialTicks,
+                    entity.flap2LRotO,
+                    entity.flap2LRot,
+                ) * Mth.DEG_TO_RAD,
         )
 
         wingLR3?.rotation?.rotateX(
-            1.5f * Mth.lerp(
-                partialTicks,
-                entity.flap2LRotO,
-                entity.flap2LRot
-            ) * Mth.DEG_TO_RAD
+            1.5f *
+                Mth.lerp(
+                    partialTicks,
+                    entity.flap2LRotO,
+                    entity.flap2LRot,
+                ) * Mth.DEG_TO_RAD,
         )
 
         val wingRR = instance.getBone("move_wingRR")
@@ -58,27 +68,30 @@ class Ju87Renderer(manager: EntityRendererProvider.Context) : GeoVehicleRenderer
         val wingRR3 = instance.getBone("move_wingRR3")
 
         wingRR?.rotation?.rotateX(
-            1.5f * Mth.lerp(
-                partialTicks,
-                entity.flap2RRotO,
-                entity.flap2RRot
-            ) * Mth.DEG_TO_RAD
+            1.5f *
+                Mth.lerp(
+                    partialTicks,
+                    entity.flap2RRotO,
+                    entity.flap2RRot,
+                ) * Mth.DEG_TO_RAD,
         )
 
         wingRR2?.rotation?.rotateX(
-            1.5f * Mth.lerp(
-                partialTicks,
-                entity.flap2RRotO,
-                entity.flap2RRot
-            ) * Mth.DEG_TO_RAD
+            1.5f *
+                Mth.lerp(
+                    partialTicks,
+                    entity.flap2RRotO,
+                    entity.flap2RRot,
+                ) * Mth.DEG_TO_RAD,
         )
 
         wingRR3?.rotation?.rotateX(
-            1.5f * Mth.lerp(
-                partialTicks,
-                entity.flap2RRotO,
-                entity.flap2RRot
-            ) * Mth.DEG_TO_RAD
+            1.5f *
+                Mth.lerp(
+                    partialTicks,
+                    entity.flap2RRotO,
+                    entity.flap2RRot,
+                ) * Mth.DEG_TO_RAD,
         )
 
         val wingLB = instance.getBone("move_wingLB")
@@ -98,8 +111,8 @@ class Ju87Renderer(manager: EntityRendererProvider.Context) : GeoVehicleRenderer
             Mth.clamp(
                 Mth.lerp(partialTicks, entity.flap3RotO, entity.flap3Rot),
                 -20f,
-                20f
-            ) * Mth.DEG_TO_RAD
+                20f,
+            ) * Mth.DEG_TO_RAD,
         )
 
         val propeller = instance.getBone("move_propeller")

@@ -27,7 +27,6 @@ import kotlin.random.Random
  * 使用回调模式与 Screen 通信（参考 MapContextMenu 的委托模式）。
  */
 class AttackModeHandler {
-
     companion object {
         val ATTACK_CURSOR = loc("textures/overlay/tactical_map/attack.png")
         val TARGET_FRAME = loc("textures/overlay/tactical_map/target_frame.png")
@@ -62,20 +61,33 @@ class AttackModeHandler {
 
     // ── Mode entry / exit ──
 
-    fun enterDirectMode(name: String, ammo: Int) {
+    fun enterDirectMode(
+        name: String,
+        ammo: Int,
+    ) {
         mode = Mode.DIRECT
         weaponName = name
         directAmmo = ammo
     }
 
-    fun enterQueueMode(name: String, firstVehicle: VehicleEntity?) {
+    fun enterQueueMode(
+        name: String,
+        firstVehicle: VehicleEntity?,
+    ) {
         mode = Mode.QUEUE
         weaponName = name
         targetQueue.clear()
-        fireInterval = firstVehicle?.gunDataMap?.get(name)?.get(GunProp.SHOOT_DELAY_TIME)?.coerceAtLeast(4) ?: 10
+        fireInterval = firstVehicle
+            ?.gunDataMap
+            ?.get(name)
+            ?.get(GunProp.SHOOT_DELAY_TIME)
+            ?.coerceAtLeast(4) ?: 10
     }
 
-    fun enterBombardmentMode(name: String, ammo: Int) {
+    fun enterBombardmentMode(
+        name: String,
+        ammo: Int,
+    ) {
         mode = Mode.BOMBARDMENT
         weaponName = name
         bombardmentAmmo = ammo
@@ -126,15 +138,26 @@ class AttackModeHandler {
     // ── Rendering ──
 
     fun renderAttackCursor(
-        guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, font: Font,
-        viewBlockX: Double, viewBlockZ: Double, mapCenterX: Float, mapCenterY: Float, zoom: Double
+        guiGraphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+        font: Font,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        zoom: Double,
     ) {
         // ── BOMBARDMENT mode: simple ammo counter at cursor, no crosshair ──
         if (mode == Mode.BOMBARDMENT) {
             val ammoColor = if (bombardmentAmmo > 0) 0xFFFFAA00.toInt() else 0xFFAA3333.toInt()
             guiGraphics.drawString(
-                font, "×$bombardmentAmmo",
-                mouseX + 10, mouseY - 12, ammoColor, true
+                font,
+                "×$bombardmentAmmo",
+                mouseX + 10,
+                mouseY - 12,
+                ammoColor,
+                true,
             )
             return
         }
@@ -159,9 +182,12 @@ class AttackModeHandler {
 
         // Ammo count next to cursor
         guiGraphics.drawString(
-            font, "×$directAmmo",
-            mouseX + 10, mouseY - 12,
-            if (directAmmo > 0) 0xFFFFAA00.toInt() else 0xFFAA3333.toInt(), true
+            font,
+            "×$directAmmo",
+            mouseX + 10,
+            mouseY - 12,
+            if (directAmmo > 0) 0xFFFFAA00.toInt() else 0xFFAA3333.toInt(),
+            true,
         )
 
         // Info box at cursor top-right (12px offset)
@@ -169,10 +195,12 @@ class AttackModeHandler {
         val boxY = mouseY - 12
         val distStr = formatDist(minDist)
         val rangeStr = formatDist(maxGuidedRange)
-        val distText = if (outOfRange)
-            Component.translatable("context.superbwarfare.tactical_map.attack_dist_out", distStr).string
-        else
-            Component.translatable("context.superbwarfare.tactical_map.attack_dist", distStr).string
+        val distText =
+            if (outOfRange) {
+                Component.translatable("context.superbwarfare.tactical_map.attack_dist_out", distStr).string
+            } else {
+                Component.translatable("context.superbwarfare.tactical_map.attack_dist", distStr).string
+            }
         val rangeText = Component.translatable("context.superbwarfare.tactical_map.attack_range", rangeStr).string
         val distColor = if (outOfRange) 0xFFFF4444.toInt() else 0xFFCCCCCC.toInt()
         val rangeColor = 0xFFAAAAAA.toInt()
@@ -186,29 +214,35 @@ class AttackModeHandler {
         guiGraphics.drawString(font, rangeText, boxX + 3, boxY - font.lineHeight, rangeColor, false)
     }
 
-    private fun minSourceDistance(worldX: Double, worldZ: Double): Double {
+    private fun minSourceDistance(
+        worldX: Double,
+        worldZ: Double,
+    ): Double {
         if (sourcePositions.isEmpty()) return 0.0
-        val minDistSq = sourcePositions.minOf { pos ->
-            val dx = worldX - pos.x
-            val dz = worldZ - pos.z
-            dx * dx + dz * dz
-        }
+        val minDistSq =
+            sourcePositions.minOf { pos ->
+                val dx = worldX - pos.x
+                val dz = worldZ - pos.z
+                dx * dx + dz * dz
+            }
         return sqrt(minDistSq)
     }
 
-    private fun isOutOfRange(worldX: Double, worldZ: Double): Boolean {
-        return minSourceDistance(worldX, worldZ) > maxGuidedRange
-    }
+    private fun isOutOfRange(
+        worldX: Double,
+        worldZ: Double,
+    ): Boolean = minSourceDistance(worldX, worldZ) > maxGuidedRange
 
-    private fun formatDist(meters: Double): String {
-        return if (meters >= 1000.0) "%.1fkm".format(meters / 1000.0) else "%.1fm".format(meters)
-    }
+    private fun formatDist(meters: Double): String = if (meters >= 1000.0) "%.1fkm".format(meters / 1000.0) else "%.1fm".format(meters)
 
     /** Renders a highlighted overlay on the currently hovered selection box in BOMBARDMENT mode. */
     fun renderBombardmentBoxHighlight(
         guiGraphics: GuiGraphics,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, zoom: Double
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        zoom: Double,
     ) {
         if (mode != Mode.BOMBARDMENT) return
         val box = hoveredBombardBox ?: return
@@ -239,8 +273,12 @@ class AttackModeHandler {
 
     fun renderQueueTargets(
         guiGraphics: GuiGraphics,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, zoom: Double, font: Font
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        zoom: Double,
+        font: Font,
     ) {
         val scale = CoordinateConverter.scaleFromZoom(zoom)
 
@@ -256,22 +294,30 @@ class AttackModeHandler {
             val num = "${i + 1}"
             val nw = font.width(num)
             guiGraphics.drawString(
-                font, num,
-                (sx - nw / 2f).roundToInt(), (sy - font.lineHeight / 2f).roundToInt(),
-                0xFFFFFFFF.toInt(), false
+                font,
+                num,
+                (sx - nw / 2f).roundToInt(),
+                (sy - font.lineHeight / 2f).roundToInt(),
+                0xFFFFFFFF.toInt(),
+                false,
             )
         }
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
     }
 
     fun renderQueueMenu(
-        guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int,
-        font: Font, screenWidth: Int, screenHeight: Int
+        guiGraphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+        font: Font,
+        screenWidth: Int,
+        screenHeight: Int,
     ) {
-        val items = listOf(
-            Component.translatable("context.superbwarfare.tactical_map.sequential_fire").string,
-            Component.translatable("context.superbwarfare.tactical_map.cancel_queue").string,
-        )
+        val items =
+            listOf(
+                Component.translatable("context.superbwarfare.tactical_map.sequential_fire").string,
+                Component.translatable("context.superbwarfare.tactical_map.cancel_queue").string,
+            )
         if (targetQueue.isEmpty()) {
             val label = Component.translatable("context.superbwarfare.tactical_map.cancel_queue").string
             val pw = font.width(label) + 8
@@ -284,8 +330,12 @@ class AttackModeHandler {
             guiGraphics.fill(mx, my, mx + pw, my + ph, 0xEE2A2A2A.toInt())
             if (hovered) guiGraphics.fill(mx + 1, my, mx + pw - 1, my + ph, 0x66444444)
             guiGraphics.drawString(
-                font, label, mx + 4, my + 3,
-                if (hovered) 0xFFFF5555.toInt() else 0xFFCC6666.toInt(), false
+                font,
+                label,
+                mx + 4,
+                my + 3,
+                if (hovered) 0xFFFF5555.toInt() else 0xFFCC6666.toInt(),
+                false,
             )
             return
         }
@@ -304,16 +354,25 @@ class AttackModeHandler {
             val iy = my + padding + i * itemHeight
             val hovered = mouseX in mx..mx + menuW && mouseY in iy..iy + itemHeight
             val isSeqFire = i == 0
-            val itemColor = if (isSeqFire && disabled) 0xFF666666.toInt()
-            else if (hovered) 0xFFFFFFFF.toInt() else 0xFFCCCCCC.toInt()
+            val itemColor =
+                if (isSeqFire && disabled) {
+                    0xFF666666.toInt()
+                } else if (hovered) {
+                    0xFFFFFFFF.toInt()
+                } else {
+                    0xFFCCCCCC.toInt()
+                }
             if (hovered && (!isSeqFire || !disabled)) {
                 guiGraphics.fill(mx + 1, iy, mx + menuW - 1, iy + itemHeight, 0x664444FF)
             }
             guiGraphics.drawString(font, label, mx + padding, iy + 2, itemColor, false)
             if (hovered && isSeqFire && disabled) {
-                val tip = if (seqFireActive)
-                    Component.translatable("context.superbwarfare.tactical_map.firing")
-                else Component.translatable("context.superbwarfare.tactical_map.missile_no_ammo")
+                val tip =
+                    if (seqFireActive) {
+                        Component.translatable("context.superbwarfare.tactical_map.firing")
+                    } else {
+                        Component.translatable("context.superbwarfare.tactical_map.missile_no_ammo")
+                    }
                 guiGraphics.renderTooltip(font, listOf(tip), Optional.empty(), mouseX, mouseY)
             }
         }
@@ -323,10 +382,15 @@ class AttackModeHandler {
 
     /** 处理攻击模式下的鼠标点击。返回 true 表示已消费。 */
     fun handleClick(
-        mouseX: Double, mouseY: Double, button: Int,
+        mouseX: Double,
+        mouseY: Double,
+        button: Int,
         isMouseInPanel: Boolean,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, zoom: Double,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        zoom: Double,
         level: Level,
     ): Boolean {
         val scale = CoordinateConverter.scaleFromZoom(zoom)
@@ -392,8 +456,11 @@ class AttackModeHandler {
 
     /** 处理队列菜单点击。返回 true 表示已消费。 */
     fun handleQueueMenuClick(
-        mouseX: Double, mouseY: Double,
-        font: Font, screenWidth: Int, screenHeight: Int
+        mouseX: Double,
+        mouseY: Double,
+        font: Font,
+        screenWidth: Int,
+        screenHeight: Int,
     ): Boolean {
         if (!queueMenuVisible) return false
 
@@ -413,10 +480,11 @@ class AttackModeHandler {
             return true
         }
 
-        val items = listOf(
-            Component.translatable("context.superbwarfare.tactical_map.sequential_fire").string,
-            Component.translatable("context.superbwarfare.tactical_map.cancel_queue").string,
-        )
+        val items =
+            listOf(
+                Component.translatable("context.superbwarfare.tactical_map.sequential_fire").string,
+                Component.translatable("context.superbwarfare.tactical_map.cancel_queue").string,
+            )
         val padding = 4
         val itemHeight = 12
         val menuW = items.maxOf { font.width(it) } + padding * 2
@@ -430,9 +498,11 @@ class AttackModeHandler {
             val iy = my + padding + i * itemHeight
             if (mouseX in mx.toDouble()..(mx + menuW).toDouble() && mouseY in iy.toDouble()..(iy + itemHeight).toDouble()) {
                 when (i) {
-                    0 -> if (!seqFireActive && (onGetAmmo?.invoke(weaponName ?: "") ?: 0) > 0) {
-                        queueMenuVisible = false
-                        startSequentialFire()
+                    0 -> {
+                        if (!seqFireActive && (onGetAmmo?.invoke(weaponName ?: "") ?: 0) > 0) {
+                            queueMenuVisible = false
+                            startSequentialFire()
+                        }
                     }
 
                     1 -> {
@@ -458,11 +528,17 @@ class AttackModeHandler {
 
     // ── Height lookup ──
 
-    private fun lookupHeight(wX: Int, wZ: Int, level: Level): Int {
+    private fun lookupHeight(
+        wX: Int,
+        wZ: Int,
+        level: Level,
+    ): Int {
         val chunk = level.getChunk(wX shr 4, wZ shr 4)
-        return if (chunk is LevelChunk && !chunk.isEmpty)
+        return if (chunk is LevelChunk && !chunk.isEmpty) {
             level.getHeight(Heightmap.Types.WORLD_SURFACE, wX, wZ)
-        else TacticalMapCache.getCachedHeight(wX, wZ)?.toInt()
-            ?: (Minecraft.getInstance().player?.blockY ?: 64)
+        } else {
+            TacticalMapCache.getCachedHeight(wX, wZ)?.toInt()
+                ?: (Minecraft.getInstance().player?.blockY ?: 64)
+        }
     }
 }

@@ -2,6 +2,10 @@ package com.atsuishio.superbwarfare.block.entity
 
 import com.atsuishio.superbwarfare.block.ChargingStationBlock
 import com.atsuishio.superbwarfare.config.server.MiscConfig
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.EnergyStorage
+import com.atsuishio.superbwarfare.fabric.IEnergyStorage
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModBlockEntities
 import com.atsuishio.superbwarfare.init.ModDataComponents
 import com.atsuishio.superbwarfare.inventory.menu.ChargingStationMenu
@@ -33,82 +37,105 @@ import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
-import com.atsuishio.superbwarfare.fabric.EnergyStorage
-import com.atsuishio.superbwarfare.fabric.IEnergyStorage
 import javax.annotation.ParametersAreNonnullByDefault
 import kotlin.math.min
 
 /**
  * Energy Data Slot Code based on @GoryMoon's Chargers
  */
-open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
-    BlockEntity(ModBlockEntities.CHARGING_STATION.get(), pos, state), WorldlyContainer, MenuProvider {
-
+open class ChargingStationBlockEntity(
+    pos: BlockPos,
+    state: BlockState,
+) : BlockEntity(ModBlockEntities.CHARGING_STATION.get(), pos, state),
+    WorldlyContainer,
+    MenuProvider {
     protected var items: NonNullList<ItemStack> = NonNullList.withSize(2, ItemStack.EMPTY)
 
     var fuelTick = 0
     var maxFuelTick = DEFAULT_FUEL_TIME
     var showRange = false
 
-    protected val dataAccess: ContainerEnergyData = object : ContainerEnergyData {
-        override fun get(index: Int): Long {
-            return when (index) {
-                0 -> this@ChargingStationBlockEntity.fuelTick
-                1 -> this@ChargingStationBlockEntity.maxFuelTick
-                2 -> {
-                    val level = this@ChargingStationBlockEntity.level ?: return 0
+    protected val dataAccess: ContainerEnergyData =
+        object : ContainerEnergyData {
+            override fun get(index: Int): Long {
+                return when (index) {
+                    0 -> {
+                        this@ChargingStationBlockEntity.fuelTick
+                    }
 
-                    val cap = level.getCapability(
-                        Capabilities.EnergyStorage.BLOCK,
-                        this@ChargingStationBlockEntity.blockPos,
-                        null
-                    )
-                    if (cap == null) return 0
+                    1 -> {
+                        this@ChargingStationBlockEntity.maxFuelTick
+                    }
 
-                    cap.energyStored
-                }
+                    2 -> {
+                        val level = this@ChargingStationBlockEntity.level ?: return 0
 
-                3 -> if (this@ChargingStationBlockEntity.showRange) 1 else 0
-                else -> 0
-            }.toLong()
-        }
+                        val cap =
+                            level.getCapability(
+                                Capabilities.EnergyStorage.BLOCK,
+                                this@ChargingStationBlockEntity.blockPos,
+                                null,
+                            )
+                        if (cap == null) return 0
 
-        override fun set(index: Int, value: Long) {
-            when (index) {
-                0 -> this@ChargingStationBlockEntity.fuelTick = value.toInt()
-                1 -> this@ChargingStationBlockEntity.maxFuelTick = value.toInt()
-                2 -> {
-                    val level = this@ChargingStationBlockEntity.level ?: return
+                        cap.energyStored
+                    }
 
-                    val cap = level.getCapability(
-                        Capabilities.EnergyStorage.BLOCK,
-                        this@ChargingStationBlockEntity.blockPos,
-                        null
-                    )
-                    if (cap == null) return
+                    3 -> {
+                        if (this@ChargingStationBlockEntity.showRange) 1 else 0
+                    }
 
-                    cap.receiveEnergy(value.toInt(), false)
-                }
-
-                3 -> this@ChargingStationBlockEntity.showRange = value == 1L
+                    else -> {
+                        0
+                    }
+                }.toLong()
             }
-        }
 
-        override fun getCount(): Int {
-            return MAX_DATA_COUNT
+            override fun set(
+                index: Int,
+                value: Long,
+            ) {
+                when (index) {
+                    0 -> {
+                        this@ChargingStationBlockEntity.fuelTick = value.toInt()
+                    }
+
+                    1 -> {
+                        this@ChargingStationBlockEntity.maxFuelTick = value.toInt()
+                    }
+
+                    2 -> {
+                        val level = this@ChargingStationBlockEntity.level ?: return
+
+                        val cap =
+                            level.getCapability(
+                                Capabilities.EnergyStorage.BLOCK,
+                                this@ChargingStationBlockEntity.blockPos,
+                                null,
+                            )
+                        if (cap == null) return
+
+                        cap.receiveEnergy(value.toInt(), false)
+                    }
+
+                    3 -> {
+                        this@ChargingStationBlockEntity.showRange = value == 1L
+                    }
+                }
+            }
+
+            override fun getCount(): Int = MAX_DATA_COUNT
         }
-    }
 
     private fun chargeEntity(handler: IEnergyStorage) {
         val level = this.level ?: return
         if (level.gameTime % 20 != 0L) return
 
-        val entities: MutableList<Entity?> = level.getEntitiesOfClass<Entity?>(
-            Entity::class.java,
-            AABB(this.blockPos).inflate(CHARGE_RADIUS.toDouble())
-        )
+        val entities: MutableList<Entity?> =
+            level.getEntitiesOfClass<Entity?>(
+                Entity::class.java,
+                AABB(this.blockPos).inflate(CHARGE_RADIUS.toDouble()),
+            )
         entities.forEach { entity ->
             val cap = entity?.getCapability(Capabilities.EnergyStorage.ENTITY, null)
             if (cap == null || !cap.canReceive()) return@forEach
@@ -139,11 +166,12 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
         for (direction in Direction.entries) {
             val blockEntity = level.getBlockEntity(this.blockPos.relative(direction)) ?: continue
 
-            val energy = level.getCapability(
-                Capabilities.EnergyStorage.BLOCK,
-                blockEntity.blockPos,
-                direction
-            )
+            val energy =
+                level.getCapability(
+                    Capabilities.EnergyStorage.BLOCK,
+                    blockEntity.blockPos,
+                    direction,
+                )
             if (energy == null || blockEntity is ChargingStationBlockEntity) continue
 
             if (energy.canReceive() && energy.energyStored < energy.maxEnergyStored) {
@@ -163,7 +191,7 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
         if (level != null) {
             (this.energyStorage as EnergyStorage).deserializeNBT(
                 level.registryAccess(),
-                IntTag.valueOf(componentInput.getOrDefault(ModDataComponents.ENERGY.get(), 0))
+                IntTag.valueOf(componentInput.getOrDefault(ModDataComponents.ENERGY.get(), 0)),
             )
         }
     }
@@ -174,7 +202,10 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
         components.set(ModDataComponents.ENERGY.get(), this.energyStorage.energyStored)
     }
 
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun loadAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.loadAdditional(tag, registries)
 
         if (tag.contains("Energy")) {
@@ -190,7 +221,10 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
         ContainerHelper.loadAllItems(tag, this.items, registries)
     }
 
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun saveAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveAdditional(tag, registries)
 
         tag.putInt("Energy", this.energyStorage.energyStored)
@@ -201,21 +235,21 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
         ContainerHelper.saveAllItems(tag, this.items, registries)
     }
 
-    override fun getSlotsForFace(pSide: Direction): IntArray {
-        return intArrayOf(SLOT_FUEL)
-    }
+    override fun getSlotsForFace(pSide: Direction): IntArray = intArrayOf(SLOT_FUEL)
 
-    override fun canPlaceItemThroughFace(pIndex: Int, pItemStack: ItemStack, pDirection: Direction?): Boolean {
-        return pIndex == SLOT_FUEL
-    }
+    override fun canPlaceItemThroughFace(
+        pIndex: Int,
+        pItemStack: ItemStack,
+        pDirection: Direction?,
+    ): Boolean = pIndex == SLOT_FUEL
 
-    override fun canTakeItemThroughFace(pIndex: Int, pStack: ItemStack, pDirection: Direction): Boolean {
-        return false
-    }
+    override fun canTakeItemThroughFace(
+        pIndex: Int,
+        pStack: ItemStack,
+        pDirection: Direction,
+    ): Boolean = false
 
-    override fun getContainerSize(): Int {
-        return this.items.size
-    }
+    override fun getContainerSize(): Int = this.items.size
 
     override fun isEmpty(): Boolean {
         for (itemstack in this.items) {
@@ -227,19 +261,19 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
         return true
     }
 
-    override fun getItem(pSlot: Int): ItemStack {
-        return this.items[pSlot]
-    }
+    override fun getItem(pSlot: Int): ItemStack = this.items[pSlot]
 
-    override fun removeItem(pSlot: Int, pAmount: Int): ItemStack {
-        return ContainerHelper.removeItem(this.items, pSlot, pAmount)
-    }
+    override fun removeItem(
+        pSlot: Int,
+        pAmount: Int,
+    ): ItemStack = ContainerHelper.removeItem(this.items, pSlot, pAmount)
 
-    override fun removeItemNoUpdate(pSlot: Int): ItemStack {
-        return ContainerHelper.takeItem(this.items, pSlot)
-    }
+    override fun removeItemNoUpdate(pSlot: Int): ItemStack = ContainerHelper.takeItem(this.items, pSlot)
 
-    override fun setItem(pSlot: Int, pStack: ItemStack) {
+    override fun setItem(
+        pSlot: Int,
+        pStack: ItemStack,
+    ) {
         val itemstack: ItemStack = this.items[pSlot]
         val flag = !pStack.isEmpty && isSameItemStack(itemstack, pStack)
         this.items[pSlot] = pStack
@@ -252,25 +286,21 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
         }
     }
 
-    override fun stillValid(pPlayer: Player): Boolean {
-        return Container.stillValidBlockEntity(this, pPlayer)
-    }
+    override fun stillValid(pPlayer: Player): Boolean = Container.stillValidBlockEntity(this, pPlayer)
 
     override fun clearContent() {
         this.items.clear()
     }
 
-    override fun getDisplayName(): Component {
-        return Component.translatable("container.superbwarfare.charging_station")
-    }
+    override fun getDisplayName(): Component = Component.translatable("container.superbwarfare.charging_station")
 
-    override fun createMenu(pContainerId: Int, pPlayerInventory: Inventory, pPlayer: Player): AbstractContainerMenu? {
-        return ChargingStationMenu(pContainerId, pPlayerInventory, this, this.dataAccess)
-    }
+    override fun createMenu(
+        pContainerId: Int,
+        pPlayerInventory: Inventory,
+        pPlayer: Player,
+    ): AbstractContainerMenu? = ChargingStationMenu(pContainerId, pPlayerInventory, this, this.dataAccess)
 
-    override fun getUpdatePacket(): ClientboundBlockEntityDataPacket? {
-        return ClientboundBlockEntityDataPacket.create(this)
-    }
+    override fun getUpdatePacket(): ClientboundBlockEntityDataPacket? = ClientboundBlockEntityDataPacket.create(this)
 
     override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag {
         val compoundtag = CompoundTag()
@@ -280,7 +310,10 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
     }
 
     @ParametersAreNonnullByDefault
-    override fun saveToItem(stack: ItemStack, registries: HolderLookup.Provider) {
+    override fun saveToItem(
+        stack: ItemStack,
+        registries: HolderLookup.Provider,
+    ) {
         val tag = CompoundTag()
         if (this.level != null) {
             tag.put("Energy", (energyStorage as EnergyStorage).serializeNBT(registries))
@@ -290,9 +323,7 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
 
     private val energyStorage: IEnergyStorage = EnergyStorage(MAX_ENERGY)
 
-    fun getEnergyStorage(side: Direction?): IEnergyStorage {
-        return energyStorage
-    }
+    fun getEnergyStorage(side: Direction?): IEnergyStorage = energyStorage
 
     companion object {
         protected const val SLOT_FUEL: Int = 0
@@ -319,12 +350,12 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
             pLevel: Level,
             pPos: BlockPos,
             pState: BlockState,
-            blockEntity: ChargingStationBlockEntity
+            blockEntity: ChargingStationBlockEntity,
         ) {
             if (blockEntity.showRange != pState.getValue(ChargingStationBlock.SHOW_RANGE)) {
                 pLevel.setBlockAndUpdate(
                     pPos,
-                    pState.setValue(ChargingStationBlock.SHOW_RANGE, blockEntity.showRange)
+                    pState.setValue(ChargingStationBlock.SHOW_RANGE, blockEntity.showRange),
                 )
                 setChanged(pLevel, pPos, pState)
             }
@@ -378,13 +409,14 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
                             val copy = remainder.copy()
                             copy.count = 1
 
-                            val itemEntity = ItemEntity(
-                                pLevel,
-                                pPos.x + 0.5,
-                                pPos.y + 0.2,
-                                pPos.z + 0.5,
-                                copy
-                            )
+                            val itemEntity =
+                                ItemEntity(
+                                    pLevel,
+                                    pPos.x + 0.5,
+                                    pPos.y + 0.2,
+                                    pPos.z + 0.5,
+                                    copy,
+                                )
                             pLevel.addFreshEntity(itemEntity)
 
                             fuel.shrink(1)
@@ -414,6 +446,5 @@ open class ChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
                 }
             }
         }
-
     }
 }

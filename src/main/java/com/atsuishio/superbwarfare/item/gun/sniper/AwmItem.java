@@ -7,12 +7,14 @@ import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.tools.GunsTool;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
@@ -37,7 +39,8 @@ public class AwmItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.awm.idle"));
 
         var data = GunData.from(stack);
@@ -47,18 +50,21 @@ public class AwmItem extends GunGeoItem {
         }
 
         if (data.reload.empty()) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.awm.reload_empty"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.awm.reload_empty"));
         }
 
         if (data.reload.normal()) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.awm.reload_normal"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.awm.reload_normal"));
         }
 
         return event.setAndContinue(RawAnimation.begin().thenLoop("animation.awm.idle"));
     }
 
     private PlayState editPredicate(AnimationState<AwmItem> event) {
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.awm.idle"));
 
         if (ClientEventHandler.isEditing) {
@@ -69,20 +75,22 @@ public class AwmItem extends GunGeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var fireAnimController = new AnimationController<>(this, "fireAnimController", 1, this::fireAnimPredicate);
+        var fireAnimController =
+                new AnimationController<>(this, "fireAnimController", 1, this::fireAnimPredicate);
         data.add(fireAnimController);
-        var editController = new AnimationController<>(this, "editController", 1, this::editPredicate);
+        var editController =
+                new AnimationController<>(this, "editController", 1, this::editPredicate);
         data.add(editController);
     }
 
     @Override
     public int[] getValidMagazines() {
-        return new int[]{0, 1};
+        return new int[] {0, 1};
     }
 
     @Override
     public int[] getValidBarrels() {
-        return new int[]{0, 2};
+        return new int[] {0, 2};
     }
 
     @Override

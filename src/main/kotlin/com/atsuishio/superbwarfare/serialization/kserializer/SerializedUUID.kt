@@ -8,20 +8,24 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.util.*
 
-typealias SerializedUUID = @Serializable(UUIDSerializer::class) UUID
+typealias SerializedUUID =
+    @Serializable(UUIDSerializer::class)
+    UUID
 
 object UUIDSerializer : KSerializer<UUID> {
-    override val descriptor = buildClassSerialDescriptor("UUID") {
-        element<Long>("mostSignificantBits")
-        element<Long>("leastSignificantBits")
-    }
+    override val descriptor =
+        buildClassSerialDescriptor("UUID") {
+            element<Long>("mostSignificantBits")
+            element<Long>("leastSignificantBits")
+        }
 
-    override fun serialize(encoder: Encoder, value: UUID) {
+    override fun serialize(
+        encoder: Encoder,
+        value: UUID,
+    ) {
         encoder.encodeLong(value.mostSignificantBits)
         encoder.encodeLong(value.leastSignificantBits)
     }
 
-    override fun deserialize(decoder: Decoder): UUID {
-        return UUID(decoder.decodeLong(), decoder.decodeLong())
-    }
+    override fun deserialize(decoder: Decoder): UUID = UUID(decoder.decodeLong(), decoder.decodeLong())
 }

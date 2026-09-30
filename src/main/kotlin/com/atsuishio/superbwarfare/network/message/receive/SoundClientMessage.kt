@@ -24,7 +24,6 @@ data class SoundClientMessage(
     val pitch: Float,
     val sender: SerializedUUID,
 ) : ClientPacketPayload() {
-
     override fun PayloadContext.handler() {
         val player = localPlayer ?: return
         if (player.uuid == sender && (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)) return

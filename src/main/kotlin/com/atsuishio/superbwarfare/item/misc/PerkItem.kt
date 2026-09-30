@@ -10,7 +10,9 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import java.util.function.Supplier
 
-open class PerkItem(private val perkSupplier: Supplier<Perk>) : Item(Properties()) {
+open class PerkItem(
+    private val perkSupplier: Supplier<Perk>,
+) : Item(Properties()) {
     val perk: Perk
         get() = this.perkSupplier.get()
 
@@ -18,25 +20,29 @@ open class PerkItem(private val perkSupplier: Supplier<Perk>) : Item(Properties(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         val perk = this.perk
-        val chatFormatting = when (perk.type) {
-            Perk.Type.AMMO -> ChatFormatting.YELLOW
-            Perk.Type.FUNCTIONAL -> ChatFormatting.GREEN
-            Perk.Type.DAMAGE -> ChatFormatting.RED
-        }
+        val chatFormatting =
+            when (perk.type) {
+                Perk.Type.AMMO -> ChatFormatting.YELLOW
+                Perk.Type.FUNCTIONAL -> ChatFormatting.GREEN
+                Perk.Type.DAMAGE -> ChatFormatting.RED
+            }
 
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare." + perk.descriptionId).withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare." + perk.descriptionId).withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(Component.empty())
         tooltipComponents.add(
-            Component.translatable("perk.superbwarfare.slot").withStyle(ChatFormatting.GOLD)
+            Component
+                .translatable("perk.superbwarfare.slot")
+                .withStyle(ChatFormatting.GOLD)
                 .append(
-                    Component.translatable("perk.superbwarfare.slot_" + perk.type.typeName)
-                        .withStyle(chatFormatting)
-                )
+                    Component
+                        .translatable("perk.superbwarfare.slot_" + perk.type.typeName)
+                        .withStyle(chatFormatting),
+                ),
         )
         if (perk is AmmoPerk) {
             appendAmmoTooltips(perk.damageRate, perk.speedRate, perk.slug, tooltipComponents)
@@ -45,24 +51,29 @@ open class PerkItem(private val perkSupplier: Supplier<Perk>) : Item(Properties(
         }
     }
 
-    private fun appendAmmoTooltips(damageRate: Double, speedRate: Double, slug: Boolean, tooltips: MutableList<Component>) {
+    private fun appendAmmoTooltips(
+        damageRate: Double,
+        speedRate: Double,
+        slug: Boolean,
+        tooltips: MutableList<Component>,
+    ) {
         if (damageRate < 1) {
             tooltips.add(
-                Component.translatable("des.superbwarfare.perk_damage_reduce").withStyle(ChatFormatting.RED)
+                Component.translatable("des.superbwarfare.perk_damage_reduce").withStyle(ChatFormatting.RED),
             )
         } else if (damageRate > 1) {
             tooltips.add(
-                Component.translatable("des.superbwarfare.perk_damage_plus").withStyle(ChatFormatting.GREEN)
+                Component.translatable("des.superbwarfare.perk_damage_plus").withStyle(ChatFormatting.GREEN),
             )
         }
 
         if (speedRate < 1) {
             tooltips.add(
-                Component.translatable("des.superbwarfare.perk_speed_reduce").withStyle(ChatFormatting.RED)
+                Component.translatable("des.superbwarfare.perk_speed_reduce").withStyle(ChatFormatting.RED),
             )
         } else if (speedRate > 1) {
             tooltips.add(
-                Component.translatable("des.superbwarfare.perk_speed_plus").withStyle(ChatFormatting.GREEN)
+                Component.translatable("des.superbwarfare.perk_speed_plus").withStyle(ChatFormatting.GREEN),
             )
         }
 

@@ -12,11 +12,13 @@ import com.atsuishio.superbwarfare.item.gun.handgun.TracheliumItem;
 import com.atsuishio.superbwarfare.tools.NBTTool;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.cache.object.GeoBone;
 
@@ -27,7 +29,18 @@ public class TracheliumItemRenderer extends CustomGunRenderer<TracheliumItem> {
     }
 
     @Override
-    public void renderRecursively(PoseStack stack, TracheliumItem animatable, GeoBone bone, RenderType type, MultiBufferSource buffer, VertexConsumer bufferIn, boolean isReRender, float partialTick, int packedLightIn, int packedOverlayIn, int color) {
+    public void renderRecursively(
+            PoseStack stack,
+            TracheliumItem animatable,
+            GeoBone bone,
+            RenderType type,
+            MultiBufferSource buffer,
+            VertexConsumer bufferIn,
+            boolean isReRender,
+            float partialTick,
+            int packedLightIn,
+            int packedOverlayIn,
+            int color) {
         Minecraft mc = Minecraft.getInstance();
         String name = bone.getName();
         boolean renderingArms = false;
@@ -42,17 +55,27 @@ public class TracheliumItemRenderer extends CustomGunRenderer<TracheliumItem> {
         if (player == null) return;
         ItemStack itemStack = player.getMainHandItem();
 
-        boolean needHide = name.equals("humu") || name.equals("qianzhunxing1") || name.equals("railup") || name.equals("raildown");
+        boolean needHide =
+                name.equals("humu")
+                        || name.equals("qianzhunxing1")
+                        || name.equals("railup")
+                        || name.equals("raildown");
 
-        if (itemStack.getItem() instanceof GunItem && GeoItem.getId(itemStack) == this.getInstanceId(animatable)) {
-            if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND || this.renderPerspective == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
+        if (itemStack.getItem() instanceof GunItem
+                && GeoItem.getId(itemStack) == this.getInstanceId(animatable)) {
+            if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                    || this.renderPerspective == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
                 var data = GunData.from(itemStack);
                 if (name.equals("humu")) {
-                    bone.setHidden(data.attachment.get(AttachmentType.SCOPE) == 0 && data.attachment.get(AttachmentType.GRIP) == 0);
+                    bone.setHidden(
+                            data.attachment.get(AttachmentType.SCOPE) == 0
+                                    && data.attachment.get(AttachmentType.GRIP) == 0);
                 }
 
                 if (name.equals("qianzhunxing1")) {
-                    bone.setHidden(data.attachment.get(AttachmentType.SCOPE) > 0 || data.attachment.get(AttachmentType.GRIP) > 0);
+                    bone.setHidden(
+                            data.attachment.get(AttachmentType.SCOPE) > 0
+                                    || data.attachment.get(AttachmentType.GRIP) > 0);
                 }
 
                 if (name.equals("railup")) {
@@ -63,23 +86,74 @@ public class TracheliumItemRenderer extends CustomGunRenderer<TracheliumItem> {
                     bone.setHidden(data.attachment.get(AttachmentType.GRIP) == 0);
                 }
 
-                if (data.attachment.get(AttachmentType.SCOPE) == 2 && !NBTTool.getTag(itemStack).getBoolean("ScopeAlt") && (name.equals("hidden"))) {
+                if (data.attachment.get(AttachmentType.SCOPE) == 2
+                        && !NBTTool.getTag(itemStack).getBoolean("ScopeAlt")
+                        && (name.equals("hidden"))) {
                     bone.setHidden(ClientEventHandler.zoomPos > 0.7 && ClientEventHandler.zoom);
                 }
 
-                AnimationHelper.handleShootFlare(name, stack, itemStack, bone, buffer, packedLightIn);
+                AnimationHelper.handleShootFlare(
+                        name, stack, itemStack, bone, buffer, packedLightIn);
                 ItemModelHelper.handleGunAttachments(bone, itemStack, name);
 
                 if (this.renderPerspective == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
                     int scopeType = data.attachment.get(AttachmentType.SCOPE);
                     switch (scopeType) {
                         case 1 ->
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.3, 30, 1.2f, 255, 0, 0, 255, "dot", false);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.3,
+                                        30,
+                                        1.2f,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "dot",
+                                        false);
                         case 2 -> {
                             if (NBTTool.getTag(itemStack).getBoolean("ScopeAlt")) {
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.36, 30, 0.18f, 255, 0, 0, 255, "delta", false);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.36,
+                                        30,
+                                        0.18f,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "delta",
+                                        false);
                             } else {
-                                AnimationHelper.handleZoomCrossHair(currentBuffer, renderType, name, stack, bone, buffer, 0, 0.294, 13, 0.87f, 255, 0, 0, 255, "hamr", true);
+                                AnimationHelper.handleZoomCrossHair(
+                                        currentBuffer,
+                                        renderType,
+                                        name,
+                                        stack,
+                                        bone,
+                                        buffer,
+                                        0,
+                                        0.294,
+                                        13,
+                                        0.87f,
+                                        255,
+                                        0,
+                                        0,
+                                        255,
+                                        "hamr",
+                                        true);
                             }
                         }
                     }
@@ -98,8 +172,28 @@ public class TracheliumItemRenderer extends CustomGunRenderer<TracheliumItem> {
         }
 
         if (renderingArms) {
-            AnimationHelper.renderArms(player, this.renderPerspective, stack, name, bone, buffer, type, packedLightIn, true);
+            AnimationHelper.renderArms(
+                    player,
+                    this.renderPerspective,
+                    stack,
+                    name,
+                    bone,
+                    buffer,
+                    type,
+                    packedLightIn,
+                    true);
         }
-        super.renderRecursively(stack, animatable, bone, type, buffer, bufferIn, isReRender, partialTick, packedLightIn, packedOverlayIn, color);
+        super.renderRecursively(
+                stack,
+                animatable,
+                bone,
+                type,
+                buffer,
+                bufferIn,
+                isReRender,
+                partialTick,
+                packedLightIn,
+                packedOverlayIn,
+                color);
     }
 }

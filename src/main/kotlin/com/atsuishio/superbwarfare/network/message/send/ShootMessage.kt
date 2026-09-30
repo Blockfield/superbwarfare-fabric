@@ -14,7 +14,7 @@ data class ShootMessage(
     val spread: Double,
     val zoom: Boolean,
     val uuid: SerializedUUID?,
-    val targetPos: SerializedVector3f?
+    val targetPos: SerializedVector3f?,
 ) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()

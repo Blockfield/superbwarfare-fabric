@@ -2,6 +2,8 @@ package com.atsuishio.superbwarfare.client.overlay
 
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.client.RenderHelper
+import com.atsuishio.superbwarfare.client.boundKey
+import com.atsuishio.superbwarfare.client.drawString
 import com.atsuishio.superbwarfare.client.language.ClientLanguageGetter
 import com.atsuishio.superbwarfare.config.client.DisplayConfig
 import com.atsuishio.superbwarfare.data.gun.Ammo
@@ -10,28 +12,25 @@ import com.atsuishio.superbwarfare.data.gun.GunData
 import com.atsuishio.superbwarfare.data.gun.GunData.Companion.from
 import com.atsuishio.superbwarfare.data.gun.GunProp
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModKeyMappings
 import com.atsuishio.superbwarfare.item.gun.GunItem
 import com.atsuishio.superbwarfare.tools.FormatTool.format1DZZ
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.Util
 import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
 import java.util.regex.Pattern
 import kotlin.math.max
-import com.atsuishio.superbwarfare.client.boundKey
-import com.atsuishio.superbwarfare.client.drawString
 
 @Environment(EnvType.CLIENT)
 object AmmoBarOverlay : CommonOverlay("ammo_bar") {
-
     private val LINE = loc("textures/overlay/ammo_bar/fire_mode/line.png")
     private val MOUSE = loc("textures/overlay/ammo_bar/fire_mode/mouse.png")
     private val CHOSEN = loc("textures/gui/attachment/chosen.png")
@@ -64,7 +63,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                 64,
                 16,
                 64,
-                16
+                16,
             )
 
             val font = Minecraft.getInstance().font
@@ -78,7 +77,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     (x - 100f) - font.width(str),
                     (y - 20).toFloat(),
                     0xFFFFFF,
-                    false
+                    false,
                 )
             }
 
@@ -95,7 +94,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     (selectedFireMode + 1).toString() + "/" + fireModes.size,
                     x - 75,
                     y - 20,
-                    0xCCCCCC
+                    0xCCCCCC,
                 )
             }
 
@@ -108,7 +107,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     x - 111f,
                     (y - 20).toFloat(),
                     0xFFFFFF,
-                    false
+                    false,
                 )
 
                 guiGraphics.blit(
@@ -120,7 +119,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     12,
                     12,
                     12,
-                    12
+                    12,
                 )
             } else {
                 guiGraphics.blit(
@@ -132,7 +131,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     8,
                     8,
                     8,
-                    8
+                    8,
                 )
                 guiGraphics.blit(
                     LINE,
@@ -143,19 +142,20 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     8,
                     8,
                     8,
-                    8
+                    8,
                 )
             }
 
             // 如果弹药种类大于1，渲染弹种信息
             val size = data.get(GunProp.AMMO_CONSUMER).size
-            if (DisplayConfig.ADVANCED_AMMO_HUD.get()
-                && (size > 1 || size == 1 && data.selectedAmmoConsumer().type != AmmoConsumeType.PLAYER_AMMO)
+            if (DisplayConfig.ADVANCED_AMMO_HUD.get() &&
+                (size > 1 || size == 1 && data.selectedAmmoConsumer().type != AmmoConsumeType.PLAYER_AMMO)
             ) {
                 // 如果当前弹药为物品，渲染备弹物品数量
                 val ammoConsumer = data.selectedAmmoConsumer()
                 RenderHelper.preciseBlit(
-                    guiGraphics, AMMO_STACK,
+                    guiGraphics,
+                    AMMO_STACK,
                     (x - 62).toFloat(),
                     y - 20.5f,
                     0f,
@@ -163,7 +163,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     24f,
                     8.5f,
                     24f,
-                    24f
+                    24f,
                 )
 
                 poseStack.pushPose()
@@ -179,13 +179,14 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     val ammoStack: ItemStack
                     if (consumerType == AmmoConsumeType.PLAYER_AMMO) {
                         val ammoType = ammoConsumer.playerAmmoType!!
-                        ammoStack = when (ammoType) {
-                            Ammo.HANDGUN -> ItemStack(ModItems.HANDGUN_AMMO.get())
-                            Ammo.RIFLE -> ItemStack(ModItems.RIFLE_AMMO.get())
-                            Ammo.SHOTGUN -> ItemStack(ModItems.SHOTGUN_AMMO.get())
-                            Ammo.SNIPER -> ItemStack(ModItems.SNIPER_AMMO.get())
-                            Ammo.HEAVY -> ItemStack(ModItems.HEAVY_AMMO.get())
-                        }
+                        ammoStack =
+                            when (ammoType) {
+                                Ammo.HANDGUN -> ItemStack(ModItems.HANDGUN_AMMO.get())
+                                Ammo.RIFLE -> ItemStack(ModItems.RIFLE_AMMO.get())
+                                Ammo.SHOTGUN -> ItemStack(ModItems.SHOTGUN_AMMO.get())
+                                Ammo.SNIPER -> ItemStack(ModItems.SNIPER_AMMO.get())
+                                Ammo.HEAVY -> ItemStack(ModItems.HEAVY_AMMO.get())
+                            }
                     } else {
                         ammoStack = ammoConsumer.stack()
                     }
@@ -202,7 +203,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                         24,
                         8,
                         0xFFFFFF,
-                        true
+                        true,
                     )
                 }
 
@@ -213,7 +214,8 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     when (consumerType) {
                         AmmoConsumeType.INVALID -> {
                             RenderHelper.preciseBlit(
-                                guiGraphics, AMMO_STACK,
+                                guiGraphics,
+                                AMMO_STACK,
                                 (x - 50).toFloat(),
                                 y - 19.5f,
                                 12f,
@@ -221,13 +223,14 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                                 5f,
                                 8f,
                                 24f,
-                                24f
+                                24f,
                             )
                         }
 
                         AmmoConsumeType.ENERGY -> {
                             RenderHelper.preciseBlit(
-                                guiGraphics, AMMO_STACK,
+                                guiGraphics,
+                                AMMO_STACK,
                                 (x - 50).toFloat(),
                                 y - 19.5f,
                                 12f,
@@ -235,13 +238,14 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                                 5f,
                                 8f,
                                 24f,
-                                24f
+                                24f,
                             )
                         }
 
                         else -> {
                             RenderHelper.preciseBlit(
-                                guiGraphics, AMMO_STACK,
+                                guiGraphics,
+                                AMMO_STACK,
                                 x - 51f,
                                 (y - 20).toFloat(),
                                 0f,
@@ -249,7 +253,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                                 7f,
                                 8f,
                                 24f,
-                                24f
+                                24f,
                             )
                         }
                     }
@@ -266,8 +270,14 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                         RenderHelper.preciseBlit(
                             guiGraphics,
                             if (i == data.selectedAmmoType.get()) CHOSEN else NOT_CHOSEN,
-                            posX - offset + 6 * i, posY, 0f, 0f,
-                            4f, 4f, 4f, 4f
+                            posX - offset + 6 * i,
+                            posY,
+                            0f,
+                            0f,
+                            4f,
+                            4f,
+                            4f,
+                            4f,
                         )
                     }
                 }
@@ -285,7 +295,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                 x / 1.5f - 64 / 1.5f,
                 gunAmmoY / 1.5f,
                 0xFFFFFF,
-                true
+                true,
             )
 
             poseStack.popPose()
@@ -298,7 +308,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                     x - 62 + font.width(getGunAmmoString(data, player)) * 1.5f,
                     (y - 46).toFloat(),
                     0x55FFFF,
-                    true
+                    true,
                 )
             }
 
@@ -309,7 +319,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                 x - 64,
                 y - 30,
                 0xCCCCCC,
-                true
+                true,
             )
 
             poseStack.pushPose()
@@ -323,7 +333,7 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                 x / 0.9f - (100 + font.width(gunName) / 2f) / 0.9f,
                 y / 0.9f - 60 / 0.9f,
                 0xFFFFFF,
-                true
+                true,
             )
 
             // 渲染弹药类型
@@ -335,17 +345,14 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
                 x / 0.9f - (100 + font.width(ammoName) / 2f) / 0.9f,
                 y / 0.9f - 51 / 0.9f,
                 0xC8A679,
-                true
+                true,
             )
 
             poseStack.popPose()
         }
     }
 
-
-    private fun getFireMode(data: GunData): ResourceLocation {
-        return TO_RESOURCE_LOCATION.apply(toUnderScores(data.selectedFireModeInfo().name))
-    }
+    private fun getFireMode(data: GunData): ResourceLocation = TO_RESOURCE_LOCATION.apply(toUnderScores(data.selectedFireModeInfo().name))
 
     private fun toUnderScores(str: String): String {
         val builder = StringBuilder()
@@ -365,33 +372,50 @@ object AmmoBarOverlay : CommonOverlay("ammo_bar") {
         return builder.toString()
     }
 
-    private fun getGunAmmoString(data: GunData, player: Player?): String {
+    private fun getGunAmmoString(
+        data: GunData,
+        player: Player?,
+    ): String {
         if (data.selectedAmmoConsumer().type == AmmoConsumeType.ENERGY) {
             val storage = data.stack.getCapability(Capabilities.EnergyStorage.ITEM)
-            val energy = if (storage == null) 0.0 else Mth.clamp(
-                storage.energyStored.toDouble() / max(1, storage.maxEnergyStored), 0.0, 1.0
-            )
+            val energy =
+                if (storage == null) {
+                    0.0
+                } else {
+                    Mth.clamp(
+                        storage.energyStored.toDouble() / max(1, storage.maxEnergyStored),
+                        0.0,
+                        1.0,
+                    )
+                }
             return format1DZZ(energy * 100) + "%"
         }
         if (data.meleeOnly() || data.useBackpackAmmo() && data.hasInfiniteBackupAmmo(player)) return "∞"
-        return if (data.useBackpackAmmo()) (data.countBackupAmmo(player) - data.virtualAmmo.get()).toString() + "" else data.ammo.get()
-            .toString() + ""
+        return if (data.useBackpackAmmo()) {
+            (data.countBackupAmmo(player) - data.virtualAmmo.get()).toString() + ""
+        } else {
+            data.ammo
+                .get()
+                .toString() + ""
+        }
     }
 
-    private fun getBackupAmmoString(data: GunData, player: Player?): String {
+    private fun getBackupAmmoString(
+        data: GunData,
+        player: Player?,
+    ): String {
         if (data.meleeOnly() || data.useBackpackAmmo() || data.selectedAmmoConsumer().type == AmmoConsumeType.ENERGY) return ""
         return if (data.hasInfiniteBackupAmmo(player)) "∞" else (data.countBackupAmmo(player) - data.virtualAmmo.get()).toString() + ""
     }
 
     private val REPLACE_FORMAT_CODE: Pattern = Pattern.compile("§.")
 
-    private fun getGunDisplayName(stack: ItemStack): String {
-        return if (!stack.isEmpty) {
+    private fun getGunDisplayName(stack: ItemStack): String =
+        if (!stack.isEmpty) {
             ClientLanguageGetter.EN_US.getOrDefault(stack.descriptionId)
         } else {
             ""
         }
-    }
 
     private fun getAmmoDisplayName(data: GunData): String {
         if (data.meleeOnly()) return "Melee"

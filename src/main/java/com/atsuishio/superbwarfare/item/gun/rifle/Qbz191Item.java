@@ -8,6 +8,7 @@ import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.tools.GunsTool;
 import com.atsuishio.superbwarfare.tools.NBTTool;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
@@ -17,14 +18,16 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 public class Qbz191Item extends GunGeoItem {
 
@@ -42,25 +45,31 @@ public class Qbz191Item extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.qbz_191.idle"));
 
-        var data=GunData.from(stack);
+        var data = GunData.from(stack);
         boolean drum = data.attachment.get(AttachmentType.MAGAZINE) == 2;
         boolean grip = data.attachment.get(AttachmentType.GRIP) == 1;
 
         if (data.reload.empty()) {
             if (drum) {
                 if (grip) {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.qbz_191.reload_empty_drum_grip"));
+                    return event.setAndContinue(
+                            RawAnimation.begin()
+                                    .thenPlay("animation.qbz_191.reload_empty_drum_grip"));
                 } else {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.qbz_191.reload_empty_drum"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.qbz_191.reload_empty_drum"));
                 }
             } else {
                 if (grip) {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.qbz_191.reload_empty_grip"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.qbz_191.reload_empty_grip"));
                 } else {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.qbz_191.reload_empty"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.qbz_191.reload_empty"));
                 }
             }
         }
@@ -68,21 +77,27 @@ public class Qbz191Item extends GunGeoItem {
         if (data.reload.normal()) {
             if (drum) {
                 if (grip) {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.qbz_191.reload_normal_drum_grip"));
+                    return event.setAndContinue(
+                            RawAnimation.begin()
+                                    .thenPlay("animation.qbz_191.reload_normal_drum_grip"));
                 } else {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.qbz_191.reload_normal_drum"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.qbz_191.reload_normal_drum"));
                 }
             } else {
                 if (grip) {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.qbz_191.reload_normal_grip"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.qbz_191.reload_normal_grip"));
                 } else {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.qbz_191.reload_normal"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.qbz_191.reload_normal"));
                 }
             }
         }
 
         if (grip) {
-            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.qbz_191.idle_grip"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenLoop("animation.qbz_191.idle_grip"));
         } else {
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.qbz_191.idle"));
         }
@@ -93,7 +108,8 @@ public class Qbz191Item extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.qbz_191.idle"));
 
         if (ClientEventHandler.isEditing) {
@@ -105,15 +121,18 @@ public class Qbz191Item extends GunGeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var idleController = new AnimationController<>(this, "idleController", 3, this::idlePredicate);
+        var idleController =
+                new AnimationController<>(this, "idleController", 3, this::idlePredicate);
         data.add(idleController);
-        var editController = new AnimationController<>(this, "editController", 1, this::editPredicate);
+        var editController =
+                new AnimationController<>(this, "editController", 1, this::editPredicate);
         data.add(editController);
     }
 
     @Override
     @ParametersAreNonnullByDefault
-    public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
+    public void inventoryTick(
+            ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
         super.inventoryTick(stack, world, entity, slot, selected);
 
         var data = GunData.from(stack);
@@ -132,12 +151,12 @@ public class Qbz191Item extends GunGeoItem {
 
     @Override
     public int[] getValidMagazines() {
-        return new int[]{0, 2};
+        return new int[] {0, 2};
     }
 
     @Override
     public int[] getValidGrips() {
-        return new int[]{0, 1, 2};
+        return new int[] {0, 1, 2};
     }
 
     @Override

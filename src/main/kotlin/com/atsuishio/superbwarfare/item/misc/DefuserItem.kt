@@ -16,7 +16,11 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 
 open class DefuserItem : Item(Properties().durability(8)) {
-    override fun use(pLevel: Level, pPlayer: Player, pUsedHand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        pLevel: Level,
+        pPlayer: Player,
+        pUsedHand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = pPlayer.getItemInHand(pUsedHand)
         if (findBombInSight(pPlayer) != null) {
             pPlayer.startUsingItem(pUsedHand)
@@ -25,7 +29,12 @@ open class DefuserItem : Item(Properties().durability(8)) {
         return InteractionResultHolder.fail(stack)
     }
 
-    override fun onUseTick(pLevel: Level, player: LivingEntity, pStack: ItemStack, pRemainingUseDuration: Int) {
+    override fun onUseTick(
+        pLevel: Level,
+        player: LivingEntity,
+        pStack: ItemStack,
+        pRemainingUseDuration: Int,
+    ) {
         if (player !is Player) return
         val target = findBombInSight(player) ?: return
 
@@ -33,9 +42,11 @@ open class DefuserItem : Item(Properties().durability(8)) {
 
         if (!pLevel.isClientSide) {
             player.displayClientMessage(
-                Component.literal(
-                    format1DZZ((C4Entity.DEFAULT_DEFUSE_PROGRESS - useTick) / 20.0, "s")
-                ).withStyle(ChatFormatting.GREEN), true
+                Component
+                    .literal(
+                        format1DZZ((C4Entity.DEFAULT_DEFUSE_PROGRESS - useTick) / 20.0, "s"),
+                    ).withStyle(ChatFormatting.GREEN),
+                true,
             )
         }
 
@@ -44,15 +55,16 @@ open class DefuserItem : Item(Properties().durability(8)) {
             pStack.hurtAndBreak(
                 1,
                 player,
-                if (player.usedItemHand == InteractionHand.MAIN_HAND) EquipmentSlot.MAINHAND else EquipmentSlot.OFFHAND
+                if (player.usedItemHand == InteractionHand.MAIN_HAND) EquipmentSlot.MAINHAND else EquipmentSlot.OFFHAND,
             )
             target.defuse()
         }
     }
 
-    override fun getUseDuration(pStack: ItemStack, entity: LivingEntity): Int {
-        return 72000
-    }
+    override fun getUseDuration(
+        pStack: ItemStack,
+        entity: LivingEntity,
+    ): Int = 72000
 
     companion object {
         private fun findBombInSight(player: Player): C4Entity? {

@@ -2,14 +2,15 @@ package com.atsuishio.superbwarfare.client.sound;
 
 import com.atsuishio.superbwarfare.entity.living.SteelCoilEntity;
 import com.atsuishio.superbwarfare.init.ModSounds;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 public abstract class SteelCoilMoveSoundInstance extends AbstractTickableSoundInstance {
@@ -92,7 +93,15 @@ public abstract class SteelCoilMoveSoundInstance extends AbstractTickableSoundIn
 
         @Override
         protected float getVolume(SteelCoilEntity entity) {
-            return (float) Mth.lerp(Mth.clamp(entity.getDeltaMovement().horizontalDistance(), 0F, 0.3F), 0F, 0.3F) * 1.4f;
+            return (float)
+                            Mth.lerp(
+                                    Mth.clamp(
+                                            entity.getDeltaMovement().horizontalDistance(),
+                                            0F,
+                                            0.3F),
+                                    0F,
+                                    0.3F)
+                    * 1.4f;
         }
     }
 }

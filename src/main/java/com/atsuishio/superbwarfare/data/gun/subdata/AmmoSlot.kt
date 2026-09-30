@@ -2,8 +2,9 @@ package com.atsuishio.superbwarfare.data.gun.subdata
 
 import net.minecraft.nbt.CompoundTag
 
-class AmmoSlot(private val tag: CompoundTag) {
-
+class AmmoSlot(
+    private val tag: CompoundTag,
+) {
     private val slot: CompoundTag
         get() = tag.getCompound(AMMO_SLOT)
 
@@ -24,7 +25,11 @@ class AmmoSlot(private val tag: CompoundTag) {
         return if (arr.size > 1) arr[1] else 0
     }
 
-    fun set(slot: String, ammo: Int, virtualAmmo: Int) {
+    fun set(
+        slot: String,
+        ammo: Int,
+        virtualAmmo: Int,
+    ) {
         if (ammo <= 0 && virtualAmmo <= 0) {
             reset(slot)
         } else {

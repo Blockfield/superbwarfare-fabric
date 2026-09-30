@@ -5,11 +5,13 @@ import com.atsuishio.superbwarfare.entity.misc.CatapultShuttleEntity
 import com.atsuishio.superbwarfare.entity.mixin.persistentData
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleMotionUtils
+import com.atsuishio.superbwarfare.fabric.MultipartEntities
 import com.atsuishio.superbwarfare.item.IVehicleInteract
 import com.atsuishio.superbwarfare.tools.EntityFindUtil
 import com.atsuishio.superbwarfare.tools.NBTTool
 import com.atsuishio.superbwarfare.tools.getOrCreateTag
 import com.atsuishio.superbwarfare.tools.tag
+import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.sounds.SoundEvents
@@ -21,27 +23,29 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
-import io.github.fabricators_of_create.porting_lib.entity.events.player.PlayerInteractEvent
-import com.atsuishio.superbwarfare.fabric.MultipartEntities
 
-open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
+open class TowBarItem :
+    Item(Properties().stacksTo(1)),
+    IVehicleInteract {
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltip: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         val tag = stack.tag
         val target = tag?.getString(TAG_TOW_TARGET)
         if (!target.isNullOrBlank()) {
             tooltip.add(
-                Component.translatable("des.superbwarfare.tow_bar.target_selected")
-                    .withStyle(ChatFormatting.GOLD)
+                Component
+                    .translatable("des.superbwarfare.tow_bar.target_selected")
+                    .withStyle(ChatFormatting.GOLD),
             )
         } else {
             tooltip.add(
-                Component.translatable("des.superbwarfare.tow_bar.hint")
-                    .withStyle(ChatFormatting.GRAY)
+                Component
+                    .translatable("des.superbwarfare.tow_bar.hint")
+                    .withStyle(ChatFormatting.GRAY),
             )
         }
     }
@@ -50,7 +54,7 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         vehicle: VehicleEntity,
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult? {
         if (player.level().isClientSide) return InteractionResult.SUCCESS
 
@@ -68,9 +72,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
                     vehicle.clearTowingInfo()
                 }
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.tow_bar.unlinked")
+                    Component
+                        .translatable("tips.superbwarfare.tow_bar.unlinked")
                         .withStyle(ChatFormatting.YELLOW),
-                    true
+                    true,
                 )
                 player.playSound(SoundEvents.CHAIN_BREAK, 1.0f, 1.0f)
             }
@@ -78,9 +83,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
             if (existingTarget.isNotBlank()) {
                 clearTowTargetTag(stack)
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.tow_bar.selection_cleared")
+                    Component
+                        .translatable("tips.superbwarfare.tow_bar.selection_cleared")
                         .withStyle(ChatFormatting.GRAY),
-                    true
+                    true,
                 )
             }
 
@@ -90,9 +96,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         if (existingTarget.isBlank()) {
             // No shuttle selected yet, prevent sitting in vehicle
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.tow_bar.select_shuttle_first")
+                Component
+                    .translatable("tips.superbwarfare.tow_bar.select_shuttle_first")
                     .withStyle(ChatFormatting.GRAY),
-                true
+                true,
             )
             return InteractionResult.SUCCESS
         }
@@ -109,7 +116,7 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         stack: ItemStack,
         player: Player,
         interactionTarget: LivingEntity,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult {
         if (player.level().isClientSide) return InteractionResult.SUCCESS
 
@@ -127,9 +134,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
                 interactionTarget.persistentData.remove(CatapultShuttleEntity.TOWED_BY_SHUTTLE_TAG_KEY)
 
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.tow_bar.unlinked")
+                    Component
+                        .translatable("tips.superbwarfare.tow_bar.unlinked")
                         .withStyle(ChatFormatting.YELLOW),
-                    true
+                    true,
                 )
                 player.playSound(SoundEvents.CHAIN_BREAK, 1.0f, 1.0f)
                 return InteractionResult.SUCCESS
@@ -138,9 +146,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
             if (existingTarget.isNotBlank()) {
                 clearTowTargetTag(stack)
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.tow_bar.selection_cleared")
+                    Component
+                        .translatable("tips.superbwarfare.tow_bar.selection_cleared")
                         .withStyle(ChatFormatting.GRAY),
-                    true
+                    true,
                 )
             }
             return InteractionResult.SUCCESS
@@ -149,9 +158,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         // First click must be on a shuttle; show hint if no shuttle selected
         if (existingTarget.isBlank()) {
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.tow_bar.select_shuttle_first")
+                Component
+                    .translatable("tips.superbwarfare.tow_bar.select_shuttle_first")
                     .withStyle(ChatFormatting.GRAY),
-                true
+                true,
             )
             return InteractionResult.SUCCESS
         }
@@ -171,16 +181,17 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         stack: ItemStack,
         player: Player,
         targetEntity: Entity,
-        existingTarget: String
+        existingTarget: String,
     ): InteractionResult {
         val shuttle = EntityFindUtil.findEntity(targetEntity.level(), existingTarget) as? CatapultShuttleEntity
 
         if (shuttle == null) {
             clearTowTargetTag(stack)
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.tow_bar.target_lost")
+                Component
+                    .translatable("tips.superbwarfare.tow_bar.target_lost")
                     .withStyle(ChatFormatting.RED),
-                true
+                true,
             )
             return InteractionResult.FAIL
         }
@@ -188,9 +199,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         if (shuttle === targetEntity) {
             clearTowTargetTag(stack)
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.tow_bar.same_entity")
+                Component
+                    .translatable("tips.superbwarfare.tow_bar.same_entity")
                     .withStyle(ChatFormatting.RED),
-                true
+                true,
             )
             return InteractionResult.FAIL
         }
@@ -198,9 +210,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         // Check if the shuttle is already towing something
         if (shuttle.towingUUID.isNotBlank()) {
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.tow_bar.already_linked")
+                Component
+                    .translatable("tips.superbwarfare.tow_bar.already_linked")
                     .withStyle(ChatFormatting.RED),
-                true
+                true,
             )
             clearTowTargetTag(stack)
             return InteractionResult.FAIL
@@ -210,9 +223,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         if (targetEntity is VehicleEntity) {
             if (targetEntity.towedByUUID.isNotBlank()) {
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.tow_bar.already_linked")
+                    Component
+                        .translatable("tips.superbwarfare.tow_bar.already_linked")
                         .withStyle(ChatFormatting.RED),
-                    true
+                    true,
                 )
                 clearTowTargetTag(stack)
                 return InteractionResult.FAIL
@@ -222,9 +236,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
             val towedBy = targetEntity.persistentData.getString(CatapultShuttleEntity.TOWED_BY_SHUTTLE_TAG_KEY)
             if (towedBy.isNotBlank()) {
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.tow_bar.already_linked")
+                    Component
+                        .translatable("tips.superbwarfare.tow_bar.already_linked")
                         .withStyle(ChatFormatting.RED),
-                    true
+                    true,
                 )
                 clearTowTargetTag(stack)
                 return InteractionResult.FAIL
@@ -237,9 +252,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         val worldLookAngle = shuttle.lookAngle
         if (shuttleWorldPos.vectorTo(targetEntity.position()).dot(worldLookAngle) > 0) {
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.tow_bar.target_in_front")
+                Component
+                    .translatable("tips.superbwarfare.tow_bar.target_in_front")
                     .withStyle(ChatFormatting.RED),
-                true
+                true,
             )
             clearTowTargetTag(stack)
             return InteractionResult.FAIL
@@ -251,12 +267,13 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         val maxDist = VehicleConfig.TOW_BAR_EXTRA_LENGTH.get().toDouble() + 1.5 + longestSide
         if (dist > maxDist) {
             player.displayClientMessage(
-                Component.translatable(
-                    "tips.superbwarfare.tow_bar.too_far",
-                    String.format("%.1f", dist),
-                    maxDist.toInt()
-                ).withStyle(ChatFormatting.RED),
-                true
+                Component
+                    .translatable(
+                        "tips.superbwarfare.tow_bar.too_far",
+                        String.format("%.1f", dist),
+                        maxDist.toInt(),
+                    ).withStyle(ChatFormatting.RED),
+                true,
             )
             clearTowTargetTag(stack)
             return InteractionResult.FAIL
@@ -273,12 +290,13 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
         clearTowTargetTag(stack)
 
         player.displayClientMessage(
-            Component.translatable(
-                "tips.superbwarfare.tow_bar.linked",
-                shuttle.displayName,
-                targetEntity.displayName
-            ).withStyle(ChatFormatting.GREEN),
-            true
+            Component
+                .translatable(
+                    "tips.superbwarfare.tow_bar.linked",
+                    shuttle.displayName,
+                    targetEntity.displayName,
+                ).withStyle(ChatFormatting.GREEN),
+            true,
         )
         player.playSound(SoundEvents.CHAIN_PLACE, 1.0f, 1.0f)
 
@@ -317,9 +335,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
                 if (target.towingUUID.isNotBlank()) {
                     target.clearTowingInfo()
                     player.displayClientMessage(
-                        Component.translatable("tips.superbwarfare.tow_bar.unlinked")
+                        Component
+                            .translatable("tips.superbwarfare.tow_bar.unlinked")
                             .withStyle(ChatFormatting.YELLOW),
-                        true
+                        true,
                     )
                     player.playSound(SoundEvents.CHAIN_BREAK, 1.0f, 1.0f)
                     event.isCanceled = true
@@ -329,9 +348,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
                 if (tag != null && tag.getString(TAG_TOW_TARGET).isNotBlank()) {
                     item.clearTowTargetTag(stack)
                     player.displayClientMessage(
-                        Component.translatable("tips.superbwarfare.tow_bar.selection_cleared")
+                        Component
+                            .translatable("tips.superbwarfare.tow_bar.selection_cleared")
                             .withStyle(ChatFormatting.GRAY),
-                        true
+                        true,
                     )
                 }
                 return
@@ -346,11 +366,12 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
                     tag.putString(TAG_TOW_TARGET, target.stringUUID)
                     stack.tag = tag
                     player.displayClientMessage(
-                        Component.translatable(
-                            "tips.superbwarfare.tow_bar.select_shuttle",
-                            target.displayName
-                        ).withStyle(ChatFormatting.GREEN),
-                        true
+                        Component
+                            .translatable(
+                                "tips.superbwarfare.tow_bar.select_shuttle",
+                                target.displayName,
+                            ).withStyle(ChatFormatting.GREEN),
+                        true,
                     )
                     player.playSound(SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 1.0f, 1.0f)
                     event.isCanceled = true
@@ -362,17 +383,23 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
             if (target is VehicleEntity) return
             if (target is LivingEntity) {
                 event.isCanceled = true
-                event.cancellationResult = if (player.level().isClientSide) InteractionResult.CONSUME
-                else item.interactLivingEntity(stack, player, target, event.hand)
+                event.cancellationResult =
+                    if (player.level().isClientSide) {
+                        InteractionResult.CONSUME
+                    } else {
+                        item.interactLivingEntity(stack, player, target, event.hand)
+                    }
                 return
             }
 
             // Exclude certain entity types
-            if (target is Display
-                || target is HangingEntity
-                || target is AreaEffectCloud
-                || target is LightningBolt
-            ) return
+            if (target is Display ||
+                target is HangingEntity ||
+                target is AreaEffectCloud ||
+                target is LightningBolt
+            ) {
+                return
+            }
             if (VehicleConfig.inConfigList(target.type, VehicleConfig.TOW_BLACK_LIST.get())) return
 
             // --- Shift+right-click on non-vehicle, non-living entity: clear towing relationship ---
@@ -385,9 +412,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
 
                     event.isCanceled = true
                     player.displayClientMessage(
-                        Component.translatable("tips.superbwarfare.tow_bar.unlinked")
+                        Component
+                            .translatable("tips.superbwarfare.tow_bar.unlinked")
                             .withStyle(ChatFormatting.YELLOW),
-                        true
+                        true,
                     )
                     player.playSound(SoundEvents.CHAIN_BREAK, 1.0f, 1.0f)
                     return
@@ -397,9 +425,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
                 if (tag != null && tag.getString(TAG_TOW_TARGET).isNotBlank()) {
                     item.clearTowTargetTag(stack)
                     player.displayClientMessage(
-                        Component.translatable("tips.superbwarfare.tow_bar.selection_cleared")
+                        Component
+                            .translatable("tips.superbwarfare.tow_bar.selection_cleared")
                             .withStyle(ChatFormatting.GRAY),
-                        true
+                        true,
                     )
                 }
                 return
@@ -411,9 +440,10 @@ open class TowBarItem : Item(Properties().stacksTo(1)), IVehicleInteract {
             if (existingTarget.isBlank()) {
                 event.isCanceled = true
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.tow_bar.select_shuttle_first")
+                    Component
+                        .translatable("tips.superbwarfare.tow_bar.select_shuttle_first")
                         .withStyle(ChatFormatting.GRAY),
-                    true
+                    true,
                 )
                 return
             }

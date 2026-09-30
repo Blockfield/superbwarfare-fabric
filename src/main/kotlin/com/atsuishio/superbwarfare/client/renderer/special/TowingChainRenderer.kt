@@ -9,21 +9,20 @@ import com.atsuishio.superbwarfare.tools.clientLevel
 import com.atsuishio.superbwarfare.tools.mc
 import com.atsuishio.superbwarfare.tools.options
 import com.mojang.blaze3d.vertex.VertexConsumer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import org.joml.Matrix4f
 
 @Environment(EnvType.CLIENT)
 object TowingChainRenderer {
-
     fun init() {
         WorldRenderEvents.AFTER_ENTITIES.register { onRenderLevelStage(it) }
     }
@@ -37,7 +36,10 @@ object TowingChainRenderer {
     private val CHAIN_TEXTURE = loc("textures/item/towline_chain.png")
     private val TOW_BAR_CHAIN_TEXTURE = loc("textures/item/towline_bar.png")
 
-    private fun getCenterPosition(entity: Entity, partialTick: Float): Vec3 {
+    private fun getCenterPosition(
+        entity: Entity,
+        partialTick: Float,
+    ): Vec3 {
         var height = entity.bbHeight / 2.0
         if (entity is CatapultShuttleEntity) height = 1.1
         val x = Mth.lerp(partialTick.toDouble(), entity.xo, entity.x)
@@ -52,7 +54,7 @@ object TowingChainRenderer {
         bufferSource: MultiBufferSource.BufferSource,
         from: Entity,
         to: Entity,
-        renderType: RenderType
+        renderType: RenderType,
     ) {
         val fromPos = getCenterPosition(from, partialTick)
         val toPos = getCenterPosition(to, partialTick)
@@ -124,7 +126,7 @@ object TowingChainRenderer {
         pose: Matrix4f,
         from: Vec3,
         to: Vec3,
-        ribbon: Int
+        ribbon: Int,
     ) {
         val dx = (to.x - from.x).toFloat()
         val dy = (to.y - from.y).toFloat()
@@ -170,33 +172,35 @@ object TowingChainRenderer {
             when (ribbon) {
                 0 -> {
                     // Ribbon 0: width in XZ perpendicular direction
-                    consumer.addVertex(pose, px + perp1X * HALF_WIDTH, py, pz + perp1Z * HALF_WIDTH)
+                    consumer
+                        .addVertex(pose, px + perp1X * HALF_WIDTH, py, pz + perp1Z * HALF_WIDTH)
                         .setColor(255, 255, 255, 255)
                         .setUv(u, 1.0f)
 
-                    consumer.addVertex(pose, px - perp1X * HALF_WIDTH, py, pz - perp1Z * HALF_WIDTH)
+                    consumer
+                        .addVertex(pose, px - perp1X * HALF_WIDTH, py, pz - perp1Z * HALF_WIDTH)
                         .setColor(255, 255, 255, 255)
                         .setUv(u, 0.0f)
                 }
 
                 1 -> {
                     // Ribbon 1: width in perp2 direction (cross(dir, perp1)), forming X cross-section
-                    consumer.addVertex(
-                        pose,
-                        px + perp2X * HALF_WIDTH,
-                        py + perp2Y * HALF_WIDTH,
-                        pz + perp2Z * HALF_WIDTH
-                    )
-                        .setColor(255, 255, 255, 255)
+                    consumer
+                        .addVertex(
+                            pose,
+                            px + perp2X * HALF_WIDTH,
+                            py + perp2Y * HALF_WIDTH,
+                            pz + perp2Z * HALF_WIDTH,
+                        ).setColor(255, 255, 255, 255)
                         .setUv(u, 1.0f)
 
-                    consumer.addVertex(
-                        pose,
-                        px - perp2X * HALF_WIDTH,
-                        py - perp2Y * HALF_WIDTH,
-                        pz - perp2Z * HALF_WIDTH
-                    )
-                        .setColor(255, 255, 255, 255)
+                    consumer
+                        .addVertex(
+                            pose,
+                            px - perp2X * HALF_WIDTH,
+                            py - perp2Y * HALF_WIDTH,
+                            pz - perp2Z * HALF_WIDTH,
+                        ).setColor(255, 255, 255, 255)
                         .setUv(u, 0.0f)
                 }
             }

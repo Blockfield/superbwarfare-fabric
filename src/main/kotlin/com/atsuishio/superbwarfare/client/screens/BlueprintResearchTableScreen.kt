@@ -6,6 +6,9 @@ import com.atsuishio.superbwarfare.block.entity.BlueprintResearchTableBlockEntit
 import com.atsuishio.superbwarfare.block.entity.BlueprintResearchTableBlockEntity.Companion.SLOT_BASE
 import com.atsuishio.superbwarfare.block.entity.BlueprintResearchTableBlockEntity.Companion.SLOT_INPUT
 import com.atsuishio.superbwarfare.block.entity.BlueprintResearchTableBlockEntity.Companion.SLOT_SPECIAL
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
+import com.atsuishio.superbwarfare.fabric.ItemStackHandler
+import com.atsuishio.superbwarfare.fabric.RecipeWrapper
 import com.atsuishio.superbwarfare.init.ModRecipes
 import com.atsuishio.superbwarfare.inventory.menu.BlueprintResearchTableMenu
 import com.atsuishio.superbwarfare.network.message.send.BlueprintCraftMessage
@@ -13,6 +16,8 @@ import com.atsuishio.superbwarfare.network.message.send.BlueprintSetIndexMessage
 import com.atsuishio.superbwarfare.recipe.ResearchingRecipe
 import com.atsuishio.superbwarfare.tools.clientLevel
 import com.atsuishio.superbwarfare.tools.sendPacketToServer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.narration.NarrationElementOutput
@@ -22,16 +27,13 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.crafting.RecipeHolder
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.fabric.ItemStackHandler
-import com.atsuishio.superbwarfare.fabric.RecipeWrapper
 import kotlin.jvm.optionals.getOrNull
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 @Environment(EnvType.CLIENT)
 class BlueprintResearchTableScreen(
-    menu: BlueprintResearchTableMenu, playerInventory: Inventory, title: Component
+    menu: BlueprintResearchTableMenu,
+    playerInventory: Inventory,
+    title: Component,
 ) : AbstractContainerScreen<BlueprintResearchTableMenu>(menu, playerInventory, title) {
     private var currentResultList: MutableList<Item> = mutableListOf()
     private var currentPage: Int = 0
@@ -55,7 +57,7 @@ class BlueprintResearchTableScreen(
     override fun renderLabels(
         pGuiGraphics: GuiGraphics,
         pMouseX: Int,
-        pMouseY: Int
+        pMouseY: Int,
     ) {
         pGuiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false)
     }
@@ -64,7 +66,7 @@ class BlueprintResearchTableScreen(
         guiGraphics: GuiGraphics,
         partialTick: Float,
         mouseX: Int,
-        mouseY: Int
+        mouseY: Int,
     ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
@@ -77,7 +79,7 @@ class BlueprintResearchTableScreen(
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
         this.renderBackground(guiGraphics, mouseX, mouseY, partialTick)
         super.render(guiGraphics, mouseX, mouseY, partialTick)
@@ -88,7 +90,7 @@ class BlueprintResearchTableScreen(
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
@@ -124,14 +126,16 @@ class BlueprintResearchTableScreen(
         val value = recipe.value ?: return
         val color = value.color
         if (color == 0 || color > 4) return
-        val colorU = when (color) {
-            1, 3 -> 129
-            else -> 166
-        }
-        val colorV = when (color) {
-            1, 2 -> 178
-            else -> 203
-        }
+        val colorU =
+            when (color) {
+                1, 3 -> 129
+                else -> 166
+            }
+        val colorV =
+            when (color) {
+                1, 2 -> 178
+                else -> 203
+            }
         guiGraphics.blit(TEXTURE, i + 70, j + 46, colorU, colorV, 36, 24)
     }
 
@@ -139,7 +143,7 @@ class BlueprintResearchTableScreen(
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
@@ -191,7 +195,11 @@ class BlueprintResearchTableScreen(
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, pButton: Int): Boolean {
+    override fun mouseClicked(
+        mouseX: Double,
+        mouseY: Double,
+        pButton: Int,
+    ): Boolean {
         if (!this.currentResultList.isEmpty()) {
             val recipe = this.getRecipe() ?: return super.mouseClicked(mouseX, mouseY, pButton)
             val value = recipe.value ?: return super.mouseClicked(mouseX, mouseY, pButton)
@@ -227,11 +235,12 @@ class BlueprintResearchTableScreen(
         inventory.setStackInSlot(2, this.menu.getSlot(SLOT_ADDITION).item)
         inventory.setStackInSlot(3, this.menu.getSlot(SLOT_SPECIAL).item)
 
-        val optionalRecipe = manager.getRecipeFor(
-            ModRecipes.RESEARCHING_TYPE.get(),
-            RecipeWrapper(inventory),
-            level
-        )
+        val optionalRecipe =
+            manager.getRecipeFor(
+                ModRecipes.RESEARCHING_TYPE.get(),
+                RecipeWrapper(inventory),
+                level,
+            )
         return optionalRecipe.getOrNull()
     }
 
@@ -240,7 +249,11 @@ class BlueprintResearchTableScreen(
         const val PAGE_SIZE = 27
     }
 
-    private class CraftButton(x: Int, y: Int) : AbstractButton(x, y, 10, 10, Component.empty()), AccessoriesButtonStub {
+    private class CraftButton(
+        x: Int,
+        y: Int,
+    ) : AbstractButton(x, y, 10, 10, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             sendPacketToServer(BlueprintCraftMessage)
         }
@@ -252,7 +265,7 @@ class BlueprintResearchTableScreen(
             pGuiGraphics: GuiGraphics,
             pMouseX: Int,
             pMouseY: Int,
-            pPartialTick: Float
+            pPartialTick: Float,
         ) {
             if (!this.isHovered) {
                 pGuiGraphics.blit(TEXTURE, this.x, this.y, 0, 234, 9, 9)
@@ -260,8 +273,12 @@ class BlueprintResearchTableScreen(
         }
     }
 
-    private inner class PageButton(x: Int, y: Int, val forward: Boolean) :
-        AbstractButton(x, y, 25, 8, Component.empty()), AccessoriesButtonStub {
+    private inner class PageButton(
+        x: Int,
+        y: Int,
+        val forward: Boolean,
+    ) : AbstractButton(x, y, 25, 8, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             val recipe = this@BlueprintResearchTableScreen.getRecipe() ?: return
             val value = recipe.value ?: return
@@ -285,7 +302,7 @@ class BlueprintResearchTableScreen(
             pGuiGraphics: GuiGraphics,
             pMouseX: Int,
             pMouseY: Int,
-            pPartialTick: Float
+            pPartialTick: Float,
         ) {
             if (!this.isHovered) return
 

@@ -38,7 +38,6 @@ class ShootPos {
     @SerialName("BoundUpWithAmmoAmount")
     var boundUpWithAmmoAmount = false
 
-
     @SerializedName("ViewPosition")
     @SerialName("ViewPosition")
     var viewPosition: SerializedVec3? = null

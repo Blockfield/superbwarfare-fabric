@@ -5,6 +5,7 @@ import com.atsuishio.superbwarfare.config.server.ExplosionConfig
 import com.atsuishio.superbwarfare.entity.OBBEntity
 import com.atsuishio.superbwarfare.entity.getValue
 import com.atsuishio.superbwarfare.entity.setValue
+import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModEntities
 import com.atsuishio.superbwarfare.init.ModItems
@@ -34,7 +35,6 @@ import net.minecraft.world.level.ClipContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.*
-import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import org.joml.Quaterniond
 import org.joml.Quaternionf
 import org.joml.Vector3d
@@ -44,7 +44,9 @@ import kotlin.math.min
 import kotlin.math.sign
 import kotlin.math.sqrt
 
-open class C4Entity : Entity, OwnableEntity {
+open class C4Entity :
+    Entity,
+    OwnableEntity {
     protected var inGround: Boolean = false
     var onEntity by ON_ENTITY
     open val modelInstance = ProjectileModelReloadListener.getModel(MODEL)?.createInstance()
@@ -61,7 +63,7 @@ open class C4Entity : Entity, OwnableEntity {
     @JvmOverloads
     constructor(owner: LivingEntity?, level: Level, isControllable: Boolean = false) : super(
         ModEntities.C4.get(),
-        level
+        level,
     ) {
         if (owner != null) {
             this.ownerUUID = owner.uuid
@@ -90,9 +92,7 @@ open class C4Entity : Entity, OwnableEntity {
         this.entityData.set(OWNER_UUID, Optional.ofNullable(pUuid))
     }
 
-    override fun getOwnerUUID(): UUID? {
-        return this.entityData.get(OWNER_UUID).orElse(null)
-    }
+    override fun getOwnerUUID(): UUID? = this.entityData.get(OWNER_UUID).orElse(null)
 
     // Quaternion synched data delegate
     var quaternion by QUATERNION
@@ -101,12 +101,13 @@ open class C4Entity : Entity, OwnableEntity {
         this.quaternion = Quaternionf(quaternion.x.toFloat(), quaternion.y.toFloat(), quaternion.z.toFloat(), quaternion.w.toFloat())
     }
 
-    open fun getQuaternion(tickDelta: Float) = Quaternionf(
-        Mth.lerp(tickDelta, qxO, quaternion.x()),
-        Mth.lerp(tickDelta, qyO, quaternion.y()),
-        Mth.lerp(tickDelta, qzO, quaternion.z()),
-        Mth.lerp(tickDelta, qwO, quaternion.w())
-    )
+    open fun getQuaternion(tickDelta: Float) =
+        Quaternionf(
+            Mth.lerp(tickDelta, qxO, quaternion.x()),
+            Mth.lerp(tickDelta, qyO, quaternion.y()),
+            Mth.lerp(tickDelta, qzO, quaternion.z()),
+            Mth.lerp(tickDelta, qwO, quaternion.w()),
+        )
 
     override fun baseTick() {
         // Track previous quaternion for interpolation
@@ -157,10 +158,11 @@ open class C4Entity : Entity, OwnableEntity {
         }
 
         if (compound.contains("InBlockState", 10)) {
-            this.lastState = NbtUtils.readBlockState(
-                this.level().holderLookup(Registries.BLOCK),
-                compound.getCompound("InBlockState")
-            )
+            this.lastState =
+                NbtUtils.readBlockState(
+                    this.level().holderLookup(Registries.BLOCK),
+                    compound.getCompound("InBlockState"),
+                )
         }
 
         if (compound.contains("IsControllable")) {
@@ -178,8 +180,8 @@ open class C4Entity : Entity, OwnableEntity {
                 Vector3f(
                     compound.getFloat("StickyObbLocalX"),
                     compound.getFloat("StickyObbLocalY"),
-                    compound.getFloat("StickyObbLocalZ")
-                )
+                    compound.getFloat("StickyObbLocalZ"),
+                ),
             )
             this.entityData.set(STICKY_OBB_FACE, compound.getInt("StickyObbFace"))
             this.entityData.set(STICKY_OBB_INDEX, compound.getInt("StickyObbIndex"))
@@ -196,7 +198,7 @@ open class C4Entity : Entity, OwnableEntity {
         if (compound.contains("Qx")) {
             this.entityData.set(
                 QUATERNION,
-                Quaternionf(compound.getFloat("Qx"), compound.getFloat("Qy"), compound.getFloat("Qz"), compound.getFloat("Qw"))
+                Quaternionf(compound.getFloat("Qx"), compound.getFloat("Qy"), compound.getFloat("Qz"), compound.getFloat("Qw")),
             )
         }
 
@@ -207,15 +209,16 @@ open class C4Entity : Entity, OwnableEntity {
             val s = compound.getString("Owner")
             val server = this.server
 
-            uuid = if (server == null) {
-                try {
-                    UUID.fromString(s)
-                } catch (_: Exception) {
-                    null
+            uuid =
+                if (server == null) {
+                    try {
+                        UUID.fromString(s)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } else {
+                    OldUsersConverter.convertMobOwnerIfNecessary(server, s)
                 }
-            } else {
-                OldUsersConverter.convertMobOwnerIfNecessary(server, s)
-            }
         }
 
         if (uuid != null) {
@@ -226,7 +229,10 @@ open class C4Entity : Entity, OwnableEntity {
         }
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (this.owner === player && player.isShiftKeyDown) {
             if (!this.level().isClientSide()) {
                 this.discard()
@@ -293,8 +299,10 @@ open class C4Entity : Entity, OwnableEntity {
         } else if (!this.onEntity) {
             val position = this.position()
             var nextPosition = position.add(motion)
-            var hitResult: HitResult? = this.level()
-                .clip(ClipContext(position, nextPosition, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this))
+            var hitResult: HitResult? =
+                this
+                    .level()
+                    .clip(ClipContext(position, nextPosition, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this))
             if (hitResult!!.type != HitResult.Type.MISS) {
                 nextPosition = hitResult.location
             }
@@ -336,7 +344,8 @@ open class C4Entity : Entity, OwnableEntity {
             var f = 0.99f
             if (this.isInWater) {
                 repeat(3) {
-                    this.level()
+                    this
+                        .level()
                         .addParticle(ParticleTypes.BUBBLE, nX - pX * 0.25, nY - pY * 0.25, nZ - pZ * 0.25, pX, pY, pZ)
                 }
 
@@ -401,11 +410,13 @@ open class C4Entity : Entity, OwnableEntity {
      * Matches the old renderer: poseStack applies mulPose(Y(-yaw)) first, then mulPose(X(pitch+90)).
      * In the pose stack this is mat(qY) * mat(qX) = mat(qY * qX), so the quaternion is qY * qX.
      */
-    private fun eulerToQuat(yaw: Float, pitch: Float): Quaterniond {
-        return Quaterniond()
+    private fun eulerToQuat(
+        yaw: Float,
+        pitch: Float,
+    ): Quaterniond =
+        Quaterniond()
             .rotateY(Math.toRadians((-yaw).toDouble()))
             .rotateX(Math.toRadians((pitch + 90.0)))
-    }
 
     /**
      * Computes the OBB-local quaternion that aligns C4's flat face with the given OBB face.
@@ -427,7 +438,10 @@ open class C4Entity : Entity, OwnableEntity {
      * Determines which OBB face the hit point lies on, using OBB-local coordinates.
      * Returns the same format as OBB.getEmbeddingFace(): ±1=X, ±2=Y, ±3=Z.
      */
-    private fun computeFaceIndex(localPos: Vector3d, extents: Vector3d): Int {
+    private fun computeFaceIndex(
+        localPos: Vector3d,
+        extents: Vector3d,
+    ): Int {
         val dx = extents.x - kotlin.math.abs(localPos.x)
         val dy = extents.y - kotlin.math.abs(localPos.y)
         val dz = extents.z - kotlin.math.abs(localPos.z)
@@ -435,15 +449,21 @@ open class C4Entity : Entity, OwnableEntity {
         // Find the axis with smallest distance to surface
         var index = 1
         var min = dx
-        if (dy < min) { min = dy; index = 2 }
-        if (dz < min) { index = 3 }
+        if (dy < min) {
+            min = dy
+            index = 2
+        }
+        if (dz < min) {
+            index = 3
+        }
 
         // Determine which side (positive or negative face)
-        val sign = when (index) {
-            1 -> if (localPos.x < 0.0) -1 else 1
-            2 -> if (localPos.y < 0.0) -1 else 1
-            else -> if (localPos.z < 0.0) -1 else 1
-        }
+        val sign =
+            when (index) {
+                1 -> if (localPos.x < 0.0) -1 else 1
+                2 -> if (localPos.y < 0.0) -1 else 1
+                else -> if (localPos.z < 0.0) -1 else 1
+            }
         return index * sign
     }
 
@@ -451,27 +471,32 @@ open class C4Entity : Entity, OwnableEntity {
      * Welds the C4's quaternion to the OBB: worldQuat = obb.rotation * localFaceQuat.
      * This ensures C4 follows ALL OBB rotations, including spin around the face normal.
      */
-    private fun weldToObb(obb: OBB, faceIndex: Int) {
+    private fun weldToObb(
+        obb: OBB,
+        faceIndex: Int,
+    ) {
         val localFaceQuat = faceIndexToLocalQuat(faceIndex)
         val worldQuat = Quaterniond(obb.rotation).mul(localFaceQuat)
         this.setQuaternion(worldQuat)
     }
 
-    private fun shouldFall(): Boolean {
-        return this.inGround && this.level().noCollision((AABB(this.position(), this.position())).inflate(0.06))
-    }
+    private fun shouldFall(): Boolean = this.inGround && this.level().noCollision((AABB(this.position(), this.position())).inflate(0.06))
 
     private fun startFalling() {
         this.inGround = false
         val vec3 = this.deltaMovement
-        this.deltaMovement = vec3.multiply(
-            (this.random.nextFloat() * 0.2f).toDouble(),
-            (this.random.nextFloat() * 0.2f).toDouble(),
-            (this.random.nextFloat() * 0.2f).toDouble()
-        )
+        this.deltaMovement =
+            vec3.multiply(
+                (this.random.nextFloat() * 0.2f).toDouble(),
+                (this.random.nextFloat() * 0.2f).toDouble(),
+                (this.random.nextFloat() * 0.2f).toDouble(),
+            )
     }
 
-    override fun move(pType: MoverType, pPos: Vec3) {
+    override fun move(
+        pType: MoverType,
+        pPos: Vec3,
+    ) {
         super.move(pType, pPos)
         if (pType != MoverType.SELF && this.shouldFall()) {
             this.startFalling()
@@ -493,42 +518,52 @@ open class C4Entity : Entity, OwnableEntity {
         if (deltaMovement.length() > 0.05 && !inGround && !onEntity) {
             val vec3 = this.deltaMovement
             val d0 = vec3.horizontalDistance()
-            this.xRot = lerpRotation(
-                this.xRotO,
-                (Mth.atan2(vec3.y, d0) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-            )
-            this.yRot = lerpRotation(
-                this.yRotO,
-                (Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-            )
+            this.xRot =
+                lerpRotation(
+                    this.xRotO,
+                    (Mth.atan2(vec3.y, d0) * (180f / Math.PI.toFloat()).toDouble()).toFloat(),
+                )
+            this.yRot =
+                lerpRotation(
+                    this.yRotO,
+                    (Mth.atan2(vec3.x, vec3.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat(),
+                )
         }
     }
 
-    protected fun findHitEntity(pStartVec: Vec3, pEndVec: Vec3): EntityHitResult? {
-        return ProjectileUtil.getEntityHitResult(
+    protected fun findHitEntity(
+        pStartVec: Vec3,
+        pEndVec: Vec3,
+    ): EntityHitResult? =
+        ProjectileUtil.getEntityHitResult(
             this.level(),
             this,
             pStartVec,
             pEndVec,
-            this.boundingBox.expandTowards(this.deltaMovement).inflate(1.0)
+            this.boundingBox.expandTowards(this.deltaMovement).inflate(1.0),
         ) { this.canHitEntity(it) }
-    }
 
     protected fun canHitEntity(pTarget: Entity): Boolean {
         if (!pTarget.canBeHitByProjectile()) {
             return false
         } else {
             val entity: Entity? = this.owner
-            return entity == null
-                    || (entity === pTarget && this.tickCount > 2)
-                    || !entity.isPassengerOfSameVehicle(pTarget)
+            return entity == null ||
+                (entity === pTarget && this.tickCount > 2) ||
+                !entity.isPassengerOfSameVehicle(pTarget)
         }
     }
 
     protected fun onHit(pResult: HitResult) {
         when (pResult.type) {
-            HitResult.Type.ENTITY -> this.onHitEntity(pResult as EntityHitResult)
-            HitResult.Type.BLOCK -> this.onHitBlock(pResult as BlockHitResult)
+            HitResult.Type.ENTITY -> {
+                this.onHitEntity(pResult as EntityHitResult)
+            }
+
+            HitResult.Type.BLOCK -> {
+                this.onHitBlock(pResult as BlockHitResult)
+            }
+
             else -> {}
         }
     }
@@ -618,7 +653,7 @@ open class C4Entity : Entity, OwnableEntity {
                 event,
                 SoundSource.AMBIENT,
                 volume,
-                1f
+                1f,
             )
         }
         this.inGround = true
@@ -632,7 +667,7 @@ open class C4Entity : Entity, OwnableEntity {
             if (target != null) {
                 target.forceHurt(
                     ModDamageTypes.causeCustomExplosionDamage(this.level().registryAccess(), this, this.owner),
-                    ExplosionConfig.C4_EXPLOSION_DAMAGE.get().toFloat() * 0.5f
+                    ExplosionConfig.C4_EXPLOSION_DAMAGE.get().toFloat() * 0.5f,
                 )
                 target.invulnerableTime = 0
             }
@@ -641,7 +676,12 @@ open class C4Entity : Entity, OwnableEntity {
         if (this.level() is ServerLevel && ExplosionConfig.EXPLOSION_DESTROY.get() && ExplosionConfig.EXTRA_EXPLOSION_EFFECT.get()) {
             val aabb = AABB(pos, pos).inflate(2.0)
             BlockPos.betweenClosedStream(aabb).toList().forEach {
-                val hard = this.level().getBlockState(it).block.defaultDestroyTime()
+                val hard =
+                    this
+                        .level()
+                        .getBlockState(it)
+                        .block
+                        .defaultDestroyTime()
                 if (hard != -1f) {
                     this.level().destroyBlock(it, true)
                 }
@@ -650,7 +690,8 @@ open class C4Entity : Entity, OwnableEntity {
 
         val radius = ExplosionConfig.C4_EXPLOSION_RADIUS.get().toFloat()
 
-        CustomExplosion.Builder(this)
+        CustomExplosion
+            .Builder(this)
             .attacker(this.owner)
             .damage(ExplosionConfig.C4_EXPLOSION_DAMAGE.get().toFloat())
             .radius(radius)
@@ -663,9 +704,7 @@ open class C4Entity : Entity, OwnableEntity {
     protected val waterInertia: Float
         get() = 0.6f
 
-    override fun isPickable(): Boolean {
-        return true
-    }
+    override fun isPickable(): Boolean = true
 
     val itemStack: ItemStack
         get() {
@@ -743,7 +782,10 @@ open class C4Entity : Entity, OwnableEntity {
         const val DEFAULT_DEFUSE_PROGRESS: Int = 100
 
         @JvmStatic
-        protected fun lerpRotation(pCurrentRotation: Float, pTargetRotation: Float): Float {
+        protected fun lerpRotation(
+            pCurrentRotation: Float,
+            pTargetRotation: Float,
+        ): Float {
             var pCurrentRotation = pCurrentRotation
             while (pTargetRotation - pCurrentRotation < -180f) {
                 pCurrentRotation -= 360f

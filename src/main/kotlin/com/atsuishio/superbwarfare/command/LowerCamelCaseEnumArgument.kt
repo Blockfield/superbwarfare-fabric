@@ -24,28 +24,36 @@ import java.util.function.Function
  *
  * @author Mercurows
  */
-class LowerCamelCaseEnumArgument<T : Enum<T>> private constructor(private val enumClass: Class<T>) : ArgumentType<T> {
+class LowerCamelCaseEnumArgument<T : Enum<T>> private constructor(
+    private val enumClass: Class<T>,
+) : ArgumentType<T> {
     private val names by lazy {
         enumClass.enumConstants.map { e -> valueMapper.apply(e) }.toList()
     }
 
-    val valueMapper = Function { e: T ->
-        val input = e.name.trim()
-        val trimmed = input.replace("^_+|_+$".toRegex(), "").ifEmpty { return@Function input }
+    val valueMapper =
+        Function { e: T ->
+            val input = e.name.trim()
+            val trimmed = input.replace("^_+|_+$".toRegex(), "").ifEmpty { return@Function input }
 
-        val parts = trimmed.lowercase().split("_+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val parts =
+                trimmed
+                    .lowercase()
+                    .split("_+".toRegex())
+                    .dropLastWhile { it.isEmpty() }
+                    .toTypedArray()
 
-        return@Function buildString {
-            append(parts[0])
+            return@Function buildString {
+                append(parts[0])
 
-            for (i in 1..<parts.size) {
-                if (!parts[i].isEmpty()) {
-                    append(parts[i][0].uppercaseChar())
-                    append(parts[i].substring(1))
+                for (i in 1..<parts.size) {
+                    if (!parts[i].isEmpty()) {
+                        append(parts[i][0].uppercaseChar())
+                        append(parts[i].substring(1))
+                    }
                 }
             }
         }
-    }
 
     @Throws(CommandSyntaxException::class)
     override fun parse(reader: StringReader): T {
@@ -57,45 +65,47 @@ class LowerCamelCaseEnumArgument<T : Enum<T>> private constructor(private val en
 
     override fun <S> listSuggestions(
         context: CommandContext<S>,
-        builder: SuggestionsBuilder
+        builder: SuggestionsBuilder,
     ): CompletableFuture<Suggestions> = SharedSuggestionProvider.suggest(names, builder)
 
     override fun getExamples() = names
 
     class Info : ArgumentTypeInfo<LowerCamelCaseEnumArgument<*>, Info.Template> {
-        override fun serializeToNetwork(template: Template, buffer: FriendlyByteBuf) {
+        override fun serializeToNetwork(
+            template: Template,
+            buffer: FriendlyByteBuf,
+        ) {
             buffer.writeUtf(template.enumClass.name)
         }
 
         @Suppress("unchecked_cast")
-        override fun deserializeFromNetwork(buffer: FriendlyByteBuf): Template {
-            return Template(Class.forName(buffer.readUtf()) as Class<out Enum<*>>)
-        }
+        override fun deserializeFromNetwork(buffer: FriendlyByteBuf): Template = Template(Class.forName(buffer.readUtf()) as Class<out Enum<*>>)
 
-        override fun serializeToJson(template: Template, json: JsonObject) {
+        override fun serializeToJson(
+            template: Template,
+            json: JsonObject,
+        ) {
             json.addProperty("enum", template.enumClass.name)
         }
 
         @Suppress("unchecked_cast")
-        override fun unpack(argument: LowerCamelCaseEnumArgument<*>): Template {
-            return Template(argument.enumClass)
-        }
+        override fun unpack(argument: LowerCamelCaseEnumArgument<*>): Template = Template(argument.enumClass)
 
-        inner class Template(val enumClass: Class<out Enum<*>>) :
-            ArgumentTypeInfo.Template<LowerCamelCaseEnumArgument<*>> {
+        inner class Template(
+            val enumClass: Class<out Enum<*>>,
+        ) : ArgumentTypeInfo.Template<LowerCamelCaseEnumArgument<*>> {
             @Suppress("unchecked_cast")
-            override fun instantiate(pStructure: CommandBuildContext): LowerCamelCaseEnumArgument<*> {
-                return LowerCamelCaseEnumArgument(this.enumClass as Class<Nothing>)
-            }
+            override fun instantiate(pStructure: CommandBuildContext): LowerCamelCaseEnumArgument<*> = LowerCamelCaseEnumArgument(this.enumClass as Class<Nothing>)
 
             override fun type() = this@Info
         }
     }
 
     companion object {
-        private val INVALID_ENUM = Dynamic2CommandExceptionType { found, constants ->
-            Component.translatable("commands.neoforge.arguments.enum.invalid", constants, found)
-        }
+        private val INVALID_ENUM =
+            Dynamic2CommandExceptionType { found, constants ->
+                Component.translatable("commands.neoforge.arguments.enum.invalid", constants, found)
+            }
 
         fun <T : Enum<T>> enumArgument(enumClass: Class<T>) = LowerCamelCaseEnumArgument(enumClass)
     }

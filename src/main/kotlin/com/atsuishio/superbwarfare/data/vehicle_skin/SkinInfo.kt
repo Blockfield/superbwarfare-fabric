@@ -14,11 +14,11 @@ data class SkinInfo(
     @SerialName("Texture")
     val texture: String = "",
     @SerialName("Priority")
-    val priority: Int = 0
+    val priority: Int = 0,
 )
 
 @Serializable
 data class VehicleSkinData(
     @SerialName("Skins")
-    val skins: List<SkinInfo> = listOf()
+    val skins: List<SkinInfo> = listOf(),
 )

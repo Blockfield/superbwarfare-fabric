@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PlayerInfoSyncMessage(
     val dim: SerializedResourceLocation,
-    val list: List<SyncedPlayerInfo>
+    val list: List<SyncedPlayerInfo>,
 ) : ClientPacketPayload() {
     override fun PayloadContext.handler() {
         ClientSyncedEntityHandler.syncPlayerInfo(dim, list)
@@ -29,5 +29,4 @@ data class PlayerInfoSyncMessage(
         /** 服务端实体 ID，用于管理员清除等操作（-1 表示未知） */
         val entityId: Int = -1,
     )
-
 }

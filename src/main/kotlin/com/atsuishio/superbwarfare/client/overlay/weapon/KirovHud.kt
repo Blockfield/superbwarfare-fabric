@@ -14,14 +14,14 @@ import com.atsuishio.superbwarfare.tools.worldToScreen
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.CameraType
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import org.joml.Math
 
 @Environment(EnvType.CLIENT)
@@ -31,11 +31,12 @@ object KirovHud {
     private val BOMB_SCOPE_PITCH = loc("textures/overlay/vehicle/aircraft/bomb_scope_pitch.png")
     private val BOMB_RING = loc("textures/overlay/crosshair/rex_circle.png")
 
-    private val compassHud = CompassHud().apply {
-        x = 130f
-        y = -76f  // 距底部 72+4 = 76 像素
-        size = 72f
-    }
+    private val compassHud =
+        CompassHud().apply {
+            x = 130f
+            y = -76f // 距底部 72+4 = 76 像素
+            size = 72f
+        }
 
     fun render(
         vehicle: VehicleEntity,
@@ -43,7 +44,7 @@ object KirovHud {
         guiGraphics: GuiGraphics,
         partialTick: Float,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         if (player !== vehicle.getFirstPassenger()) return
         val poseStack = guiGraphics.pose()
@@ -61,7 +62,7 @@ object KirovHud {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -100,7 +101,7 @@ object KirovHud {
                     (3 * i).toFloat(),
                     (3 * j).toFloat(),
                     (3 * i).toFloat(),
-                    (3 * j).toFloat()
+                    (3 * j).toFloat(),
                 )
 
                 poseStack.pushPose()
@@ -115,12 +116,12 @@ object KirovHud {
                     (3 * i).toFloat(),
                     (3 * j).toFloat(),
                     (3 * i).toFloat(),
-                    (3 * j).toFloat()
+                    (3 * j).toFloat(),
                 )
                 renderKillIndicatorDynamic(
                     guiGraphics,
                     x - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
                 )
                 poseStack.popPose()
                 return
@@ -176,13 +177,13 @@ object KirovHud {
                     size,
                     size,
                     size,
-                    size
+                    size,
                 )
 
                 renderKillIndicatorDynamic(
                     guiGraphics,
                     xCross - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                    yCross - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                    yCross - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
                 )
                 poseStack.popPose()
             }

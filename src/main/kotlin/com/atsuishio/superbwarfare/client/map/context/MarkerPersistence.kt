@@ -10,22 +10,29 @@ import java.util.*
  * 纯函数，无状态 —— 标记数据（markers 列表 / connections 映射）由 Screen 持有。
  */
 object MarkerPersistence {
-
     private fun getMarkerDir(minecraft: Minecraft): File {
         val worldId = TacticalMapCache.getWorldIdentifier()
-        val dim = (minecraft.level?.dimension()?.location()?.toString() ?: "unknown").replace(":", "_")
+        val dim =
+            (
+                minecraft.level
+                    ?.dimension()
+                    ?.location()
+                    ?.toString() ?: "unknown"
+            ).replace(":", "_")
         val dir = File(minecraft.gameDirectory, "superbwarfare/tactical_markers/$worldId/$dim")
         dir.mkdirs()
         return dir
     }
 
-    private fun markerFile(minecraft: Minecraft, uuid: UUID): File =
-        File(getMarkerDir(minecraft), "$uuid.txt")
+    private fun markerFile(
+        minecraft: Minecraft,
+        uuid: UUID,
+    ): File = File(getMarkerDir(minecraft), "$uuid.txt")
 
     fun loadMarkers(
         minecraft: Minecraft,
         markers: MutableList<MapMarker>,
-        connections: MutableMap<UUID, MutableSet<UUID>>
+        connections: MutableMap<UUID, MutableSet<UUID>>,
     ) {
         val dir = getMarkerDir(minecraft)
         val files = dir.listFiles() ?: return
@@ -43,17 +50,18 @@ object MarkerPersistence {
                             x = p[1].toInt(),
                             y = p[2].toInt(),
                             z = p[3].toInt(),
-                            colorIndex = p[4].toInt()
-                        )
+                            colorIndex = p[4].toInt(),
+                        ),
                     )
                     if (p.size >= 6 && p[5].isNotEmpty()) {
-                        connections[uuid] = p[5].split(",").mapNotNullTo(mutableSetOf()) { s ->
-                            try {
-                                UUID.fromString(s)
-                            } catch (_: Exception) {
-                                null
+                        connections[uuid] =
+                            p[5].split(",").mapNotNullTo(mutableSetOf()) { s ->
+                                try {
+                                    UUID.fromString(s)
+                                } catch (_: Exception) {
+                                    null
+                                }
                             }
-                        }
                     }
                 }
             } catch (_: Exception) {
@@ -64,7 +72,7 @@ object MarkerPersistence {
     fun saveMarker(
         minecraft: Minecraft,
         marker: MapMarker,
-        connections: Map<UUID, Set<UUID>>
+        connections: Map<UUID, Set<UUID>>,
     ) {
         try {
             val conns = connections[marker.id]?.joinToString(",") ?: ""
@@ -78,7 +86,10 @@ object MarkerPersistence {
         }
     }
 
-    fun deleteMarkerFile(minecraft: Minecraft, marker: MapMarker) {
+    fun deleteMarkerFile(
+        minecraft: Minecraft,
+        marker: MapMarker,
+    ) {
         try {
             markerFile(minecraft, marker.id).delete()
         } catch (_: Exception) {

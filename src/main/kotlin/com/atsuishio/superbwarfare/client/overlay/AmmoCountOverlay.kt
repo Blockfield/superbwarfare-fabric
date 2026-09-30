@@ -3,38 +3,45 @@ package com.atsuishio.superbwarfare.client.overlay
 import com.atsuishio.superbwarfare.client.animation.AnimationCurves
 import com.atsuishio.superbwarfare.client.animation.AnimationTimer
 import com.atsuishio.superbwarfare.client.animation.ValueAnimator
+import com.atsuishio.superbwarfare.client.drawString
 import com.atsuishio.superbwarfare.data.gun.Ammo
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.init.ModAttachments
 import com.atsuishio.superbwarfare.init.ModItems
+import com.atsuishio.superbwarfare.init.getData
 import com.atsuishio.superbwarfare.item.ammo.AmmoSupplierItem
 import com.atsuishio.superbwarfare.item.ammo.ammoBoxData
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import net.minecraft.util.FastColor
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.roundToInt
-import com.atsuishio.superbwarfare.client.drawString
-import com.atsuishio.superbwarfare.init.getData
 
 @Environment(EnvType.CLIENT)
 object AmmoCountOverlay : CommonOverlay("ammo_count") {
+    private val ammoInfoTimer: AnimationTimer =
+        AnimationTimer(500, 2000)
+            .forwardAnimation(AnimationCurves.EASE_OUT_EXPO)
+            .backwardAnimation(AnimationCurves.EASE_IN_EXPO)
+    private val ammoBoxTimer: AnimationTimer =
+        AnimationTimer(500)
+            .forwardAnimation(AnimationCurves.EASE_OUT_EXPO)
+            .backwardAnimation(AnimationCurves.EASE_IN_EXPO)
 
-    private val ammoInfoTimer: AnimationTimer = AnimationTimer(500, 2000)
-        .forwardAnimation(AnimationCurves.EASE_OUT_EXPO)
-        .backwardAnimation(AnimationCurves.EASE_IN_EXPO)
-    private val ammoBoxTimer: AnimationTimer = AnimationTimer(500)
-        .forwardAnimation(AnimationCurves.EASE_OUT_EXPO)
-        .backwardAnimation(AnimationCurves.EASE_IN_EXPO)
-
-    private val ammoCountAnimators = ValueAnimator.create<Int?>(
-        Ammo.entries.size, 800, 0
-    )
-    private val ammoBoxAnimators = ValueAnimator.create(
-        Ammo.entries.size, 800, 0
-    )
+    private val ammoCountAnimators =
+        ValueAnimator.create<Int?>(
+            Ammo.entries.size,
+            800,
+            0,
+        )
+    private val ammoBoxAnimators =
+        ValueAnimator.create(
+            Ammo.entries.size,
+            800,
+            0,
+        )
 
     /**
      * 在手持弹药或弹药盒时，渲染玩家弹药总量信息
@@ -47,8 +54,8 @@ object AmmoCountOverlay : CommonOverlay("ammo_count") {
         val currentTime = System.currentTimeMillis()
         val stack = player.mainHandItem
         val vehicle = player.vehicle
-        if ((stack.item is AmmoSupplierItem || stack.item === ModItems.AMMO_BOX.get())
-            && !(vehicle is VehicleEntity && vehicle.banHand(player))
+        if ((stack.item is AmmoSupplierItem || stack.item === ModItems.AMMO_BOX.get()) &&
+            !(vehicle is VehicleEntity && vehicle.banHand(player))
         ) {
             // 刚拿出弹药物品时，视为开始弹药信息渲染
             startRenderingAmmoInfo = ammoInfoTimer.getProgress(currentTime) == 0f
@@ -120,13 +127,16 @@ object AmmoCountOverlay : CommonOverlay("ammo_count") {
                 animator.lerp(animator.oldValue()!!.toFloat(), ammoCount.toFloat(), currentTime).roundToInt().toString()
 
             // 弹药增加时，颜色由绿变白，否则由红变白
-            val fontColor = FastColor.ARGB32.lerp(
-                progress, when (ammoAdd) {
-                    1 -> -0xff0100
-                    -1 -> -0x10000
-                    else -> -0x1
-                }, -0x1
-            )
+            val fontColor =
+                FastColor.ARGB32.lerp(
+                    progress,
+                    when (ammoAdd) {
+                        1 -> -0xff0100
+                        -1 -> -0x10000
+                        else -> -0x1
+                    },
+                    -0x1,
+                )
 
             RenderSystem.setShaderColor(1f, 1f, 1f, ammoInfoTimer.lerp(0f, 1f, currentTime))
 
@@ -137,7 +147,7 @@ object AmmoCountOverlay : CommonOverlay("ammo_count") {
                 ammoX + (30 - font.width(ammoCountStr)),
                 h + yOffset,
                 fontColor,
-                true
+                true,
             )
 
             // 弹药类型
@@ -147,7 +157,7 @@ object AmmoCountOverlay : CommonOverlay("ammo_count") {
                 ammoX + 35,
                 h + yOffset,
                 fontColor,
-                true
+                true,
             )
 
             // 弹药盒信息渲染
@@ -160,25 +170,28 @@ object AmmoCountOverlay : CommonOverlay("ammo_count") {
             // 选中时显示为黄色，否则为白色
             val targetColor = if (boxAmmoSelected) -0x100 else -0x1
 
-            val boxFontColor = FastColor.ARGB32.lerp(
-                boxAnimator.getProgress(currentTime),
-                when (ammoBoxAdd) {
-                    1 -> -0xff0100
-                    -1 -> -0x10000
-                    else -> targetColor
-                },
-                targetColor
-            )
+            val boxFontColor =
+                FastColor.ARGB32.lerp(
+                    boxAnimator.getProgress(currentTime),
+                    when (ammoBoxAdd) {
+                        1 -> -0xff0100
+                        -1 -> -0x10000
+                        else -> targetColor
+                    },
+                    targetColor,
+                )
 
             // 弹药盒内弹药数量
             guiGraphics.drawString(
                 Minecraft.getInstance().font,
-                boxAnimator.lerp(boxAnimator.oldValue().toFloat(), boxAmmoCount.toFloat(), currentTime).roundToInt()
+                boxAnimator
+                    .lerp(boxAnimator.oldValue().toFloat(), boxAmmoCount.toFloat(), currentTime)
+                    .roundToInt()
                     .toString(),
                 ammoBoxX - 70,
                 h + yOffset,
                 boxFontColor,
-                true
+                true,
             )
 
             yOffset += fontHeight.toFloat()

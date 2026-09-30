@@ -12,13 +12,15 @@ import net.minecraft.client.CameraType
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class SodayoPickUpRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
+class SodayoPickUpRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
     override fun transformCustomModelPart(
         entity: VehicleEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
         val control = instance.getBone("move_control")
@@ -42,9 +44,10 @@ class SodayoPickUpRenderer(manager: EntityRendererProvider.Context) : BasicVehic
         if (entity is SodayoPickUpTowEntity) {
             val guanMiao = instance.getBone("move_guanmiao")
             guanMiao?.visible =
-                !(entity.turretControllerIndex == entity.getSeatIndex(localPlayer) && (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle))
+                !(
+                    entity.turretControllerIndex == entity.getSeatIndex(localPlayer) &&
+                        (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
+                )
         }
     }
 }
-
-

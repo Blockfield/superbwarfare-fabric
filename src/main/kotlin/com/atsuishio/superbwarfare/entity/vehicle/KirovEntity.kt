@@ -1,6 +1,5 @@
 package com.atsuishio.superbwarfare.entity.vehicle
 
-
 import com.atsuishio.superbwarfare.client.particle.CustomFlareOption
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils
@@ -10,7 +9,10 @@ import net.minecraft.world.phys.Vec3
 import org.joml.Math
 import org.joml.Matrix4d
 
-open class KirovEntity(type: EntityType<KirovEntity>, world: Level) : VehicleEntity(type, world) {
+open class KirovEntity(
+    type: EntityType<KirovEntity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     var propellerO = 0f
     var propeller = 180f
 
@@ -30,7 +32,7 @@ open class KirovEntity(type: EntityType<KirovEntity>, world: Level) : VehicleEnt
         propellerRO = propellerR
         super.baseTick()
         if (level().isClientSide && !sympatheticDetonated) {
-            //最顶上的螺旋桨
+            // 最顶上的螺旋桨
             propeller += power * 2f
 
             val delta = Math.abs(propeller - propellerO)
@@ -43,7 +45,7 @@ open class KirovEntity(type: EntityType<KirovEntity>, world: Level) : VehicleEnt
                 propellerO = delta + propeller
             }
 
-            //两边的升力螺旋桨
+            // 两边的升力螺旋桨
             propellerV += 1 + 2 * liftSpeed
 
             val deltaV = Math.abs(propellerV - propellerVO)
@@ -56,7 +58,7 @@ open class KirovEntity(type: EntityType<KirovEntity>, world: Level) : VehicleEnt
                 propellerVO = deltaV + propellerV
             }
 
-            //左推进螺旋桨
+            // 左推进螺旋桨
 
             propellerL += power * 2f - deltaRot * 3f
 
@@ -70,7 +72,7 @@ open class KirovEntity(type: EntityType<KirovEntity>, world: Level) : VehicleEnt
                 propellerLO = deltaL + propellerL
             }
 
-            //右推进螺旋桨
+            // 右推进螺旋桨
 
             propellerR += power * 2f + deltaRot * 3f
 
@@ -85,19 +87,19 @@ open class KirovEntity(type: EntityType<KirovEntity>, world: Level) : VehicleEnt
             }
         }
 
-
         if (sprintInputDown) {
             if (level().isClientSide) {
                 val p = Vec3(0.0, 18.68, -28.188)
                 val transformV = getVehicleTransform(1f)
 
                 val transform = Matrix4d(transformV)
-                val worldPosition = VehicleVecUtils.transformPosition(
-                    transform,
-                    p.x,
-                    p.y,
-                    p.z
-                )
+                val worldPosition =
+                    VehicleVecUtils.transformPosition(
+                        transform,
+                        p.x,
+                        p.y,
+                        p.z,
+                    )
 
                 val worldPos = Vec3(worldPosition.x, worldPosition.y, worldPosition.z)
 
@@ -115,8 +117,14 @@ open class KirovEntity(type: EntityType<KirovEntity>, world: Level) : VehicleEnt
                                 600,
                                 0.975f,
                                 (10 + 8 * random).toInt(),
-                                0.1f
-                            ), pos.x + random * 2, pos.y + random * 2, pos.z + random * 2, 0.0, 0.0, 0.0
+                                0.1f,
+                            ),
+                            pos.x + random * 2,
+                            pos.y + random * 2,
+                            pos.z + random * 2,
+                            0.0,
+                            0.0,
+                            0.0,
                         )
                         i += 2.0
                     }

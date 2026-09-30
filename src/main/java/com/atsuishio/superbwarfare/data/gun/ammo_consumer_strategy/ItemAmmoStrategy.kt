@@ -4,7 +4,12 @@ import com.atsuishio.superbwarfare.Mod
 import com.atsuishio.superbwarfare.client.language.ClientLanguageGetter
 import com.atsuishio.superbwarfare.data.gun.AmmoConsumer
 import com.atsuishio.superbwarfare.data.gun.GunData
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.IItemHandler
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.tools.InventoryTool
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.core.RegistryAccess
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.nbt.NbtUtils
@@ -14,11 +19,6 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
-import com.atsuishio.superbwarfare.fabric.IItemHandler
 
 /**
  * 物品弹药策略（兜底策略）— ammo 字符串形如 "minecraft:arrow"、 "mod:item"、 "mod:item{tag}"
@@ -27,12 +27,15 @@ import com.atsuishio.superbwarfare.fabric.IItemHandler
  * init: 手动解析 id 和可选的 {data}
  */
 object ItemAmmoStrategy : AmmoConsumeStrategy() {
-
     override val defaultType = AmmoConsumer.AmmoConsumeType.ITEM
 
     override fun match(ammo: String) = ammo.isNotBlank()
 
-    override fun init(consumer: AmmoConsumer, count: Int, matchedString: String) {
+    override fun init(
+        consumer: AmmoConsumer,
+        count: Int,
+        matchedString: String,
+    ) {
         // 手动解析 id 和 data
         // matchedString 形如 "mod:item{tag}" 或 "minecraft:arrow"
 
@@ -75,7 +78,12 @@ object ItemAmmoStrategy : AmmoConsumeStrategy() {
         }
     }
 
-    override fun consume(data: GunData, consumer: AmmoConsumer, shooter: Entity, count: Int): Int {
+    override fun consume(
+        data: GunData,
+        consumer: AmmoConsumer,
+        shooter: Entity,
+        count: Int,
+    ): Int {
         val handler = shooter.getCapability(Capabilities.ItemHandler.ENTITY)
         if (handler != null) {
             return consume(data, consumer, handler, count)
@@ -85,25 +93,41 @@ object ItemAmmoStrategy : AmmoConsumeStrategy() {
         }
     }
 
-    override fun consume(data: GunData, consumer: AmmoConsumer, handler: IItemHandler, count: Int): Int {
-        return InventoryTool.consumeItem(
+    override fun consume(
+        data: GunData,
+        consumer: AmmoConsumer,
+        handler: IItemHandler,
+        count: Int,
+    ): Int =
+        InventoryTool.consumeItem(
             handler,
             { stack -> consumer.isAmmoItem(stack) },
-            count
+            count,
         )
-    }
 
-    override fun count(data: GunData, consumer: AmmoConsumer, entity: Entity?): Int {
+    override fun count(
+        data: GunData,
+        consumer: AmmoConsumer,
+        entity: Entity?,
+    ): Int {
         if (entity == null) return 0
         return count(data, consumer, entity.getCapability(Capabilities.ItemHandler.ENTITY))
     }
 
-    override fun count(data: GunData, consumer: AmmoConsumer, handler: IItemHandler?): Int {
+    override fun count(
+        data: GunData,
+        consumer: AmmoConsumer,
+        handler: IItemHandler?,
+    ): Int {
         if (handler == null) return 0
         return InventoryTool.countItem(handler) { stack -> consumer.isAmmoItem(stack) }
     }
 
-    override fun withdraw(consumer: AmmoConsumer, ammoSupplier: Entity, count: Int): Int {
+    override fun withdraw(
+        consumer: AmmoConsumer,
+        ammoSupplier: Entity,
+        count: Int,
+    ): Int {
         if (ammoSupplier is Player) {
             InventoryTool.insertItem(ammoSupplier, consumer.stack(), count)
             return count
@@ -118,9 +142,11 @@ object ItemAmmoStrategy : AmmoConsumeStrategy() {
         return 0
     }
 
-    override fun withdraw(consumer: AmmoConsumer, handler: IItemHandler, count: Int): Int {
-        return InventoryTool.insertItem(handler, consumer.stack(), count)
-    }
+    override fun withdraw(
+        consumer: AmmoConsumer,
+        handler: IItemHandler,
+        count: Int,
+    ): Int = InventoryTool.insertItem(handler, consumer.stack(), count)
 
     @Environment(EnvType.CLIENT)
     override fun getDisplayName(consumer: AmmoConsumer): String {

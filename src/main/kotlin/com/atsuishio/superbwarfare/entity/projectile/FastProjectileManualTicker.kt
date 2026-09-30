@@ -18,7 +18,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
  * 这样既不会与原版 double-tick，也能保证在未加载区块中持续飞行。
  */
 object FastProjectileManualTicker {
-
     fun init() {
         ServerTickEvents.END_SERVER_TICK.register { onServerTick() }
         ServerWorldEvents.UNLOAD.register { _, level -> FastThrowableProjectile.forgetLevel(level) }

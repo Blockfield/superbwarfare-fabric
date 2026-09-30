@@ -11,7 +11,9 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 
-class ClaymoreRenderer(renderManager: EntityRendererProvider.Context) : EntityRenderer<ClaymoreEntity>(renderManager) {
+class ClaymoreRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<ClaymoreEntity>(renderManager) {
     init {
         this.shadowRadius = 0f
     }
@@ -22,7 +24,7 @@ class ClaymoreRenderer(renderManager: EntityRendererProvider.Context) : EntityRe
         partialTicks: Float,
         poseStack: PoseStack,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         val instance = entityIn.modelInstance ?: return
 
@@ -38,15 +40,13 @@ class ClaymoreRenderer(renderManager: EntityRendererProvider.Context) : EntityRe
             poseStack,
             vertexConsumer,
             packedLightIn,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
     }
 
-    public override fun shouldShowName(animatable: ClaymoreEntity): Boolean {
-        return false
-    }
+    public override fun shouldShowName(animatable: ClaymoreEntity): Boolean = false
 
     override fun getTextureLocation(pEntity: ClaymoreEntity): ResourceLocation {
         val uuid = pEntity.getUUID()

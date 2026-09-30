@@ -7,12 +7,12 @@ import com.atsuishio.superbwarfare.tools.mc
 import com.mojang.blaze3d.shaders.FogShape
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexSorting
-import net.minecraft.client.renderer.LevelRenderer
-import net.minecraft.core.BlockPos
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
+import net.minecraft.client.renderer.LevelRenderer
+import net.minecraft.core.BlockPos
 import org.joml.Matrix4f
 
 /**
@@ -68,8 +68,9 @@ object SyncedEntityWorldRenderer {
 
                 entity.xRotO = entity.xRot
 
-                val elapsedTicks = ((System.currentTimeMillis() - entry.timeStamp) / 50.0)
-                    .coerceIn(0.0, 2.0)
+                val elapsedTicks =
+                    ((System.currentTimeMillis() - entry.timeStamp) / 50.0)
+                        .coerceIn(0.0, 2.0)
                 ix = entity.x + entry.velocity.x * elapsedTicks
                 iy = entity.y + entry.velocity.y * elapsedTicks
                 iz = entity.z + entry.velocity.z * elapsedTicks
@@ -96,7 +97,7 @@ object SyncedEntityWorldRenderer {
                     partialTick.getGameTimeDeltaPartialTick(true),
                     context.matrixStack(),
                     bufferSource,
-                    packedLight
+                    packedLight,
                 )
             }
         } finally {

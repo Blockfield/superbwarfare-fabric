@@ -5,17 +5,20 @@ import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.machinegun.M2HBItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class M2HBItemModel extends CustomGunModel<M2HBItem> {
 
     @Override
-    public void setCustomAnimations(M2HBItem animatable, long instanceId, AnimationState<M2HBItem> animationState) {
+    public void setCustomAnimations(
+            M2HBItem animatable, long instanceId, AnimationState<M2HBItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -69,6 +72,9 @@ public class M2HBItemModel extends CustomGunModel<M2HBItem> {
         ClientEventHandler.gunRootMove(getAnimationProcessor(), 4, 0, 0, false);
         GeoBone camera = getAnimationProcessor().getBone("camera");
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 1f, 0.45f);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

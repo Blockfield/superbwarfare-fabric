@@ -4,17 +4,22 @@ import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.launcher.SecondaryCataclysmItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class SecondaryCataclysmItemModel extends CustomGunModel<SecondaryCataclysmItem> {
 
     @Override
-    public void setCustomAnimations(SecondaryCataclysmItem animatable, long instanceId, AnimationState<SecondaryCataclysmItem> animationState) {
+    public void setCustomAnimations(
+            SecondaryCataclysmItem animatable,
+            long instanceId,
+            AnimationState<SecondaryCataclysmItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -40,7 +45,8 @@ public class SecondaryCataclysmItemModel extends CustomGunModel<SecondaryCatacly
         GeoBone bolt = getAnimationProcessor().getBone("bolt");
         GeoBone lun = getAnimationProcessor().getBone("lun");
         bolt.setPosZ(6f * (float) fp);
-        lun.setRotZ(45f * (float) (Mth.clamp(ClientEventHandler.firePosTimer, 0, 1)) * Mth.DEG_TO_RAD);
+        lun.setRotZ(
+                45f * (float) (Mth.clamp(ClientEventHandler.firePosTimer, 0, 1)) * Mth.DEG_TO_RAD);
 
         ClientEventHandler.gunRootMove(getAnimationProcessor(), 0, 0, 0, false);
 
@@ -63,6 +69,9 @@ public class SecondaryCataclysmItemModel extends CustomGunModel<SecondaryCatacly
             camera.setRotZ(numR * camera.getRotZ());
         }
 
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

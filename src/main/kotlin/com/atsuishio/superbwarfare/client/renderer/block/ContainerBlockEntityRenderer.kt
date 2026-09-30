@@ -22,7 +22,7 @@ class ContainerBlockEntityRenderer : BlockEntityRenderer<ContainerBlockEntity> {
         poseStack: PoseStack,
         buffer: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         val instance = blockEntity.modelInstance ?: return
         if (blockEntity.animationInstance == null) {
@@ -32,12 +32,13 @@ class ContainerBlockEntityRenderer : BlockEntityRenderer<ContainerBlockEntity> {
 
         poseStack.pushPose()
 
-        val rot = when (blockEntity.blockState.getValue(ContainerBlock.FACING)) {
-            Direction.EAST -> -90f
-            Direction.SOUTH -> 180f
-            Direction.WEST -> 90f
-            else -> 0f
-        }
+        val rot =
+            when (blockEntity.blockState.getValue(ContainerBlock.FACING)) {
+                Direction.EAST -> -90f
+                Direction.SOUTH -> 180f
+                Direction.WEST -> 90f
+                else -> 0f
+            }
 
         poseStack.translate(0.5, 0.0, 0.5)
         poseStack.mulPose(Axis.YP.rotationDegrees(rot))
@@ -50,7 +51,7 @@ class ContainerBlockEntityRenderer : BlockEntityRenderer<ContainerBlockEntity> {
             poseStack,
             buffer.getBuffer(RenderType.entityTranslucent(TEXTURE)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         poseStack.popPose()

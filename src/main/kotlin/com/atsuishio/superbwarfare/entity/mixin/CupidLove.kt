@@ -9,8 +9,6 @@ interface CupidLove {
     fun `superbwarfare$getCupidLove`(): Boolean
 
     companion object {
-        fun getInstance(villager: Villager): CupidLove {
-            return villager as CupidLove
-        }
+        fun getInstance(villager: Villager): CupidLove = villager as CupidLove
     }
 }

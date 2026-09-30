@@ -1,5 +1,6 @@
 package com.atsuishio.superbwarfare.recipe.vehicle
 
+import com.atsuishio.superbwarfare.fabric.RecipeWrapper
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModRecipes
 import net.minecraft.core.HolderLookup
@@ -11,20 +12,21 @@ import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
-import com.atsuishio.superbwarfare.fabric.RecipeWrapper
 
 class VehicleAssemblingRecipe : Recipe<RecipeWrapper> {
     @JvmField
     val category: Category
+
     @JvmField
     val result: VehicleAssemblingResult
+
     @JvmField
     val inputs: MutableList<VehicleAssemblingIngredient>
 
     constructor(
         inputs: MutableList<VehicleAssemblingIngredient>,
         recipeCategory: String,
-        result: VehicleAssemblingResult
+        result: VehicleAssemblingResult,
     ) {
         this.category = Category.valueOf(recipeCategory)
         this.result = result
@@ -34,44 +36,44 @@ class VehicleAssemblingRecipe : Recipe<RecipeWrapper> {
     constructor(
         inputs: MutableList<VehicleAssemblingIngredient>,
         recipeCategory: Category,
-        result: VehicleAssemblingResult
+        result: VehicleAssemblingResult,
     ) {
         this.category = recipeCategory
         this.result = result
         this.inputs = inputs
     }
 
-    override fun matches(pContainer: RecipeWrapper, pLevel: Level): Boolean {
-        return false
-    }
+    override fun matches(
+        pContainer: RecipeWrapper,
+        pLevel: Level,
+    ): Boolean = false
 
-    override fun assemble(recipeWrapper: RecipeWrapper, provider: HolderLookup.Provider): ItemStack {
-        return ItemStack.EMPTY
-    }
+    override fun assemble(
+        recipeWrapper: RecipeWrapper,
+        provider: HolderLookup.Provider,
+    ): ItemStack = ItemStack.EMPTY
 
-    override fun canCraftInDimensions(pWidth: Int, pHeight: Int): Boolean {
-        return true
-    }
+    override fun canCraftInDimensions(
+        pWidth: Int,
+        pHeight: Int,
+    ): Boolean = true
 
-    override fun getResultItem(provider: HolderLookup.Provider): ItemStack {
-        return this.result.getResult().copy()
-    }
+    override fun getResultItem(provider: HolderLookup.Provider): ItemStack = this.result.getResult().copy()
 
-    override fun getSerializer(): RecipeSerializer<*> {
-        return ModRecipes.VEHICLE_ASSEMBLING_SERIALIZER.get()
-    }
+    override fun getSerializer(): RecipeSerializer<*> = ModRecipes.VEHICLE_ASSEMBLING_SERIALIZER.get()
 
-    override fun getType(): RecipeType<*> {
-        return ModRecipes.VEHICLE_ASSEMBLING_TYPE.get()
-    }
+    override fun getType(): RecipeType<*> = ModRecipes.VEHICLE_ASSEMBLING_TYPE.get()
 
-    enum class Category(@JvmField val typeName: String) {
+    enum class Category(
+        @JvmField val typeName: String,
+    ) {
         LAND("land"),
         DEFENSE("defense"),
         AIRCRAFT("aircraft"),
         CIVILIAN("civilian"),
         WATER("water"),
-        MISC("misc");
+        MISC("misc"),
+        ;
 
         companion object {
             fun getCategory(name: String?): Category {
@@ -89,17 +91,18 @@ class VehicleAssemblingRecipe : Recipe<RecipeWrapper> {
         fun create(
             ingredients: MutableMap<String, Int>,
             recipeCategory: Category,
-            type: EntityType<*>
+            type: EntityType<*>,
         ): VehicleAssemblingRecipe {
             val inputs = arrayListOf<VehicleAssemblingIngredient>()
             for (entry in ingredients.entries) {
                 inputs.add(VehicleAssemblingIngredient(entry.key, entry.value))
             }
-            val result = VehicleAssemblingResult(
-                ModItems.CONTAINER.id.toString(),
-                BuiltInRegistries.ENTITY_TYPE.getKey(type).toString(),
-                1
-            )
+            val result =
+                VehicleAssemblingResult(
+                    ModItems.CONTAINER.id.toString(),
+                    BuiltInRegistries.ENTITY_TYPE.getKey(type).toString(),
+                    1,
+                )
             return VehicleAssemblingRecipe(inputs, recipeCategory, result)
         }
 
@@ -107,7 +110,7 @@ class VehicleAssemblingRecipe : Recipe<RecipeWrapper> {
             ingredients: MutableMap<String, Int>,
             recipeCategory: Category,
             result: Item,
-            count: Int
+            count: Int,
         ): VehicleAssemblingRecipe {
             val inputs = arrayListOf<VehicleAssemblingIngredient>()
             for (entry in ingredients.entries) {
@@ -116,7 +119,7 @@ class VehicleAssemblingRecipe : Recipe<RecipeWrapper> {
             return VehicleAssemblingRecipe(
                 inputs,
                 recipeCategory,
-                VehicleAssemblingResult(BuiltInRegistries.ITEM.getKey(result).toString(), "", count)
+                VehicleAssemblingResult(BuiltInRegistries.ITEM.getKey(result).toString(), "", count),
             )
         }
     }

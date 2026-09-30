@@ -42,13 +42,16 @@ object AnimationHelper {
         stack: PoseStack,
         buffer: VertexConsumer,
         packedLightIn: Int,
-        packedOverlayIn: Int
+        packedOverlayIn: Int,
     ) {
         setupModelFromBone(model, bone)
         model.render(stack, buffer, packedLightIn, packedOverlayIn)
     }
 
-    fun setupModelFromBone(model: ModelPart, bone: GeoBone) {
+    fun setupModelFromBone(
+        model: ModelPart,
+        bone: GeoBone,
+    ) {
         model.setPos(bone.pivotX, bone.pivotY, bone.pivotZ)
         model.xRot = 0.0f
         model.yRot = 0.0f
@@ -61,7 +64,7 @@ object AnimationHelper {
         stack: PoseStack,
         buffer: VertexConsumer,
         packedLightIn: Int,
-        packedOverlayIn: Int
+        packedOverlayIn: Int,
     ) {
         renderPartOverBone(model, bone, stack, buffer, packedLightIn, packedOverlayIn)
     }
@@ -72,13 +75,16 @@ object AnimationHelper {
         stack: PoseStack,
         buffer: VertexConsumer,
         packedLightIn: Int,
-        packedOverlayIn: Int
+        packedOverlayIn: Int,
     ) {
         setupModelFromBone2(model, bone)
         model.render(stack, buffer, packedLightIn, packedOverlayIn)
     }
 
-    fun setupModelFromBone2(model: ModelPart, bone: GeoBone) {
+    fun setupModelFromBone2(
+        model: ModelPart,
+        bone: GeoBone,
+    ) {
         model.setPos(bone.pivotX, bone.pivotY + 7, bone.pivotZ)
         model.xRot = 0.0f
         model.yRot = 180 * Mth.DEG_TO_RAD
@@ -91,13 +97,16 @@ object AnimationHelper {
         stack: PoseStack,
         buffer: VertexConsumer,
         packedLightIn: Int,
-        packedOverlayIn: Int
+        packedOverlayIn: Int,
     ) {
         setupModelFromBone2R(model, bone)
         model.render(stack, buffer, packedLightIn, packedOverlayIn)
     }
 
-    fun setupModelFromBone2R(model: ModelPart, bone: GeoBone) {
+    fun setupModelFromBone2R(
+        model: ModelPart,
+        bone: GeoBone,
+    ) {
         model.setPos(bone.pivotX, bone.pivotY + 7, bone.pivotZ)
         model.xRot = 180 * Mth.DEG_TO_RAD
         model.yRot = 180 * Mth.DEG_TO_RAD
@@ -105,7 +114,11 @@ object AnimationHelper {
     }
 
     @JvmStatic
-    fun handleShellsAnimation(animationProcessor: AnimationProcessor<*>, x: Float, y: Float) {
+    fun handleShellsAnimation(
+        animationProcessor: AnimationProcessor<*>,
+        x: Float,
+        y: Float,
+    ) {
         val shell1 = animationProcessor.getBone("shell1")
         val shell2 = animationProcessor.getBone("shell2")
         val shell3 = animationProcessor.getBone("shell3")
@@ -116,7 +129,13 @@ object AnimationHelper {
     }
 
     @JvmStatic
-    fun handleReloadShakeAnimation(stack: ItemStack, main: GeoBone, camera: GeoBone, roll: Float, pitch: Float) {
+    fun handleReloadShakeAnimation(
+        stack: ItemStack,
+        main: GeoBone,
+        camera: GeoBone,
+        roll: Float,
+        pitch: Float,
+    ) {
         val data = from(stack)
         if (data.reload.time() > 0) {
             main.setRotX(roll * main.rotX)
@@ -131,7 +150,6 @@ object AnimationHelper {
         }
     }
 
-
     @JvmStatic
     fun handleShootFlare(
         name: String,
@@ -139,7 +157,7 @@ object AnimationHelper {
         itemStack: ItemStack,
         bone: GeoBone,
         buffer: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         if (itemStack.item !is GunItem) return
 
@@ -155,7 +173,7 @@ object AnimationHelper {
                 gunResource.flarePosition.x,
                 gunResource.flarePosition.y,
                 gunResource.flarePosition.z,
-                gunResource.flareSize.toDouble()
+                gunResource.flareSize.toDouble(),
             )
         }
     }
@@ -171,23 +189,25 @@ object AnimationHelper {
         x: Double,
         y: Double,
         z: Double,
-        size: Double
+        size: Double,
     ) {
         val data = from(itemStack)
 
-        if (name == "flare"
-            && ClientEventHandler.fireRotTimer > 0
-            && ClientEventHandler.fireRotTimer < 0.3
-            && data.attachment.get(AttachmentType.BARREL) != 2
+        if (name == "flare" &&
+            ClientEventHandler.fireRotTimer > 0 &&
+            ClientEventHandler.fireRotTimer < 0.3 &&
+            data.attachment.get(AttachmentType.BARREL) != 2
         ) {
             bone.scaleX = (size + 0.8 * size * (Math.random() - 0.5)).toFloat()
             bone.scaleY = (size + 0.8 * size * (Math.random() - 0.5)).toFloat()
             bone.rotZ = (0.5 * (Math.random() - 0.5)).toFloat()
 
             var height = 0f
-            if ((data.attachment.get(AttachmentType.SCOPE) == 2
-                        || data.attachment.get(AttachmentType.SCOPE) == 3)
-                && ClientEventHandler.zoom
+            if ((
+                    data.attachment.get(AttachmentType.SCOPE) == 2 ||
+                        data.attachment.get(AttachmentType.SCOPE) == 3
+                ) &&
+                ClientEventHandler.zoom
             ) {
                 height = -0.07f
             }
@@ -208,11 +228,12 @@ object AnimationHelper {
             vertex(vertexConsumer, pose, packedLightIn, 0f, 1f, 0, 0)
             stack.popPose()
 
-            lerpTimer = Mth.lerp(
-                Minecraft.getInstance().timer.getGameTimeDeltaPartialTick(true),
-                lerpTimer,
-                ClientEventHandler.fireRotTimer.toFloat() * 0.667f
-            )
+            lerpTimer =
+                Mth.lerp(
+                    Minecraft.getInstance().timer.getGameTimeDeltaPartialTick(true),
+                    lerpTimer,
+                    ClientEventHandler.fireRotTimer.toFloat() * 0.667f,
+                )
         }
     }
 
@@ -225,7 +246,7 @@ object AnimationHelper {
         x: Double,
         y: Double,
         z: Double,
-        height: Double
+        height: Double,
     ) {
         stack.pushPose()
         stack.translate(x, y + height - 0.03, -z)
@@ -248,7 +269,7 @@ object AnimationHelper {
             0f,
             0,
             1,
-            lerpTimer.toDouble()
+            lerpTimer.toDouble(),
         )
         vertexSmoke(
             consumer,
@@ -258,7 +279,7 @@ object AnimationHelper {
             0f,
             1,
             1,
-            lerpTimer.toDouble()
+            lerpTimer.toDouble(),
         )
         vertexSmoke(
             consumer,
@@ -268,7 +289,7 @@ object AnimationHelper {
             1f,
             1,
             0,
-            lerpTimer.toDouble()
+            lerpTimer.toDouble(),
         )
         vertexSmoke(
             consumer,
@@ -278,7 +299,7 @@ object AnimationHelper {
             1f,
             0,
             0,
-            lerpTimer.toDouble()
+            lerpTimer.toDouble(),
         )
 
         stack.popPose()
@@ -292,7 +313,7 @@ object AnimationHelper {
         x: Double,
         y: Double,
         z: Double,
-        height: Double
+        height: Double,
     ) {
         stack.pushPose()
         stack.translate(x, y + height - 0.03, -z)
@@ -316,7 +337,7 @@ object AnimationHelper {
             0f,
             0,
             1,
-            lerpTimer.toDouble()
+            lerpTimer.toDouble(),
         )
         vertexSmoke(
             consumer,
@@ -326,7 +347,7 @@ object AnimationHelper {
             0f,
             1,
             1,
-            lerpTimer.toDouble()
+            lerpTimer.toDouble(),
         )
         vertexSmoke(
             consumer,
@@ -336,7 +357,7 @@ object AnimationHelper {
             1f,
             1,
             0,
-            lerpTimer.toDouble()
+            lerpTimer.toDouble(),
         )
         vertexSmoke(
             consumer,
@@ -346,7 +367,7 @@ object AnimationHelper {
             1f,
             0,
             0,
-            lerpTimer.toDouble()
+            lerpTimer.toDouble(),
         )
 
         stack.popPose()
@@ -360,9 +381,10 @@ object AnimationHelper {
         pY: Float,
         pU: Int,
         pV: Int,
-        time: Double
+        time: Double,
     ) {
-        pConsumer.addVertex(pPose, pX - 0.5f, pY - 0.5f, 0f)
+        pConsumer
+            .addVertex(pPose, pX - 0.5f, pY - 0.5f, 0f)
             .setColor(255, 255, 255, (96 - 40 * time).toInt())
             .setUv(pU.toFloat(), pV.toFloat())
             .setOverlay(OverlayTexture.NO_OVERLAY)
@@ -377,9 +399,10 @@ object AnimationHelper {
         pX: Float,
         pY: Float,
         pU: Int,
-        pV: Int
+        pV: Int,
     ) {
-        pConsumer.addVertex(pPose, pX - 0.5f, pY - 0.5f, 0f)
+        pConsumer
+            .addVertex(pPose, pX - 0.5f, pY - 0.5f, 0f)
             .setColor(255, 255, 255, 255)
             .setUv(pU.toFloat(), pV.toFloat())
             .setOverlay(OverlayTexture.NO_OVERLAY)
@@ -404,7 +427,7 @@ object AnimationHelper {
         b: Int,
         a: Int,
         name: String?,
-        hasBlackPart: Boolean
+        hasBlackPart: Boolean,
     ) {
         var r = r
         var g = g
@@ -465,9 +488,10 @@ object AnimationHelper {
         g: Int,
         b: Int,
         a: Int,
-        size: Float
+        size: Float,
     ) {
-        pConsumer.addVertex(pPose, pX - 0.5f * size, pY - 0.5f * size, 0f)
+        pConsumer
+            .addVertex(pPose, pX - 0.5f * size, pY - 0.5f * size, 0f)
             .setColor(r, g, b, a)
             .setUv(pU.toFloat(), pV.toFloat())
             .setOverlay(OverlayTexture.NO_OVERLAY)
@@ -477,8 +501,15 @@ object AnimationHelper {
 
     @JvmStatic
     fun renderArms(
-        localPlayer: LocalPlayer?, transformType: ItemDisplayContext?, stack: PoseStack, name: String?, bone: GeoBone,
-        currentBuffer: MultiBufferSource, renderType: RenderType, packedLightIn: Int, useOldHandRender: Boolean
+        localPlayer: LocalPlayer?,
+        transformType: ItemDisplayContext?,
+        stack: PoseStack,
+        name: String?,
+        bone: GeoBone,
+        currentBuffer: MultiBufferSource,
+        renderType: RenderType,
+        packedLightIn: Int,
+        useOldHandRender: Boolean,
     ) {
         if (transformType == null || !transformType.firstPerson()) {
             return
@@ -499,17 +530,18 @@ object AnimationHelper {
         RenderUtil.translateAwayFromPivotPoint(stack, bone)
 
         val arm = if ("Lefthand" == name) HumanoidArm.LEFT else HumanoidArm.RIGHT
-        val renderPlayerArmEvent = RenderPlayerArmEvent(
-            localPlayer,
-            transformType,
-            stack,
-            arm,
-            bone,
-            currentBuffer,
-            renderType,
-            packedLightIn,
-            useOldHandRender
-        )
+        val renderPlayerArmEvent =
+            RenderPlayerArmEvent(
+                localPlayer,
+                transformType,
+                stack,
+                arm,
+                bone,
+                currentBuffer,
+                renderType,
+                packedLightIn,
+                useOldHandRender,
+            )
         if (postEvent(renderPlayerArmEvent).isCanceled()) {
             currentBuffer.getBuffer(renderType) // 用来重置 Render Type，防止后续渲染出错
             stack.popPose()
@@ -535,7 +567,7 @@ object AnimationHelper {
             stack.translate(
                 -1.0f * CustomGunRenderer.SCALE_RECIPROCAL,
                 2.0f * CustomGunRenderer.SCALE_RECIPROCAL,
-                0.0f
+                0.0f,
             )
             if (useOldHandRender) {
                 renderPartOverBone(
@@ -544,7 +576,7 @@ object AnimationHelper {
                     stack,
                     currentBuffer.getBuffer(RenderType.entitySolid(loc)),
                     effectivePackedLight,
-                    overlayTexture
+                    overlayTexture,
                 )
                 renderPartOverBone(
                     model.leftSleeve,

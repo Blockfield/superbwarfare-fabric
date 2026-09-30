@@ -21,7 +21,10 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import kotlin.math.max
 
-open class Agm65Entity(type: EntityType<out Agm65Entity>, level: Level) : MissileProjectile(type, level),
+open class Agm65Entity(
+    type: EntityType<out Agm65Entity>,
+    level: Level,
+) : MissileProjectile(type, level),
     BasicGeoProjectileEntity {
     init {
         this.damageValue = 1100f
@@ -31,9 +34,7 @@ open class Agm65Entity(type: EntityType<out Agm65Entity>, level: Level) : Missil
         this.durability = 25
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.LARGE_ANTI_GROUND_MISSILE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.LARGE_ANTI_GROUND_MISSILE.get()
 
     override fun tick() {
         super.tick()
@@ -48,8 +49,8 @@ open class Agm65Entity(type: EntityType<out Agm65Entity>, level: Level) : Missil
             if (this.getTargetUUID() != "none") {
                 if (entity != null) {
                     if (level is ServerLevel) {
-                        if ((entity.getPassengers().isNotEmpty() || entity is VehicleEntity)
-                            && entity.tickCount % (max(0.04 * this.distanceTo(entity), 2.0).toInt()) == 0
+                        if ((entity.getPassengers().isNotEmpty() || entity is VehicleEntity) &&
+                            entity.tickCount % (max(0.04 * this.distanceTo(entity), 2.0).toInt()) == 0
                         ) {
                             level.playSound(
                                 null,
@@ -57,28 +58,30 @@ open class Agm65Entity(type: EntityType<out Agm65Entity>, level: Level) : Missil
                                 if (entity is Pig) SoundEvents.PIG_HURT else ModSounds.MISSILE_WARNING.get(),
                                 SoundSource.PLAYERS,
                                 2f,
-                                1f
+                                1f,
                             )
                         }
                         val dis = entity.position().vectorTo(position()).horizontalDistance()
                         val height = if (dis > 30) 0.4 * (dis - 30) else 0.0
-                        val targetPos = Vec3(
-                            entity.x,
-                            entity.y + (if (entity is EnderDragon) -2 else 0) + height,
-                            entity.z
-                        )
+                        val targetPos =
+                            Vec3(
+                                entity.x,
+                                entity.y + (if (entity is EnderDragon) -2 else 0) + height,
+                                entity.z,
+                            )
                         setTargetPos(targetPos)
-                        toVec = calculateFiringSolution(
-                            position(),
-                            targetPos,
-                            entity.deltaMovement,
-                            deltaMovement.length(),
-                            0.0
-                        )
+                        toVec =
+                            calculateFiringSolution(
+                                position(),
+                                targetPos,
+                                entity.deltaMovement,
+                                deltaMovement.length(),
+                                0.0,
+                            )
                     }
                 }
             } else {
-                lostTargetTick ++
+                lostTargetTick++
             }
         } else {
             if (level is ServerLevel && getTargetPos() != null) {
@@ -90,7 +93,7 @@ open class Agm65Entity(type: EntityType<out Agm65Entity>, level: Level) : Missil
         }
 
         if (getTargetPos() == null) {
-            lostTargetTick ++
+            lostTargetTick++
         }
 
         if (this.tickCount > 8) {
@@ -114,7 +117,7 @@ open class Agm65Entity(type: EntityType<out Agm65Entity>, level: Level) : Missil
                 ModSounds.MISSILE_START.get(),
                 SoundSource.PLAYERS,
                 4f,
-                1f
+                1f,
             )
             if (level is ServerLevel) {
                 ParticleTool.sendParticle(
@@ -128,7 +131,7 @@ open class Agm65Entity(type: EntityType<out Agm65Entity>, level: Level) : Missil
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
                 ParticleTool.sendParticle(
                     level,
@@ -141,23 +144,17 @@ open class Agm65Entity(type: EntityType<out Agm65Entity>, level: Level) : Missil
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
             }
         }
     }
 
-    override fun getCustomGravity(): Float {
-        return if (tickCount < 8) 0.15f else super.getCustomGravity()
-    }
+    override fun getCustomGravity(): Float = if (tickCount < 8) 0.15f else super.getCustomGravity()
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.7f
-    }
+    override fun getVolume(): Float = 0.7f
 
     override val maxHealth: Float
         get() = 70f

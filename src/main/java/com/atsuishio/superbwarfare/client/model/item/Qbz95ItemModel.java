@@ -1,19 +1,21 @@
 package com.atsuishio.superbwarfare.client.model.item;
 
+import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
+
 import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.rifle.Qbz95Item;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
 
 public class Qbz95ItemModel extends CustomGunModel<Qbz95Item> {
     public static float rotXBipod = 0f;
@@ -26,7 +28,8 @@ public class Qbz95ItemModel extends CustomGunModel<Qbz95Item> {
     public static float lHandRotZ = 0f;
 
     @Override
-    public void setCustomAnimations(Qbz95Item animatable, long instanceId, AnimationState<Qbz95Item> animationState) {
+    public void setCustomAnimations(
+            Qbz95Item animatable, long instanceId, AnimationState<Qbz95Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -40,7 +43,14 @@ public class Qbz95ItemModel extends CustomGunModel<Qbz95Item> {
         GeoBone camera = getAnimationProcessor().getBone("camera");
         GeoBone main = getAnimationProcessor().getBone("0");
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
@@ -50,32 +60,36 @@ public class Qbz95ItemModel extends CustomGunModel<Qbz95Item> {
         var data = GunData.from(stack);
         int type = data.attachment.get(AttachmentType.SCOPE);
 
-        float posYAlt = switch (type) {
-            case 2 -> 0.85f;
-            case 3 -> 0.9f;
-            default -> 0f;
-        };
-        float posY = switch (type) {
-            case 0 -> 0.535f;
-            case 1 -> -0.155f;
-            case 2 -> -0.975f + posYAlt;
-            case 3 -> -0.64f + posYAlt;
-            default -> 0f;
-        };
-        float posZ = switch (type) {
-            case 0 -> 10.6f;
-            case 1 -> 8.8f;
-            case 2 -> 14.51f;
-            case 3 -> 17.2f;
-            default -> 0f;
-        };
-        float scaleZ = switch (type) {
-            case 0 -> 0.5f;
-            case 1 -> 0.51f;
-            case 2 -> 0.792f;
-            case 3 -> 0.891f;
-            default -> 0f;
-        };
+        float posYAlt =
+                switch (type) {
+                    case 2 -> 0.85f;
+                    case 3 -> 0.9f;
+                    default -> 0f;
+                };
+        float posY =
+                switch (type) {
+                    case 0 -> 0.535f;
+                    case 1 -> -0.155f;
+                    case 2 -> -0.975f + posYAlt;
+                    case 3 -> -0.64f + posYAlt;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (type) {
+                    case 0 -> 10.6f;
+                    case 1 -> 8.8f;
+                    case 2 -> 14.51f;
+                    case 3 -> 17.2f;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (type) {
+                    case 0 -> 0.5f;
+                    case 1 -> 0.51f;
+                    case 2 -> 0.792f;
+                    case 3 -> 0.891f;
+                    default -> 0f;
+                };
 
         gun.setPosX(3.71f * (float) zp);
         gun.setPosY(posY * (float) zp - (float) (0.2f * zpz) - posYAlt);
@@ -91,16 +105,18 @@ public class Qbz95ItemModel extends CustomGunModel<Qbz95Item> {
         if (zt < 0.5) {
             shen = getAnimationProcessor().getBone("fireRootNormal");
         } else {
-            shen = switch (type) {
-                case 0 -> getAnimationProcessor().getBone("fireRoot0");
-                case 1 -> getAnimationProcessor().getBone("fireRoot1");
-                case 2 -> getAnimationProcessor().getBone("fireRoot2");
-                case 3 -> getAnimationProcessor().getBone("fireRoot3");
-                default -> getAnimationProcessor().getBone("fireRootNormal");
-            };
+            shen =
+                    switch (type) {
+                        case 0 -> getAnimationProcessor().getBone("fireRoot0");
+                        case 1 -> getAnimationProcessor().getBone("fireRoot1");
+                        case 2 -> getAnimationProcessor().getBone("fireRoot2");
+                        case 3 -> getAnimationProcessor().getBone("fireRoot3");
+                        default -> getAnimationProcessor().getBone("fireRootNormal");
+                    };
         }
 
-        ClientEventHandler.handleShootAnimation(shen, 0.95f, -0.95f, 0.85f, 0.8f, 0.9f, 1, 0.5f, 0.8f);
+        ClientEventHandler.handleShootAnimation(
+                shen, 0.95f, -0.95f, 0.85f, 0.8f, 0.9f, 1, 0.5f, 0.8f);
 
         CrossHairOverlay.gunRot = shen.getRotZ();
         bolt.setPosZ(5f * (float) fp);
@@ -134,7 +150,6 @@ public class Qbz95ItemModel extends CustomGunModel<Qbz95Item> {
         lHandRotY = Mth.lerp(1.5f * times, lHandRotY, isZooming ? 0.2419f : leftHand.getRotY());
         lHandRotZ = Mth.lerp(1.5f * times, lHandRotZ, isZooming ? 2.9228f : leftHand.getRotZ());
 
-
         if (GunData.from(stack).reload.empty()) {
             leftHand.setPosX(lHandPosX);
             leftHand.setPosY(lHandPosY);
@@ -145,6 +160,9 @@ public class Qbz95ItemModel extends CustomGunModel<Qbz95Item> {
         }
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

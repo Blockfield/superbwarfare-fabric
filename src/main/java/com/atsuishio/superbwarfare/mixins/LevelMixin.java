@@ -2,11 +2,13 @@ package com.atsuishio.superbwarfare.mixins;
 
 import com.atsuishio.superbwarfare.entity.OBBEntity;
 import com.atsuishio.superbwarfare.tools.OBB;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.phys.AABB;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,21 +25,29 @@ public abstract class LevelMixin {
     @Shadow
     protected abstract LevelEntityGetter<Entity> getEntities();
 
-    @Inject(method = "getEntities(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;",
+    @Inject(
+            method =
+                    "getEntities(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;",
             at = @At("RETURN"))
-    public void getEntities(Entity pEntity, AABB pBoundingBox, Predicate<? super Entity> pPredicate, CallbackInfoReturnable<List<Entity>> cir) {
+    public void getEntities(
+            Entity pEntity,
+            AABB pBoundingBox,
+            Predicate<? super Entity> pPredicate,
+            CallbackInfoReturnable<List<Entity>> cir) {
         if (!(pEntity instanceof Projectile)) return;
 
-        StreamSupport.stream(this.getEntities().getAll().spliterator(), false).filter(e -> pPredicate.test(e) && e != pEntity)
-                .forEach(entity -> {
-                    if (entity instanceof OBBEntity obbEntity && !obbEntity.enableAABB()) {
+        StreamSupport.stream(this.getEntities().getAll().spliterator(), false)
+                .filter(e -> pPredicate.test(e) && e != pEntity)
+                .forEach(
+                        entity -> {
+                            if (entity instanceof OBBEntity obbEntity && !obbEntity.enableAABB()) {
                                 for (OBB obb : obbEntity.getOBBs()) {
-                                    if (OBB.isColliding(obb, pBoundingBox) && !cir.getReturnValue().contains(entity)) {
+                                    if (OBB.isColliding(obb, pBoundingBox)
+                                            && !cir.getReturnValue().contains(entity)) {
                                         cir.getReturnValue().add(entity);
                                     }
                                 }
                             }
-                        }
-                );
+                        });
     }
 }

@@ -7,13 +7,16 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.player.Inventory
 
-class SmallVehicleContainerScreen(menu: SmallVehicleContainerMenu, inventory: Inventory, title: Component) :
-    AbstractVehicleContainerScreen<SmallVehicleContainerMenu>(menu, inventory, title) {
+class SmallVehicleContainerScreen(
+    menu: SmallVehicleContainerMenu,
+    inventory: Inventory,
+    title: Component,
+) : AbstractVehicleContainerScreen<SmallVehicleContainerMenu>(menu, inventory, title) {
     override fun renderBg(
         guiGraphics: GuiGraphics,
         pPartialTick: Float,
         pMouseX: Int,
-        pMouseY: Int
+        pMouseY: Int,
     ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2

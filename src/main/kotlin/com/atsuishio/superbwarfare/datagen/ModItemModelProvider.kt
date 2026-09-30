@@ -3,6 +3,7 @@ package com.atsuishio.superbwarfare.datagen
 import com.atsuishio.superbwarfare.Mod
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.datagen.builder.CustomSeparateModelBuilder
+import com.atsuishio.superbwarfare.fabric.DeferredHolder
 import com.atsuishio.superbwarfare.init.ModBlocks
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModItems.Materials
@@ -18,11 +19,12 @@ import net.neoforged.neoforge.client.model.generators.ItemModelBuilder
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider
 import net.neoforged.neoforge.client.model.generators.ModelFile
 import net.neoforged.neoforge.common.data.ExistingFileHelper
-import com.atsuishio.superbwarfare.fabric.DeferredHolder
 
 @Suppress("unused")
-class ModItemModelProvider(output: PackOutput, existingFileHelper: ExistingFileHelper) :
-    ItemModelProvider(output, Mod.MODID, existingFileHelper) {
+class ModItemModelProvider(
+    output: PackOutput,
+    existingFileHelper: ExistingFileHelper,
+) : ItemModelProvider(output, Mod.MODID, existingFileHelper) {
     override fun registerModels() {
         // gun
         gunItem(ModItems.AA_12)
@@ -316,54 +318,60 @@ class ModItemModelProvider(output: PackOutput, existingFileHelper: ExistingFileH
         simpleItem(materials.spring)
     }
 
-    private fun simpleItem(item: DeferredHolder<Item, out Item>, location: String = ""): ItemModelBuilder {
-        return withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/generated"))
+    private fun simpleItem(
+        item: DeferredHolder<Item, out Item>,
+        location: String = "",
+    ): ItemModelBuilder =
+        withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/generated"))
             .texture("layer0", loc("item/" + location + item.id.path))
-    }
 
     private fun simpleItem(
         item: DeferredHolder<Item, out Item>,
         location: String,
-        renderType: String
-    ): ItemModelBuilder {
-        return withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/generated"))
-            .texture("layer0", loc("item/" + location + item.id.path)).renderType(renderType)
-    }
+        renderType: String,
+    ): ItemModelBuilder =
+        withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/generated"))
+            .texture("layer0", loc("item/" + location + item.id.path))
+            .renderType(renderType)
 
     fun <T : Block> evenSimplerBlockItem(block: DeferredHolder<Block, T>) {
         this.withExistingParent(
             Mod.MODID + ":" + BuiltInRegistries.BLOCK.getKey(block.get()).path,
-            modLoc("block/" + BuiltInRegistries.BLOCK.getKey(block.get()).path)
+            modLoc("block/" + BuiltInRegistries.BLOCK.getKey(block.get()).path),
         )
     }
 
-    private fun gunBlueprintItem(item: DeferredHolder<Item, out Item>): ItemModelBuilder {
-        return withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/generated"))
+    private fun gunBlueprintItem(item: DeferredHolder<Item, out Item>): ItemModelBuilder =
+        withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/generated"))
             .texture("layer0", loc("item/gun_blueprint"))
-    }
 
-    private fun cannonBlueprintItem(item: DeferredHolder<Item, out Item>): ItemModelBuilder {
-        return withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/generated"))
+    private fun cannonBlueprintItem(item: DeferredHolder<Item, out Item>): ItemModelBuilder =
+        withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/generated"))
             .texture("layer0", loc("item/cannon_blueprint"))
-    }
 
-    private fun handheldItem(item: DeferredHolder<Item, out Item>): ItemModelBuilder {
-        return withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/handheld"))
+    private fun handheldItem(item: DeferredHolder<Item, out Item>): ItemModelBuilder =
+        withExistingParent(item.id.path, ResourceLocation.withDefaultNamespace("item/handheld"))
             .texture("layer0", loc("item/" + item.id.path))
-    }
 
-    private fun gunIcon(item: DeferredHolder<Item, out Item>, name: String): ItemModelBuilder {
-        return withExistingParent(item.id.path + "_icon", ResourceLocation.withDefaultNamespace("item/generated"))
+    private fun gunIcon(
+        item: DeferredHolder<Item, out Item>,
+        name: String,
+    ): ItemModelBuilder =
+        withExistingParent(item.id.path + "_icon", ResourceLocation.withDefaultNamespace("item/generated"))
             .texture("layer0", loc("item/" + name + "_icon"))
-    }
 
-    private fun gunBase(item: DeferredHolder<Item, out Item>, name: String): ItemModelBuilder {
-        return getBuilder(item.id.path + "_base")
+    private fun gunBase(
+        item: DeferredHolder<Item, out Item>,
+        name: String,
+    ): ItemModelBuilder =
+        getBuilder(item.id.path + "_base")
             .parent(ModelFile.UncheckedModelFile(modLoc("displaysettings/$name.item")))
             .texture("layer0", loc("item/$name"))
-    }
 
-    private fun customSeparatedGunModel(item: DeferredHolder<Item, out Item>, name: String): ItemModelBuilder {
+    private fun customSeparatedGunModel(
+        item: DeferredHolder<Item, out Item>,
+        name: String,
+    ): ItemModelBuilder {
         val base = modLoc("item/" + name + "_base").toString()
         val icon = modLoc("item/" + name + "_icon").toString()
 
@@ -371,15 +379,17 @@ class ModItemModelProvider(output: PackOutput, existingFileHelper: ExistingFileH
             .guiLight(BlockModel.GuiLight.FRONT)
             .customLoader { parent, existingFileHelper ->
                 CustomSeparateModelBuilder.begin(parent, existingFileHelper)
-            }
-            .base(base)
+            }.base(base)
             .perspective(ItemDisplayContext.GUI, icon)
             .texture("particle", modLoc("item/" + name + "_icon"))
             .end()
     }
 
     @JvmOverloads
-    fun gunItem(item: DeferredHolder<Item, out Item>, name: String = item.id.path) {
+    fun gunItem(
+        item: DeferredHolder<Item, out Item>,
+        name: String = item.id.path,
+    ) {
         this.gunIcon(item, name)
         this.gunBase(item, name)
         this.customSeparatedGunModel(item, name)

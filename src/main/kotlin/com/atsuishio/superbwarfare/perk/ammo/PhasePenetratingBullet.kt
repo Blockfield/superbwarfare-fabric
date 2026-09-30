@@ -10,7 +10,7 @@ import com.atsuishio.superbwarfare.perk.PerkInstance
 import net.minecraft.world.entity.Entity
 
 object PhasePenetratingBullet : AmmoPerk(
-    Builder("phase_penetrating_bullet", Type.AMMO).speedRate(1.1).rgb(255, 255, 255)
+    Builder("phase_penetrating_bullet", Type.AMMO).speedRate(1.1).rgb(255, 255, 255),
 ) {
     override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) {
         super.modifyProperty(modifier)
@@ -22,7 +22,7 @@ object PhasePenetratingBullet : AmmoPerk(
     override fun modifyProjectile(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity
+        entity: Entity,
     ) {
         super.modifyProjectile(data, instance, entity)
         if (entity !is ProjectileEntity) return

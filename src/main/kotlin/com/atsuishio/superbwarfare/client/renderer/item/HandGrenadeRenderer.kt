@@ -17,15 +17,17 @@ import net.minecraft.util.Mth
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
 
-class HandGrenadeRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityModelSet) :
-    BlockEntityWithoutLevelRenderer(dispatcher, set) {
+class HandGrenadeRenderer(
+    dispatcher: BlockEntityRenderDispatcher,
+    set: EntityModelSet,
+) : BlockEntityWithoutLevelRenderer(dispatcher, set) {
     override fun renderByItem(
         stack: ItemStack,
         displayContext: ItemDisplayContext,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         if (stack.item !is HandGrenade) return
         val instance = modelInstance ?: return
@@ -33,8 +35,8 @@ class HandGrenadeRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityMo
 
         // Процедурная поза бега: у гранаты нет GunGeoItem/gunRootMove, статичный рендер
         // иначе застывает на месте при спринте от первого лица.
-        if (displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
-            || displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+        if (displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND ||
+            displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
         ) {
             applySprintPose(poseStack)
         }
@@ -47,7 +49,7 @@ class HandGrenadeRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityMo
             RenderType.entityCutout(TEXTURE),
             BedrockModelRenderTypes.polyMeshCutout(TEXTURE),
             packedLight,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
@@ -62,16 +64,22 @@ class HandGrenadeRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityMo
         private var bobTime = 0.0
 
         private fun applySprintPose(poseStack: PoseStack) {
-            val player = mc.player ?: run { sprintPose = 0f; return }
+            val player =
+                mc.player ?: run {
+                    sprintPose = 0f
+                    return
+                }
             val times = mc.deltaFrameTime.coerceIn(0f, 0.8f)
-            val active = player.isSprinting && player.onGround()
-                && player.deltaMovement.horizontalDistance() > 0.08
+            val active =
+                player.isSprinting && player.onGround() &&
+                    player.deltaMovement.horizontalDistance() > 0.08
 
-            sprintPose = if (active) {
-                Mth.lerp(0.3f * times, sprintPose, 1f)
-            } else {
-                Mth.lerp(1.4f * times, sprintPose, 0f)
-            }
+            sprintPose =
+                if (active) {
+                    Mth.lerp(0.3f * times, sprintPose, 1f)
+                } else {
+                    Mth.lerp(1.4f * times, sprintPose, 0f)
+                }
             if (sprintPose < 0.005f) {
                 sprintPose = 0f
                 return
@@ -82,9 +90,18 @@ class HandGrenadeRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityMo
             val bobY = Mth.sin((bobTime % 1.0 * Math.PI).toFloat()) * 0.03f
 
             poseStack.translate(0.06f * p, (-0.16f * p + bobY.toFloat() * p), -0.1f * p)
-            poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(24f * p))
-            poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-18f * p))
-            poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-10f * p))
+            poseStack.mulPose(
+                com.mojang.math.Axis.XP
+                    .rotationDegrees(24f * p),
+            )
+            poseStack.mulPose(
+                com.mojang.math.Axis.YP
+                    .rotationDegrees(-18f * p),
+            )
+            poseStack.mulPose(
+                com.mojang.math.Axis.ZP
+                    .rotationDegrees(-10f * p),
+            )
         }
     }
 }

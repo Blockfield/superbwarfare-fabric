@@ -10,10 +10,10 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.util.Mth
 
-class LavAdRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
-    override fun hideForTurretControllerWhileZooming(): Boolean {
-        return true
-    }
+class LavAdRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
+    override fun hideForTurretControllerWhileZooming(): Boolean = true
 
     override fun renderCustomPart(
         entity: VehicleEntity,
@@ -22,7 +22,7 @@ class LavAdRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRende
         entityYaw: Float,
         partialTicks: Float,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         super.renderCustomPart(entity, instance, poseStack, entityYaw, partialTicks, buffer, packedLight)
 
@@ -37,7 +37,7 @@ class LavAdRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRende
                 heat / 100,
                 heat / 100,
                 heat / 100,
-                1f
+                1f,
             )
         }
     }

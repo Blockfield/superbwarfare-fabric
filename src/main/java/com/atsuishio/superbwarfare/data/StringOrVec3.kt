@@ -40,7 +40,10 @@ class StringOrVec3 {
 
     internal class StringOrVec3Adapter : TypeAdapter<StringOrVec3?>() {
         @Throws(IOException::class)
-        override fun write(out: JsonWriter, value: StringOrVec3?) {
+        override fun write(
+            out: JsonWriter,
+            value: StringOrVec3?,
+        ) {
             if (value == null) {
                 out.nullValue()
                 return
@@ -85,12 +88,16 @@ class StringOrVec3 {
 }
 
 object StringOrVec3Serializer : KSerializer<StringOrVec3> {
-    override val descriptor = buildClassSerialDescriptor("StringOrVec3") {
-        element<String?>("string")
-        element<SerializedVec3?>("vec3")
-    }
+    override val descriptor =
+        buildClassSerialDescriptor("StringOrVec3") {
+            element<String?>("string")
+            element<SerializedVec3?>("vec3")
+        }
 
-    override fun serialize(encoder: Encoder, value: StringOrVec3) {
+    override fun serialize(
+        encoder: Encoder,
+        value: StringOrVec3,
+    ) {
         if (value.string != null) {
             encoder.encodeString(value.string)
         } else {

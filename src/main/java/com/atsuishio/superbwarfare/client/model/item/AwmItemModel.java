@@ -1,17 +1,19 @@
 package com.atsuishio.superbwarfare.client.model.item;
 
+import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
+
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.sniper.AwmItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
 
 public class AwmItemModel extends CustomGunModel<AwmItem> {
 
@@ -19,7 +21,8 @@ public class AwmItemModel extends CustomGunModel<AwmItem> {
     public static float rotXSight = 0f;
 
     @Override
-    public void setCustomAnimations(AwmItem animatable, long instanceId, AnimationState<AwmItem> animationState) {
+    public void setCustomAnimations(
+            AwmItem animatable, long instanceId, AnimationState<AwmItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -39,32 +42,42 @@ public class AwmItemModel extends CustomGunModel<AwmItem> {
         var data = GunData.from(stack);
         int type = data.attachment.get(AttachmentType.SCOPE);
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
 
-        float posY = switch (type) {
-            case 0 -> 0.15f;
-            case 1 -> 0.28f;
-            case 2 -> -0.06f;
-            case 3 -> 0.135f;
-            default -> 0f;
-        };
-        float scaleZ = switch (type) {
-            case 0 -> 0.55f;
-            case 1 -> 0.5f;
-            case 2 -> 0.9f;
-            case 3 -> 0.91f;
-            default -> 0f;
-        };
-        float posZ = switch (type) {
-            case 0 -> 3.5f;
-            case 1 -> 2.5f;
-            case 2 -> 5.5f;
-            case 3 -> 6.7f;
-            default -> 0f;
-        };
+        float posY =
+                switch (type) {
+                    case 0 -> 0.15f;
+                    case 1 -> 0.28f;
+                    case 2 -> -0.06f;
+                    case 3 -> 0.135f;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (type) {
+                    case 0 -> 0.55f;
+                    case 1 -> 0.5f;
+                    case 2 -> 0.9f;
+                    case 3 -> 0.91f;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (type) {
+                    case 0 -> 3.5f;
+                    case 1 -> 2.5f;
+                    case 2 -> 5.5f;
+                    case 3 -> 6.7f;
+                    default -> 0f;
+                };
 
         gun.setPosX(2.71f * (float) zp);
         gun.setPosY(posY * (float) zp - (float) (0.2f * zpz));
@@ -114,6 +127,9 @@ public class AwmItemModel extends CustomGunModel<AwmItem> {
             camera.setRotY(numR * camera.getRotY());
             camera.setRotZ(numR * camera.getRotZ());
         }
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

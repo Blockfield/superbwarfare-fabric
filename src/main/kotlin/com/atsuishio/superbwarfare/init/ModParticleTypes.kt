@@ -2,6 +2,8 @@ package com.atsuishio.superbwarfare.init
 
 import com.atsuishio.superbwarfare.Mod
 import com.atsuishio.superbwarfare.client.particle.*
+import com.atsuishio.superbwarfare.fabric.DeferredHolder
+import com.atsuishio.superbwarfare.fabric.DeferredRegister
 import com.mojang.serialization.MapCodec
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes
 import net.minecraft.core.particles.ParticleOptions
@@ -10,8 +12,6 @@ import net.minecraft.core.particles.SimpleParticleType
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
-import com.atsuishio.superbwarfare.fabric.DeferredHolder
-import com.atsuishio.superbwarfare.fabric.DeferredRegister
 import java.util.function.Supplier
 
 object ModParticleTypes {
@@ -29,9 +29,9 @@ object ModParticleTypes {
                 createOptions(
                     ExplosionDebrisOption.CODEC,
                     true,
-                    ExplosionDebrisOption.STREAM_CODEC
+                    ExplosionDebrisOption.STREAM_CODEC,
                 )
-            }
+            },
         )
 
     @JvmField
@@ -44,53 +44,50 @@ object ModParticleTypes {
     val BULLET_DECAL: DeferredHolder<ParticleType<*>, ParticleType<BulletDecalOption>> =
         REGISTRY.register(
             "bullet_decal",
-            Supplier { createOptions(BulletDecalOption.CODEC, true, BulletDecalOption.STREAM_CODEC) }
+            Supplier { createOptions(BulletDecalOption.CODEC, true, BulletDecalOption.STREAM_CODEC) },
         )
 
     @JvmField
     val CUSTOM_SMOKE: DeferredHolder<ParticleType<*>, ParticleType<CustomSmokeOption>> =
         REGISTRY.register(
             "custom_smoke",
-            Supplier { createOptions(CustomSmokeOption.CODEC, true, CustomSmokeOption.STREAM_CODEC) }
+            Supplier { createOptions(CustomSmokeOption.CODEC, true, CustomSmokeOption.STREAM_CODEC) },
         )
 
     @JvmField
     val CANNON_MUZZLE_FLARE: DeferredHolder<ParticleType<*>, ParticleType<CannonMuzzleFlareOption>> =
         REGISTRY.register(
             "cannon_muzzle_flare",
-            Supplier { createOptions(CannonMuzzleFlareOption.CODEC, true, CannonMuzzleFlareOption.STREAM_CODEC) }
+            Supplier { createOptions(CannonMuzzleFlareOption.CODEC, true, CannonMuzzleFlareOption.STREAM_CODEC) },
         )
 
     @JvmField
     val CUSTOM_FLARE: DeferredHolder<ParticleType<*>, ParticleType<CustomFlareOption>> =
         REGISTRY.register(
             "custom_flare",
-            Supplier { createOptions(CustomFlareOption.CODEC, true, CustomFlareOption.STREAM_CODEC) }
+            Supplier { createOptions(CustomFlareOption.CODEC, true, CustomFlareOption.STREAM_CODEC) },
         )
 
     @JvmField
     val CUSTOM_CLOUD: DeferredHolder<ParticleType<*>, ParticleType<CustomCloudOption>> =
         REGISTRY.register(
             "custom_cloud",
-            Supplier { createOptions(CustomCloudOption.CODEC, true, CustomCloudOption.STREAM_CODEC) }
+            Supplier { createOptions(CustomCloudOption.CODEC, true, CustomCloudOption.STREAM_CODEC) },
         )
 
     fun <T : ParticleOptions> createOptions(
         codec: MapCodec<T>,
         overrideLimiter: Boolean,
-        streamCodec: StreamCodec<in RegistryFriendlyByteBuf, T>
-    ): ParticleType<T> {
-        return object : ParticleType<T>(overrideLimiter) {
+        streamCodec: StreamCodec<in RegistryFriendlyByteBuf, T>,
+    ): ParticleType<T> =
+        object : ParticleType<T>(overrideLimiter) {
             override fun codec() = codec
 
             override fun streamCodec() = streamCodec
         }
-    }
 
     fun registerSimpleParticle(
         name: String,
-        limit: Boolean = true
-    ): DeferredHolder<ParticleType<*>, out SimpleParticleType> {
-        return REGISTRY.register(name, Supplier { FabricParticleTypes.simple(limit) })
-    }
+        limit: Boolean = true,
+    ): DeferredHolder<ParticleType<*>, out SimpleParticleType> = REGISTRY.register(name, Supplier { FabricParticleTypes.simple(limit) })
 }

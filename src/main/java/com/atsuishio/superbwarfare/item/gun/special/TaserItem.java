@@ -3,13 +3,16 @@ package com.atsuishio.superbwarfare.item.gun.special;
 import com.atsuishio.superbwarfare.client.renderer.gun.TaserItemRenderer;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.ShootParameters;
+import com.atsuishio.superbwarfare.fabric.Capabilities;
 import com.atsuishio.superbwarfare.init.ModPerks;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
-import com.atsuishio.superbwarfare.fabric.Capabilities;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 import java.util.function.Supplier;
@@ -45,7 +48,8 @@ public class TaserItem extends GunGeoItem {
         int perkLevel = data.perk.getLevel(ModPerks.INSTANCE.getVOLT_OVERLOAD());
 
         var energyStorage = Capabilities.EnergyStorage.ITEM.get(data.stack);
-        var hasEnoughEnergy = energyStorage != null && energyStorage.getEnergyStored() >= 400 + 100 * perkLevel;
+        var hasEnoughEnergy =
+                energyStorage != null && energyStorage.getEnergyStored() >= 400 + 100 * perkLevel;
 
         if (!hasEnoughEnergy) return false;
 

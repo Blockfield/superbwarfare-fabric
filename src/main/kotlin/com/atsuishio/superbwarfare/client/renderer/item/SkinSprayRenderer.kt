@@ -14,15 +14,17 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
 
-class SkinSprayRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityModelSet) :
-    BlockEntityWithoutLevelRenderer(dispatcher, set) {
+class SkinSprayRenderer(
+    dispatcher: BlockEntityRenderDispatcher,
+    set: EntityModelSet,
+) : BlockEntityWithoutLevelRenderer(dispatcher, set) {
     override fun renderByItem(
         stack: ItemStack,
         displayContext: ItemDisplayContext,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         if (stack.item !is SkinSprayItem) return
         val instance = modelInstance ?: return
@@ -36,7 +38,7 @@ class SkinSprayRenderer(dispatcher: BlockEntityRenderDispatcher, set: EntityMode
             RenderType.entityCutout(TEXTURE),
             BedrockModelRenderTypes.polyMeshCutout(TEXTURE),
             packedLight,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()

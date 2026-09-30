@@ -5,7 +5,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class FireMode(name: String) {
+enum class FireMode(
+    name: String,
+) {
     @SerializedName("Semi")
     @SerialName("Semi")
     SEMI("Semi"),
@@ -16,13 +18,12 @@ enum class FireMode(name: String) {
 
     @SerializedName("Auto")
     @SerialName("Auto")
-    AUTO("Auto");
+    AUTO("Auto"),
+    ;
 
     val typeName: String = name
 
-    override fun toString(): String {
-        return this.typeName
-    }
+    override fun toString(): String = this.typeName
 
     companion object {
         fun tryParse(value: String?): FireMode {

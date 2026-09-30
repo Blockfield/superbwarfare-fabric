@@ -3,7 +3,10 @@ package com.atsuishio.superbwarfare.item
 import net.minecraft.world.item.ItemStack
 
 interface IDyeableSmokeItem {
-    fun setColor(stack: ItemStack, color: Int)
+    fun setColor(
+        stack: ItemStack,
+        color: Int,
+    )
 
     fun getColor(stack: ItemStack): Int
 

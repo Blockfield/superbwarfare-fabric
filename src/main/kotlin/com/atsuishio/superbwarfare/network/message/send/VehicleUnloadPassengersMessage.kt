@@ -11,8 +11,9 @@ import kotlinx.serialization.Serializable
  * - unloadAll = false：主驾驶按住卸载乘客键时每隔1秒发送，让序号最靠后的一位乘客（非主驾驶）离开载具。
  */
 @Serializable
-data class VehicleUnloadPassengersMessage(val unloadAll: Boolean = false) : ServerPacketPayload() {
-
+data class VehicleUnloadPassengersMessage(
+    val unloadAll: Boolean = false,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         val vehicle = player.vehicle as? VehicleEntity ?: return

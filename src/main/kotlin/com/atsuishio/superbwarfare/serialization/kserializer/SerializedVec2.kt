@@ -9,15 +9,21 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.minecraft.world.phys.Vec2
 
-typealias SerializedVec2 = @Serializable(Vec2Serializer::class) Vec2
+typealias SerializedVec2 =
+    @Serializable(Vec2Serializer::class)
+    Vec2
 
 object Vec2Serializer : KSerializer<Vec2> {
-    override val descriptor = buildClassSerialDescriptor("Vec2") {
-        element<Float>("x")
-        element<Float>("y")
-    }
+    override val descriptor =
+        buildClassSerialDescriptor("Vec2") {
+            element<Float>("x")
+            element<Float>("y")
+        }
 
-    override fun serialize(encoder: Encoder, value: Vec2) {
+    override fun serialize(
+        encoder: Encoder,
+        value: Vec2,
+    ) {
         encoder.encodeSerializableValue(FloatArraySerializer(), floatArrayOf(value.x, value.y))
     }
 

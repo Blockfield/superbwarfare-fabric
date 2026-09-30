@@ -11,7 +11,7 @@ class LivingKillRecord(
     var target: Entity,
     var stack: ItemStack,
     var headshot: Boolean,
-    var damageType: ResourceKey<DamageType>
+    var damageType: ResourceKey<DamageType>,
 ) {
     var tick: Int = 0
     var freeze: Boolean = false

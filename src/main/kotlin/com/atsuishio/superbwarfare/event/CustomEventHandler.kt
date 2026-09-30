@@ -1,7 +1,5 @@
 package com.atsuishio.superbwarfare.event
 
-import com.atsuishio.superbwarfare.fabric.ModEventBus
-
 import com.atsuishio.superbwarfare.api.event.ProjectileHitEvent
 import com.atsuishio.superbwarfare.api.event.ReloadEvent
 import com.atsuishio.superbwarfare.config.server.ProjectileConfig
@@ -11,6 +9,7 @@ import com.atsuishio.superbwarfare.entity.projectile.GrapeshotEntity
 import com.atsuishio.superbwarfare.entity.projectile.IAdvancedHitDetection
 import com.atsuishio.superbwarfare.entity.projectile.ProjectileEntity
 import com.atsuishio.superbwarfare.entity.projectile.SuperStarProjectileEntity
+import com.atsuishio.superbwarfare.fabric.ModEventBus
 import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.item.gun.GunItem
 import com.atsuishio.superbwarfare.perk.Perk

@@ -6,17 +6,21 @@ import com.atsuishio.superbwarfare.data.gun.DefaultGunData
 import com.atsuishio.superbwarfare.data.gun.GunData
 import com.atsuishio.superbwarfare.data.gun.GunProp
 
-class PmcProxy(private val pmc: PMC<GunData, DefaultGunData>) {
-    private fun findGunProp(key: String): Prop<*, *, *, *, *> {
-        return GunProp.entries.firstOrNull { it.serializationName == key }
+class PmcProxy(
+    private val pmc: PMC<GunData, DefaultGunData>,
+) {
+    private fun findGunProp(key: String): Prop<*, *, *, *, *> =
+        GunProp.entries.firstOrNull { it.serializationName == key }
             ?: throw IllegalArgumentException("Unknown GunProp serializationName: '$key'")
-    }
 
     /**
      * Coerce a Number value to the correct type for the given property.
      * JS numbers always arrive as Double, but Int props need Int values.
      */
-    private fun coerceValue(prop: Prop<*, *, *, *, *>, value: Any?): Any? {
+    private fun coerceValue(
+        prop: Prop<*, *, *, *, *>,
+        value: Any?,
+    ): Any? {
         if (value !is Number) return value
         return when (prop.type) {
             Int::class.java, Integer::class.java, Int::class.javaObjectType -> value.toInt()
@@ -31,12 +35,18 @@ class PmcProxy(private val pmc: PMC<GunData, DefaultGunData>) {
 
     fun get(key: String): Any? = pmc.getUnchecked(findGunProp(key))
 
-    fun set(key: String, value: Any?) {
+    fun set(
+        key: String,
+        value: Any?,
+    ) {
         val prop = findGunProp(key)
         pmc.setUnchecked(prop, coerceValue(prop, value))
     }
 
-    fun add(key: String, amount: Number): Number {
+    fun add(
+        key: String,
+        amount: Number,
+    ): Number {
         val prop = findGunProp(key)
         val current = (pmc.getUnchecked(prop) as Number).toDouble()
         val result = current + amount.toDouble()
@@ -45,7 +55,10 @@ class PmcProxy(private val pmc: PMC<GunData, DefaultGunData>) {
         return coerced as Number
     }
 
-    fun mul(key: String, factor: Number): Number {
+    fun mul(
+        key: String,
+        factor: Number,
+    ): Number {
         val prop = findGunProp(key)
         val current = (pmc.getUnchecked(prop) as Number).toDouble()
         val result = current * factor.toDouble()
@@ -54,7 +67,10 @@ class PmcProxy(private val pmc: PMC<GunData, DefaultGunData>) {
         return coerced as Number
     }
 
-    fun clampMin(key: String, min: Number): Number {
+    fun clampMin(
+        key: String,
+        min: Number,
+    ): Number {
         val prop = findGunProp(key)
         val current = (pmc.getUnchecked(prop) as Number).toDouble()
         val result = maxOf(current, min.toDouble())
@@ -63,7 +79,10 @@ class PmcProxy(private val pmc: PMC<GunData, DefaultGunData>) {
         return coerced as Number
     }
 
-    fun clampMax(key: String, max: Number): Number {
+    fun clampMax(
+        key: String,
+        max: Number,
+    ): Number {
         val prop = findGunProp(key)
         val current = (pmc.getUnchecked(prop) as Number).toDouble()
         val result = minOf(current, max.toDouble())

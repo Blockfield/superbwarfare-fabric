@@ -5,20 +5,17 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSValueParameter
 
-
 class ProcessorProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return Processor(environment.codeGenerator, environment.logger)
-    }
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor = Processor(environment.codeGenerator, environment.logger)
 }
 
 class Processor(
     private val codeGenerator: CodeGenerator,
-    private val logger: KSPLogger
+    private val logger: KSPLogger,
 ) : SymbolProcessor {
-
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        resolver.getSymbolsWithAnnotation("com.atsuishio.superbwarfare.ksp.annotation.GenerateMapCodec")
+        resolver
+            .getSymbolsWithAnnotation("com.atsuishio.superbwarfare.ksp.annotation.GenerateMapCodec")
             .filterIsInstance<KSClassDeclaration>()
             .forEach(::processClass)
 
@@ -37,31 +34,33 @@ class Processor(
     private fun generateFancyExtension(
         classDeclaration: KSClassDeclaration,
         packageName: String,
-        className: String
+        className: String,
     ) {
-        val file = codeGenerator.createNewFile(
-            dependencies = Dependencies(false, classDeclaration.containingFile!!),
-            packageName = packageName,
-            fileName = "${className}GeneratedCodec"
-        )
+        val file =
+            codeGenerator.createNewFile(
+                dependencies = Dependencies(false, classDeclaration.containingFile!!),
+                packageName = packageName,
+                fileName = "${className}GeneratedCodec",
+            )
 
         val parameters = classDeclaration.primaryConstructor?.parameters.orEmpty()
 
         if (parameters.size !in 1..8) {
             logger.error(
                 "@GenerateMapCodec class $className must have 1 to 8 primary constructor parameters!",
-                classDeclaration
+                classDeclaration,
             )
             return
         }
 
-        val parameterCodecs = parameters.joinToString(
-            prefix = "\n                        ",
-            separator = ",\n                        ",
-            postfix = "\n                    "
-        ) {
-            generateCodec(it)
-        }
+        val parameterCodecs =
+            parameters.joinToString(
+                prefix = "\n                        ",
+                separator = ",\n                        ",
+                postfix = "\n                    ",
+            ) {
+                generateCodec(it)
+            }
 
         file.bufferedWriter().use { writer ->
             writer.write(
@@ -77,14 +76,20 @@ class Processor(
                     builder.group($parameterCodecs).apply(builder, ::$className)
                 }
 
-                """.trimIndent()
+                """.trimIndent(),
             )
         }
     }
 
     private fun generateCodec(parameter: KSValueParameter): String {
         val name = parameter.name!!.asString()
-        return when (val type = parameter.type.resolve().declaration.qualifiedName?.asString()) {
+        return when (
+            val type =
+                parameter.type
+                    .resolve()
+                    .declaration.qualifiedName
+                    ?.asString()
+        ) {
             "kotlin.Byte" -> """com.mojang.serialization.Codec.BYTE.fieldOf("$name").forGetter { it.$name }"""
             "kotlin.Short" -> """com.mojang.serialization.Codec.SHORT.fieldOf("$name").forGetter { it.$name }"""
             "kotlin.Int" -> """com.mojang.serialization.Codec.INT.fieldOf("$name").forGetter { it.$name }"""

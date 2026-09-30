@@ -4,14 +4,14 @@ import com.atsuishio.superbwarfare.capability.living.PhosphorusFireCapability
 import com.atsuishio.superbwarfare.tools.mc
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.Sheets
 import net.minecraft.client.renderer.texture.TextureAtlas
 import net.minecraft.client.resources.model.Material
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.world.entity.LivingEntity
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import org.joml.Quaternionf
 
 @Environment(EnvType.CLIENT)
@@ -22,7 +22,7 @@ object PhosphorusFireRenderer {
     fun onRenderCurseFlame(
         entity: LivingEntity,
         stack: PoseStack,
-        multiBufferSource: MultiBufferSource
+        multiBufferSource: MultiBufferSource,
     ) {
         if (!PhosphorusFireCapability.of(entity).isOnFire) return
 
@@ -81,9 +81,14 @@ object PhosphorusFireRenderer {
         pY: Float,
         pZ: Float,
         pTexU: Float,
-        pTexV: Float
+        pTexV: Float,
     ) {
-        pBuffer.addVertex(pMatrixEntry, pX, pY, pZ).setColor(150, 150, 255, 255).setUv(pTexU, pTexV)
-            .setUv1(0, 10).setLight(240).setNormal(pMatrixEntry, 0.0f, 1.0f, 0.0f)
+        pBuffer
+            .addVertex(pMatrixEntry, pX, pY, pZ)
+            .setColor(150, 150, 255, 255)
+            .setUv(pTexU, pTexV)
+            .setUv1(0, 10)
+            .setLight(240)
+            .setNormal(pMatrixEntry, 0.0f, 1.0f, 0.0f)
     }
 }

@@ -16,13 +16,18 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Math
 
-open class WheelChairEntity(type: EntityType<out WheelChairEntity>, level: Level) : VehicleEntity(type, level) {
+open class WheelChairEntity(
+    type: EntityType<out WheelChairEntity>,
+    level: Level,
+) : VehicleEntity(type, level) {
     override fun playerTouch(pPlayer: Player) {
-        if (this.position().distanceTo(pPlayer.position()) > 1.4
-            || pPlayer === this.getFirstPassenger() && pPlayer.position().y > position().y
-        ) return
-        if (!this.level().isClientSide && pPlayer.y < this.y + this.bbHeight
-            && pPlayer.y + pPlayer.bbHeight > this.y
+        if (this.position().distanceTo(pPlayer.position()) > 1.4 ||
+            pPlayer === this.getFirstPassenger() && pPlayer.position().y > position().y
+        ) {
+            return
+        }
+        if (!this.level().isClientSide && pPlayer.y < this.y + this.bbHeight &&
+            pPlayer.y + pPlayer.bbHeight > this.y
         ) {
             val entitySize = (pPlayer.bbWidth * pPlayer.bbHeight).toDouble()
             val thisSize = (this.bbWidth * this.bbHeight).toDouble()
@@ -30,9 +35,9 @@ open class WheelChairEntity(type: EntityType<out WheelChairEntity>, level: Level
             this.setDeltaMovement(
                 this.deltaMovement.add(
                     Vec3(
-                        pPlayer.position().vectorTo(this.position()).toVector3f()
-                    ).scale(0.5 * f * pPlayer.deltaMovement.length())
-                )
+                        pPlayer.position().vectorTo(this.position()).toVector3f(),
+                    ).scale(0.5 * f * pPlayer.deltaMovement.length()),
+                ),
             )
             this.yRot = pPlayer.getYHeadRot()
         }
@@ -43,9 +48,7 @@ open class WheelChairEntity(type: EntityType<out WheelChairEntity>, level: Level
         attractEntity()
     }
 
-    open fun hasEnoughSpaceFor(pEntity: Entity): Boolean {
-        return pEntity.bbWidth < this.bbWidth
-    }
+    open fun hasEnoughSpaceFor(pEntity: Entity): Boolean = pEntity.bbWidth < this.bbWidth
 
     open fun attractEntity() {
         val list = this.level().getEntities(this, this.boundingBox.inflate(0.2, -0.01, 0.2))
@@ -53,11 +56,11 @@ open class WheelChairEntity(type: EntityType<out WheelChairEntity>, level: Level
             val flag = !this.level().isClientSide && this.controllingPassenger !is Player
 
             for (entity in list) {
-                if (!entity.hasPassenger(this)
-                    && flag
-                    && !entity.isPassenger
-                    && this.hasEnoughSpaceFor(entity)
-                    && (entity is LivingEntity || entity is MortarEntity) && (entity !is WaterAnimal) && (entity !is Player)
+                if (!entity.hasPassenger(this) &&
+                    flag &&
+                    !entity.isPassenger &&
+                    this.hasEnoughSpaceFor(entity) &&
+                    (entity is LivingEntity || entity is MortarEntity) && (entity !is WaterAnimal) && (entity !is Player)
                 ) {
                     entity.startRiding(this)
                 }
@@ -68,9 +71,11 @@ open class WheelChairEntity(type: EntityType<out WheelChairEntity>, level: Level
     override fun addPassenger(pPassenger: Entity) {
         super.addPassenger(pPassenger)
 
-        if (pPassenger is ServerPlayer
-            && (pPassenger.mainHandItem.item == ModItems.ELECTRIC_BATON.get()
-                    || pPassenger.offhandItem.item == ModItems.ELECTRIC_BATON.get())
+        if (pPassenger is ServerPlayer &&
+            (
+                pPassenger.mainHandItem.item == ModItems.ELECTRIC_BATON.get() ||
+                    pPassenger.offhandItem.item == ModItems.ELECTRIC_BATON.get()
+            )
         ) {
             ModCriteriaTriggers.OTTO_SPRINT.get().trigger(pPassenger)
         }

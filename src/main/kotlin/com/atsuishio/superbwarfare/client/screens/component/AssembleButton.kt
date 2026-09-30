@@ -7,9 +7,18 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
 import net.minecraft.network.chat.Component
 
-class AssembleButton(x: Int, y: Int, onPress: OnPress) :
-    Button(x, y, 56, 13, Component.empty(), onPress, DEFAULT_NARRATION), AccessoriesButtonStub {
-    override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+class AssembleButton(
+    x: Int,
+    y: Int,
+    onPress: OnPress,
+) : Button(x, y, 56, 13, Component.empty(), onPress, DEFAULT_NARRATION),
+    AccessoriesButtonStub {
+    override fun renderWidget(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         pGuiGraphics.pose().pushPose()
         RenderSystem.enableDepthTest()
 
@@ -23,7 +32,7 @@ class AssembleButton(x: Int, y: Int, onPress: OnPress) :
                 this.width,
                 this.height,
                 VehicleAssemblingScreen.IMAGE_SIZE,
-                VehicleAssemblingScreen.IMAGE_SIZE
+                VehicleAssemblingScreen.IMAGE_SIZE,
             )
         } else {
             pGuiGraphics.blit(
@@ -35,7 +44,7 @@ class AssembleButton(x: Int, y: Int, onPress: OnPress) :
                 this.width,
                 this.height,
                 VehicleAssemblingScreen.IMAGE_SIZE,
-                VehicleAssemblingScreen.IMAGE_SIZE
+                VehicleAssemblingScreen.IMAGE_SIZE,
             )
         }
 
@@ -48,7 +57,7 @@ class AssembleButton(x: Int, y: Int, onPress: OnPress) :
             this.y + 3,
             this.x + 56,
             this.y + 10,
-            -1
+            -1,
         )
 
         pGuiGraphics.pose().popPose()

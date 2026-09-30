@@ -10,7 +10,7 @@ object VoltOverload : Perk("volt_overload", Type.DAMAGE) {
     override fun modifyProjectile(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity
+        entity: Entity,
     ) {
         if (entity is TaserBulletEntity) {
             entity.volt = instance.level.toInt()

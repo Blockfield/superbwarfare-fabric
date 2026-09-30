@@ -19,16 +19,15 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import software.bernie.geckolib.renderer.GeoEntityRenderer
 
-class DroneRenderer(renderManager: EntityRendererProvider.Context) :
-    GeoEntityRenderer<DroneEntity>(renderManager, DroneModel()) {
+class DroneRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : GeoEntityRenderer<DroneEntity>(renderManager, DroneModel()) {
     override fun getRenderType(
         animatable: DroneEntity,
         texture: ResourceLocation?,
         bufferSource: MultiBufferSource?,
-        partialTick: Float
-    ): RenderType? {
-        return RenderType.entityTranslucent(getTextureLocation(animatable))
-    }
+        partialTick: Float,
+    ): RenderType? = RenderType.entityTranslucent(getTextureLocation(animatable))
 
     override fun render(
         entityIn: DroneEntity,
@@ -36,7 +35,7 @@ class DroneRenderer(renderManager: EntityRendererProvider.Context) :
         partialTicks: Float,
         poseStack: PoseStack,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         poseStack.pushPose()
         poseStack.mulPose(Axis.YP.rotationDegrees(-entityIn.getYaw(partialTicks)))
@@ -85,7 +84,7 @@ class DroneRenderer(renderManager: EntityRendererProvider.Context) :
         partialTicks: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val data = entity.getEntityData()
         val attached = data.get(DroneEntity.DISPLAY_ENTITY)
@@ -96,9 +95,11 @@ class DroneRenderer(renderManager: EntityRendererProvider.Context) :
         if (entityNameCache == attached && entityCache != null) {
             renderEntity = entityCache
         } else {
-            renderEntity = EntityType.byString(attached)
-                .map { type -> type.create(entity.level()) }
-                .orElse(null)
+            renderEntity =
+                EntityType
+                    .byString(attached)
+                    .map { type -> type.create(entity.level()) }
+                    .orElse(null)
             if (renderEntity == null) return
 
             // 填充tag
@@ -164,7 +165,7 @@ class DroneRenderer(renderManager: EntityRendererProvider.Context) :
                 partialTicks,
                 poseStack,
                 buffer,
-                packedLight
+                packedLight,
             )
 
             poseStack.popPose()

@@ -15,7 +15,9 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundSource
 
-class ContainerBlockContext(val entity: ContainerBlockEntity) {
+class ContainerBlockContext(
+    val entity: ContainerBlockEntity,
+) {
     val animations = hashMapOf<String, BedrockAnimation>()
     var partialTick: Float = 0f
 
@@ -54,12 +56,15 @@ class ContainerBlockContext(val entity: ContainerBlockEntity) {
                 soundEvent,
                 SoundSource.BLOCKS,
                 1.0f,
-                1.0f
+                1.0f,
             )
         }
     }
 
-    fun playAnimation(animationName: String?, type: AnimationPlayType) {
+    fun playAnimation(
+        animationName: String?,
+        type: AnimationPlayType,
+    ) {
         val animation = animations[animationName]
         if (animation != null) {
             animationRunner = AnimationRunner(animation, AnimationContext(animation.specifiedEndTimeS))
@@ -67,13 +72,9 @@ class ContainerBlockContext(val entity: ContainerBlockEntity) {
         }
     }
 
-    fun getPose(): Pose {
-        return animationRunner?.evaluate() ?: DummyPose.INSTANCE
-    }
+    fun getPose(): Pose = animationRunner?.evaluate() ?: DummyPose.INSTANCE
 
-    fun isOpen(): Boolean {
-        return entity.blockState.getValue(ContainerBlock.OPENED)
-    }
+    fun isOpen(): Boolean = entity.blockState.getValue(ContainerBlock.OPENED)
 
     companion object {
         val ANIM = loc("animations/bedrock/block/container.animation.json")

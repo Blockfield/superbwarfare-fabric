@@ -27,9 +27,10 @@ import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import org.joml.Math
 
-open class ContainerBlockEntity(pos: BlockPos, state: BlockState) :
-    BlockEntity(ModBlockEntities.CONTAINER.get(), pos, state) {
-
+open class ContainerBlockEntity(
+    pos: BlockPos,
+    state: BlockState,
+) : BlockEntity(ModBlockEntities.CONTAINER.get(), pos, state) {
     open val modelInstance = BlockModelReloadListener.getModel(MODEL)?.createInstance()
 
     var animationInstance: ContainerBlockAnimationInstance? = null
@@ -42,7 +43,10 @@ open class ContainerBlockEntity(pos: BlockPos, state: BlockState) :
     var tick: Int = 0
     var opened: Boolean = false
 
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun loadAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.loadAdditional(tag, registries)
         loadFromTag(tag)
     }
@@ -84,20 +88,22 @@ open class ContainerBlockEntity(pos: BlockPos, state: BlockState) :
         tag.putBoolean("Opened", this.opened)
     }
 
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun saveAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveAdditional(tag, registries)
         saveDataToTag(tag)
     }
 
-    override fun getUpdatePacket(): ClientboundBlockEntityDataPacket? {
-        return ClientboundBlockEntityDataPacket.create(this)
-    }
+    override fun getUpdatePacket(): ClientboundBlockEntityDataPacket? = ClientboundBlockEntityDataPacket.create(this)
 
-    override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag {
-        return this.saveWithFullMetadata(registries)
-    }
+    override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag = this.saveWithFullMetadata(registries)
 
-    override fun saveToItem(stack: ItemStack, registries: HolderLookup.Provider) {
+    override fun saveToItem(
+        stack: ItemStack,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveToItem(stack, registries)
 
         val tag = CompoundTag()
@@ -111,7 +117,12 @@ open class ContainerBlockEntity(pos: BlockPos, state: BlockState) :
     companion object {
         val MODEL = loc("models/bedrock/block/container.geo.json")
 
-        fun serverTick(pLevel: Level, pPos: BlockPos, pState: BlockState, blockEntity: ContainerBlockEntity) {
+        fun serverTick(
+            pLevel: Level,
+            pPos: BlockPos,
+            pState: BlockState,
+            blockEntity: ContainerBlockEntity,
+        ) {
             if (!pState.getValue(ContainerBlock.OPENED)) {
                 return
             }
@@ -132,7 +143,7 @@ open class ContainerBlockEntity(pos: BlockPos, state: BlockState) :
                         1.5,
                         1.5,
                         1.0,
-                        false
+                        false,
                     )
                     pLevel.playSound(
                         null,
@@ -140,7 +151,7 @@ open class ContainerBlockEntity(pos: BlockPos, state: BlockState) :
                         SoundEvents.GENERIC_EXPLODE.value(),
                         SoundSource.BLOCKS,
                         4f,
-                        (1 + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.2f) * 0.7f
+                        (1 + (pLevel.random.nextFloat() - pLevel.random.nextFloat()) * 0.2f) * 0.7f,
                     )
                 }
             } else {
@@ -161,7 +172,7 @@ open class ContainerBlockEntity(pos: BlockPos, state: BlockState) :
                 entity.setPos(
                     pPos.x + 0.5 + (2 * Math.random() - 1) * 0.1f,
                     pPos.y + 0.5 + (2 * Math.random() - 1) * 0.1f,
-                    pPos.z + 0.5 + (2 * Math.random() - 1) * 0.1f
+                    pPos.z + 0.5 + (2 * Math.random() - 1) * 0.1f,
                 )
                 entity.yRot = direction.toYRot()
                 if (entity is VehicleEntity) {

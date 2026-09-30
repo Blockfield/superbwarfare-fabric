@@ -33,7 +33,6 @@ import net.minecraft.world.phys.Vec3
  * ```
  */
 object RadarScanner {
-
     enum class SearchType {
         /** 只搜索载具和导弹（从 ServerSyncedEntityHandler 查询，快速） */
         VEHICLES,
@@ -83,13 +82,18 @@ object RadarScanner {
         /** 检测到的敌对/中立玩家信息，用于在客户端渲染玩家图标 */
         val playerInfos: List<PlayerInfoSyncMessage.SyncedPlayerInfo> = emptyList(),
     ) {
-        fun sendToClients(owner: Player, level: ServerLevel, shareWithTeammates: Boolean = true) {
-            val recipients = level.players()
-                .asSequence()
-                .filter {
-                    it == owner || (shareWithTeammates && SeekTool.IS_FRIENDLY.test(owner, it))
-                }
-                .toList()
+        fun sendToClients(
+            owner: Player,
+            level: ServerLevel,
+            shareWithTeammates: Boolean = true,
+        ) {
+            val recipients =
+                level
+                    .players()
+                    .asSequence()
+                    .filter {
+                        it == owner || (shareWithTeammates && SeekTool.IS_FRIENDLY.test(owner, it))
+                    }.toList()
 
             if (hostileIds.isNotEmpty() || neutralIds.isNotEmpty()) {
                 val msg = EntityRelationSyncMessage(dim, hostileIds = hostileIds, neutralIds = neutralIds)
@@ -107,27 +111,33 @@ object RadarScanner {
      * 同步雷达配置到客户端（每 tick 调用以保证旋转流畅）。
      * 独立于实体扫描，即使未到扫描间隔也会发送雷达位置和朝向。
      */
-    fun sendRadarConfig(config: RadarConfig, level: ServerLevel) {
-        val recipients = level.players()
-            .asSequence()
-            .filter {
-                it == config.owner || (config.shareWithTeammates && SeekTool.IS_FRIENDLY.test(config.owner, it))
-            }
-            .toList()
+    fun sendRadarConfig(
+        config: RadarConfig,
+        level: ServerLevel,
+    ) {
+        val recipients =
+            level
+                .players()
+                .asSequence()
+                .filter {
+                    it == config.owner || (config.shareWithTeammates && SeekTool.IS_FRIENDLY.test(config.owner, it))
+                }.toList()
         val effectiveYRot = config.effectiveYRot(level.server.tickCount)
-        val msg = RadarSyncMessage(
-            level.dimension().location(), listOf(
-                RadarSyncMessage.SyncedRadar(
-                    pos = config.center,
-                    radius = config.radius,
-                    sweepAngle = config.sweepAngle,
-                    yRot = effectiveYRot,
-                    ownerName = config.owner.displayName?.string ?: "",
-                    showIcon = config.showIcon,
-                    sourceId = config.sourceId,
-                )
+        val msg =
+            RadarSyncMessage(
+                level.dimension().location(),
+                listOf(
+                    RadarSyncMessage.SyncedRadar(
+                        pos = config.center,
+                        radius = config.radius,
+                        sweepAngle = config.sweepAngle,
+                        yRot = effectiveYRot,
+                        ownerName = config.owner.displayName?.string ?: "",
+                        showIcon = config.showIcon,
+                        sourceId = config.sourceId,
+                    ),
+                ),
             )
-        )
         recipients.forEach { sendPacketTo(it, msg) }
     }
 
@@ -136,17 +146,21 @@ object RadarScanner {
      * @param level       服务端世界
      * @param config      雷达配置
      */
-    fun scan(level: ServerLevel, config: RadarConfig): ScanResult {
+    fun scan(
+        level: ServerLevel,
+        config: RadarConfig,
+    ): ScanResult {
         val dim = level.dimension().location()
         val radiusSq = config.radius * config.radius
         val effectiveYRot = config.effectiveYRot(level.server.tickCount)
 
         val angleRad = effectiveYRot * Math.PI / 180.0
-        val sweepDir = Vec3(
-            Mth.sin(angleRad.toFloat()).toDouble(),
-            0.0,
-            -Mth.cos(angleRad.toFloat()).toDouble()
-        )
+        val sweepDir =
+            Vec3(
+                Mth.sin(angleRad.toFloat()).toDouble(),
+                0.0,
+                -Mth.cos(angleRad.toFloat()).toDouble(),
+            )
 
         val hostileList = mutableListOf<Int>()
         val neutralList = mutableListOf<Int>()
@@ -181,8 +195,9 @@ object RadarScanner {
 
                 // 高度范围检查
                 if (config.minTargetHeight != null && config.maxTargetHeight != null) {
-                    if (!SeekTool.IN_HEIGHT_RANGE.test(entity, config.minTargetHeight, config.maxTargetHeight))
+                    if (!SeekTool.IN_HEIGHT_RANGE.test(entity, config.minTargetHeight, config.maxTargetHeight)) {
                         continue
+                    }
                 }
 
                 // 友方导弹由 MissileProjectile.tick() 自行同步，雷达只上报敌方导弹
@@ -195,17 +210,20 @@ object RadarScanner {
                 }
                 when {
                     // 中立：无驾驶员、无主人、lastDriverUUID 为空
-                    isNeutral(entity) -> neutralList.add(entry.entityId)
+                    isNeutral(entity) -> {
+                        neutralList.add(entry.entityId)
+                    }
+
                     // 敌对：有队伍且非友方；无队伍实体（怪物除外）均为中立
                     !SeekTool.IS_FRIENDLY.test(config.owner, entity) -> {
                         if (entity is Player && entity.team == null) {
                             neutralList.add(entry.entityId)
-                        } else if (entity is VehicleEntity && entity.firstPassenger is Player
-                            && (entity.firstPassenger as Player).team == null
+                        } else if (entity is VehicleEntity && entity.firstPassenger is Player &&
+                            (entity.firstPassenger as Player).team == null
                         ) {
                             neutralList.add(entry.entityId)
-                        } else if (entity is LivingEntity && entity.team == null
-                            && entity.type.category != MobCategory.MONSTER
+                        } else if (entity is LivingEntity && entity.team == null &&
+                            entity.type.category != MobCategory.MONSTER
                         ) {
                             neutralList.add(entry.entityId)
                         } else {
@@ -226,7 +244,7 @@ object RadarScanner {
                             isDriver = entity.vehicle != null && entity.vehicle?.controllingPassenger == entity,
                             relation = if (entity.team == null) "neutral" else "hostile",
                             entityId = entity.id,
-                        )
+                        ),
                     )
                 }
             }
@@ -234,18 +252,17 @@ object RadarScanner {
 
         // ── 搜索生物 ──
         if (config.searchType == SearchType.LIVING) {
-            level.allEntities.asSequence()
+            level.allEntities
+                .asSequence()
                 .filter {
-                    it is LivingEntity
-                            && !ServerSyncedEntityHandler.isUnderground(it)
-                            && it.id != config.owner.id
-                            && it.distanceToSqr(config.center) <= radiusSq
-                }
-                .filter {
+                    it is LivingEntity &&
+                        !ServerSyncedEntityHandler.isUnderground(it) &&
+                        it.id != config.owner.id &&
+                        it.distanceToSqr(config.center) <= radiusSq
+                }.filter {
                     val toEntity = config.center.vectorTo(it.position()).multiply(1.0, 0.0, 1.0)
                     VectorTool.calculateAngle(toEntity, sweepDir) <= config.sweepAngle / 2.0
-                }
-                .filter { SeekTool.NOT_IN_SMOKE.test(it) && !SeekTool.IS_FRIENDLY.test(config.owner, it) }
+                }.filter { SeekTool.NOT_IN_SMOKE.test(it) && !SeekTool.IS_FRIENDLY.test(config.owner, it) }
                 .forEach {
                     // 注册到 ServerSyncedEntityHandler，使其进入超视距世界渲染广播
                     ServerSyncedEntityHandler.register(it)

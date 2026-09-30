@@ -37,5 +37,8 @@ interface StackAttributeItem {
  * сама, здесь остаются только дополнительные иммунитеты мода.
  */
 interface DamageFilterItem {
-    fun canBeHurtBy(stack: ItemStack, source: DamageSource): Boolean
+    fun canBeHurtBy(
+        stack: ItemStack,
+        source: DamageSource,
+    ): Boolean
 }

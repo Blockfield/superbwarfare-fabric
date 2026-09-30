@@ -7,18 +7,21 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder
 import net.minecraft.network.chat.Component
 
 object ReloadClothConfig {
-    fun init(root: ConfigBuilder, entryBuilder: ConfigEntryBuilder) {
+    fun init(
+        root: ConfigBuilder,
+        entryBuilder: ConfigEntryBuilder,
+    ) {
         val category = root.getOrCreateCategory(Component.translatable("config.superbwarfare.client.reload"))
 
         category.addEntry(
             entryBuilder
                 .startBooleanToggle(
                     Component.translatable("config.superbwarfare.client.reload.left_click_reload"),
-                    ReloadConfig.LEFT_CLICK_RELOAD.get()
-                )
-                .setDefaultValue(true)
+                    ReloadConfig.LEFT_CLICK_RELOAD.get(),
+                ).setDefaultValue(true)
                 .setSaveConsumer(save(ReloadConfig.LEFT_CLICK_RELOAD))
-                .setTooltip(Component.translatable("config.superbwarfare.client.reload.left_click_reload.des")).build()
+                .setTooltip(Component.translatable("config.superbwarfare.client.reload.left_click_reload.des"))
+                .build(),
         )
     }
 }

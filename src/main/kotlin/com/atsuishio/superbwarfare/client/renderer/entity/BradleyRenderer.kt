@@ -10,17 +10,17 @@ import net.minecraft.client.CameraType
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class BradleyRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
-    override fun hideForTurretControllerWhileZooming(): Boolean {
-        return true
-    }
+class BradleyRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
+    override fun hideForTurretControllerWhileZooming(): Boolean = true
 
     override fun transformCustomModelPart(
         entity: VehicleEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 
@@ -29,7 +29,10 @@ class BradleyRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRen
         guangDian?.rotation?.rotationX(rot)
 
         val player = localPlayer
-        val hide = player != null && entity === player.vehicle && entity.getFirstPassenger() !== player && entity.hasWeapon(entity.getSeatIndex(player)) && (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
+        val hide =
+            player != null && entity === player.vehicle && entity.getFirstPassenger() !== player &&
+                entity.hasWeapon(entity.getSeatIndex(player)) &&
+                (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
 
         val base = instance.getBone("base")
         val track = instance.getBone("move_Track")

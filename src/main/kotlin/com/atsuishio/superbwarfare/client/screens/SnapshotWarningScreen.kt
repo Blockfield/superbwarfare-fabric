@@ -1,6 +1,10 @@
 package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
@@ -9,15 +13,13 @@ import net.minecraft.client.gui.components.MultiLineLabel
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.TitleScreen
 import net.minecraft.network.chat.Component
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
-import net.fabricmc.loader.api.FabricLoader
 
 @Environment(EnvType.CLIENT)
-class SnapshotWarningScreen(val lastScreen: Screen) : Screen(
-    Component.translatable("warning.superbwarfare.title.snapshot").withStyle(ChatFormatting.BOLD)
-) {
+class SnapshotWarningScreen(
+    val lastScreen: Screen,
+) : Screen(
+        Component.translatable("warning.superbwarfare.title.snapshot").withStyle(ChatFormatting.BOLD),
+    ) {
     private var message: MultiLineLabel = MultiLineLabel.EMPTY
     private var freezeTicks = 100
     private var button: AbstractButton? = null
@@ -33,7 +35,7 @@ class SnapshotWarningScreen(val lastScreen: Screen) : Screen(
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
         if (this.minecraft!!.level == null) {
             this.renderPanorama(guiGraphics, partialTick)
@@ -44,11 +46,12 @@ class SnapshotWarningScreen(val lastScreen: Screen) : Screen(
 
     override fun init() {
         super.init()
-        this.message = MultiLineLabel.create(
-            this.font,
-            Component.translatable("warning.superbwarfare.content.snapshot"),
-            this.width - 100
-        )
+        this.message =
+            MultiLineLabel.create(
+                this.font,
+                Component.translatable("warning.superbwarfare.content.snapshot"),
+                this.width - 100,
+            )
         val i: Int = (this.message.lineCount + 1) * 18
 
         this.initButtons(i)
@@ -65,13 +68,19 @@ class SnapshotWarningScreen(val lastScreen: Screen) : Screen(
         }
     }
 
-    private fun createProceedButton(yOffset: Int): AbstractButton {
-        return Button.builder(Component.translatable("gui.proceed").append(" (${this.freezeTicks / 20}s)")) {
-            mc.setScreen(this.lastScreen)
-        }.bounds(this.width / 2 - 75, 100 + yOffset, 150, 20).build()
-    }
+    private fun createProceedButton(yOffset: Int): AbstractButton =
+        Button
+            .builder(Component.translatable("gui.proceed").append(" (${this.freezeTicks / 20}s)")) {
+                mc.setScreen(this.lastScreen)
+            }.bounds(this.width / 2 - 75, 100 + yOffset, 150, 20)
+            .build()
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
         pGuiGraphics.drawString(this.font, this.title, (this.width - this.font.width(this.title)) / 2, 30, 16777215)
         val i = this.width / 2 - this.message.width / 2
@@ -100,9 +109,11 @@ class SnapshotWarningScreen(val lastScreen: Screen) : Screen(
             firstTimeStart = true
         }
 
-        fun getVersion(): String? = FabricLoader.getInstance()
-            .getModContainer(com.atsuishio.superbwarfare.Mod.MODID)
-            .map { it.metadata.version.friendlyString }
-            .orElse(null)
+        fun getVersion(): String? =
+            FabricLoader
+                .getInstance()
+                .getModContainer(com.atsuishio.superbwarfare.Mod.MODID)
+                .map { it.metadata.version.friendlyString }
+                .orElse(null)
     }
 }

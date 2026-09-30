@@ -7,11 +7,11 @@ import com.atsuishio.superbwarfare.entity.vehicle.TowEntity
 import com.atsuishio.superbwarfare.event.ClientEventHandler
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.CameraType
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.util.Mth
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -25,10 +25,15 @@ object TowOverlay : CommonOverlay("tow") {
 
         val vehicle = player.vehicle
 
-        if ((vehicle is TowEntity || (vehicle is SodayoPickUpTowEntity && vehicle.turretControllerIndex == vehicle.getSeatIndex(
-                player
-            )))
-            && (ClientEventHandler.zoomVehicle || mc.options.cameraType == CameraType.FIRST_PERSON)
+        if ((
+                vehicle is TowEntity || (
+                    vehicle is SodayoPickUpTowEntity && vehicle.turretControllerIndex ==
+                        vehicle.getSeatIndex(
+                            player,
+                        )
+                )
+            ) &&
+            (ClientEventHandler.zoomVehicle || mc.options.cameraType == CameraType.FIRST_PERSON)
         ) {
             poseStack.pushPose()
             RenderSystem.disableDepthTest()
@@ -39,15 +44,17 @@ object TowOverlay : CommonOverlay("tow") {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
-            scopeScale = Mth.lerp(
-                (0.5f * deltaFrame).toDouble(),
-                scopeScale.toDouble(),
-                1.35f + (0.2f * ClientEventHandler.boltMove)
-            ).toFloat()
+            scopeScale =
+                Mth
+                    .lerp(
+                        (0.5f * deltaFrame).toDouble(),
+                        scopeScale.toDouble(),
+                        1.35f + (0.2f * ClientEventHandler.boltMove),
+                    ).toFloat()
             val f = min(screenWidth, screenHeight).toFloat()
             val f1: Float = min(screenWidth.toFloat() / f, screenHeight.toFloat() / f) * scopeScale
             val i = Mth.floor(f * f1).toFloat()

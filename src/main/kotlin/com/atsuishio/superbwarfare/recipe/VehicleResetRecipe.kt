@@ -15,8 +15,13 @@ import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.level.Level
 import javax.annotation.ParametersAreNonnullByDefault
 
-class VehicleResetRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pCategory) {
-    override fun matches(input: CraftingInput, pLevel: Level): Boolean {
+class VehicleResetRecipe(
+    pCategory: CraftingBookCategory,
+) : CustomRecipe(pCategory) {
+    override fun matches(
+        input: CraftingInput,
+        pLevel: Level,
+    ): Boolean {
         var kit = ItemStack.EMPTY
         var container = ItemStack.EMPTY
 
@@ -40,7 +45,10 @@ class VehicleResetRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pCatego
     }
 
     @ParametersAreNonnullByDefault
-    override fun assemble(input: CraftingInput, registries: HolderLookup.Provider): ItemStack {
+    override fun assemble(
+        input: CraftingInput,
+        registries: HolderLookup.Provider,
+    ): ItemStack {
         var kit = ItemStack.EMPTY
         var container = ItemStack.EMPTY
 
@@ -75,11 +83,10 @@ class VehicleResetRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pCatego
         return ItemStack.EMPTY
     }
 
-    override fun canCraftInDimensions(pWidth: Int, pHeight: Int): Boolean {
-        return pWidth * pHeight >= 2
-    }
+    override fun canCraftInDimensions(
+        pWidth: Int,
+        pHeight: Int,
+    ): Boolean = pWidth * pHeight >= 2
 
-    override fun getSerializer(): RecipeSerializer<*> {
-        return ModRecipes.VEHICLE_RESET_SERIALIZER.get()
-    }
+    override fun getSerializer(): RecipeSerializer<*> = ModRecipes.VEHICLE_RESET_SERIALIZER.get()
 }

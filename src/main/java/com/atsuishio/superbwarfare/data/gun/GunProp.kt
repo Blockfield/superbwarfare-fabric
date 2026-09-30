@@ -16,25 +16,17 @@ class GunProp<T, R>(
     prop: KMutableProperty1<DefaultGunData, T>,
     transform: (T) -> R,
 ) : Prop<GunData, DefaultGunData, T, R, GunProp<T, R>>(prop, transform) {
-
     override fun toString() = "GunProp[$serializationName]"
 
     companion object {
         val entries = mutableListOf<GunProp<*, *>>()
 
-        inline fun <reified T> plainProp(
-            prop: KMutableProperty1<DefaultGunData, T>,
-        ): GunProp<T, T> {
-            return GunProp(prop) { it }.also { entries.add(it) }
-        }
+        inline fun <reified T> plainProp(prop: KMutableProperty1<DefaultGunData, T>): GunProp<T, T> = GunProp(prop) { it }.also { entries.add(it) }
 
         inline fun <reified T, R> complexProp(
             prop: KMutableProperty1<DefaultGunData, T>,
-            noinline transform: (T) -> R
-        ): GunProp<T, R> {
-            return GunProp(prop, transform).also { entries.add(it) }
-        }
-
+            noinline transform: (T) -> R,
+        ): GunProp<T, R> = GunProp(prop, transform).also { entries.add(it) }
 
         @JvmField
         val MAX_DURABILITY = plainProp(DefaultGunData::maxDurability)
@@ -191,9 +183,10 @@ class GunProp<T, R>(
         val BYPASSES_ARMOR = plainProp(DefaultGunData::bypassesArmor)
 
         @JvmField
-        val AMMO_CONSUMER = complexProp(
-            DefaultGunData::ammoConsumers
-        ) { it.list.map { l -> l.value.also { consumer -> consumer.init() } } }
+        val AMMO_CONSUMER =
+            complexProp(
+                DefaultGunData::ammoConsumers,
+            ) { it.list.map { l -> l.value.also { consumer -> consumer.init() } } }
 
         @JvmField
         val NORMAL_RELOAD_TIME = plainProp(DefaultGunData::normalReloadTime)
@@ -274,54 +267,56 @@ class GunProp<T, R>(
         val USE_NACELLE_CAMERA = plainProp(DefaultGunData::useNacelleCamera)
 
         @JvmField
-        val AVAILABLE_PERKS = complexProp(DefaultGunData::availablePerks) {
-            val availablePerks = mutableListOf<Perk>()
-            val perkNames = it.list.ifEmpty { return@complexProp availablePerks }
+        val AVAILABLE_PERKS =
+            complexProp(DefaultGunData::availablePerks) {
+                val availablePerks = mutableListOf<Perk>()
+                val perkNames = it.list.ifEmpty { return@complexProp availablePerks }
 
-            val sortedNames = perkNames.distinct().sortedWith { s1, s2 ->
-                val p1 = getPerkPriority(s1)
-                val p2 = getPerkPriority(s2)
-                if (p1 != p2) {
-                    return@sortedWith p1.compareTo(p2)
-                } else {
-                    return@sortedWith s1.compareTo(s2)
-                }
-            }
-
-            val perks = ModPerks.PERK_REGISTRY.entrySet()
-
-            val perkValues = perks.mapNotNull { obj -> obj?.value }
-            val perkKeys = perks.mapNotNull { perk -> perk?.key?.location().toString() }
-
-            for (name in sortedNames) {
-                if (name.startsWith("@")) {
-                    when (name.substring(1)) {
-                        "Ammo" -> Perk.Type.AMMO
-                        "Functional" -> Perk.Type.FUNCTIONAL
-                        "Damage" -> Perk.Type.DAMAGE
-                        else -> null
-                    }?.let { type ->
-                        availablePerks.addAll(perkValues.filter { perk -> perk.type == type })
+                val sortedNames =
+                    perkNames.distinct().sortedWith { s1, s2 ->
+                        val p1 = getPerkPriority(s1)
+                        val p2 = getPerkPriority(s2)
+                        if (p1 != p2) {
+                            return@sortedWith p1.compareTo(p2)
+                        } else {
+                            return@sortedWith s1.compareTo(s2)
+                        }
                     }
-                } else if (name.startsWith("!")) {
-                    val n = name.substring(1)
-                    val index = perkKeys.indexOf(n)
-                    if (index != -1) {
-                        availablePerks.remove(perkValues[index])
+
+                val perks = ModPerks.PERK_REGISTRY.entrySet()
+
+                val perkValues = perks.mapNotNull { obj -> obj?.value }
+                val perkKeys = perks.mapNotNull { perk -> perk?.key?.location().toString() }
+
+                for (name in sortedNames) {
+                    if (name.startsWith("@")) {
+                        when (name.substring(1)) {
+                            "Ammo" -> Perk.Type.AMMO
+                            "Functional" -> Perk.Type.FUNCTIONAL
+                            "Damage" -> Perk.Type.DAMAGE
+                            else -> null
+                        }?.let { type ->
+                            availablePerks.addAll(perkValues.filter { perk -> perk.type == type })
+                        }
+                    } else if (name.startsWith("!")) {
+                        val n = name.substring(1)
+                        val index = perkKeys.indexOf(n)
+                        if (index != -1) {
+                            availablePerks.remove(perkValues[index])
+                        } else {
+                            Mod.LOGGER.info("Perk {} not found", n)
+                        }
                     } else {
-                        Mod.LOGGER.info("Perk {} not found", n)
-                    }
-                } else {
-                    val index = perkKeys.indexOf(name)
-                    if (index != -1) {
-                        availablePerks.add(perkValues[index])
-                    } else {
-                        Mod.LOGGER.info("Perk {} not found", name)
+                        val index = perkKeys.indexOf(name)
+                        if (index != -1) {
+                            availablePerks.add(perkValues[index])
+                        } else {
+                            Mod.LOGGER.info("Perk {} not found", name)
+                        }
                     }
                 }
+                return@complexProp availablePerks.toList()
             }
-            return@complexProp availablePerks.toList()
-        }
 
         @JvmField
         val ICON = complexProp(DefaultGunData::icon) { ResourceLocation.parse(it) }
@@ -379,38 +374,39 @@ class GunProp<T, R>(
         val EXPLOSION_DESTROY = plainProp(DefaultGunData::explosionDestroy)
 
         // TODO 会不会有点屎...
-        fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) = with(modifier) {
-            modify(MAX_DURABILITY) { it.coerceAtLeast(0) }
-            modify(DURABILITY_PER_SHOOT) { it.coerceAtLeast(0) }
-            modify(MAX_ENERGY) { it.coerceAtLeast(0) }
-            modify(MAX_RECEIVE_ENERGY) {
-                val maxEnergy = modifier[MAX_ENERGY]
-                val value = it.coerceIn(-1, maxEnergy)
-                if (value < 0) maxEnergy else value
+        fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) =
+            with(modifier) {
+                modify(MAX_DURABILITY) { it.coerceAtLeast(0) }
+                modify(DURABILITY_PER_SHOOT) { it.coerceAtLeast(0) }
+                modify(MAX_ENERGY) { it.coerceAtLeast(0) }
+                modify(MAX_RECEIVE_ENERGY) {
+                    val maxEnergy = modifier[MAX_ENERGY]
+                    val value = it.coerceIn(-1, maxEnergy)
+                    if (value < 0) maxEnergy else value
+                }
+                modify(MAX_EXTRACT_ENERGY) {
+                    val maxEnergy = modifier[MAX_ENERGY]
+                    val value = it.coerceIn(-1, maxEnergy)
+                    if (value < 0) maxEnergy else value
+                }
+
+                modify(MELEE_DURATION) { it.coerceAtLeast(1) }
+                modify(MELEE_ANGLE) { it.coerceIn(1, 180) }
+                modify(ZOOM_SPREAD_RATE) { it.coerceIn(0.0, 1.0) }
+
+                modify(RANGE) { it.coerceAtLeast(1) }
+                modify(MELEE_DAMAGE_TIME) { min(modifier[MELEE_DURATION] - 1, it) }
+                modify(AMMO_COST_PER_SHOOT) { it.coerceAtLeast(0) }
+                modify(PROJECTILE_AMOUNT) { it.coerceAtLeast(0) }
+                modify(WEIGHT) { it.coerceAtLeast(1.0) }
+
+                modify(MAGAZINE) {
+                    if (modifier[PROJECTILE_AMOUNT] <= 0 && modifier[MELEE_DAMAGE] > 0) 0 else it.coerceAtLeast(0)
+                }
+
+                modify(BURST_AMOUNT) { it.coerceAtLeast(0) }
+                modify(RPM) { it.coerceIn(1, 114514) }
+                modify(UNDERWATER_MOTION_SCALE) { it.coerceIn(0.0f, 1.0f) }
             }
-            modify(MAX_EXTRACT_ENERGY) {
-                val maxEnergy = modifier[MAX_ENERGY]
-                val value = it.coerceIn(-1, maxEnergy)
-                if (value < 0) maxEnergy else value
-            }
-
-            modify(MELEE_DURATION) { it.coerceAtLeast(1) }
-            modify(MELEE_ANGLE) { it.coerceIn(1, 180) }
-            modify(ZOOM_SPREAD_RATE) { it.coerceIn(0.0, 1.0) }
-
-            modify(RANGE) { it.coerceAtLeast(1) }
-            modify(MELEE_DAMAGE_TIME) { min(modifier[MELEE_DURATION] - 1, it) }
-            modify(AMMO_COST_PER_SHOOT) { it.coerceAtLeast(0) }
-            modify(PROJECTILE_AMOUNT) { it.coerceAtLeast(0) }
-            modify(WEIGHT) { it.coerceAtLeast(1.0) }
-
-            modify(MAGAZINE) {
-                if (modifier[PROJECTILE_AMOUNT] <= 0 && modifier[MELEE_DAMAGE] > 0) 0 else it.coerceAtLeast(0)
-            }
-
-            modify(BURST_AMOUNT) { it.coerceAtLeast(0) }
-            modify(RPM) { it.coerceIn(1, 114514) }
-            modify(UNDERWATER_MOTION_SCALE) { it.coerceIn(0.0f, 1.0f) }
-        }
     }
 }

@@ -40,11 +40,12 @@ class TargetDeployerItem : Item(Properties()) {
             }
 
             // 禁止堆叠
-            if (!level.getEntities(
-                    null as Entity?,
-                    ModEntities.TARGET.get().getSpawnAABB(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
-                    IS_TARGET
-                ).isEmpty()
+            if (!level
+                    .getEntities(
+                        null as Entity?,
+                        ModEntities.TARGET.get().getSpawnAABB(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5),
+                        IS_TARGET,
+                    ).isEmpty()
             ) {
                 return InteractionResult.FAIL
             }
@@ -56,7 +57,7 @@ class TargetDeployerItem : Item(Properties()) {
                     pos,
                     MobSpawnType.SPAWN_EGG,
                     true,
-                    blockpos != pos && direction == Direction.UP
+                    blockpos != pos && direction == Direction.UP,
                 ) != null
             ) {
                 itemstack.shrink(1)
@@ -67,7 +68,11 @@ class TargetDeployerItem : Item(Properties()) {
         }
     }
 
-    override fun use(pLevel: Level, pPlayer: Player, pHand: InteractionHand): InteractionResultHolder<ItemStack?> {
+    override fun use(
+        pLevel: Level,
+        pPlayer: Player,
+        pHand: InteractionHand,
+    ): InteractionResultHolder<ItemStack?> {
         val itemstack = pPlayer.getItemInHand(pHand)
         val blockhitresult = getPlayerPOVHitResult(pLevel, pPlayer, ClipContext.Fluid.SOURCE_ONLY)
         if (blockhitresult.type != HitResult.Type.BLOCK) {
@@ -78,25 +83,30 @@ class TargetDeployerItem : Item(Properties()) {
             val blockpos = blockhitresult.blockPos
             if (pLevel.getBlockState(blockpos).block !is LiquidBlock) {
                 return InteractionResultHolder.pass<ItemStack?>(itemstack)
-            } else if (pLevel.mayInteract(pPlayer, blockpos) && pPlayer.mayUseItemAt(
+            } else if (pLevel.mayInteract(pPlayer, blockpos) &&
+                pPlayer.mayUseItemAt(
                     blockpos,
                     blockhitresult.direction,
-                    itemstack
+                    itemstack,
                 )
             ) {
                 // 禁止堆叠
-                if (!pLevel.getEntities(
-                        null as Entity?,
-                        ModEntities.TARGET.get()
-                            .getSpawnAABB(blockpos.x + 0.5, blockpos.y + 0.5, blockpos.z + 0.5),
-                        IS_TARGET
-                    ).isEmpty()
+                if (!pLevel
+                        .getEntities(
+                            null as Entity?,
+                            ModEntities.TARGET
+                                .get()
+                                .getSpawnAABB(blockpos.x + 0.5, blockpos.y + 0.5, blockpos.z + 0.5),
+                            IS_TARGET,
+                        ).isEmpty()
                 ) {
                     return InteractionResultHolder.fail(itemstack)
                 }
 
-                val entity = ModEntities.TARGET.get()
-                    .spawn(pLevel, itemstack, pPlayer, blockpos, MobSpawnType.SPAWN_EGG, false, false)
+                val entity =
+                    ModEntities.TARGET
+                        .get()
+                        .spawn(pLevel, itemstack, pPlayer, blockpos, MobSpawnType.SPAWN_EGG, false, false)
                 if (entity == null) {
                     return InteractionResultHolder.pass<ItemStack?>(itemstack)
                 } else {

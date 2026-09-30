@@ -5,8 +5,10 @@ import net.minecraft.core.BlockPos
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 
-open class CreativeSuperbItemInterfaceBlockEntity(pos: BlockPos, blockState: BlockState) :
-    SuperbItemInterfaceBlockEntity(ModBlockEntities.CREATIVE_SUPERB_ITEM_INTERFACE.get(), pos, blockState) {
+open class CreativeSuperbItemInterfaceBlockEntity(
+    pos: BlockPos,
+    blockState: BlockState,
+) : SuperbItemInterfaceBlockEntity(ModBlockEntities.CREATIVE_SUPERB_ITEM_INTERFACE.get(), pos, blockState) {
     override val isCreative: Boolean
         get() = true
 
@@ -15,8 +17,7 @@ open class CreativeSuperbItemInterfaceBlockEntity(pos: BlockPos, blockState: Blo
             level: Level,
             pos: BlockPos,
             state: BlockState,
-            blockEntity: CreativeSuperbItemInterfaceBlockEntity
-        ) =
-            SuperbItemInterfaceBlockEntity.serverTick(level, pos, state, blockEntity)
+            blockEntity: CreativeSuperbItemInterfaceBlockEntity,
+        ) = SuperbItemInterfaceBlockEntity.serverTick(level, pos, state, blockEntity)
     }
 }

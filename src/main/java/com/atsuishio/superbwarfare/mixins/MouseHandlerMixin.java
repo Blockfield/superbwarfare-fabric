@@ -2,34 +2,38 @@ package com.atsuishio.superbwarfare.mixins;
 
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
 import com.atsuishio.superbwarfare.event.ClientMouseHandler;
+
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-/**
- * Author: MrCrayfish
- */
+/** Author: MrCrayfish */
 @Mixin(MouseHandler.class)
 public class MouseHandlerMixin {
 
-    @ModifyVariable(method = "turnPlayer(D)V", at = @At(value = "STORE", opcode = Opcodes.DSTORE), ordinal = 1)
+    @ModifyVariable(
+            method = "turnPlayer(D)V",
+            at = @At(value = "STORE", opcode = Opcodes.DSTORE),
+            ordinal = 1)
     private double sensitivity(double original) {
         return ClientMouseHandler.INSTANCE.changeSensitivity(original);
     }
 
-    @Unique
-    private static double sbw121$x;
-    @Unique
-    private static double sbw121$y;
+    @Unique private static double sbw121$x;
+    @Unique private static double sbw121$y;
 
-    @ModifyVariable(method = "turnPlayer(D)V", at = @At(value = "STORE", opcode = Opcodes.DSTORE), ordinal = 4)
+    @ModifyVariable(
+            method = "turnPlayer(D)V",
+            at = @At(value = "STORE", opcode = Opcodes.DSTORE),
+            ordinal = 4)
     private double modifyD0(double d) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
@@ -52,12 +56,16 @@ public class MouseHandlerMixin {
                 i *= (1 - (Mth.abs(vehicle.getRoll()) - 90) / 90);
             }
 
-            return (1 - (Mth.abs(vehicle.getRoll()) / 90)) * d + ((Mth.abs(vehicle.getRoll()) / 90)) * sbw121$y * i;
+            return (1 - (Mth.abs(vehicle.getRoll()) / 90)) * d
+                    + ((Mth.abs(vehicle.getRoll()) / 90)) * sbw121$y * i;
         }
         return d;
     }
 
-    @ModifyVariable(method = "turnPlayer(D)V", at = @At(value = "STORE", opcode = Opcodes.DSTORE), ordinal = 5)
+    @ModifyVariable(
+            method = "turnPlayer(D)V",
+            at = @At(value = "STORE", opcode = Opcodes.DSTORE),
+            ordinal = 5)
     private double modifyD1(double d) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
@@ -67,10 +75,12 @@ public class MouseHandlerMixin {
 
         if (player.getVehicle() instanceof VehicleEntity vehicle) {
             sbw121$y = d;
-            return (1 - (Mth.abs(vehicle.getRoll()) / 90)) * d + ((Mth.abs(vehicle.getRoll()) / 90)) * sbw121$x * (vehicle.getRoll() < 0 ? -1 : 1);
+            return (1 - (Mth.abs(vehicle.getRoll()) / 90)) * d
+                    + ((Mth.abs(vehicle.getRoll()) / 90))
+                            * sbw121$x
+                            * (vehicle.getRoll() < 0 ? -1 : 1);
         }
 
         return d;
     }
-
 }

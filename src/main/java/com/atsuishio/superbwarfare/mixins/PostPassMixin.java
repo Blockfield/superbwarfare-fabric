@@ -1,8 +1,10 @@
 package com.atsuishio.superbwarfare.mixins;
 
 import com.mojang.blaze3d.shaders.Uniform;
+
 import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.client.renderer.PostPass;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,21 +16,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PostPass.class)
 public class PostPassMixin {
 
-    @Shadow
-    @Final
-    private EffectInstance effect;
+    @Shadow @Final private EffectInstance effect;
 
-    @Unique
-    private static long superbwarfare$lastMillis = 0;
+    @Unique private static long superbwarfare$lastMillis = 0;
 
-    @Unique
-    private static float superbwarfare$rainbowSeconds = 0;
+    @Unique private static float superbwarfare$rainbowSeconds = 0;
 
     /**
-     * Sets the RainbowTime uniform to a continuously increasing value in seconds.
-     * Unlike Minecraft's built-in Time uniform which wraps every ~1 second,
-     * this time source is monotonically increasing with no sudden jumps,
-     * allowing arbitrary flow speeds in the handsome goggles rainbow shader.
+     * Sets the RainbowTime uniform to a continuously increasing value in seconds. Unlike
+     * Minecraft's built-in Time uniform which wraps every ~1 second, this time source is
+     * monotonically increasing with no sudden jumps, allowing arbitrary flow speeds in the handsome
+     * goggles rainbow shader.
      */
     @Inject(method = "process(F)V", at = @At("HEAD"))
     private void setRainbowTime(float pPartialTicks, CallbackInfo ci) {

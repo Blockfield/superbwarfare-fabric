@@ -7,7 +7,9 @@ import com.atsuishio.superbwarfare.serialization.kserializer.SerializedBlockPos
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RadarSetPosMessage(val pos: SerializedBlockPos) : ServerPacketPayload() {
+data class RadarSetPosMessage(
+    val pos: SerializedBlockPos,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
 

@@ -23,8 +23,9 @@ import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue
 
-class ModBlockLootProvider(provider: HolderLookup.Provider) :
-    BlockLootSubProvider(mutableSetOf<Item>(), FeatureFlags.REGISTRY.allFlags(), provider) {
+class ModBlockLootProvider(
+    provider: HolderLookup.Provider,
+) : BlockLootSubProvider(mutableSetOf<Item>(), FeatureFlags.REGISTRY.allFlags(), provider) {
     override fun generate() {
         this.dropSelf(ModBlocks.SANDBAG.get())
         this.dropSelf(ModBlocks.BARBED_WIRE.get())
@@ -49,114 +50,140 @@ class ModBlockLootProvider(provider: HolderLookup.Provider) :
         this.add(
             ModBlocks.BLUEPRINT_RESEARCH_TABLE.get(),
             this.applyExplosionDecay(
-                ModBlocks.BLUEPRINT_RESEARCH_TABLE.get(), LootTable.lootTable().withPool(
+                ModBlocks.BLUEPRINT_RESEARCH_TABLE.get(),
+                LootTable.lootTable().withPool(
                     LootPool.lootPool().add(
-                        LootItem.lootTableItem(ModBlocks.BLUEPRINT_RESEARCH_TABLE.get()).`when`(
-                            LootItemBlockStatePropertyCondition.hasBlockStateProperties(
-                                ModBlocks.BLUEPRINT_RESEARCH_TABLE.get()
-                            ).setProperties(
-                                StatePropertiesPredicate.Builder.properties()
-                                    .hasProperty(BlueprintResearchTableBlock.PART, BedPart.FOOT)
-                            )
-                        ).otherwise(LootItem.lootTableItem(Blocks.AIR))
-                    )
-                )
-            )
+                        LootItem
+                            .lootTableItem(ModBlocks.BLUEPRINT_RESEARCH_TABLE.get())
+                            .`when`(
+                                LootItemBlockStatePropertyCondition
+                                    .hasBlockStateProperties(
+                                        ModBlocks.BLUEPRINT_RESEARCH_TABLE.get(),
+                                    ).setProperties(
+                                        StatePropertiesPredicate.Builder
+                                            .properties()
+                                            .hasProperty(BlueprintResearchTableBlock.PART, BedPart.FOOT),
+                                    ),
+                            ).otherwise(LootItem.lootTableItem(Blocks.AIR)),
+                    ),
+                ),
+            ),
         )
         this.add(
             ModBlocks.VEHICLE_ASSEMBLING_TABLE.get(),
             this.applyExplosionDecay(
-                ModBlocks.VEHICLE_ASSEMBLING_TABLE.get(), LootTable.lootTable().withPool(
+                ModBlocks.VEHICLE_ASSEMBLING_TABLE.get(),
+                LootTable.lootTable().withPool(
                     LootPool.lootPool().add(
-                        LootItem.lootTableItem(ModBlocks.VEHICLE_ASSEMBLING_TABLE.get()).`when`(
-                            LootItemBlockStatePropertyCondition.hasBlockStateProperties(
-                                ModBlocks.VEHICLE_ASSEMBLING_TABLE.get()
-                            ).setProperties(
-                                StatePropertiesPredicate.Builder.properties()
-                                    .hasProperty(VehicleAssemblingTableBlock.BLOCK_PART, BlockPart.FLB)
-                            )
-                        ).otherwise(LootItem.lootTableItem(Blocks.AIR))
-                    )
-                )
-            )
+                        LootItem
+                            .lootTableItem(ModBlocks.VEHICLE_ASSEMBLING_TABLE.get())
+                            .`when`(
+                                LootItemBlockStatePropertyCondition
+                                    .hasBlockStateProperties(
+                                        ModBlocks.VEHICLE_ASSEMBLING_TABLE.get(),
+                                    ).setProperties(
+                                        StatePropertiesPredicate.Builder
+                                            .properties()
+                                            .hasProperty(VehicleAssemblingTableBlock.BLOCK_PART, BlockPart.FLB),
+                                    ),
+                            ).otherwise(LootItem.lootTableItem(Blocks.AIR)),
+                    ),
+                ),
+            ),
         )
         this.dropSelf(ModBlocks.BIOGAS_GENERATOR.get())
 
         this.add(
-            ModBlocks.CHARGING_STATION.get(), createCopyComponentsDrops(
+            ModBlocks.CHARGING_STATION.get(),
+            createCopyComponentsDrops(
                 ModBlocks.CHARGING_STATION.get(),
-                listOf(ModDataComponents.ENERGY.get())
-            )
+                listOf(ModDataComponents.ENERGY.get()),
+            ),
         )
         this.add(ModBlocks.GALENA_ORE.get(), this.createOreDrop(ModBlocks.GALENA_ORE.get(), ModItems.GALENA.get()))
         this.add(
             ModBlocks.SCHEELITE_ORE.get(),
-            this.createOreDrop(ModBlocks.SCHEELITE_ORE.get(), ModItems.SCHEELITE.get())
+            this.createOreDrop(ModBlocks.SCHEELITE_ORE.get(), ModItems.SCHEELITE.get()),
         )
         this.add(ModBlocks.SILVER_ORE.get(), this.createOreDrop(ModBlocks.SILVER_ORE.get(), ModItems.RAW_SILVER.get()))
         this.add(
             ModBlocks.DEEPSLATE_GALENA_ORE.get(),
-            this.createOreDrop(ModBlocks.DEEPSLATE_GALENA_ORE.get(), ModItems.GALENA.get())
+            this.createOreDrop(ModBlocks.DEEPSLATE_GALENA_ORE.get(), ModItems.GALENA.get()),
         )
         this.add(
             ModBlocks.DEEPSLATE_SCHEELITE_ORE.get(),
-            this.createOreDrop(ModBlocks.DEEPSLATE_SCHEELITE_ORE.get(), ModItems.SCHEELITE.get())
+            this.createOreDrop(ModBlocks.DEEPSLATE_SCHEELITE_ORE.get(), ModItems.SCHEELITE.get()),
         )
         this.add(
             ModBlocks.DEEPSLATE_SILVER_ORE.get(),
-            this.createOreDrop(ModBlocks.DEEPSLATE_SILVER_ORE.get(), ModItems.RAW_SILVER.get())
+            this.createOreDrop(ModBlocks.DEEPSLATE_SILVER_ORE.get(), ModItems.RAW_SILVER.get()),
         )
 
         this.add(
-            ModBlocks.CONTAINER.get(), LootTable.lootTable().withPool(
+            ModBlocks.CONTAINER.get(),
+            LootTable.lootTable().withPool(
                 this.applyExplosionCondition(
                     ModBlocks.CONTAINER.get(),
-                    LootPool.lootPool()
+                    LootPool
+                        .lootPool()
                         .setRolls(ConstantValue.exactly(1f))
                         .add(LootItem.lootTableItem(ModBlocks.CONTAINER.get()))
                         .apply(
-                            CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
-                                .include(DataComponents.BLOCK_ENTITY_DATA)
-                        )
-                )
-            )
+                            CopyComponentsFunction
+                                .copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                .include(DataComponents.BLOCK_ENTITY_DATA),
+                        ),
+                ),
+            ),
         )
         this.add(
-            ModBlocks.SMALL_CONTAINER.get(), LootTable.lootTable().withPool(
+            ModBlocks.SMALL_CONTAINER.get(),
+            LootTable.lootTable().withPool(
                 this.applyExplosionCondition(
                     ModBlocks.SMALL_CONTAINER.get(),
-                    LootPool.lootPool()
+                    LootPool
+                        .lootPool()
                         .setRolls(ConstantValue.exactly(1f))
                         .add(LootItem.lootTableItem(ModBlocks.SMALL_CONTAINER.get()))
                         .apply(
-                            CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
-                                .include(DataComponents.CONTAINER_LOOT)
-                        )
-                )
-            )
+                            CopyComponentsFunction
+                                .copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                .include(DataComponents.CONTAINER_LOOT),
+                        ),
+                ),
+            ),
         )
         this.add(
-            ModBlocks.LUCKY_CONTAINER.get(), LootTable.lootTable().withPool(
+            ModBlocks.LUCKY_CONTAINER.get(),
+            LootTable.lootTable().withPool(
                 this.applyExplosionCondition(
                     ModBlocks.LUCKY_CONTAINER.get(),
-                    LootPool.lootPool().setRolls(ConstantValue.exactly(1f))
+                    LootPool
+                        .lootPool()
+                        .setRolls(ConstantValue.exactly(1f))
                         .add(LootItem.lootTableItem(ModBlocks.LUCKY_CONTAINER.get()))
                         .apply(
-                            CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
-                                .include(DataComponents.BLOCK_ENTITY_DATA)
-                        )
-                )
-            )
+                            CopyComponentsFunction
+                                .copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                .include(DataComponents.BLOCK_ENTITY_DATA),
+                        ),
+                ),
+            ),
         )
     }
 
-    override fun getKnownBlocks(): Iterable<Block> {
-        return Iterable { ModBlocks.REGISTRY.getEntries().stream().map { it.get() }.iterator() }
-    }
+    override fun getKnownBlocks(): Iterable<Block> =
+        Iterable {
+            ModBlocks.REGISTRY
+                .getEntries()
+                .stream()
+                .map { it.get() }
+                .iterator()
+        }
 
     fun createCopyComponentsDrops(
         pBlock: Block,
-        components: List<DataComponentType<*>>
+        components: List<DataComponentType<*>>,
     ): LootTable.Builder {
         val pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1f)).add(LootItem.lootTableItem(pBlock))
         if (!components.isEmpty()) {

@@ -12,17 +12,23 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.SwordItem
 import org.joml.Math
 
-class SteelPipeItem : SwordItem(
-    ModItemTier.STEEL, CustomDamageProperty(810).attributes(createAttributes(ModItemTier.STEEL, 4, -3f))
-) {
-    override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
+class SteelPipeItem :
+    SwordItem(
+        ModItemTier.STEEL,
+        CustomDamageProperty(810).attributes(createAttributes(ModItemTier.STEEL, 4, -3f)),
+    ) {
+    override fun hurtEnemy(
+        stack: ItemStack,
+        target: LivingEntity,
+        attacker: LivingEntity,
+    ): Boolean {
         attacker.level().playSound(
             null,
             target.onPos,
             ModSounds.STEEL_PIPE_HIT.get(),
             SoundSource.PLAYERS,
             1f,
-            ((2 * Math.random() - 1) * 0.1f + 1.0f).toFloat()
+            ((2 * Math.random() - 1) * 0.1f + 1.0f).toFloat(),
         )
 
         val result = super.hurtEnemy(stack, target, attacker)
@@ -31,7 +37,7 @@ class SteelPipeItem : SwordItem(
         if (stack.isEmpty) {
             attacker.setItemSlot(
                 EquipmentSlot.MAINHAND,
-                ItemStack(Holder.direct(Items.STICK), 1, stack.componentsPatch)
+                ItemStack(Holder.direct(Items.STICK), 1, stack.componentsPatch),
             )
         }
         return result

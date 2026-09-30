@@ -13,26 +13,32 @@ import net.minecraft.world.phys.Vec3
 interface ITrackableProjectile {
     /** 追踪目标的世界坐标 */
     fun getTargetPos(): Vec3?
+
     fun setTargetPos(value: Vec3?)
 
     /** 追踪目标的 UUID 字符串 */
     fun getTargetUUID(): String
+
     fun setTargetUUID(value: String)
 
     /** 制导类型 */
     fun getGuideType(): Int
+
     fun setGuideType(value: Int)
 
     /** 是否被诱饵弹干扰 */
     fun isDistracted(): Boolean
+
     fun setDistracted(value: Boolean)
 
     /** 是否已丢失制导（如玩家停止瞄准） */
     fun isLost(): Boolean
+
     fun setLost(value: Boolean)
 
     /** 是否丢失追踪目标 */
     fun isLostTarget(): Boolean
+
     fun setLostTarget(value: Boolean)
 
     /**
@@ -41,7 +47,10 @@ interface ITrackableProjectile {
      * @param vec3 目标方向向量
      * @param turnSpeed 最大转向速度（度/tick）
      */
-    fun turn(vec3: Vec3, turnSpeed: Float) {
+    fun turn(
+        vec3: Vec3,
+        turnSpeed: Float,
+    ) {
         val self = this as? Entity ?: return
         var adjVec3 = vec3
         val v0 = self.deltaMovement.normalize()
@@ -66,7 +75,10 @@ interface ITrackableProjectile {
      * @param vec3 目标方向向量
      * @param turnSpeed 最大转向速度（度/tick）
      */
-    fun turnYaw(vec3: Vec3, turnSpeed: Float) {
+    fun turnYaw(
+        vec3: Vec3,
+        turnSpeed: Float,
+    ) {
         val self = this as? Entity ?: return
         var adjVec3 = vec3
         val v0 = self.deltaMovement.normalize()

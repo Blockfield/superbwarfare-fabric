@@ -11,11 +11,11 @@ class ShotgunAmmoBoxItem : AmmoSupplierItem(Ammo.SHOTGUN, 12, Properties()) {
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag)
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.shotgun_ammo_box").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.shotgun_ammo_box").withStyle(ChatFormatting.GRAY),
         )
     }
 }

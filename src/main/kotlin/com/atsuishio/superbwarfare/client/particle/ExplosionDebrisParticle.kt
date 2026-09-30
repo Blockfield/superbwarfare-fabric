@@ -1,10 +1,10 @@
 package com.atsuishio.superbwarfare.client.particle
 
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.*
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
@@ -24,7 +24,7 @@ open class ExplosionDebrisParticle protected constructor(
     fade: Float,
     size: Float,
     animationSpeed: Int,
-    sizeAdd: Float
+    sizeAdd: Float,
 ) : TextureSheetParticle(world, x, y, z) {
     var fade: Float
     var animationSpeed: Int
@@ -36,7 +36,9 @@ open class ExplosionDebrisParticle protected constructor(
     var size: Float
 
     @Environment(EnvType.CLIENT)
-    class Provider(private val spriteSet: SpriteSet) : ParticleProvider<ExplosionDebrisOption> {
+    class Provider(
+        private val spriteSet: SpriteSet,
+    ) : ParticleProvider<ExplosionDebrisOption> {
         override fun createParticle(
             pType: ExplosionDebrisOption,
             pLevel: ClientLevel,
@@ -45,9 +47,9 @@ open class ExplosionDebrisParticle protected constructor(
             z: Double,
             xSpeed: Double,
             ySpeed: Double,
-            zSpeed: Double
-        ): Particle {
-            return ExplosionDebrisParticle(
+            zSpeed: Double,
+        ): Particle =
+            ExplosionDebrisParticle(
                 pLevel,
                 x,
                 y,
@@ -63,9 +65,8 @@ open class ExplosionDebrisParticle protected constructor(
                 pType.fade,
                 pType.size,
                 pType.animationSpeed,
-                pType.sizeAdd
+                pType.sizeAdd,
             )
-        }
     }
 
     init {
@@ -92,13 +93,9 @@ open class ExplosionDebrisParticle protected constructor(
         this.size = size
     }
 
-    public override fun getLightColor(partialTick: Float): Int {
-        return 15728880
-    }
+    public override fun getLightColor(partialTick: Float): Int = 15728880
 
-    override fun getRenderType(): ParticleRenderType {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-    }
+    override fun getRenderType(): ParticleRenderType = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
 
     override fun tick() {
         super.tick()
@@ -133,8 +130,14 @@ open class ExplosionDebrisParticle protected constructor(
                     this.fade,
                     this.animationSpeed,
                     this.sizeAdd,
-                    size = this.size
-                ), pos.x + offset * 0.05, pos.y + offset * 0.05, pos.z + offset * 0.05, 0.0, 0.0, 0.0
+                    size = this.size,
+                ),
+                pos.x + offset * 0.05,
+                pos.y + offset * 0.05,
+                pos.z + offset * 0.05,
+                0.0,
+                0.0,
+                0.0,
             )
             i += size * 3
         }

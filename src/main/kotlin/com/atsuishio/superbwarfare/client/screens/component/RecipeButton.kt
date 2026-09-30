@@ -12,11 +12,21 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 
-class RecipeButton(x: Int, y: Int, private val stack: ItemStack, onPress: OnPress) :
-    Button(x, y, 80, 18, Component.empty(), onPress, DEFAULT_NARRATION), AccessoriesButtonStub {
+class RecipeButton(
+    x: Int,
+    y: Int,
+    private val stack: ItemStack,
+    onPress: OnPress,
+) : Button(x, y, 80, 18, Component.empty(), onPress, DEFAULT_NARRATION),
+    AccessoriesButtonStub {
     private var isSelected = false
 
-    override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun renderWidget(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         pGuiGraphics.pose().pushPose()
         RenderSystem.enableDepthTest()
 
@@ -31,7 +41,7 @@ class RecipeButton(x: Int, y: Int, private val stack: ItemStack, onPress: OnPres
                     this.width,
                     this.height,
                     VehicleAssemblingScreen.IMAGE_SIZE,
-                    VehicleAssemblingScreen.IMAGE_SIZE
+                    VehicleAssemblingScreen.IMAGE_SIZE,
                 )
             } else {
                 pGuiGraphics.blit(
@@ -43,7 +53,7 @@ class RecipeButton(x: Int, y: Int, private val stack: ItemStack, onPress: OnPres
                     this.width,
                     this.height,
                     VehicleAssemblingScreen.IMAGE_SIZE,
-                    VehicleAssemblingScreen.IMAGE_SIZE
+                    VehicleAssemblingScreen.IMAGE_SIZE,
                 )
             }
         } else {
@@ -57,7 +67,7 @@ class RecipeButton(x: Int, y: Int, private val stack: ItemStack, onPress: OnPres
                     this.width,
                     this.height,
                     VehicleAssemblingScreen.IMAGE_SIZE,
-                    VehicleAssemblingScreen.IMAGE_SIZE
+                    VehicleAssemblingScreen.IMAGE_SIZE,
                 )
             } else {
                 pGuiGraphics.blit(
@@ -69,7 +79,7 @@ class RecipeButton(x: Int, y: Int, private val stack: ItemStack, onPress: OnPres
                     this.width,
                     this.height,
                     VehicleAssemblingScreen.IMAGE_SIZE,
-                    VehicleAssemblingScreen.IMAGE_SIZE
+                    VehicleAssemblingScreen.IMAGE_SIZE,
                 )
             }
         }
@@ -97,7 +107,7 @@ class RecipeButton(x: Int, y: Int, private val stack: ItemStack, onPress: OnPres
             this.y + 4,
             this.x + 78,
             this.y + 13,
-            16777215
+            16777215,
         )
         pGuiGraphics.pose().popPose()
     }
@@ -111,7 +121,11 @@ class RecipeButton(x: Int, y: Int, private val stack: ItemStack, onPress: OnPres
         this.isSelected = selected
     }
 
-    fun renderTooltips(pGuiGraphics: GuiGraphics, mouseX: Int, mouseY: Int) {
+    fun renderTooltips(
+        pGuiGraphics: GuiGraphics,
+        mouseX: Int,
+        mouseY: Int,
+    ) {
         if (this.isHoveredOrFocused && !this.stack.isEmpty) {
             if (mouseX > this.x + 1 && mouseY > this.y + 1 && mouseX < this.x + this.width - 1 && mouseY < this.y + this.height - 1) {
                 pGuiGraphics.renderTooltip(mc.font, this.stack, mouseX, mouseY)

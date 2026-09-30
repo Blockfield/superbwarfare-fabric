@@ -6,7 +6,9 @@ import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class WheelChairRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
+class WheelChairRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
     init {
         this.shadowRadius = 0.5f
     }
@@ -16,7 +18,7 @@ class WheelChairRenderer(manager: EntityRendererProvider.Context) : BasicVehicle
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         val rightWheelRot = Mth.lerp(partialTicks, entity.rightWheelRotO, entity.rightWheelRot)
         val leftWheelRot = Mth.lerp(partialTicks, entity.leftWheelRotO, entity.leftWheelRot)

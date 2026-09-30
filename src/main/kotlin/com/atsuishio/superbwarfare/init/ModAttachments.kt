@@ -18,17 +18,18 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentType
  * отдают/принимают CompoundTag через xmap — NBT на диске остаётся тем же, что у апстрима.
  */
 object ModAttachments {
-
     @JvmField
     val PLAYER_VARIABLE: AttachmentType<PlayerVariable> =
-        AttachmentRegistry.builder<PlayerVariable>()
+        AttachmentRegistry
+            .builder<PlayerVariable>()
             .initializer(::PlayerVariable)
             .persistent(PlayerVariable.CODEC)
             .buildAndRegister(loc("player_variable"))
 
     @JvmField
     val PHOSPHORUS_FIRE: AttachmentType<PhosphorusFireCapability> =
-        AttachmentRegistry.builder<PhosphorusFireCapability>()
+        AttachmentRegistry
+            .builder<PhosphorusFireCapability>()
             .initializer(::PhosphorusFireCapability)
             .persistent(PhosphorusFireCapability.CODEC)
             .buildAndRegister(loc("phosphorus_fire"))
@@ -51,7 +52,10 @@ object ModAttachments {
 fun <T : Any> AttachmentTarget.getData(type: AttachmentType<T>): T = getAttachedOrCreate(type)
 
 /** Аналог NeoForge `IAttachmentHolder.setData`. */
-fun <T : Any> AttachmentTarget.setData(type: AttachmentType<T>, value: T): T? = setAttached(type, value)
+fun <T : Any> AttachmentTarget.setData(
+    type: AttachmentType<T>,
+    value: T,
+): T? = setAttached(type, value)
 
 /** Аналог NeoForge `IAttachmentHolder.hasData`. */
 fun AttachmentTarget.hasData(type: AttachmentType<*>): Boolean = hasAttached(type)

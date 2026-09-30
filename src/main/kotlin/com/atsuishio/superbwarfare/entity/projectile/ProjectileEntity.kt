@@ -1,6 +1,5 @@
 package com.atsuishio.superbwarfare.entity.projectile
 
-import com.atsuishio.superbwarfare.fabric.LevelLifecycleListener
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.api.event.ProjectileHitEvent.HitBlock
 import com.atsuishio.superbwarfare.api.event.ProjectileHitEvent.HitEntity
@@ -19,6 +18,8 @@ import com.atsuishio.superbwarfare.entity.projectile.IBulletProperties.Companion
 import com.atsuishio.superbwarfare.entity.projectile.IBulletProperties.Companion.DEFAULT_R
 import com.atsuishio.superbwarfare.entity.setValue
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import com.atsuishio.superbwarfare.fabric.LevelLifecycleListener
+import com.atsuishio.superbwarfare.fabric.MultipartEntities
 import com.atsuishio.superbwarfare.init.ModDamageTypes.causeGunFireAbsoluteDamage
 import com.atsuishio.superbwarfare.init.ModDamageTypes.causeGunFireDamage
 import com.atsuishio.superbwarfare.init.ModDamageTypes.causeGunFireHeadshotAbsoluteDamage
@@ -37,6 +38,7 @@ import com.atsuishio.superbwarfare.tools.VectorTool.isInLiquid
 import com.atsuishio.superbwarfare.tools.VectorTool.randomSpreadVec
 import com.atsuishio.superbwarfare.world.phys.EntityResult
 import com.atsuishio.superbwarfare.world.phys.ExtendedEntityRayTraceResult
+import io.github.fabricators_of_create.porting_lib.entity.events.ProjectileImpactEvent
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Holder
 import net.minecraft.core.particles.BlockParticleOption
@@ -67,17 +69,20 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.MultipartEntities
-import io.github.fabricators_of_create.porting_lib.entity.events.ProjectileImpactEvent
 import java.util.function.Predicate
 import java.util.function.Supplier
 import kotlin.math.PI
 import kotlin.math.max
 
 @Suppress("unused")
-open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level: Level) : Projectile(entityType, level),
+open class ProjectileEntity(
+    entityType: EntityType<out ProjectileEntity>,
+    level: Level,
+) : Projectile(entityType, level),
     LevelLifecycleListener,
-    IBulletProperties, IAdvancedHitDetection, IFastMotionSync {
+    IBulletProperties,
+    IAdvancedHitDetection,
+    IFastMotionSync {
     open val modelInstance = ProjectileModelReloadListener.getModel(MODEL)?.createInstance()
 
     // ===== IBulletProperties 属性（使用 getter/setter 方法） =====
@@ -108,86 +113,103 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
     protected var explosionDestroyValue = true
 
     override fun getDamage(): Float = damageValue
+
     override fun setDamage(value: Float) {
         damageValue = value
     }
 
     override fun getHeadShot(): Float = headShotValue
+
     override fun setHeadShot(value: Float) {
         headShotValue = value
     }
 
     override fun getLegShot(): Float = legShotValue
+
     override fun setLegShot(value: Float) {
         legShotValue = value
     }
 
     override fun isBeast(): Boolean = beastValue
+
     override fun setBeast(value: Boolean) {
         beastValue = value
     }
 
     override fun isZoom(): Boolean = isZoomValue
+
     override fun setZoom(value: Boolean) {
         isZoomValue = value
     }
 
     override fun getExplosionDamage(): Float = explosionDamageValue
+
     override fun setExplosionDamage(value: Float) {
         explosionDamageValue = value
     }
 
     override fun getExplosionRadius(): Float = explosionRadiusValue
+
     override fun setExplosionRadius(value: Float) {
         explosionRadiusValue = value
     }
 
     override fun getFireLevel(): Int = fireLevelValue
+
     override fun setFireLevel(value: Int) {
         fireLevelValue = value
     }
 
     override fun isDragonBreath(): Boolean = dragonBreathValue
+
     override fun setDragonBreath(value: Boolean) {
         dragonBreathValue = value
     }
 
     override fun getKnockback(): Float = knockbackValue
+
     override fun setKnockback(value: Float) {
         knockbackValue = value
     }
 
     override fun getVelocity(): Float = velocityValue
+
     override fun setVelocity(value: Float) {
         velocityValue = value
     }
 
     override fun isForceKnockback(): Boolean = forceKnockbackValue
+
     override fun setForceKnockback(value: Boolean) {
         forceKnockbackValue = value
     }
 
     override fun getLife(): Int = lifeValue
+
     override fun setLife(value: Int) {
         lifeValue = value
     }
 
     override fun getBypassArmorRate(): Float = bypassArmorRateValue
+
     override fun setBypassArmorRate(value: Float) {
         bypassArmorRateValue = value
     }
 
     override fun isPenetrating(): Boolean = penetratingValue
+
     override fun setPenetrating(value: Boolean) {
         penetratingValue = value
     }
 
     override fun getUnderwaterMotionScale(): Float = underwaterMotionScaleValue
+
     override fun setUnderwaterMotionScale(value: Float) {
         underwaterMotionScaleValue = value
     }
 
     override fun hasExplosionDestroy(): Boolean = explosionDestroyValue
+
     override fun setExplosionDestroy(value: Boolean) {
         explosionDestroyValue = value
     }
@@ -211,7 +233,11 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
     /**
      * From TaC-Z
      */
-    override fun getHitResult(entity: Entity, startVec: Vec3, endVec: Vec3): EntityResult? {
+    override fun getHitResult(
+        entity: Entity,
+        startVec: Vec3,
+        endVec: Vec3,
+    ): EntityResult? {
         val expandHeight = if (entity is Player && !entity.isCrouching) 0.0625 else 0.0
 
         var hitPos: Vec3? = null
@@ -231,7 +257,7 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                         ModSounds.HIT.get(),
                         SoundSource.PLAYERS,
                         1f,
-                        1f
+                        1f,
                     )
                     ParticleTool.sendParticle(
                         level,
@@ -244,7 +270,7 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                         0.0,
                         0.0,
                         0.2,
-                        false
+                        false,
                     )
                     ParticleTool.sendParticle(
                         level,
@@ -257,7 +283,7 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                         0.0,
                         0.0,
                         0.01,
-                        false
+                        false,
                     )
                 }
 
@@ -280,13 +306,14 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
             val playerHitboxOffset = 3.0
             if (entity is ServerPlayer) {
                 if (entity.vehicle != null) {
-                    boundingBox = boundingBox.move(
-                        velocity.multiply(
-                            playerHitboxOffset / 2,
-                            playerHitboxOffset / 2,
-                            playerHitboxOffset / 2
+                    boundingBox =
+                        boundingBox.move(
+                            velocity.multiply(
+                                playerHitboxOffset / 2,
+                                playerHitboxOffset / 2,
+                                playerHitboxOffset / 2,
+                            ),
                         )
-                    )
                 }
                 boundingBox =
                     boundingBox.move(velocity.multiply(playerHitboxOffset, playerHitboxOffset, playerHitboxOffset))
@@ -348,8 +375,15 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 rayTraceBlocksWithFluid(
                     level,
                     ClipContext(startVec, endVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this),
-                    if (this.isPenetrating() || this.isBeast()) Predicate { true } else if (ProjectileConfig.PROJECTILE_DESTROY_BLOCKS.get()) IGNORE_LIST.and(
-                        Predicate { input -> !input.`is`(ModTags.Blocks.BULLET_CAN_DESTROY) }) else IGNORE_LIST
+                    if (this.isPenetrating() ||
+                        this.isBeast()
+                    ) {
+                        Predicate { true }
+                    } else if (ProjectileConfig.PROJECTILE_DESTROY_BLOCKS.get()) {
+                        IGNORE_LIST.and(Predicate { input -> !input.`is`(ModTags.Blocks.BULLET_CAN_DESTROY) })
+                    } else {
+                        IGNORE_LIST
+                    },
                 )
             var result: HitResult? = blockHitResult
 
@@ -382,17 +416,27 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                     }
                 }
                 if (result != null) {
-                    if (!ProjectileImpactEvent(this, result).post()) this.onHit(result)
-                    else continue  // 命中事件被取消则检查下一个命中结果
+                    if (!ProjectileImpactEvent(this, result).post()) {
+                        this.onHit(result)
+                    } else {
+                        continue // 命中事件被取消则检查下一个命中结果
+                    }
                 }
 
                 if (!this.isBeast()) {
                     this.bypassArmorRateValue -= 0.2f
                     if (this.bypassArmorRateValue < 0.8f) {
-                        if (result != null && !(resEntity is TargetEntity && resEntity.getEntityData()
-                                .get(TargetEntity.DOWN_TIME) > 0)
-                            && !(resEntity is DPSGeneratorEntity && resEntity.getEntityData()
-                                .get(DPSGeneratorEntity.DOWN_TIME) > 0)
+                        if (result != null &&
+                            !(
+                                resEntity is TargetEntity && resEntity
+                                    .getEntityData()
+                                    .get(TargetEntity.DOWN_TIME) > 0
+                            ) &&
+                            !(
+                                resEntity is DPSGeneratorEntity && resEntity
+                                    .getEntityData()
+                                    .get(DPSGeneratorEntity.DOWN_TIME) > 0
+                            )
                         ) {
                             break
                         }
@@ -409,7 +453,6 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
 
             this.onHitWater(fluidResult.getLocation(), fluidResult)
             this.setPos(this.x + vec.x, this.y + vec.y, this.z + vec.z)
-
         } else {
             this.setPosRaw(this.x + vec.x, this.y + vec.y, this.z + vec.z)
             ClientLightingHandler.handleProjectileTick(this)
@@ -434,7 +477,7 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 this.deltaMovement.y,
                 this.deltaMovement.z,
                 max(this.deltaMovement.length() - 1.1 * this.tickCount, 0.2),
-                true
+                true,
             )
         }
 
@@ -450,8 +493,17 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                     val startPos = Vec3(this.xo, this.yo, this.zo)
                     val pos = startPos.add(deltaMovement.normalize().scale(i))
                     ParticleTool.sendParticle(
-                        level, ParticleTypes.BUBBLE_COLUMN_UP, pos.x, pos.y, pos.z,
-                        1, 0.0, 0.0, 0.0, 0.001, true
+                        level,
+                        ParticleTypes.BUBBLE_COLUMN_UP,
+                        pos.x,
+                        pos.y,
+                        pos.z,
+                        1,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.001,
+                        true,
                     )
                     i++
                 }
@@ -480,21 +532,30 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 event,
                 SoundSource.AMBIENT,
                 1f,
-                1f
+                1f,
             )
 
             level.gameEvent(
                 GameEvent.PROJECTILE_LAND,
                 hitVec,
-                GameEvent.Context.of(this, state)
+                GameEvent.Context.of(this, state),
             )
 
             this.onHitBlock(result)
 
             if (fireLevelValue > 0 && level is ServerLevel) {
                 ParticleTool.sendParticle(
-                    level, ParticleTypes.LAVA, hitVec.x, hitVec.y, hitVec.z,
-                    3, 0.0, 0.0, 0.0, 0.5, true
+                    level,
+                    ParticleTypes.LAVA,
+                    hitVec.x,
+                    hitVec.y,
+                    hitVec.z,
+                    3,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.5,
+                    true,
                 )
             }
         }
@@ -514,14 +575,17 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
             this.level().gameEvent(
                 GameEvent.PROJECTILE_LAND,
                 result.location,
-                GameEvent.Context.of(this, null)
+                GameEvent.Context.of(this, null),
             )
 
             this.onHitEntity(result)
         }
     }
 
-    protected fun onHitWater(location: Vec3, result: BlockHitResult) {
+    protected fun onHitWater(
+        location: Vec3,
+        result: BlockHitResult,
+    ) {
         val level = this.level()
         if (level is ServerLevel) {
             WaterSplashUtil.handleFluidImpact(
@@ -530,7 +594,7 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 location = location,
                 result = result,
                 damage = this.damageValue,
-                discardOnWater = false
+                discardOnWater = false,
             )
         }
     }
@@ -548,7 +612,8 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
 
         if (level is ServerLevel) {
             if (this.explosionDamageValue > 0) {
-                CustomExplosion.Builder(this)
+                CustomExplosion
+                    .Builder(this)
                     .attacker(this.owner)
                     .damage(this.explosionDamageValue)
                     .radius(this.explosionRadiusValue)
@@ -565,21 +630,39 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
 
             if (this.isBeast()) {
                 ParticleTool.sendParticle(
-                    level, ParticleTypes.END_ROD,
-                    location.x, location.y, location.z,
-                    15, 0.1, 0.1, 0.1, 0.05, true
+                    level,
+                    ParticleTypes.END_ROD,
+                    location.x,
+                    location.y,
+                    location.z,
+                    15,
+                    0.1,
+                    0.1,
+                    0.1,
+                    0.05,
+                    true,
                 )
             } else {
-                val bulletDecalOption = BulletDecalOption(
-                    result.direction, result.blockPos,
-                    this.entityData.get(COLOR_R),
-                    this.entityData.get(COLOR_G),
-                    this.entityData.get(COLOR_B)
-                )
+                val bulletDecalOption =
+                    BulletDecalOption(
+                        result.direction,
+                        result.blockPos,
+                        this.entityData.get(COLOR_R),
+                        this.entityData.get(COLOR_G),
+                        this.entityData.get(COLOR_B),
+                    )
                 ParticleTool.sendParticle(
-                    level, bulletDecalOption,
-                    location.x, location.y, location.z,
-                    1, 0.0, 0.0, 0.0, 0.0, true
+                    level,
+                    bulletDecalOption,
+                    location.x,
+                    location.y,
+                    location.z,
+                    1,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    true,
                 )
                 summonVectorParticle(level, state, location, dir)
                 // Explosion flash is emitted client-side via onRemovedFromWorld()
@@ -591,7 +674,8 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 BlockPos(location.x.toInt(), location.y.toInt(), location.z.toInt()),
                 ModSounds.LAND.get(),
                 SoundSource.BLOCKS,
-                1f, 1f
+                1f,
+                1f,
             )
 
             this.discard()
@@ -611,7 +695,8 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
         val state = hit.blockState
 
         if (this.explosionDamageValue > 0) {
-            CustomExplosion.Builder(this)
+            CustomExplosion
+                .Builder(this)
                 .attacker(this.owner)
                 .damage(this.explosionDamageValue)
                 .radius(this.explosionRadiusValue)
@@ -621,11 +706,16 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 .explode()
         }
 
-        if (state != null && ProjectileConfig.PROJECTILE_DESTROY_BLOCKS.get()
-            && state.`is`(ModTags.Blocks.BULLET_CAN_DESTROY)
+        if (state != null && ProjectileConfig.PROJECTILE_DESTROY_BLOCKS.get() &&
+            state.`is`(ModTags.Blocks.BULLET_CAN_DESTROY)
         ) {
             // 2001 = ванильный event частиц разрушения блока (частицы + звук блока)
-            level.levelEvent(2001, pos, net.minecraft.world.level.block.Block.getId(state))
+            level.levelEvent(
+                2001,
+                pos,
+                net.minecraft.world.level.block.Block
+                    .getId(state),
+            )
         }
 
         ParticleTool.sendParticle(level, ModParticleTypes.FIRE_STAR.get(), location.x, location.y, location.z, 2, 0.0, 0.0, 0.0, 0.2, false)
@@ -634,7 +724,12 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
         this.discard()
     }
 
-    open fun summonVectorParticle(serverLevel: ServerLevel, state: BlockState, pos: Vec3, dir: Vec3) {
+    open fun summonVectorParticle(
+        serverLevel: ServerLevel,
+        state: BlockState,
+        pos: Vec3,
+        dir: Vec3,
+    ) {
         val particleData = BlockParticleOption(ParticleTypes.BLOCK, state)
         for (i in 0..6) {
             val vec3 = randomVec(dir, 40.0)
@@ -649,7 +744,7 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 vec3.y,
                 vec3.z,
                 10.0,
-                true
+                true,
             )
         }
         for (i in 0..2) {
@@ -665,12 +760,15 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 vec3.y,
                 vec3.z,
                 0.05,
-                true
+                true,
             )
         }
         val blockPos = BlockPos.containing(pos)
         val soundType = state.soundType
-        if (soundType === SoundType.METAL || soundType === SoundType.ANVIL || soundType === SoundType.CHAIN || soundType === SoundType.COPPER || soundType === SoundType.NETHERITE_BLOCK) {
+        if (soundType === SoundType.METAL || soundType === SoundType.ANVIL || soundType === SoundType.CHAIN ||
+            soundType === SoundType.COPPER ||
+            soundType === SoundType.NETHERITE_BLOCK
+        ) {
             serverLevel.playSound(null, pos.x, pos.y, pos.z, ModSounds.HIT.get(), SoundSource.BLOCKS, 2f, 1f)
             for (i in 0..2) {
                 val vec3 = randomVec(dir, 80.0)
@@ -685,14 +783,16 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                     vec3.y,
                     vec3.z,
                     0.2 + 0.1 * Math.random(),
-                    true
+                    true,
                 )
             }
         }
     }
 
-    fun randomVec(vec3: Vec3, spread: Double): Vec3 =
-        randomSpreadVec(this.random, vec3, spread)
+    fun randomVec(
+        vec3: Vec3,
+        spread: Double,
+    ): Vec3 = randomSpreadVec(this.random, vec3, spread)
 
     override fun onHitEntity(result: EntityHitResult) {
         if (result !is ExtendedEntityRayTraceResult) return
@@ -712,7 +812,7 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                 ModSounds.MELEE_HIT.get(),
                 SoundSource.PLAYERS,
                 1f,
-                (2 * Math.random() - 1).toFloat() * 0.1f + 1.0f
+                (2 * Math.random() - 1).toFloat() * 0.1f + 1.0f,
             )
 
             if (isBeast()) {
@@ -728,7 +828,8 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
             if (shooter is ServerPlayer) {
                 val holder = Holder.direct(ModSounds.HEADSHOT.get())
                 sendPacketTo(
-                    shooter, ClientboundSoundPacket(
+                    shooter,
+                    ClientboundSoundPacket(
                         holder,
                         SoundSource.PLAYERS,
                         shooter.x,
@@ -736,8 +837,8 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                         shooter.z,
                         1f,
                         1f,
-                        shooter.level().random.nextLong()
-                    )
+                        shooter.level().random.nextLong(),
+                    ),
                 )
                 sendPacketTo(shooter, ClientIndicatorMessage(1, 5))
             }
@@ -746,7 +847,8 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
             if (shooter is ServerPlayer) {
                 val holder = Holder.direct(ModSounds.INDICATION.get())
                 sendPacketTo(
-                    shooter, ClientboundSoundPacket(
+                    shooter,
+                    ClientboundSoundPacket(
                         holder,
                         SoundSource.PLAYERS,
                         shooter.x,
@@ -754,8 +856,8 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
                         shooter.z,
                         1f,
                         1f,
-                        shooter.level().random.nextLong()
-                    )
+                        shooter.level().random.nextLong(),
+                    ),
                 )
                 sendPacketTo(shooter, ClientIndicatorMessage(0, 5))
             }
@@ -782,7 +884,8 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
         }
 
         if (this.explosionDamageValue > 0) {
-            CustomExplosion.Builder(this)
+            CustomExplosion
+                .Builder(this)
                 .attacker(shooter)
                 .damage(this.explosionDamageValue)
                 .radius(this.explosionRadiusValue)
@@ -795,13 +898,22 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
         this.discard()
     }
 
-    open fun shoot(living: LivingEntity?, vecX: Double, vecY: Double, vecZ: Double, velocity: Float, spread: Float) {
-        val vec3 = Vec3(vecX, vecY, vecZ).normalize()
-            .add(
-                this.random.triangle(0.0, 0.0172275 * spread.toDouble()),
-                this.random.triangle(0.0, 0.0172275 * spread.toDouble()),
-                this.random.triangle(0.0, 0.0172275 * spread.toDouble())
-            ).scale(velocity.toDouble())
+    open fun shoot(
+        living: LivingEntity?,
+        vecX: Double,
+        vecY: Double,
+        vecZ: Double,
+        velocity: Float,
+        spread: Float,
+    ) {
+        val vec3 =
+            Vec3(vecX, vecY, vecZ)
+                .normalize()
+                .add(
+                    this.random.triangle(0.0, 0.0172275 * spread.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * spread.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * spread.toDouble()),
+                ).scale(velocity.toDouble())
         this.deltaMovement = vec3
         val d0 = vec3.horizontalDistance()
         this.yRot = (Mth.atan2(vec3.x, vec3.z) * (180f / PI.toFloat()).toDouble()).toFloat()
@@ -812,16 +924,23 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
 
     open fun updateHeading() {
         val horizontalDistance = this.deltaMovement.horizontalDistance()
-        this.yRot = (Mth.atan2(
-            this.deltaMovement.x(),
-            this.deltaMovement.z()
-        ) * (180.0 / PI)).toFloat()
+        this.yRot =
+            (
+                Mth.atan2(
+                    this.deltaMovement.x(),
+                    this.deltaMovement.z(),
+                ) * (180.0 / PI)
+            ).toFloat()
         this.xRot = (Mth.atan2(this.deltaMovement.y(), horizontalDistance) * (180.0 / PI)).toFloat()
         this.yRotO = this.yRot
         this.xRotO = this.xRot
     }
 
-    override fun performDamage(entity: Entity, damage: Float, isHeadshot: Boolean) {
+    override fun performDamage(
+        entity: Entity,
+        damage: Float,
+        isHeadshot: Boolean,
+    ) {
         val rate = this.bypassArmorRateValue.coerceIn(0f, 1f)
 
         val normalDamage = damage * (1 - rate).coerceIn(0f, 1f)
@@ -833,11 +952,12 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
         // 先造成穿甲伤害
         if (absoluteDamage > 0) {
             entity.forceHurt(
-                if (isHeadshot)
+                if (isHeadshot) {
                     causeGunFireHeadshotAbsoluteDamage(this.level().registryAccess(), this, this.owner)
-                else
-                    causeGunFireAbsoluteDamage(this.level().registryAccess(), this, this.owner),
-                absoluteDamage * headShotModifier
+                } else {
+                    causeGunFireAbsoluteDamage(this.level().registryAccess(), this, this.owner)
+                },
+                absoluteDamage * headShotModifier,
             )
             entity.invulnerableTime = 0
 
@@ -845,17 +965,18 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
             if (entity is VehicleEntity && this.bypassArmorRateValue > 1) {
                 entity.hurt(
                     causeGunFireAbsoluteDamage(this.level().registryAccess(), this, this.owner),
-                    absoluteDamage * (this.bypassArmorRateValue - 1) * 0.5f
+                    absoluteDamage * (this.bypassArmorRateValue - 1) * 0.5f,
                 )
             }
         }
         if (normalDamage > 0) {
             entity.forceHurt(
-                if (isHeadshot)
+                if (isHeadshot) {
                     causeGunFireHeadshotDamage(this.level().registryAccess(), this, this.owner)
-                else
-                    causeGunFireDamage(this.level().registryAccess(), this, this.owner),
-                normalDamage * headShotModifier
+                } else {
+                    causeGunFireDamage(this.level().registryAccess(), this, this.owner)
+                },
+                normalDamage * headShotModifier,
             )
             entity.invulnerableTime = 0
         }
@@ -900,7 +1021,10 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
         return this
     }
 
-    fun fireBullet(fireLevel: Int, dragonBreath: Boolean): ProjectileEntity {
+    fun fireBullet(
+        fireLevel: Int,
+        dragonBreath: Boolean,
+    ): ProjectileEntity {
         this.fireLevelValue = fireLevel
         this.dragonBreathValue = dragonBreath
         return this
@@ -929,11 +1053,12 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
         this.entityData.set(COLOR_B, rgb[2])
     }
 
-    override fun getRGB(): FloatArray = floatArrayOf(
-        this.entityData.get(COLOR_R),
-        this.entityData.get(COLOR_G),
-        this.entityData.get(COLOR_B)
-    )
+    override fun getRGB(): FloatArray =
+        floatArrayOf(
+            this.entityData.get(COLOR_R),
+            this.entityData.get(COLOR_G),
+            this.entityData.get(COLOR_B),
+        )
 
     override fun setEffects(effects: List<MobEffectInstance>) {
         this.mobEffects.addAll(effects.map { Supplier { it } })
@@ -950,7 +1075,10 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
     }
 
     // ===== Builder methods (return ProjectileEntity for chaining) =====
-    fun setFireBullet(fireLevel: Int, dragonBreath: Boolean) {
+    fun setFireBullet(
+        fireLevel: Int,
+        dragonBreath: Boolean,
+    ) {
         this.fireLevelValue = fireLevel
         this.dragonBreathValue = dragonBreath
     }
@@ -1005,9 +1133,10 @@ open class ProjectileEntity(entityType: EntityType<out ProjectileEntity>, level:
         val EXPLOSION_RADIUS: EntityDataAccessor<Float> =
             SynchedEntityData.defineId(ProjectileEntity::class.java, EntityDataSerializers.FLOAT)
 
-        private val IGNORE_LIST = Predicate { input: BlockState ->
-            input.`is`(ModTags.Blocks.BULLET_IGNORE) &&
+        private val IGNORE_LIST =
+            Predicate { input: BlockState ->
+                input.`is`(ModTags.Blocks.BULLET_IGNORE) &&
                     !(input.`is`(Blocks.IRON_DOOR) || input.`is`(Blocks.IRON_TRAPDOOR))
-        }
+            }
     }
 }

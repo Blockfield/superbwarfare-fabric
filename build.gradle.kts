@@ -51,8 +51,8 @@ repositories {
         content { includeGroup("mezz.jei") }
     }
     maven { url = uri("https://mvn.devos.one/snapshots/") }
-    maven { url = uri("https://jitpack.io") }   // Fabric-ASM, транзитивная у Porting Lib
-    maven { url = uri("https://maven.wispforest.io") }   // Accessories
+    maven { url = uri("https://jitpack.io") } // Fabric-ASM, транзитивная у Porting Lib
+    maven { url = uri("https://maven.wispforest.io") } // Accessories
     maven {
         name = "GeckoLib"
         url = uri("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/")
@@ -65,10 +65,13 @@ repositories {
 
 // Входы без Maven-репозитория: качаются один раз в .gradle/pinned-libs и сверяются по sha256
 // при каждой конфигурации. Происхождение и лицензии -- в libs/README.md.
-fun pinnedJar(url: String, sha256: String): File {
+fun pinnedJar(
+    url: String,
+    sha256: String,
+): File {
     val jar = rootProject.file(".gradle/pinned-libs/" + url.substringAfterLast('/'))
-    fun sha(f: File) = HexFormat.of().formatHex(
-        MessageDigest.getInstance("SHA-256").digest(f.readBytes()))
+
+    fun sha(f: File) = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(f.readBytes()))
     if (jar.isFile && sha(jar) == sha256) return jar
     jar.parentFile.mkdirs()
     val part = File(jar.path + ".part")
@@ -79,23 +82,31 @@ fun pinnedJar(url: String, sha256: String): File {
     return jar
 }
 
-val simpleBedrockModelJar = pinnedJar(
-    "https://github.com/Blockfield/simplebedrockmodel-fabric/releases/download/bf4/simplebedrockmodel-fabric-2.5.1+mc1.21.1-bf4.jar",
-    "d32a0232a63bbc73561bd2d6aa18837911bcdeffa166d7bb6c4f524d4f5c80c6",
-)
-val rhinoJar = pinnedJar(
-    "https://raw.githubusercontent.com/Mercurows/SuperbWarfare/676af9f44fce5e0c12e5206c663b976898ced1a8/libs/rhino-1.8.1-SNAPSHOT.jar",
-    "4aab6124356e91e16263fa065556444b96bf5d9438e1399914cd971ef8b73616",
-)
+val simpleBedrockModelJar =
+    pinnedJar(
+        "https://github.com/Blockfield/simplebedrockmodel-fabric/releases/download/bf4/simplebedrockmodel-fabric-2.5.1+mc1.21.1-bf4.jar",
+        "d32a0232a63bbc73561bd2d6aa18837911bcdeffa166d7bb6c4f524d4f5c80c6",
+    )
+val rhinoJar =
+    pinnedJar(
+        "https://raw.githubusercontent.com/Mercurows/SuperbWarfare/676af9f44fce5e0c12e5206c663b976898ced1a8/libs/rhino-1.8.1-SNAPSHOT.jar",
+        "4aab6124356e91e16263fa065556444b96bf5d9438e1399914cd971ef8b73616",
+    )
 
 dependencies {
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
     // Те же маппинги, что у апстрима на NeoForge: имена классов и методов при переезде не меняются,
     // поэтому миксины и весь ванильный слой переносятся почти дословно.
-    mappings(loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${project.property("parchment_minecraft_version")}:${project.property("parchment_mappings_version")}@zip")
-    })
+    mappings(
+        loom.layered {
+            officialMojangMappings()
+            parchment(
+                "org.parchmentmc.data:parchment-${project.property(
+                    "parchment_minecraft_version",
+                )}:${project.property("parchment_mappings_version")}@zip",
+            )
+        },
+    )
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("flk_version")}")
@@ -204,7 +215,6 @@ idea {
     }
 }
 
-
 tasks.register<JavaExec>("killFeedCheck") {
     group = "verification"
     dependsOn(tasks.testClasses)
@@ -213,3 +223,13 @@ tasks.register<JavaExec>("killFeedCheck") {
 }
 
 tasks.named("check") { dependsOn("killFeedCheck") }
+
+tasks.register<org.gradle.api.tasks.compile.JavaCompile>("lintJava") {
+    dependsOn("testClasses")
+    source(sourceSets["main"].allJava, sourceSets["test"].allJava)
+    classpath = sourceSets["main"].compileClasspath + sourceSets["test"].compileClasspath + sourceSets["main"].output + sourceSets["test"].output
+    destinationDirectory = layout.buildDirectory.dir("classes/java/lint")
+    options.annotationProcessorPath = files()
+    options.compilerArgs.addAll(listOf("-proc:none", "-Xlint:divzero,empty,fallthrough,finally,-removal", "-Werror"))
+}
+tasks.named("check") { dependsOn("lintJava") }

@@ -29,7 +29,13 @@ import net.minecraft.world.phys.shapes.VoxelShape
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 open class FuMO25Block :
-    BaseEntityBlock(Properties.of().sound(SoundType.METAL).strength(3.0f).requiresCorrectToolForDrops()) {
+    BaseEntityBlock(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .requiresCorrectToolForDrops(),
+    ) {
     init {
         this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, false))
     }
@@ -39,7 +45,7 @@ open class FuMO25Block :
         level: Level,
         pos: BlockPos,
         player: Player,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): InteractionResult {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS
@@ -64,32 +70,30 @@ open class FuMO25Block :
         pState: BlockState,
         pLevel: BlockGetter,
         pPos: BlockPos,
-        pContext: CollisionContext
-    ): VoxelShape {
-        return Shapes.or(
+        pContext: CollisionContext,
+    ): VoxelShape =
+        Shapes.or(
             box(1.0, 0.0, 1.0, 15.0, 6.0, 15.0),
-            box(6.0, 6.0, 6.0, 10.0, 58.0, 10.0)
+            box(6.0, 6.0, 6.0, 10.0, 58.0, 10.0),
         )
-    }
 
-    override fun getRenderShape(pState: BlockState): RenderShape {
-        return RenderShape.ENTITYBLOCK_ANIMATED
-    }
+    override fun getRenderShape(pState: BlockState): RenderShape = RenderShape.ENTITYBLOCK_ANIMATED
 
-    override fun newBlockEntity(pPos: BlockPos, pState: BlockState): BlockEntity? {
-        return FuMO25BlockEntity(pPos, pState)
-    }
+    override fun newBlockEntity(
+        pPos: BlockPos,
+        pState: BlockState,
+    ): BlockEntity? = FuMO25BlockEntity(pPos, pState)
 
     override fun <T : BlockEntity?> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T?>
+        pBlockEntityType: BlockEntityType<T?>,
     ): BlockEntityTicker<T?>? {
         if (!pLevel.isClientSide) {
             return createTickerHelper(
                 pBlockEntityType,
                 ModBlockEntities.FUMO_25.get(),
-                FuMO25BlockEntity::serverTick
+                FuMO25BlockEntity::serverTick,
             )
         }
         return null
@@ -100,7 +104,7 @@ open class FuMO25Block :
         pos: BlockPos,
         state: BlockState,
         placer: LivingEntity?,
-        stack: ItemStack
+        stack: ItemStack,
     ) {
         super.setPlacedBy(level, pos, state, placer, stack)
         if (placer == null) return
@@ -113,7 +117,7 @@ open class FuMO25Block :
         pLevel: Level,
         pPos: BlockPos,
         pNewState: BlockState,
-        pMovedByPiston: Boolean
+        pMovedByPiston: Boolean,
     ) {
         if (!pState.`is`(pNewState.block)) {
             val blockEntity = pLevel.getBlockEntity(pPos)
@@ -129,9 +133,7 @@ open class FuMO25Block :
         pBuilder.add(POWERED)
     }
 
-    override fun getStateForPlacement(pContext: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState().setValue(POWERED, false)
-    }
+    override fun getStateForPlacement(pContext: BlockPlaceContext): BlockState? = this.defaultBlockState().setValue(POWERED, false)
 
     companion object {
         @JvmField

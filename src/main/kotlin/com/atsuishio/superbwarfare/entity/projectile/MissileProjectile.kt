@@ -2,6 +2,7 @@ package com.atsuishio.superbwarfare.entity.projectile
 
 import com.atsuishio.superbwarfare.config.server.SyncConfig
 import com.atsuishio.superbwarfare.entity.IBvrSyncableEntity
+import com.atsuishio.superbwarfare.fabric.IEntityWithComplexSpawn
 import com.atsuishio.superbwarfare.init.ModSerializers
 import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.network.message.receive.EntityRelationSyncMessage
@@ -20,9 +21,11 @@ import net.minecraft.world.entity.projectile.ThrowableItemProjectile
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.IEntityWithComplexSpawn
 
-abstract class MissileProjectile : DestroyableProjectile, ITrackableProjectile, IEntityWithComplexSpawn,
+abstract class MissileProjectile :
+    DestroyableProjectile,
+    ITrackableProjectile,
+    IEntityWithComplexSpawn,
     IBvrSyncableEntity {
     override fun getTargetPos(): Vec3? {
         val v = entityData.get(TARGET_POS)
@@ -34,30 +37,39 @@ abstract class MissileProjectile : DestroyableProjectile, ITrackableProjectile, 
     }
 
     private var guideTypeValue: Int = 0
+
     override fun getGuideType(): Int = guideTypeValue
+
     override fun setGuideType(value: Int) {
         guideTypeValue = value
     }
 
     private var distractedValue: Boolean = false
+
     override fun isDistracted(): Boolean = distractedValue
+
     override fun setDistracted(value: Boolean) {
         distractedValue = value
     }
 
     private var lostValue: Boolean = false
+
     override fun isLost(): Boolean = lostValue
+
     override fun setLost(value: Boolean) {
         lostValue = value
     }
 
     private var lostTargetValue: Boolean = false
+
     override fun isLostTarget(): Boolean = lostTargetValue
+
     override fun setLostTarget(value: Boolean) {
         lostTargetValue = value
     }
 
     override fun getTargetUUID(): String = entityData.get(TARGET_UUID)
+
     override fun setTargetUUID(value: String) {
         entityData.set(TARGET_UUID, value)
     }
@@ -67,7 +79,7 @@ abstract class MissileProjectile : DestroyableProjectile, ITrackableProjectile, 
     constructor(pEntityType: EntityType<out ThrowableItemProjectile>, pLevel: Level) : super(pEntityType, pLevel)
 
     constructor(pEntityType: EntityType<out ThrowableItemProjectile>, pShooter: Entity?, pLevel: Level) :
-            super(pEntityType, pLevel) {
+        super(pEntityType, pLevel) {
         this.owner = pShooter
         if (pShooter != null) {
             this.setPos(pShooter.x, pShooter.eyeY - 0.1, pShooter.z)
@@ -131,8 +143,8 @@ abstract class MissileProjectile : DestroyableProjectile, ITrackableProjectile, 
                 Vec3(
                     compound.getDouble("TargetPosX"),
                     compound.getDouble("TargetPosY"),
-                    compound.getDouble("TargetPosZ")
-                )
+                    compound.getDouble("TargetPosZ"),
+                ),
             )
         }
     }
@@ -157,13 +169,9 @@ abstract class MissileProjectile : DestroyableProjectile, ITrackableProjectile, 
     override fun updateRotation() {
     }
 
-    override fun isNoGravity(): Boolean {
-        return true
-    }
+    override fun isNoGravity(): Boolean = true
 
-    override fun getCustomGravity(): Float {
-        return 0f
-    }
+    override fun getCustomGravity(): Float = 0f
 
     companion object {
         @JvmField
@@ -214,17 +222,17 @@ abstract class MissileProjectile : DestroyableProjectile, ITrackableProjectile, 
         super.remove(reason)
     }
 
-    override fun forceLoadChunk(): Boolean {
-        return true
-    }
+    override fun forceLoadChunk(): Boolean = true
 
     open fun distractedByDecoy() {
         if (this.isDistracted()) return
 
-        val decoy = SeekTool.seekLivingEntities(this, 32.0, 60.0)
-            .asSequence()
-            .filter { it.type.`is`(ModTags.EntityTypes.DECOY) }
-            .toList()
+        val decoy =
+            SeekTool
+                .seekLivingEntities(this, 32.0, 60.0)
+                .asSequence()
+                .filter { it.type.`is`(ModTags.EntityTypes.DECOY) }
+                .toList()
 
         for (d in decoy) {
             if (Math.random() < 0.25) {
@@ -235,7 +243,5 @@ abstract class MissileProjectile : DestroyableProjectile, ITrackableProjectile, 
         }
     }
 
-    override fun getNoHitTicks(): Int {
-        return 3
-    }
+    override fun getNoHitTicks(): Int = 3
 }

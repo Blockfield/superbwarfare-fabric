@@ -17,7 +17,7 @@ import org.joml.Vector3f
 
 class VehicleAnimationContext<T>(
     val entity: T,
-    location: ResourceLocation
+    location: ResourceLocation,
 ) where T : Entity, T : BasicGeoVehicleEntity {
     val animations = hashMapOf<String, BedrockAnimation>()
     var partialTick: Float = 0f
@@ -38,7 +38,7 @@ class VehicleAnimationContext<T>(
         val weaponName: String,
         val isFadingIn: Boolean,
         val fadeTicks: Int,
-        var elapsed: Int = 0
+        var elapsed: Int = 0,
     ) {
         fun alpha(): Float {
             val progress = elapsed.toFloat() / fadeTicks.toFloat()
@@ -87,7 +87,10 @@ class VehicleAnimationContext<T>(
         }
     }
 
-    fun fire(weaponName: String, index: Int) {
+    fun fire(
+        weaponName: String,
+        index: Int,
+    ) {
         val key: String
         val fireAnimName: String
         if (index == 0) {
@@ -115,7 +118,11 @@ class VehicleAnimationContext<T>(
         weaponIndices[key] = index
     }
 
-    fun playAnimation(animationName: String?, type: AnimationPlayType, fadeInTicks: Int = 0) {
+    fun playAnimation(
+        animationName: String?,
+        type: AnimationPlayType,
+        fadeInTicks: Int = 0,
+    ) {
         val animation = animations[animationName] ?: return
         val runner = AnimationRunner(animation, AnimationContext(animation.specifiedEndTimeS))
         runner.state = type.state()
@@ -128,7 +135,10 @@ class VehicleAnimationContext<T>(
         }
     }
 
-    fun stopAnimation(animationName: String, fadeOutTicks: Int = 0) {
+    fun stopAnimation(
+        animationName: String,
+        fadeOutTicks: Int = 0,
+    ) {
         val animKey = animationName.removePrefix("animation.")
         if (fadeOutTicks > 0 && weaponRunners.containsKey(animKey)) {
             fadeMap[animKey] = FadeInfo(animKey, false, fadeOutTicks)
@@ -164,12 +174,13 @@ class VehicleAnimationContext<T>(
                 weaponRunners.remove(weaponName)
                 weaponIndices.remove(weaponName)
                 val base = weaponName.substringBeforeLast('#')
-                val idleExists = if (index != null && index > 0) {
-                    animations.containsKey("animation.$base.idle.$index") ||
+                val idleExists =
+                    if (index != null && index > 0) {
+                        animations.containsKey("animation.$base.idle.$index") ||
                             animations.containsKey("animation.$base.idle")
-                } else {
-                    animations.containsKey("animation.$base.idle")
-                }
+                    } else {
+                        animations.containsKey("animation.$base.idle")
+                    }
                 if (idleExists) {
                     startIdle(weaponName)
                 }
@@ -186,12 +197,13 @@ class VehicleAnimationContext<T>(
             if (runner.state is StopState) {
                 val index = weaponIndices[weaponName]
                 val base = weaponName.substringBeforeLast('#')
-                val idleExists = if (index != null && index > 0) {
-                    animations.containsKey("animation.$base.idle.$index") ||
+                val idleExists =
+                    if (index != null && index > 0) {
+                        animations.containsKey("animation.$base.idle.$index") ||
                             animations.containsKey("animation.$base.idle")
-                } else {
-                    animations.containsKey("animation.$base.idle")
-                }
+                    } else {
+                        animations.containsKey("animation.$base.idle")
+                    }
                 if (idleExists) {
                     transitionToIdle.add(weaponName)
                 } else {
@@ -222,11 +234,12 @@ class VehicleAnimationContext<T>(
         if (index != null && index > 0) {
             val base = weaponName.substringBeforeLast('#')
             val specificName = "animation.$base.idle.$index"
-            idleAnimName = if (animations.containsKey(specificName)) {
-                specificName
-            } else {
-                "animation.$base.idle"
-            }
+            idleAnimName =
+                if (animations.containsKey(specificName)) {
+                    specificName
+                } else {
+                    "animation.$base.idle"
+                }
         } else {
             val base = weaponName.substringBeforeLast('#')
             idleAnimName = "animation.$base.idle"
@@ -244,8 +257,14 @@ class VehicleAnimationContext<T>(
             val soundLocation = keyframe.getValue()
             val soundEvent = SoundEvent.createVariableRangeEvent(soundLocation)
             entity.level().playSound(
-                null, entity.x, entity.y, entity.z,
-                soundEvent, entity.soundSource, 1.0f, 1.0f
+                null,
+                entity.x,
+                entity.y,
+                entity.z,
+                soundEvent,
+                entity.soundSource,
+                1.0f,
+                1.0f,
             )
         }
     }
@@ -266,7 +285,10 @@ class VehicleAnimationContext<T>(
         return result
     }
 
-    private fun scalePose(pose: Pose, alpha: Float): Pose {
+    private fun scalePose(
+        pose: Pose,
+        alpha: Float,
+    ): Pose {
         if (alpha >= 1f) return pose
         if (alpha <= 0f) return DummyPose.INSTANCE
 
@@ -281,14 +303,15 @@ class VehicleAnimationContext<T>(
 
             // Scale: lerp from [1,1,1] toward target (multiplicative)
             val origScale = transform.scale()
-            val newScale = Vector3f(
-                1f + (origScale.x() - 1f) * alpha,
-                1f + (origScale.y() - 1f) * alpha,
-                1f + (origScale.z() - 1f) * alpha
-            )
+            val newScale =
+                Vector3f(
+                    1f + (origScale.x() - 1f) * alpha,
+                    1f + (origScale.y() - 1f) * alpha,
+                    1f + (origScale.z() - 1f) * alpha,
+                )
 
             builder.addBoneTransform(
-                BoneTransform(transform.boneIndex(), translation, ZYXRotationView(Vector3f(euler)), newScale)
+                BoneTransform(transform.boneIndex(), translation, ZYXRotationView(Vector3f(euler)), newScale),
             )
         }
         return builder.toPose()

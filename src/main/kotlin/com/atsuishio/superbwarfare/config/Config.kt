@@ -7,6 +7,7 @@ typealias ModConfigBuilder = ModConfigSpec.Builder
 typealias ModConfigValue = ModConfigSpec.ConfigValue<*>?
 
 @Suppress("unused")
-fun buildConfig(builder: ModConfigBuilder, vararg configs: Any): ModConfig {
-    return builder.build()
-}
+fun buildConfig(
+    builder: ModConfigBuilder,
+    vararg configs: Any,
+): ModConfig = builder.build()

@@ -3,6 +3,8 @@ package com.atsuishio.superbwarfare.block.entity
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.block.BlueprintResearchTableBlock
 import com.atsuishio.superbwarfare.config.server.MiscConfig
+import com.atsuishio.superbwarfare.fabric.ItemStackHandler
+import com.atsuishio.superbwarfare.fabric.RecipeWrapper
 import com.atsuishio.superbwarfare.init.ModBlockEntities
 import com.atsuishio.superbwarfare.init.ModRecipes
 import com.atsuishio.superbwarfare.init.ModTags
@@ -34,13 +36,14 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.BedPart
-import com.atsuishio.superbwarfare.fabric.ItemStackHandler
-import com.atsuishio.superbwarfare.fabric.RecipeWrapper
 import java.util.*
 
-open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
-    BlockEntity(ModBlockEntities.BLUEPRINT_RESEARCH_TABLE.get(), pos, state),
-    WorldlyContainer, MenuProvider {
+open class BlueprintResearchTableBlockEntity(
+    pos: BlockPos,
+    state: BlockState,
+) : BlockEntity(ModBlockEntities.BLUEPRINT_RESEARCH_TABLE.get(), pos, state),
+    WorldlyContainer,
+    MenuProvider {
     protected val items: NonNullList<ItemStack> = NonNullList.withSize(6, ItemStack.EMPTY)
 
     open val modelInstance = BlockModelReloadListener.getModel(MODEL)?.createInstance()
@@ -53,34 +56,38 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
     var activated: Boolean = false
     var crafting: Boolean = false
 
-    protected val dataAccess: ContainerData = object : ContainerData {
-        override fun get(index: Int): Int {
-            return when (index) {
-                0 -> this@BlueprintResearchTableBlockEntity.tick
-                1 -> this@BlueprintResearchTableBlockEntity.lastSelectedIndex
-                2 -> this@BlueprintResearchTableBlockEntity.fuel
-                3 -> this@BlueprintResearchTableBlockEntity.maxProcessTick
-                4 -> if (this@BlueprintResearchTableBlockEntity.activated) 1 else 0
-                else -> 0
+    protected val dataAccess: ContainerData =
+        object : ContainerData {
+            override fun get(index: Int): Int =
+                when (index) {
+                    0 -> this@BlueprintResearchTableBlockEntity.tick
+                    1 -> this@BlueprintResearchTableBlockEntity.lastSelectedIndex
+                    2 -> this@BlueprintResearchTableBlockEntity.fuel
+                    3 -> this@BlueprintResearchTableBlockEntity.maxProcessTick
+                    4 -> if (this@BlueprintResearchTableBlockEntity.activated) 1 else 0
+                    else -> 0
+                }
+
+            override fun set(
+                index: Int,
+                value: Int,
+            ) {
+                when (index) {
+                    0 -> this@BlueprintResearchTableBlockEntity.tick = value
+                    1 -> this@BlueprintResearchTableBlockEntity.lastSelectedIndex = value
+                    2 -> this@BlueprintResearchTableBlockEntity.fuel = value
+                    3 -> this@BlueprintResearchTableBlockEntity.maxProcessTick = value
+                    4 -> this@BlueprintResearchTableBlockEntity.activated = value == 1
+                }
             }
+
+            override fun getCount(): Int = MAX_DATA_COUNT
         }
 
-        override fun set(index: Int, value: Int) {
-            when (index) {
-                0 -> this@BlueprintResearchTableBlockEntity.tick = value
-                1 -> this@BlueprintResearchTableBlockEntity.lastSelectedIndex = value
-                2 -> this@BlueprintResearchTableBlockEntity.fuel = value
-                3 -> this@BlueprintResearchTableBlockEntity.maxProcessTick = value
-                4 -> this@BlueprintResearchTableBlockEntity.activated = value == 1
-            }
-        }
-
-        override fun getCount(): Int {
-            return MAX_DATA_COUNT
-        }
-    }
-
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun loadAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.loadAdditional(tag, registries)
 
         this.tick = tag.getInt("Tick")
@@ -92,7 +99,10 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         ContainerHelper.loadAllItems(tag, this.items, registries)
     }
 
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun saveAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveAdditional(tag, registries)
 
         tag.putInt("Tick", this.tick)
@@ -115,9 +125,18 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         val facing = this.blockState.getValue(BlueprintResearchTableBlock.FACING)
         var result = absoluteSide
         when (facing) {
-            Direction.EAST -> result = result.counterClockWise
-            Direction.SOUTH -> result = result.opposite
-            Direction.WEST -> result = result.clockWise
+            Direction.EAST -> {
+                result = result.counterClockWise
+            }
+
+            Direction.SOUTH -> {
+                result = result.opposite
+            }
+
+            Direction.WEST -> {
+                result = result.clockWise
+            }
+
             else -> {} // NORTH: 无需旋转
         }
         return result
@@ -138,7 +157,7 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
     override fun canPlaceItemThroughFace(
         index: Int,
         stack: ItemStack,
-        side: Direction?
+        side: Direction?,
     ): Boolean {
         if (this.blockState.getValue(BlueprintResearchTableBlock.PART) == BedPart.HEAD) return false
         if (side == null) return false
@@ -156,15 +175,13 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
     override fun canTakeItemThroughFace(
         pIndex: Int,
         pStack: ItemStack,
-        pDirection: Direction
+        pDirection: Direction,
     ): Boolean {
         if (this.blockState.getValue(BlueprintResearchTableBlock.PART) == BedPart.HEAD) return false
         return pIndex == SLOT_OUTPUT && pDirection == Direction.DOWN
     }
 
-    override fun getContainerSize(): Int {
-        return this.items.size
-    }
+    override fun getContainerSize(): Int = this.items.size
 
     override fun isEmpty(): Boolean {
         for (item in this.items) {
@@ -173,19 +190,19 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         return true
     }
 
-    override fun getItem(pSlot: Int): ItemStack {
-        return this.items[pSlot]
-    }
+    override fun getItem(pSlot: Int): ItemStack = this.items[pSlot]
 
-    override fun removeItem(pSlot: Int, pAmount: Int): ItemStack {
-        return ContainerHelper.removeItem(this.items, pSlot, pAmount)
-    }
+    override fun removeItem(
+        pSlot: Int,
+        pAmount: Int,
+    ): ItemStack = ContainerHelper.removeItem(this.items, pSlot, pAmount)
 
-    override fun removeItemNoUpdate(pSlot: Int): ItemStack {
-        return ContainerHelper.takeItem(this.items, pSlot)
-    }
+    override fun removeItemNoUpdate(pSlot: Int): ItemStack = ContainerHelper.takeItem(this.items, pSlot)
 
-    override fun setItem(pSlot: Int, pStack: ItemStack) {
+    override fun setItem(
+        pSlot: Int,
+        pStack: ItemStack,
+    ) {
         val itemstack = this.items[pSlot]
         val flag = !pStack.isEmpty && isSameItemStack(itemstack, pStack)
         this.items[pSlot] = pStack
@@ -199,25 +216,19 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         }
     }
 
-    override fun stillValid(pPlayer: Player): Boolean {
-        return Container.stillValidBlockEntity(this, pPlayer)
-    }
+    override fun stillValid(pPlayer: Player): Boolean = Container.stillValidBlockEntity(this, pPlayer)
 
     override fun clearContent() {
         this.items.clear()
     }
 
-    override fun getDisplayName(): Component {
-        return Component.translatable("container.superbwarfare.blueprint_research_table")
-    }
+    override fun getDisplayName(): Component = Component.translatable("container.superbwarfare.blueprint_research_table")
 
     override fun createMenu(
         pContainerId: Int,
         pPlayerInventory: Inventory,
-        pPlayer: Player
-    ): AbstractContainerMenu {
-        return BlueprintResearchTableMenu(pContainerId, pPlayerInventory, this, this.dataAccess)
-    }
+        pPlayer: Player,
+    ): AbstractContainerMenu = BlueprintResearchTableMenu(pContainerId, pPlayerInventory, this, this.dataAccess)
 
     private fun getCurrentRecipe(): Optional<RecipeHolder<ResearchingRecipe>> {
         val level = this.level ?: return Optional.empty()
@@ -228,11 +239,12 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         inventory.setStackInSlot(2, this.items[SLOT_ADDITION])
         inventory.setStackInSlot(3, this.items[SLOT_SPECIAL])
 
-        val recipe = level.recipeManager.getRecipeFor(
-            ModRecipes.RESEARCHING_TYPE.get(),
-            RecipeWrapper(inventory),
-            level
-        )
+        val recipe =
+            level.recipeManager.getRecipeFor(
+                ModRecipes.RESEARCHING_TYPE.get(),
+                RecipeWrapper(inventory),
+                level,
+            )
         return recipe
     }
 
@@ -255,9 +267,7 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         return canInsertAmountIntoOutputSlot(result.count) && canInsertItemIntoOutputSlot(result.item)
     }
 
-    private fun canInsertItemIntoOutputSlot(item: Item): Boolean {
-        return this.items[SLOT_OUTPUT].isEmpty || this.items[SLOT_OUTPUT].`is`(item)
-    }
+    private fun canInsertItemIntoOutputSlot(item: Item): Boolean = this.items[SLOT_OUTPUT].isEmpty || this.items[SLOT_OUTPUT].`is`(item)
 
     private fun canInsertAmountIntoOutputSlot(count: Int): Boolean {
         val output = this.items[SLOT_OUTPUT]
@@ -275,13 +285,14 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         val value = holder.value ?: return
 
         val result = value.result
-        val item = if (value.selectable) {
-            result.getItemByIndex(this.lastSelectedIndex)
-        } else if (result.isRandom()) {
-            result.rollItem()
-        } else {
-            result.getResult()
-        }
+        val item =
+            if (value.selectable) {
+                result.getItemByIndex(this.lastSelectedIndex)
+            } else if (result.isRandom()) {
+                result.rollItem()
+            } else {
+                result.getResult()
+            }
 
         val input = this.items[SLOT_INPUT]
         input.shrink(1)
@@ -315,9 +326,7 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         return tag
     }
 
-    override fun getUpdatePacket(): Packet<ClientGamePacketListener> {
-        return ClientboundBlockEntityDataPacket.create(this)
-    }
+    override fun getUpdatePacket(): Packet<ClientGamePacketListener> = ClientboundBlockEntityDataPacket.create(this)
 
     companion object {
         val MODEL = loc("models/bedrock/block/blueprint_research_table.geo.json")
@@ -335,7 +344,12 @@ open class BlueprintResearchTableBlockEntity(pos: BlockPos, state: BlockState) :
         @JvmField
         val MAX_FUEL: Int = MiscConfig.BLUEPRINT_RESEARCH_TABLE_MAX_FUEL.get()
 
-        fun serverTick(level: Level, pos: BlockPos, state: BlockState, entity: BlueprintResearchTableBlockEntity) {
+        fun serverTick(
+            level: Level,
+            pos: BlockPos,
+            state: BlockState,
+            entity: BlueprintResearchTableBlockEntity,
+        ) {
             if (entity.fuel < MAX_FUEL) {
                 val fuelItem = entity.getItem(SLOT_FUEL)
                 if (!fuelItem.isEmpty && fuelItem.`is`(ModTags.Items.RESEARCH_FUEL)) {

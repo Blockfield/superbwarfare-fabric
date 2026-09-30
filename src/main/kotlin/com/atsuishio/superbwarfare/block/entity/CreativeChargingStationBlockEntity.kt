@@ -1,6 +1,9 @@
 package com.atsuishio.superbwarfare.block.entity
 
 import com.atsuishio.superbwarfare.capability.energy.InfinityEnergyStorage
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.IEnergyStorage
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModBlockEntities
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -14,15 +17,14 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
-import com.atsuishio.superbwarfare.fabric.IEnergyStorage
 
 /**
  * Energy Data Slot Code based on @GoryMoon's Chargers
  */
-open class CreativeChargingStationBlockEntity(pos: BlockPos, state: BlockState) :
-    BlockEntity(ModBlockEntities.CREATIVE_CHARGING_STATION.get(), pos, state) {
+open class CreativeChargingStationBlockEntity(
+    pos: BlockPos,
+    state: BlockState,
+) : BlockEntity(ModBlockEntities.CREATIVE_CHARGING_STATION.get(), pos, state) {
     var showRange: Boolean = false
 
     override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag {
@@ -31,19 +33,19 @@ open class CreativeChargingStationBlockEntity(pos: BlockPos, state: BlockState) 
         return tag
     }
 
-    override fun getUpdatePacket(): Packet<ClientGamePacketListener?>? {
-        return ClientboundBlockEntityDataPacket.create(this)
-    }
+    override fun getUpdatePacket(): Packet<ClientGamePacketListener?>? = ClientboundBlockEntityDataPacket.create(this)
 
     private fun chargeEntity() {
         val level = this.level ?: return
         if (level.gameTime % 20 != 0L) return
 
-        val entities = level.getEntitiesOfClass(
-            Entity::class.java, AABB(this.blockPos).inflate(
-                CHARGE_RADIUS.toDouble()
+        val entities =
+            level.getEntitiesOfClass(
+                Entity::class.java,
+                AABB(this.blockPos).inflate(
+                    CHARGE_RADIUS.toDouble(),
+                ),
             )
-        )
         entities.forEach { entity ->
             val cap = entity?.getCapability(Capabilities.EnergyStorage.ENTITY, null)
             if (cap == null || !cap.canReceive()) return@forEach
@@ -57,11 +59,12 @@ open class CreativeChargingStationBlockEntity(pos: BlockPos, state: BlockState) 
         for (direction in Direction.entries) {
             val blockEntity = level.getBlockEntity(this.blockPos.relative(direction)) ?: continue
 
-            val energy = level.getCapability(
-                Capabilities.EnergyStorage.BLOCK,
-                blockEntity.blockPos,
-                direction
-            )
+            val energy =
+                level.getCapability(
+                    Capabilities.EnergyStorage.BLOCK,
+                    blockEntity.blockPos,
+                    direction,
+                )
             if (energy == null || blockEntity is CreativeChargingStationBlockEntity) continue
 
             if (energy.canReceive() && energy.energyStored < energy.maxEnergyStored) {
@@ -73,16 +76,20 @@ open class CreativeChargingStationBlockEntity(pos: BlockPos, state: BlockState) 
 
     private val energyStorage: IEnergyStorage = InfinityEnergyStorage()
 
-    fun getEnergyStorage(side: Direction?): IEnergyStorage {
-        return energyStorage
-    }
+    fun getEnergyStorage(side: Direction?): IEnergyStorage = energyStorage
 
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun loadAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.loadAdditional(tag, registries)
         this.showRange = tag.getBoolean("ShowRange")
     }
 
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+    override fun saveAdditional(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ) {
         super.saveAdditional(tag, registries)
         tag.putBoolean("ShowRange", this.showRange)
     }
@@ -95,7 +102,7 @@ open class CreativeChargingStationBlockEntity(pos: BlockPos, state: BlockState) 
             pLevel: Level,
             pPos: BlockPos,
             pState: BlockState,
-            blockEntity: CreativeChargingStationBlockEntity
+            blockEntity: CreativeChargingStationBlockEntity,
         ) {
             blockEntity.chargeEntity()
             blockEntity.chargeBlock()

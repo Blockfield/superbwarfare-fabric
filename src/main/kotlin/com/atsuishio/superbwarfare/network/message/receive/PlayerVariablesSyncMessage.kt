@@ -1,9 +1,9 @@
 package com.atsuishio.superbwarfare.network.message.receive
 
 import com.atsuishio.superbwarfare.data.gun.Ammo
+import com.atsuishio.superbwarfare.init.ModAttachments
 import com.atsuishio.superbwarfare.init.getData
 import com.atsuishio.superbwarfare.init.setData
-import com.atsuishio.superbwarfare.init.ModAttachments
 import com.atsuishio.superbwarfare.network.ClientPacketPayload
 import com.atsuishio.superbwarfare.network.PayloadContext
 import com.atsuishio.superbwarfare.tools.clientLevel
@@ -14,12 +14,12 @@ data class PlayerVariablesSyncMessage(
     val target: Int,
     val data: Map<Byte, Int>,
 ) : ClientPacketPayload() {
-
     override fun PayloadContext.handler() {
         val entity = clientLevel?.getEntity(target)
         if (entity == null) {
             // Сущности ещё нет на клиенте (гонка JOIN/респавна) — откладываем до её появления
-            com.atsuishio.superbwarfare.client.util.PendingPlayerVariables.stash(target, data)
+            com.atsuishio.superbwarfare.client.util.PendingPlayerVariables
+                .stash(target, data)
             return
         }
 

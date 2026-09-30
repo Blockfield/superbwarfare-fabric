@@ -13,14 +13,16 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.Direction
 import net.minecraft.resources.ResourceLocation
 
-class EDDRenderer(renderManager: EntityRendererProvider.Context) : EntityRenderer<EDDEntity>(renderManager) {
+class EDDRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<EDDEntity>(renderManager) {
     override fun render(
         entity: EDDEntity,
         yaw: Float,
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         val instance = entity.modelInstance ?: return
         val bone = instance.getBone("move_laser") ?: return
@@ -47,15 +49,13 @@ class EDDRenderer(renderManager: EntityRendererProvider.Context) : EntityRendere
             poseStack,
             buffer.getBuffer(RenderType.entityCutout(this.getTextureLocation(entity))),
             packedLight,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
     }
 
-    override fun getTextureLocation(entity: EDDEntity): ResourceLocation {
-        return if (entity.uuid.leastSignificantBits % 191 == 0L) TEXTURE_ALTER else TEXTURE
-    }
+    override fun getTextureLocation(entity: EDDEntity): ResourceLocation = if (entity.uuid.leastSignificantBits % 191 == 0L) TEXTURE_ALTER else TEXTURE
 
     companion object {
         val TEXTURE = loc("textures/bedrock/projectile/edd.png")

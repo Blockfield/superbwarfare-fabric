@@ -9,14 +9,14 @@ import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils.getXRotF
 import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils.getYRotFromVector
 import com.atsuishio.superbwarfare.tools.FormatTool
 import com.atsuishio.superbwarfare.tools.FormatTool.format1D
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.ClipContext
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 object ArtilleryHud {
@@ -32,7 +32,7 @@ object ArtilleryHud {
         guiGraphics: GuiGraphics,
         partialTick: Float,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         if (vehicle.getSeatIndex(player) != vehicle.computed().turretControllerIndex) return
 
@@ -56,7 +56,7 @@ object ArtilleryHud {
             256f,
             16f,
             512f,
-            16f
+            16f,
         )
         RenderHelper.preciseBlit(
             guiGraphics,
@@ -68,7 +68,7 @@ object ArtilleryHud {
             8f,
             8f,
             8f,
-            8f
+            8f,
         )
 
         val width = Minecraft.getInstance().font.width(FormatTool.DECIMAL_FORMAT_1ZZ.format(yaw))
@@ -78,7 +78,7 @@ object ArtilleryHud {
             screenWidth / 2 - width / 2,
             40,
             -1,
-            false
+            false,
         )
 
         RenderHelper.preciseBlit(
@@ -91,7 +91,7 @@ object ArtilleryHud {
             8f,
             128f,
             8f,
-            128f
+            128f,
         )
 
         val widthP = Minecraft.getInstance().font.width(FormatTool.DECIMAL_FORMAT_1ZZ.format(pitch))
@@ -109,7 +109,7 @@ object ArtilleryHud {
             8f,
             8f,
             8f,
-            8f
+            8f,
         )
         guiGraphics.drawString(
             Minecraft.getInstance().font,
@@ -117,7 +117,7 @@ object ArtilleryHud {
             screenWidth / 2 + 157 - widthP,
             screenHeight / 2 - 4,
             -1,
-            false
+            false,
         )
 
         poseStack.popPose()
@@ -131,12 +131,16 @@ object ArtilleryHud {
         val lookingEntity = OverlayTraceHandler.cameraMaxRangeEntity
         var lookAtEntity = false
 
-        val result = player.level().clip(
-            ClipContext(
-                shootPos, shootPos.add(player.getViewVector(1f).scale(512.0)),
-                ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, player
+        val result =
+            player.level().clip(
+                ClipContext(
+                    shootPos,
+                    shootPos.add(player.getViewVector(1f).scale(512.0)),
+                    ClipContext.Block.VISUAL,
+                    ClipContext.Fluid.NONE,
+                    player,
+                ),
             )
-        )
         val hitPos = result.getLocation()
 
         val blockRange = player.getEyePosition(1f).distanceTo(hitPos)
@@ -149,25 +153,41 @@ object ArtilleryHud {
 
         if (lookAtEntity) {
             guiGraphics.drawString(
-                Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.drone.range")
+                Minecraft.getInstance().font,
+                Component
+                    .translatable("tips.superbwarfare.drone.range")
                     .append(
                         Component.literal(
-                            format1D(entityRange, "m ") + lookingEntity!!.displayName!!.string
-                        )
+                            format1D(entityRange, "m ") + lookingEntity!!.displayName!!.string,
+                        ),
                     ),
-                screenWidth / 2 + 14, screenHeight / 2 - 20, -1, false
+                screenWidth / 2 + 14,
+                screenHeight / 2 - 20,
+                -1,
+                false,
             )
         } else {
             if (blockRange > 511) {
                 guiGraphics.drawString(
-                    Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.drone.range")
-                        .append(Component.literal("---m")), screenWidth / 2 + 14, screenHeight / 2 - 20, -1, false
+                    Minecraft.getInstance().font,
+                    Component
+                        .translatable("tips.superbwarfare.drone.range")
+                        .append(Component.literal("---m")),
+                    screenWidth / 2 + 14,
+                    screenHeight / 2 - 20,
+                    -1,
+                    false,
                 )
             } else {
                 guiGraphics.drawString(
-                    Minecraft.getInstance().font, Component.translatable("tips.superbwarfare.drone.range")
+                    Minecraft.getInstance().font,
+                    Component
+                        .translatable("tips.superbwarfare.drone.range")
                         .append(Component.literal(format1D(blockRange, "m"))),
-                    screenWidth / 2 + 14, screenHeight / 2 - 20, -1, false
+                    screenWidth / 2 + 14,
+                    screenHeight / 2 - 20,
+                    -1,
+                    false,
                 )
             }
         }

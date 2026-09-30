@@ -11,8 +11,10 @@ import net.minecraft.world.level.block.DispenserBlock
 
 // Modified from Minecraft 1.20.1 source code
 abstract class AbstractProjectileDispenseBehavior : DefaultDispenseItemBehavior() {
-
-    override fun execute(source: BlockSource, stack: ItemStack): ItemStack {
+    override fun execute(
+        source: BlockSource,
+        stack: ItemStack,
+    ): ItemStack {
         val level: Level = source.level
         val position = DispenserBlock.getDispensePosition(source)
         val direction: Direction = source.state.getValue(DispenserBlock.FACING)
@@ -22,7 +24,7 @@ abstract class AbstractProjectileDispenseBehavior : DefaultDispenseItemBehavior(
             direction.stepY.toDouble() + 0.1,
             direction.stepZ.toDouble(),
             getPower(),
-            getUncertainty()
+            getUncertainty(),
         )
         level.addFreshEntity(projectile)
         stack.shrink(1)
@@ -33,8 +35,13 @@ abstract class AbstractProjectileDispenseBehavior : DefaultDispenseItemBehavior(
         source.level.levelEvent(1002, source.pos, 0)
     }
 
-    protected abstract fun getProjectile(level: Level, position: Position, stack: ItemStack): Projectile
+    protected abstract fun getProjectile(
+        level: Level,
+        position: Position,
+        stack: ItemStack,
+    ): Projectile
 
     protected open fun getPower() = 1.1F
+
     protected open fun getUncertainty() = 6F
 }

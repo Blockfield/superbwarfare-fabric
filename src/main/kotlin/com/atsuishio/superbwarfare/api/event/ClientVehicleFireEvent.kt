@@ -9,5 +9,5 @@ open class ClientVehicleFireEvent(
     val vehicle: VehicleEntity,
     val shooter: Entity,
     val index: Int,
-    val weaponName: String? = null
+    val weaponName: String? = null,
 )

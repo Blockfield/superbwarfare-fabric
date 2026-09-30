@@ -1,8 +1,10 @@
 package com.atsuishio.superbwarfare.mixins;
 
 import com.atsuishio.superbwarfare.entity.mixin.CupidLove;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.npc.Villager;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,8 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Villager.class)
 public class VillagerMixin implements CupidLove {
 
-    @Unique
-    public boolean superbwarfare$cupidLove;
+    @Unique public boolean superbwarfare$cupidLove;
 
     @Override
     public void superbwarfare$setCupidLove(boolean love) {

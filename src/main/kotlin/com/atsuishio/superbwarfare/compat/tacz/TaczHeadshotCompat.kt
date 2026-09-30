@@ -15,7 +15,10 @@ object TaczHeadshotCompat {
         }
     }
 
-    internal fun recordHit(bulletId: Int, headshot: Boolean) {
+    internal fun recordHit(
+        bulletId: Int,
+        headshot: Boolean,
+    ) {
         // Одна пробивающая пуля может после головы попасть в тело другой цели.
         headshotBulletId = if (headshot) bulletId else -1
     }

@@ -6,9 +6,9 @@ import com.atsuishio.superbwarfare.entity.vehicle.MortarEntity
 import com.atsuishio.superbwarfare.tools.FormatTool.format1D
 import com.atsuishio.superbwarfare.tools.RangeTool.getRange
 import com.atsuishio.superbwarfare.tools.plus
-import net.minecraft.network.chat.Component
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.network.chat.Component
 
 @Environment(EnvType.CLIENT)
 object MortarInfoOverlay : CommonOverlay("mortar_info") {
@@ -21,9 +21,7 @@ object MortarInfoOverlay : CommonOverlay("mortar_info") {
         registerComponents(PITCH, YAW, RANGE)
     }
 
-    override fun shouldRender(): Boolean {
-        return super.shouldRender() && OverlayTraceHandler.playerReachEntity is MortarEntity
-    }
+    override fun shouldRender(): Boolean = super.shouldRender() && OverlayTraceHandler.playerReachEntity is MortarEntity
 
     override fun RenderContext.preRender() {
         val mortar = OverlayTraceHandler.playerReachEntity as? MortarEntity ?: return
@@ -33,12 +31,14 @@ object MortarInfoOverlay : CommonOverlay("mortar_info") {
 
         YAW.component = Component.translatable("tips.superbwarfare.mortar.yaw") + format1D(mortar.yRot.toDouble(), "°")
 
-        RANGE.component = Component.translatable("tips.superbwarfare.mortar.range") + format1D(
-            getRange(
-                -mortar.xRot.toDouble(),
-                mortar.getProjectileVelocity("Main").toDouble(),
-                mortar.getProjectileGravity("Main").toDouble()
-            ).toInt().toDouble(), "m"
-        )
+        RANGE.component = Component.translatable("tips.superbwarfare.mortar.range") +
+            format1D(
+                getRange(
+                    -mortar.xRot.toDouble(),
+                    mortar.getProjectileVelocity("Main").toDouble(),
+                    mortar.getProjectileGravity("Main").toDouble(),
+                ).toInt().toDouble(),
+                "m",
+            )
     }
 }

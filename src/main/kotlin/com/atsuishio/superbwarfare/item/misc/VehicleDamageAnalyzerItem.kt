@@ -12,15 +12,17 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Rarity
 import net.minecraft.world.item.TooltipFlag
 
-class VehicleDamageAnalyzerItem : Item(Properties().stacksTo(1).rarity(Rarity.UNCOMMON)), IVehicleInteract {
+class VehicleDamageAnalyzerItem :
+    Item(Properties().stacksTo(1).rarity(Rarity.UNCOMMON)),
+    IVehicleInteract {
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.vehicle_damage_analyzer").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.vehicle_damage_analyzer").withStyle(ChatFormatting.GRAY),
         )
     }
 
@@ -28,7 +30,7 @@ class VehicleDamageAnalyzerItem : Item(Properties().stacksTo(1).rarity(Rarity.UN
         vehicle: VehicleEntity,
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult {
         val level = player.level()
         if (!level.isClientSide) {
@@ -37,16 +39,18 @@ class VehicleDamageAnalyzerItem : Item(Properties().stacksTo(1).rarity(Rarity.UN
                 player.displayClientMessage(
                     Component.translatable(
                         "des.superbwarfare.vehicle_damage_analyzer.unbind",
-                        vehicle.displayName
-                    ), true
+                        vehicle.displayName,
+                    ),
+                    true,
                 )
             } else {
                 vehicle.damageDebugResultReceiver = player
                 player.displayClientMessage(
                     Component.translatable(
                         "des.superbwarfare.vehicle_damage_analyzer.bind",
-                        vehicle.displayName
-                    ), true
+                        vehicle.displayName,
+                    ),
+                    true,
                 )
             }
         }

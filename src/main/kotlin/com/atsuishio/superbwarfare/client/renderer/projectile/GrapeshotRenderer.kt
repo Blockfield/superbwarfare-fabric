@@ -12,14 +12,16 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 
-class GrapeshotRenderer(pContext: EntityRendererProvider.Context) : EntityRenderer<GrapeshotEntity>(pContext) {
+class GrapeshotRenderer(
+    pContext: EntityRendererProvider.Context,
+) : EntityRenderer<GrapeshotEntity>(pContext) {
     override fun render(
         pEntity: GrapeshotEntity,
         pEntityYaw: Float,
         pPartialTicks: Float,
         pMatrixStack: PoseStack,
         pBuffer: MultiBufferSource,
-        pPackedLight: Int
+        pPackedLight: Int,
     ) {
         pMatrixStack.pushPose()
         pMatrixStack.mulPose(this.entityRenderDispatcher.cameraOrientation())
@@ -34,9 +36,7 @@ class GrapeshotRenderer(pContext: EntityRendererProvider.Context) : EntityRender
         super.render(pEntity, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight)
     }
 
-    override fun getTextureLocation(pEntity: GrapeshotEntity): ResourceLocation {
-        return TEXTURE
-    }
+    override fun getTextureLocation(pEntity: GrapeshotEntity): ResourceLocation = TEXTURE
 
     companion object {
         private fun vertex(
@@ -46,9 +46,10 @@ class GrapeshotRenderer(pContext: EntityRendererProvider.Context) : EntityRender
             pX: Float,
             pY: Float,
             pU: Int,
-            pV: Int
+            pV: Int,
         ) {
-            pConsumer.addVertex(pPose, pX - 0.5f, pY - 0.25f, 0f)
+            pConsumer
+                .addVertex(pPose, pX - 0.5f, pY - 0.25f, 0f)
                 .setColor(255, 255, 255, 255)
                 .setUv(pU.toFloat(), pV.toFloat())
                 .setOverlay(OverlayTexture.NO_OVERLAY)

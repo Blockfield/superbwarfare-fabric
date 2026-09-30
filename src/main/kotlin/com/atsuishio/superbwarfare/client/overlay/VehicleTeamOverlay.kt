@@ -14,6 +14,8 @@ import com.atsuishio.superbwarfare.tools.NBTTool
 import com.atsuishio.superbwarfare.tools.VectorTool.lerpGetEntityBoundingBoxCenter
 import com.atsuishio.superbwarfare.tools.canBeSeen
 import com.atsuishio.superbwarfare.tools.worldToScreen
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.Entity
@@ -22,29 +24,30 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.scores.PlayerTeam
 import net.minecraft.world.scores.Team
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
 object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
-    override fun shouldRender() = super.shouldRender()
-            && DisplayConfig.VEHICLE_INFO.get()
-            && !MiscConfig.HIDE_COMBAT_HUD.get()
+    override fun shouldRender() =
+        super.shouldRender() &&
+            DisplayConfig.VEHICLE_INFO.get() &&
+            !MiscConfig.HIDE_COMBAT_HUD.get()
 
     override fun RenderContext.render() {
         val lookingEntity = OverlayTraceHandler.cameraEntity as? VehicleEntity ?: return
         val entityRange = player.distanceTo(lookingEntity).toDouble()
 
         val stack = player.mainHandItem
-        val usingDrone = stack.`is`(ModItems.MONITOR.get())
-                && NBTTool.getTag(stack).getBoolean("Using")
-                && NBTTool.getTag(stack).getBoolean("Linked")
+        val usingDrone =
+            stack.`is`(ModItems.MONITOR.get()) &&
+                NBTTool.getTag(stack).getBoolean("Using") &&
+                NBTTool.getTag(stack).getBoolean("Linked")
 
         val poseStack = guiGraphics.pose()
         if (!usingDrone) {
-            val pos = lerpGetEntityBoundingBoxCenter(lookingEntity, partialTick)
-                .add(Vec3(0.0, lookingEntity.bbHeight / 2 + 0.5, 0.0))
+            val pos =
+                lerpGetEntityBoundingBoxCenter(lookingEntity, partialTick)
+                    .add(Vec3(0.0, lookingEntity.bbHeight / 2 + 0.5, 0.0))
 
             val centerPos = lerpGetEntityBoundingBoxCenter(lookingEntity, partialTick)
 
@@ -57,18 +60,23 @@ object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
                 poseStack.pushPose()
                 poseStack.translate(x, y - 12, 0f)
 
-                val size = ((30 / ClientEventHandler.fov) * 0.9f * max((512 - entityRange) / 512, 0.1)
-                    .coerceIn(0.4, 1.0)).toFloat()
+                val size =
+                    (
+                        (30 / ClientEventHandler.fov) * 0.9f *
+                            max((512 - entityRange) / 512, 0.1)
+                                .coerceIn(0.4, 1.0)
+                    ).toFloat()
                 poseStack.scale(size, size, size)
                 val font = mc.font
 
                 var color = -1
 
                 if (lookingEntity is DroneEntity) {
-                    val controller = EntityFindUtil.findPlayer(
-                        lookingEntity.level(),
-                        lookingEntity.getEntityData().get(DroneEntity.CONTROLLER)
-                    )
+                    val controller =
+                        EntityFindUtil.findPlayer(
+                            lookingEntity.level(),
+                            lookingEntity.getEntityData().get(DroneEntity.CONTROLLER),
+                        )
                     if (controller != null) {
                         color = controller.teamColor
 
@@ -82,7 +90,7 @@ object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
                                 -font.width(info) / 2,
                                 -13,
                                 color,
-                                false
+                                false,
                             )
                         } else {
                             val info = "${lookingEntity.displayName?.string} ${controller.displayName?.string}"
@@ -92,7 +100,7 @@ object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
                                 -font.width(info) / 2,
                                 -13,
                                 color,
-                                false
+                                false,
                             )
                         }
                     } else {
@@ -113,7 +121,7 @@ object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
                                 -font.width(info) / 2,
                                 -13,
                                 color,
-                                false
+                                false,
                             )
                         } else {
                             val info = "${lookingEntity.displayName?.string} ${player1.displayName?.string}"
@@ -123,7 +131,7 @@ object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
                                 -font.width(info) / 2,
                                 -13,
                                 color,
-                                false
+                                false,
                             )
                         }
                     } else {
@@ -144,7 +152,7 @@ object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
                                 -font.width(info) / 2,
                                 -13,
                                 color,
-                                false
+                                false,
                             )
                         } else {
                             val info = "${lookingEntity.displayName?.string} ${player1.displayName?.string}"
@@ -154,7 +162,7 @@ object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
                                 -font.width(info) / 2,
                                 -13,
                                 color,
-                                false
+                                false,
                             )
                         }
                     } else {
@@ -183,7 +191,7 @@ object VehicleTeamOverlay : CommonOverlay("vehicle_team") {
                     -40 + 80 * ((if (lookingEntity.isWreck) (health + maxHealth) else health) / maxHealth),
                     1.5f,
                     0f,
-                    argb
+                    argb,
                 )
 
                 poseStack.popPose()

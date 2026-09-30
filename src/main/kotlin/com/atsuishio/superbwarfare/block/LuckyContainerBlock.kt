@@ -37,12 +37,20 @@ import net.minecraft.world.phys.shapes.VoxelShape
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 open class LuckyContainerBlock :
-    BaseEntityBlock(Properties.of().sound(SoundType.METAL).strength(3.0f).noOcclusion().requiresCorrectToolForDrops()) {
+    BaseEntityBlock(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .noOcclusion()
+            .requiresCorrectToolForDrops(),
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(OPENED, false)
+                .setValue(OPENED, false),
         )
     }
 
@@ -53,13 +61,15 @@ open class LuckyContainerBlock :
         pos: BlockPos,
         player: Player,
         hand: InteractionHand,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): ItemInteractionResult {
-        if (level.isClientSide
-            || state.getValue(OPENED)
-            || level.getBlockEntity(pos) !is LuckyContainerBlockEntity
-            || hand == InteractionHand.OFF_HAND
-        ) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+        if (level.isClientSide ||
+            state.getValue(OPENED) ||
+            level.getBlockEntity(pos) !is LuckyContainerBlockEntity ||
+            hand == InteractionHand.OFF_HAND
+        ) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+        }
 
         if (!stack.`is`(ModTags.Items.TOOLS_CROWBAR)) {
             player.displayClientMessage(Component.translatable("des.superbwarfare.container.fail.crowbar"), true)
@@ -73,7 +83,7 @@ open class LuckyContainerBlock :
             ModSounds.OPEN.get(),
             SoundSource.BLOCKS,
             1f,
-            1f
+            1f,
         )
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
@@ -82,18 +92,18 @@ open class LuckyContainerBlock :
     override fun <T : BlockEntity?> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T?>
+        pBlockEntityType: BlockEntityType<T?>,
     ): BlockEntityTicker<T?>? {
         if (!pLevel.isClientSide) {
             return createTickerHelper<LuckyContainerBlockEntity, T>(
                 pBlockEntityType,
-                ModBlockEntities.LUCKY_CONTAINER.get()
+                ModBlockEntities.LUCKY_CONTAINER.get(),
             ) { pLevel, pPos, pState, blockEntity ->
                 LuckyContainerBlockEntity.serverTick(
                     pLevel,
                     pPos,
                     pState,
-                    blockEntity
+                    blockEntity,
                 )
             }
         }
@@ -104,7 +114,7 @@ open class LuckyContainerBlock :
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag)
         val component = stack.get(DataComponents.BLOCK_ENTITY_DATA)
@@ -118,37 +128,48 @@ open class LuckyContainerBlock :
                 location = "location." + split[1]
             }
             tooltipComponents.add(
-                Component.translatable("des.superbwarfare.lucky_container.$location").withStyle(ChatFormatting.GRAY)
+                Component.translatable("des.superbwarfare.lucky_container.$location").withStyle(ChatFormatting.GRAY),
             )
         }
     }
 
-    override fun getShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
-        return if (state.getValue(OPENED)) box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0)
-        else box(0.0, 0.0, 0.0, 16.0, 15.0, 16.0)
-    }
+    override fun getShape(
+        state: BlockState,
+        world: BlockGetter,
+        pos: BlockPos,
+        context: CollisionContext,
+    ): VoxelShape =
+        if (state.getValue(OPENED)) {
+            box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0)
+        } else {
+            box(0.0, 0.0, 0.0, 16.0, 15.0, 16.0)
+        }
 
-    override fun getRenderShape(state: BlockState): RenderShape {
-        return RenderShape.ENTITYBLOCK_ANIMATED
-    }
+    override fun getRenderShape(state: BlockState): RenderShape = RenderShape.ENTITYBLOCK_ANIMATED
 
-    override fun newBlockEntity(blockPos: BlockPos, blockState: BlockState): BlockEntity {
-        return LuckyContainerBlockEntity(blockPos, blockState)
-    }
+    override fun newBlockEntity(
+        blockPos: BlockPos,
+        blockState: BlockState,
+    ): BlockEntity = LuckyContainerBlockEntity(blockPos, blockState)
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block?, BlockState?>) {
         builder.add(FACING).add(OPENED)
     }
 
-    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? =
+        this
+            .defaultBlockState()
             .setValue(FACING, context.horizontalDirection.opposite)
             .setValue(OPENED, false)
-    }
 
-    override fun getCloneItemStack(level: LevelReader, pos: BlockPos, state: BlockState): ItemStack {
+    override fun getCloneItemStack(
+        level: LevelReader,
+        pos: BlockPos,
+        state: BlockState,
+    ): ItemStack {
         val itemstack = super.getCloneItemStack(level, pos, state)
-        level.getBlockEntity(pos, ModBlockEntities.LUCKY_CONTAINER.get())
+        level
+            .getBlockEntity(pos, ModBlockEntities.LUCKY_CONTAINER.get())
             .ifPresent { blockEntity ->
                 blockEntity.saveToItem(itemstack, level.registryAccess())
             }

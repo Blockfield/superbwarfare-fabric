@@ -7,14 +7,14 @@ import com.atsuishio.superbwarfare.tools.TraceTool
 import com.atsuishio.superbwarfare.tools.getEntityReach
 import com.atsuishio.superbwarfare.tools.localPlayer
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 
 @Environment(EnvType.CLIENT)
 object OverlayTraceHandler {
@@ -67,27 +67,32 @@ object OverlayTraceHandler {
         val camera = mc.gameRenderer.mainCamera
         var viewPos = camera.position
         var viewVec = Vec3(camera.lookVector)
-        val distance = try {
-            VehicleConfig.VEHICLE_INFO_DISPLAY_DISTANCE.get().toDouble()
-        } catch (_: Exception) {
-            196.0
-        }
+        val distance =
+            try {
+                VehicleConfig.VEHICLE_INFO_DISPLAY_DISTANCE.get().toDouble()
+            } catch (_: Exception) {
+                196.0
+            }
 
         val vehicle = player.vehicle
-        if (vehicle is VehicleEntity
-            && vehicle.hasWeapon(vehicle.getSeatIndex(player))
-            && !ClientEventHandler.isNacelleCam(player)
+        if (vehicle is VehicleEntity &&
+            vehicle.hasWeapon(vehicle.getSeatIndex(player)) &&
+            !ClientEventHandler.isNacelleCam(player)
         ) {
             viewVec = vehicle.getShootDirectionForHud(player, 1f)
             viewPos = vehicle.getShootPosForHud(player, 1f)
         }
 
-        blockMaxRangeResult = player.level().clip(
-            ClipContext(
-                viewPos, viewPos.add(viewVec.scale(512.0)),
-                ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, player
+        blockMaxRangeResult =
+            player.level().clip(
+                ClipContext(
+                    viewPos,
+                    viewPos.add(viewVec.scale(512.0)),
+                    ClipContext.Block.OUTLINE,
+                    ClipContext.Fluid.ANY,
+                    player,
+                ),
             )
-        )
 
         val cameraRes = TraceTool.cameraFindLookingEntity(player, viewPos, viewVec, distance)
         if (cameraRes is VehicleEntity) {

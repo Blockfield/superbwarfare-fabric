@@ -4,7 +4,9 @@ import com.atsuishio.superbwarfare.block.entity.ContainerBlockEntity
 import com.maydaymemory.mae.basic.Pose
 import com.maydaymemory.mae.control.statemachine.AnimationStateMachine
 
-class ContainerBlockAnimationInstance(entity: ContainerBlockEntity) {
+class ContainerBlockAnimationInstance(
+    entity: ContainerBlockEntity,
+) {
     val context = ContainerBlockContext(entity)
     private val stateMachine = AnimationStateMachine(ContainerBlockStates.INIT, context) { System.nanoTime() }
 
@@ -13,7 +15,5 @@ class ContainerBlockAnimationInstance(entity: ContainerBlockEntity) {
         context.tick()
     }
 
-    fun getPose(): Pose {
-        return stateMachine.getPose()
-    }
+    fun getPose(): Pose = stateMachine.getPose()
 }

@@ -29,8 +29,10 @@ object BedrockModelLoader {
      * моделей наследуются от ванильного SimplePreparableReloadListener. Обёртка добавляет
      * недостающий id, ничего не меняя в самих слушателях.
      */
-    private class Identified(name: String, private val delegate: PreparableReloadListener) :
-        IdentifiableResourceReloadListener {
+    private class Identified(
+        name: String,
+        private val delegate: PreparableReloadListener,
+    ) : IdentifiableResourceReloadListener {
         private val id: ResourceLocation = Mod.loc(name)
 
         override fun getFabricId(): ResourceLocation = id
@@ -41,8 +43,7 @@ object BedrockModelLoader {
             prepareProfiler: ProfilerFiller,
             applyProfiler: ProfilerFiller,
             prepareExecutor: Executor,
-            applyExecutor: Executor
-        ): CompletableFuture<Void> =
-            delegate.reload(barrier, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor)
+            applyExecutor: Executor,
+        ): CompletableFuture<Void> = delegate.reload(barrier, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor)
     }
 }

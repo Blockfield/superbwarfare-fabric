@@ -19,19 +19,35 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 
-open class AirSheepEntity(type: EntityType<AirSheepEntity>, world: Level) : VehicleEntity(type, world) {
+open class AirSheepEntity(
+    type: EntityType<AirSheepEntity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     companion object {
         @JvmField
         val COLOR_ID: EntityDataAccessor<Int> =
             SynchedEntityData.defineId(AirSheepEntity::class.java, EntityDataSerializers.INT)
 
         /** Maps dye color ID to wool item, mirroring vanilla [net.minecraft.world.entity.animal.Sheep.ITEM_BY_DYE] */
-        private val WOOL_BY_DYE_COLOR = arrayOf(
-            Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL,
-            Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL,
-            Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL, Items.PURPLE_WOOL, Items.BLUE_WOOL,
-            Items.BROWN_WOOL, Items.GREEN_WOOL, Items.RED_WOOL, Items.BLACK_WOOL
-        )
+        private val WOOL_BY_DYE_COLOR =
+            arrayOf(
+                Items.WHITE_WOOL,
+                Items.ORANGE_WOOL,
+                Items.MAGENTA_WOOL,
+                Items.LIGHT_BLUE_WOOL,
+                Items.YELLOW_WOOL,
+                Items.LIME_WOOL,
+                Items.PINK_WOOL,
+                Items.GRAY_WOOL,
+                Items.LIGHT_GRAY_WOOL,
+                Items.CYAN_WOOL,
+                Items.PURPLE_WOOL,
+                Items.BLUE_WOOL,
+                Items.BROWN_WOOL,
+                Items.GREEN_WOOL,
+                Items.RED_WOOL,
+                Items.BLACK_WOOL,
+            )
     }
 
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
@@ -51,7 +67,10 @@ open class AirSheepEntity(type: EntityType<AirSheepEntity>, world: Level) : Vehi
         colorId = compound.getInt("ColorId")
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val stack = player.mainHandItem
         if (stack.item is DyeItem) {
             if (customName != null && customName!!.string == "jeb_") return InteractionResult.PASS

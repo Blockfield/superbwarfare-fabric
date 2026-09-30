@@ -26,7 +26,9 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import kotlin.math.max
 
-open class JavelinMissileEntity : MissileProjectile, BasicGeoProjectileEntity {
+open class JavelinMissileEntity :
+    MissileProjectile,
+    BasicGeoProjectileEntity {
     var isTop by TOP
 
     constructor(type: EntityType<out JavelinMissileEntity>, level: Level) : super(type, level)
@@ -38,9 +40,11 @@ open class JavelinMissileEntity : MissileProjectile, BasicGeoProjectileEntity {
         explosionDamage: Float,
         explosionRadius: Float,
         guideType: Int,
-        targetPos: Vec3?
+        targetPos: Vec3?,
     ) : super(
-        ModEntities.JAVELIN_MISSILE.get(), entity, level
+        ModEntities.JAVELIN_MISSILE.get(),
+        entity,
+        level,
     ) {
         this.damageValue = damage
         this.explosionDamageValue = explosionDamage
@@ -52,9 +56,7 @@ open class JavelinMissileEntity : MissileProjectile, BasicGeoProjectileEntity {
         }
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.JAVELIN_MISSILE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.JAVELIN_MISSILE.get()
 
     fun setAttackMode(mode: Boolean) {
         this.isTop = mode
@@ -68,18 +70,19 @@ open class JavelinMissileEntity : MissileProjectile, BasicGeoProjectileEntity {
     override fun performDamage(
         entity: Entity,
         damage: Float,
-        isHeadshot: Boolean
+        isHeadshot: Boolean,
     ) {
         entity.invulnerableTime = 0
 
         val headShotModifier = if (isHeadshot) this.getHeadShot() else 1f
         if (damage > 0) {
             entity.forceHurt(
-                if (isHeadshot)
+                if (isHeadshot) {
                     ModDamageTypes.causeProjectileHitHeadshotDamage(this.level().registryAccess(), this, this.owner)
-                else
-                    ModDamageTypes.causeProjectileHitDamage(this.level().registryAccess(), this, this.owner),
-                damage * headShotModifier * if (this.isTop) 1.25f else 1f
+                } else {
+                    ModDamageTypes.causeProjectileHitDamage(this.level().registryAccess(), this, this.owner)
+                },
+                damage * headShotModifier * if (this.isTop) 1.25f else 1f,
             )
             entity.invulnerableTime = 0
         }
@@ -97,15 +100,16 @@ open class JavelinMissileEntity : MissileProjectile, BasicGeoProjectileEntity {
                 val dir = position().vectorTo(entity.position()).horizontalDistanceSqr() < 900
                 val dis = entity.position().vectorTo(position()).horizontalDistance()
                 val height = if (dis > 30) 0.2 * (dis - 30) else 0.0
-                val targetPos = Vec3(
-                    entity.x,
-                    entity.y + 0.5f * entity.bbHeight + (if (entity is EnderDragon) -3 else 0) + height,
-                    entity.z
-                )
+                val targetPos =
+                    Vec3(
+                        entity.x,
+                        entity.y + 0.5f * entity.bbHeight + (if (entity is EnderDragon) -3 else 0) + height,
+                        entity.z,
+                    )
                 val targetVec = Vec3(entity.deltaMovement.x, 0.0, entity.deltaMovement.z)
                 val toVec = position().vectorTo(targetPos.add(targetVec)).normalize()
-                if ((!entity.getPassengers().isEmpty() || entity is VehicleEntity)
-                    && entity.tickCount % (max(0.04 * this.distanceTo(entity), 2.0).toInt()) == 0
+                if ((!entity.getPassengers().isEmpty() || entity is VehicleEntity) &&
+                    entity.tickCount % (max(0.04 * this.distanceTo(entity), 2.0).toInt()) == 0
                 ) {
                     entity.level().playSound(
                         null,
@@ -113,7 +117,7 @@ open class JavelinMissileEntity : MissileProjectile, BasicGeoProjectileEntity {
                         if (entity is Pig) SoundEvents.PIG_HURT else ModSounds.MISSILE_WARNING.get(),
                         SoundSource.PLAYERS,
                         2f,
-                        1f
+                        1f,
                     )
                 }
                 if (this.tickCount > 3) {
@@ -151,7 +155,7 @@ open class JavelinMissileEntity : MissileProjectile, BasicGeoProjectileEntity {
                             Vec3(
                                 getTargetPos()!!.x,
                                 getTargetPos()!!.y + (5 * this.tickCount).coerceIn(0, 90),
-                                getTargetPos()!!.z
+                                getTargetPos()!!.z,
                             )
                         val toTopVec = eyePosition.vectorTo(targetTopPos).normalize()
                         turn(toTopVec, 6f)
@@ -178,13 +182,9 @@ open class JavelinMissileEntity : MissileProjectile, BasicGeoProjectileEntity {
         this.deltaMovement = this.deltaMovement.multiply(0.8, 0.8, 0.8)
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.4f
-    }
+    override fun getVolume(): Float = 0.4f
 
     companion object {
         @JvmField

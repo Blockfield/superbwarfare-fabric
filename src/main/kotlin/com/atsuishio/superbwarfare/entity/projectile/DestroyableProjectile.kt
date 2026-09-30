@@ -18,7 +18,7 @@ abstract class DestroyableProjectile : FastThrowableProjectile {
 
     constructor(pEntityType: EntityType<out ThrowableItemProjectile>, pShooter: Entity?, pLevel: Level) : super(
         pEntityType,
-        pLevel
+        pLevel,
     ) {
         this.owner = pShooter
         if (pShooter != null) {
@@ -30,7 +30,10 @@ abstract class DestroyableProjectile : FastThrowableProjectile {
 
     override fun isPickable() = !this.isRemoved
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         val entity = source.directEntity
         if (entity is DestroyableProjectile && this.javaClass == entity.javaClass) {
             if (this.owner == entity.owner) return false

@@ -6,6 +6,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.DroneEntity;
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
 import com.atsuishio.superbwarfare.init.ModSounds;
 import com.atsuishio.superbwarfare.tools.VectorTool;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
@@ -55,7 +56,10 @@ public abstract class VehicleSoundInstance extends AbstractTickableSoundInstance
             this.fade++;
         }
 
-        this.volume = this.getVolume(this.mobileVehicle) * fade * Mth.clamp(0.01f * player.tickCount, 0, 1);
+        this.volume =
+                this.getVolume(this.mobileVehicle)
+                        * fade
+                        * Mth.clamp(0.01f * player.tickCount, 0, 1);
 
         this.x = this.mobileVehicle.getX();
         this.y = this.mobileVehicle.getY();
@@ -73,7 +77,13 @@ public abstract class VehicleSoundInstance extends AbstractTickableSoundInstance
             this.lastDistance = 0;
         }
 
-        if (this.mobileVehicle instanceof DroneEntity drone && Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceToSqr(drone.position()) < 0.0625) {
+        if (this.mobileVehicle instanceof DroneEntity drone
+                && Minecraft.getInstance()
+                                .gameRenderer
+                                .getMainCamera()
+                                .getPosition()
+                                .distanceToSqr(drone.position())
+                        < 0.0625) {
             pitch = 1;
         }
     }
@@ -139,7 +149,15 @@ public abstract class VehicleSoundInstance extends AbstractTickableSoundInstance
 
         @Override
         protected float getVolume(VehicleEntity mobileVehicle) {
-            return (float) Mth.lerp(Mth.clamp(mobileVehicle.getDeltaMovement().horizontalDistance(), 0F, 0.3F), 0F, 0.3F) * 1.4f;
+            return (float)
+                            Mth.lerp(
+                                    Mth.clamp(
+                                            mobileVehicle.getDeltaMovement().horizontalDistance(),
+                                            0F,
+                                            0.3F),
+                                    0F,
+                                    0.3F)
+                    * 1.4f;
         }
     }
 
@@ -161,7 +179,15 @@ public abstract class VehicleSoundInstance extends AbstractTickableSoundInstance
 
         @Override
         protected float getVolume(VehicleEntity mobileVehicle) {
-            return (float) Mth.lerp(Mth.clamp(mobileVehicle.getDeltaMovement().horizontalDistance() * (mobileVehicle.isInWater() ? 1.2 : 0), 0F, 0.6F), 0, 0.6F);
+            return (float)
+                    Mth.lerp(
+                            Mth.clamp(
+                                    mobileVehicle.getDeltaMovement().horizontalDistance()
+                                            * (mobileVehicle.isInWater() ? 1.2 : 0),
+                                    0F,
+                                    0.6F),
+                            0,
+                            0.6F);
         }
     }
 
@@ -183,9 +209,18 @@ public abstract class VehicleSoundInstance extends AbstractTickableSoundInstance
 
         @Override
         protected float getVolume(VehicleEntity mobileVehicle) {
-            float angle = Math.max((float) VectorTool.calculateAngle(mobileVehicle.getLookAngle(), new Vec3(0, 1, 0)) - 95, 0) / 85;
+            float angle =
+                    Math.max(
+                                    (float)
+                                                    VectorTool.calculateAngle(
+                                                            mobileVehicle.getLookAngle(),
+                                                            new Vec3(0, 1, 0))
+                                            - 95,
+                                    0)
+                            / 85;
 
-            return (float) Mth.clamp((-mobileVehicle.getDeltaMovement().y - 0.4) * angle * 0.2, 0F, 5F);
+            return (float)
+                    Mth.clamp((-mobileVehicle.getDeltaMovement().y - 0.4) * angle * 0.2, 0F, 5F);
         }
     }
 
@@ -202,7 +237,9 @@ public abstract class VehicleSoundInstance extends AbstractTickableSoundInstance
 
         @Override
         protected float getPitch(VehicleEntity mobileVehicle) {
-            return 0.85f + (float) Mth.clamp((mobileVehicle.getDeltaMovement().y + 0.3) * -0.5f, 0F, 0.5F);
+            return 0.85f
+                    + (float)
+                            Mth.clamp((mobileVehicle.getDeltaMovement().y + 0.3) * -0.5f, 0F, 0.5F);
         }
 
         @Override
@@ -214,7 +251,12 @@ public abstract class VehicleSoundInstance extends AbstractTickableSoundInstance
     public static class SkipSound extends VehicleSoundInstance {
 
         public SkipSound(VehicleEntity mobileVehicle) {
-            super(mobileVehicle.getEngineInfo() instanceof EngineInfo.Track ? ModSounds.TRACK_VEHICLE_SKIP.get() : ModSounds.WHEEL_VEHICLE_SKIP.get(), Minecraft.getInstance(), mobileVehicle);
+            super(
+                    mobileVehicle.getEngineInfo() instanceof EngineInfo.Track
+                            ? ModSounds.TRACK_VEHICLE_SKIP.get()
+                            : ModSounds.WHEEL_VEHICLE_SKIP.get(),
+                    Minecraft.getInstance(),
+                    mobileVehicle);
         }
 
         @Override

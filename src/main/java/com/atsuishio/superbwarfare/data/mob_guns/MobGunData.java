@@ -10,6 +10,7 @@ import com.atsuishio.superbwarfare.tools.TagDataParser;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -17,19 +18,22 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class MobGunData {
 
-    public static final LoadingCache<Mob, MobGunData> dataCache = CacheBuilder.newBuilder()
-            .weakKeys()
-            .weakValues()
-            .build(new CacheLoader<>() {
-                public @NotNull MobGunData load(@NotNull Mob mob) {
-                    return new MobGunData(mob);
-                }
-            });
+    public static final LoadingCache<Mob, MobGunData> dataCache =
+            CacheBuilder.newBuilder()
+                    .weakKeys()
+                    .weakValues()
+                    .build(
+                            new CacheLoader<>() {
+                                public @NotNull MobGunData load(@NotNull Mob mob) {
+                                    return new MobGunData(mob);
+                                }
+                            });
 
     public final DefaultMobGunData data;
     private final Mob mob;

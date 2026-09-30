@@ -48,7 +48,7 @@ open class AmmoPerk : Perk {
     override fun modifyProjectile(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity
+        entity: Entity,
     ) {
         if (entity !is IBulletProperties) return
         entity.setRGB(this.rgb)
@@ -61,13 +61,9 @@ open class AmmoPerk : Perk {
         entity.setEffects(mobEffectInstances)
     }
 
-    open fun getEffectAmplifier(instance: PerkInstance): Int {
-        return instance.level - 1
-    }
+    open fun getEffectAmplifier(instance: PerkInstance): Int = instance.level - 1
 
-    open fun getEffectDuration(instance: PerkInstance): Int {
-        return 70 + 30 * instance.level
-    }
+    open fun getEffectDuration(instance: PerkInstance): Int = 70 + 30 * instance.level
 
     override fun getModifiedDamageReduceRate(reduce: DamageReduce?): Double {
         if (this.slug && reduce?.type == DamageReduce.ReduceType.SHOTGUN) {
@@ -83,7 +79,10 @@ open class AmmoPerk : Perk {
         return super.getModifiedDamageReduceMinDistance(reduce)
     }
 
-    class Builder(val descriptionId: String, val type: Type) {
+    class Builder(
+        val descriptionId: String,
+        val type: Type,
+    ) {
         var bypassArmorRate: Double = 0.0
         var damageRate: Double = 1.0
         var speedRate: Double = 1.0
@@ -112,7 +111,11 @@ open class AmmoPerk : Perk {
             return this
         }
 
-        fun rgb(r: Int, g: Int, b: Int): Builder {
+        fun rgb(
+            r: Int,
+            g: Int,
+            b: Int,
+        ): Builder {
             this.rgb[0] = r / 255f
             this.rgb[1] = g / 255f
             this.rgb[2] = b / 255f

@@ -29,28 +29,33 @@ open class ArmorPlateItem : Item(Properties()) {
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         if (NBTTool.getTag(stack).getBoolean("Infinite")) {
             tooltipComponents.add(
-                Component.translatable("des.superbwarfare.armor_plate.infinite").withStyle(ChatFormatting.GRAY)
+                Component.translatable("des.superbwarfare.armor_plate.infinite").withStyle(ChatFormatting.GRAY),
             )
         }
     }
 
-    override fun use(worldIn: Level, playerIn: Player, handIn: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        worldIn: Level,
+        playerIn: Player,
+        handIn: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = playerIn.getItemInHand(handIn)
         val armor = playerIn.getItemBySlot(EquipmentSlot.CHEST)
 
         if (armor == ItemStack.EMPTY) return InteractionResultHolder.fail(stack)
 
-        val armorLevel = if (armor.`is`(ModTags.Items.MILITARY_ARMOR)) {
-            MiscConfig.MILITARY_ARMOR_LEVEL.get()
-        } else if (armor.`is`(ModTags.Items.MILITARY_ARMOR_HEAVY)) {
-            MiscConfig.HEAVY_MILITARY_ARMOR_LEVEL.get()
-        } else {
-            MiscConfig.DEFAULT_ARMOR_LEVEL.get()
-        }
+        val armorLevel =
+            if (armor.`is`(ModTags.Items.MILITARY_ARMOR)) {
+                MiscConfig.MILITARY_ARMOR_LEVEL.get()
+            } else if (armor.`is`(ModTags.Items.MILITARY_ARMOR_HEAVY)) {
+                MiscConfig.HEAVY_MILITARY_ARMOR_LEVEL.get()
+            } else {
+                MiscConfig.DEFAULT_ARMOR_LEVEL.get()
+            }
 
         if (armor.getOrCreateTag().getDouble("ArmorPlate") < armorLevel * MiscConfig.ARMOR_POINT_PER_LEVEL.get()) {
             playerIn.startUsingItem(handIn)
@@ -59,12 +64,14 @@ open class ArmorPlateItem : Item(Properties()) {
         return InteractionResultHolder.fail(stack)
     }
 
-    override fun getUseAnimation(stack: ItemStack): UseAnim {
-        return UseAnim.BOW
-    }
+    override fun getUseAnimation(stack: ItemStack): UseAnim = UseAnim.BOW
 
     @ParametersAreNonnullByDefault
-    override fun finishUsingItem(pStack: ItemStack, pLevel: Level, pLivingEntity: LivingEntity): ItemStack {
+    override fun finishUsingItem(
+        pStack: ItemStack,
+        pLevel: Level,
+        pLivingEntity: LivingEntity,
+    ): ItemStack {
         if (!pLevel.isClientSide) {
             val armor = pLivingEntity.getItemBySlot(EquipmentSlot.CHEST)
 
@@ -81,8 +88,8 @@ open class ArmorPlateItem : Item(Properties()) {
                 Mth.clamp(
                     tag.getDouble("ArmorPlate") + MiscConfig.ARMOR_POINT_PER_LEVEL.get(),
                     0.0,
-                    (armorLevel * MiscConfig.ARMOR_POINT_PER_LEVEL.get()).toDouble()
-                )
+                    (armorLevel * MiscConfig.ARMOR_POINT_PER_LEVEL.get()).toDouble(),
+                ),
             )
             NBTTool.saveTag(armor, tag)
 
@@ -93,11 +100,13 @@ open class ArmorPlateItem : Item(Properties()) {
                     SoundEvents.ARMOR_EQUIP_IRON.value(),
                     SoundSource.PLAYERS,
                     0.5f,
-                    1f
+                    1f,
                 )
             }
 
-            if (pLivingEntity is Player && !pLivingEntity.isCreative && !NBTTool.getTag(pStack)
+            if (pLivingEntity is Player && !pLivingEntity.isCreative &&
+                !NBTTool
+                    .getTag(pStack)
                     .getBoolean("Infinite")
             ) {
                 pStack.shrink(1)
@@ -107,9 +116,10 @@ open class ArmorPlateItem : Item(Properties()) {
         return super.finishUsingItem(pStack, pLevel, pLivingEntity)
     }
 
-    override fun getUseDuration(stack: ItemStack, entity: LivingEntity): Int {
-        return 20
-    }
+    override fun getUseDuration(
+        stack: ItemStack,
+        entity: LivingEntity,
+    ): Int = 20
 
     companion object {
         fun getInfiniteInstance(): ItemStack {

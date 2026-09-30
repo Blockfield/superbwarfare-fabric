@@ -12,10 +12,13 @@ import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener
 import net.minecraft.util.profiling.ProfilerFiller
 
-class ComplexJsonResourceReloadListener(private val data: MutableMap<String, DataLoader.GeneralData<*>>) :
-    SimplePreparableReloadListener<Any>() {
-
-    override fun prepare(resourceManager: ResourceManager, profiler: ProfilerFiller): Any {
+class ComplexJsonResourceReloadListener(
+    private val data: MutableMap<String, DataLoader.GeneralData<*>>,
+) : SimplePreparableReloadListener<Any>() {
+    override fun prepare(
+        resourceManager: ResourceManager,
+        profiler: ProfilerFiller,
+    ): Any {
         this.data.forEach { (name, value) ->
             val map = value.dataMap
             map.clear()
@@ -36,11 +39,12 @@ class ComplexJsonResourceReloadListener(private val data: MutableMap<String, Dat
                             jsonStr = jsonEvent.jsonStr
                         }
 
-                        var data = if (value.isKtData) {
-                            DataLoader.JSON.decodeFromString(serializer(value.type), jsonStr)
-                        } else {
-                            DataLoader.GSON.fromJson(jsonStr, value.type)
-                        }
+                        var data =
+                            if (value.isKtData) {
+                                DataLoader.JSON.decodeFromString(serializer(value.type), jsonStr)
+                            } else {
+                                DataLoader.GSON.fromJson(jsonStr, value.type)
+                            }
 
                         if (data is IDBasedData<*>) {
                             data.id = id
@@ -75,7 +79,11 @@ class ComplexJsonResourceReloadListener(private val data: MutableMap<String, Dat
         return NULL
     }
 
-    override fun apply(obj: Any, resourceManager: ResourceManager, profiler: ProfilerFiller) {
+    override fun apply(
+        obj: Any,
+        resourceManager: ResourceManager,
+        profiler: ProfilerFiller,
+    ) {
     }
 
     companion object {

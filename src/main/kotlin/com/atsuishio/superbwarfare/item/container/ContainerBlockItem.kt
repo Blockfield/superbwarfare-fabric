@@ -1,13 +1,17 @@
 package com.atsuishio.superbwarfare.item.container
 
 import com.atsuishio.superbwarfare.api.event.RegisterContainersEvent
-import com.atsuishio.superbwarfare.fabric.ModEventBus
 import com.atsuishio.superbwarfare.client.renderer.item.ContainerBlockItemRenderer
+import com.atsuishio.superbwarfare.fabric.ModEventBus
 import com.atsuishio.superbwarfare.init.ModBlockEntities
 import com.atsuishio.superbwarfare.init.ModBlocks
 import com.atsuishio.superbwarfare.init.ModEntities
 import com.atsuishio.superbwarfare.init.ModItems
+import com.atsuishio.superbwarfare.item.DamageFilterItem
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
@@ -28,22 +32,24 @@ import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.HitResult
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
-import com.atsuishio.superbwarfare.item.DamageFilterItem
 
 class ContainerBlockItem :
-    BlockItem(ModBlocks.CONTAINER.get(), Properties().stacksTo(1).fireResistant()), DamageFilterItem {
-
+    BlockItem(ModBlocks.CONTAINER.get(), Properties().stacksTo(1).fireResistant()),
+    DamageFilterItem {
     // На NeoForge это был IItemExtension#canBeHurtBy; огнестойкость ваниль проверяет сама,
     // поэтому от вызова super остались только иммунитеты мода.
-    override fun canBeHurtBy(stack: ItemStack, source: DamageSource) =
-        !source.`is`(DamageTypeTags.IS_EXPLOSION) && !source.`is`(DamageTypes.CACTUS)
+    override fun canBeHurtBy(
+        stack: ItemStack,
+        source: DamageSource,
+    ) = !source.`is`(DamageTypeTags.IS_EXPLOSION) && !source.`is`(DamageTypes.CACTUS)
 
     override fun useOn(context: UseOnContext) = InteractionResult.PASS
 
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?> {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack?> {
         val playerPOVHitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.ANY)
         if (playerPOVHitResult.type == HitResult.Type.MISS) {
             return super.use(level, player, hand)
@@ -84,7 +90,6 @@ class ContainerBlockItem :
         }
         return Component.translatable("item.superbwarfare.container", args)
     }
-
 
     companion object {
         /** Общий. */
@@ -147,7 +152,7 @@ class ContainerBlockItem :
                         renderer = ContainerBlockItemRenderer(mc.blockEntityRenderDispatcher, mc.entityModels)
                     }
                     renderer!!.renderByItem(stack, mode, poseStack, buffer, light, overlay)
-                }
+                },
             )
         }
 

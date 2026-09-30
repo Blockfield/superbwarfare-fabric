@@ -5,9 +5,11 @@ import com.atsuishio.superbwarfare.client.tooltip.component.SentinelImageCompone
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.GunProp;
 import com.atsuishio.superbwarfare.data.gun.ShootParameters;
+import com.atsuishio.superbwarfare.fabric.Capabilities;
 import com.atsuishio.superbwarfare.init.ModSounds;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -17,8 +19,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
-import com.atsuishio.superbwarfare.fabric.Capabilities;
+
 import org.jetbrains.annotations.NotNull;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
@@ -42,7 +45,8 @@ public class SentinelItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.sentinel.idle"));
 
         var data = GunData.from(stack);
@@ -51,11 +55,13 @@ public class SentinelItem extends GunGeoItem {
         }
 
         if (data.reload.empty()) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.sentinel.reload_empty"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.sentinel.reload_empty"));
         }
 
         if (data.reload.normal()) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.sentinel.reload_normal"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.sentinel.reload_normal"));
         }
 
         if (data.charging()) {
@@ -67,7 +73,8 @@ public class SentinelItem extends GunGeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var fireAnimController = new AnimationController<>(this, "fireAnimController", 1, this::fireAnimPredicate);
+        var fireAnimController =
+                new AnimationController<>(this, "fireAnimController", 1, this::fireAnimPredicate);
         data.add(fireAnimController);
     }
 
@@ -82,7 +89,12 @@ public class SentinelItem extends GunGeoItem {
     }
 
     @Override
-    public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean selected) {
+    public void inventoryTick(
+            @NotNull ItemStack stack,
+            @NotNull Level level,
+            @NotNull Entity entity,
+            int slot,
+            boolean selected) {
         super.inventoryTick(stack, level, entity, slot, selected);
         var cap = Capabilities.EnergyStorage.ITEM.get(stack);
         if (cap != null && cap.getEnergyStored() > 0) {

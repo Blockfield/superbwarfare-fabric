@@ -10,6 +10,4 @@ public record ShootData(
         double damage,
         double explosionDamage,
         double explosionRadius,
-        double spread
-) {
-}
+        double spread) {}

@@ -17,7 +17,6 @@ import kotlin.random.Random
  * 处理载具残骸战利品生成方法的工具类
  */
 object VehicleLootUtils {
-
     /**
      * 生成残骸战利品
      *
@@ -50,16 +49,28 @@ object VehicleLootUtils {
                         if (type == WreckageLootData.Pool.Type.VEHICLE_ONLY) {
                             if (vehicle.hasTurret() && vehicle.sympatheticDetonated) {
                                 entry.chance
-                            } else return@poolLoop
+                            } else {
+                                return@poolLoop
+                            }
                         } else if (type == WreckageLootData.Pool.Type.COMPLETE) {
                             if (vehicle.hasTurret()) {
-                                if (vehicle.sympatheticDetonated) return@poolLoop
-                                else entry.chance
+                                if (vehicle.sympatheticDetonated) {
+                                    return@poolLoop
+                                } else {
+                                    entry.chance
+                                }
                             } else {
                                 entry.chance
                             }
                         } else {
-                            entry.chance * if (vehicle.hasTurret() && vehicle.sympatheticDetonated) (1.0 - VehicleConfig.TURRET_WRECKAGE_LOOT_RATE.get()) else 1.0
+                            entry.chance *
+                                if (vehicle.hasTurret() &&
+                                    vehicle.sympatheticDetonated
+                                ) {
+                                    (1.0 - VehicleConfig.TURRET_WRECKAGE_LOOT_RATE.get())
+                                } else {
+                                    1.0
+                                }
                         }
 
                     if (random > chance) return@forEach

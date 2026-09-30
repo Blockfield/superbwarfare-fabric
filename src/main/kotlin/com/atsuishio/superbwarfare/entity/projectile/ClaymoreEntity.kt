@@ -6,6 +6,7 @@ import com.atsuishio.superbwarfare.config.server.ExplosionConfig
 import com.atsuishio.superbwarfare.entity.living.TargetEntity
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier.Companion.createDefaultModifier
+import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import com.atsuishio.superbwarfare.init.*
 import com.atsuishio.superbwarfare.resource.model.ProjectileModelReloadListener
 import com.atsuishio.superbwarfare.tools.CustomExplosion
@@ -28,10 +29,13 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.ItemHandlerHelper
 import java.util.*
 
-open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Entity(type, level), OwnableEntity {
+open class ClaymoreEntity(
+    type: EntityType<ClaymoreEntity>,
+    level: Level,
+) : Entity(type, level),
+    OwnableEntity {
     open val modelInstance = ProjectileModelReloadListener.getModel(MODEL)?.createInstance()
 
     constructor(owner: LivingEntity?, level: Level) : this(ModEntities.CLAYMORE.get(), level) {
@@ -45,16 +49,18 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
     }
 
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
-        builder.define(OWNER_UUID, Optional.empty())
+        builder
+            .define(OWNER_UUID, Optional.empty())
             .define(LAST_ATTACKER_UUID, "undefined")
             .define(HEALTH, 10f)
     }
 
-    override fun isPickable(): Boolean {
-        return !this.isRemoved
-    }
+    override fun isPickable(): Boolean = !this.isRemoved
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         val damage = DAMAGE_MODIFIER.compute(this, source, amount)
 
         if (source.entity != null) {
@@ -74,7 +80,7 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
                 0.02,
                 0.02,
                 0.1,
-                false
+                false,
             )
         }
         level.playSound(null, this.onPos, ModSounds.HIT.get(), SoundSource.PLAYERS, 1f, 1f)
@@ -87,13 +93,9 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
         this.entityData.set(OWNER_UUID, Optional.ofNullable(pUuid))
     }
 
-    override fun getOwnerUUID(): UUID? {
-        return this.entityData.get(OWNER_UUID).orElse(null)
-    }
+    override fun getOwnerUUID(): UUID? = this.entityData.get(OWNER_UUID).orElse(null)
 
-    fun isOwnedBy(pEntity: LivingEntity?): Boolean {
-        return pEntity === this.owner
-    }
+    fun isOwnedBy(pEntity: LivingEntity?): Boolean = pEntity === this.owner
 
     public override fun addAdditionalSaveData(compound: CompoundTag) {
         compound.putFloat("Health", this.entityData.get(HEALTH))
@@ -119,15 +121,16 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
             val s = compound.getString("Owner")
             val server = this.server
 
-            uuid = if (server == null) {
-                try {
-                    UUID.fromString(s)
-                } catch (_: Exception) {
-                    null
+            uuid =
+                if (server == null) {
+                    try {
+                        UUID.fromString(s)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } else {
+                    OldUsersConverter.convertMobOwnerIfNecessary(server, s)
                 }
-            } else {
-                OldUsersConverter.convertMobOwnerIfNecessary(server, s)
-            }
         }
 
         if (uuid != null) {
@@ -138,7 +141,10 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
         }
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (this.isOwnedBy(player) && player.isShiftKeyDown) {
             if (!this.level().isClientSide()) {
                 this.discard()
@@ -170,16 +176,17 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
                 Entity::class.java,
                 AABB(center, center).inflate(2.5 / 2.0),
             ) { true }) {
-                val condition = this.owner !== target
-                        && (target is LivingEntity || target is VehicleEntity)
-                        && target !is TargetEntity
-                        && !(target is Player && (target.isCreative || target.isSpectator))
-                        && !target.isShiftKeyDown
-                        && if (ExplosionConfig.FRIENDLY_MINES.get()) {
-                    if (owner == null) true else owner != target && !owner!!.isAlliedTo(target)
-                } else {
-                    (owner != null && owner != target && !owner!!.isAlliedTo(target)) || target.team == null || enabledTDM(target)
-                }
+                val condition =
+                    this.owner !== target &&
+                        (target is LivingEntity || target is VehicleEntity) &&
+                        target !is TargetEntity &&
+                        !(target is Player && (target.isCreative || target.isSpectator)) &&
+                        !target.isShiftKeyDown &&
+                        if (ExplosionConfig.FRIENDLY_MINES.get()) {
+                            if (owner == null) true else owner != target && !owner!!.isAlliedTo(target)
+                        } else {
+                            (owner != null && owner != target && !owner!!.isAlliedTo(target)) || target.team == null || enabledTDM(target)
+                        }
                 if (!condition) continue
 
                 ParticleTool.spawnMediumExplosionParticles(this.level(), this.position())
@@ -200,7 +207,7 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
             this.moveTowardsClosestSpace(
                 this.x,
                 (this.boundingBox.minY + this.boundingBox.maxY) / 2.0,
-                this.z
+                this.z,
             )
         }
 
@@ -208,7 +215,10 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
         var f = 0.98f
         if (this.onGround()) {
             val pos = this.blockPosBelowThatAffectsMyMovement
-            f = this.level().getBlockState(pos).block.friction * 0.98f
+            f = this
+                .level()
+                .getBlockState(pos)
+                .block.friction * 0.98f
         }
 
         this.deltaMovement = this.deltaMovement.multiply(f.toDouble(), 0.98, f.toDouble())
@@ -227,7 +237,8 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
         if (level() is ServerLevel) {
             val attacker = EntityFindUtil.findEntity(this.level(), this.entityData.get(LAST_ATTACKER_UUID))
 
-            CustomExplosion.Builder(attacker ?: this)
+            CustomExplosion
+                .Builder(attacker ?: this)
                 .damage(ExplosionConfig.CLAYMORE_EXPLOSION_DAMAGE.get().toFloat() / 5)
                 .radius(ExplosionConfig.CLAYMORE_EXPLOSION_RADIUS.get().toFloat())
                 .position(this.position())
@@ -238,25 +249,25 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
     }
 
     private fun triggerExplode() {
-        CustomExplosion.Builder(this)
+        CustomExplosion
+            .Builder(this)
             .attacker(this.owner)
             .damage(ExplosionConfig.CLAYMORE_EXPLOSION_DAMAGE.get().toFloat())
             .radius(ExplosionConfig.CLAYMORE_EXPLOSION_RADIUS.get().toFloat())
             .explode()
     }
 
-    override fun isPushable(): Boolean {
-        return true
-    }
+    override fun isPushable(): Boolean = true
 
     companion object {
         val MODEL = loc("models/bedrock/projectile/claymore.geo.json")
 
         @JvmField
-        protected val OWNER_UUID: EntityDataAccessor<Optional<UUID>> = SynchedEntityData.defineId(
-            ClaymoreEntity::class.java,
-            EntityDataSerializers.OPTIONAL_UUID
-        )
+        protected val OWNER_UUID: EntityDataAccessor<Optional<UUID>> =
+            SynchedEntityData.defineId(
+                ClaymoreEntity::class.java,
+                EntityDataSerializers.OPTIONAL_UUID,
+            )
 
         @JvmField
         protected val LAST_ATTACKER_UUID: EntityDataAccessor<String> =
@@ -266,9 +277,10 @@ open class ClaymoreEntity(type: EntityType<ClaymoreEntity>, level: Level) : Enti
         val HEALTH: EntityDataAccessor<Float> =
             SynchedEntityData.defineId(ClaymoreEntity::class.java, EntityDataSerializers.FLOAT)
 
-        private val DAMAGE_MODIFIER = createDefaultModifier()
-            .multiply(0.2f, ModDamageTypes.CUSTOM_EXPLOSION)
-            .multiply(0.2f, ModDamageTypes.MINE)
-            .multiply(0.2f, ModDamageTypes.PROJECTILE_EXPLOSION)
+        private val DAMAGE_MODIFIER =
+            createDefaultModifier()
+                .multiply(0.2f, ModDamageTypes.CUSTOM_EXPLOSION)
+                .multiply(0.2f, ModDamageTypes.MINE)
+                .multiply(0.2f, ModDamageTypes.PROJECTILE_EXPLOSION)
     }
 }

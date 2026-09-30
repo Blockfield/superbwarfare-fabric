@@ -16,7 +16,10 @@ import net.minecraft.world.level.saveddata.SavedData
 class ChunkPosSavedData : SavedData() {
     val chunkPositions = mutableSetOf<ChunkPos>()
 
-    override fun save(tag: CompoundTag, registries: HolderLookup.Provider): CompoundTag {
+    override fun save(
+        tag: CompoundTag,
+        registries: HolderLookup.Provider,
+    ): CompoundTag {
         tag.put("Pos", this.savePos())
         return tag
     }
@@ -24,10 +27,12 @@ class ChunkPosSavedData : SavedData() {
     fun savePos(): ListTag {
         val tag = ListTag()
         for (pos in chunkPositions) {
-            tag.add(CompoundTag().also {
-                it.putInt("X", pos.x)
-                it.putInt("Z", pos.z)
-            })
+            tag.add(
+                CompoundTag().also {
+                    it.putInt("X", pos.x)
+                    it.putInt("Z", pos.z)
+                },
+            )
         }
         return tag
     }
@@ -65,13 +70,15 @@ class ChunkPosSavedData : SavedData() {
             if (!VehicleConfig.VEHICLE_CHUNK_LOADING.get()) return
 
             for (level in server.allLevels) {
-                val data = level.dataStorage.get(
-                    Factory(
-                        { ChunkPosSavedData() },
-                        { tag, _ -> load(tag) },
-                        null
-                    ), FILE_ID
-                ) ?: continue
+                val data =
+                    level.dataStorage.get(
+                        Factory(
+                            { ChunkPosSavedData() },
+                            { tag, _ -> load(tag) },
+                            null,
+                        ),
+                        FILE_ID,
+                    ) ?: continue
                 val posSet = data.chunkPositions
                 if (posSet.isEmpty()) continue
 
@@ -88,19 +95,22 @@ class ChunkPosSavedData : SavedData() {
             if (!VehicleConfig.VEHICLE_CHUNK_LOADING.get()) return
 
             for (level in server.allLevels) {
-                val data = level.dataStorage.computeIfAbsent(
-                    Factory(
-                        { ChunkPosSavedData() },
-                        { tag, _ -> load(tag) },
-                        null
-                    ), FILE_ID
-                ) ?: continue
+                val data =
+                    level.dataStorage.computeIfAbsent(
+                        Factory(
+                            { ChunkPosSavedData() },
+                            { tag, _ -> load(tag) },
+                            null,
+                        ),
+                        FILE_ID,
+                    ) ?: continue
 
-                val list = level.allEntities
-                    .asSequence()
-                    .filter { it is VehicleEntity && it.computed().keepChunkLoaded }
-                    .map { it.chunkPosition() }
-                    .toList()
+                val list =
+                    level.allEntities
+                        .asSequence()
+                        .filter { it is VehicleEntity && it.computed().keepChunkLoaded }
+                        .map { it.chunkPosition() }
+                        .toList()
                 if (list.isEmpty()) continue
 
                 data.chunkPositions.addAll(list)

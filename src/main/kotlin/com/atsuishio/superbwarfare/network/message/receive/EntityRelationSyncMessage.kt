@@ -21,7 +21,6 @@ data class EntityRelationSyncMessage(
     val hostileIds: List<Int> = emptyList(),
     val neutralIds: List<Int> = emptyList(),
 ) : ClientPacketPayload() {
-
     override fun PayloadContext.handler() {
         ClientSyncedEntityHandler.syncEntityRelations(dim, friendlyIds, hostileIds, neutralIds)
     }

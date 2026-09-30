@@ -6,7 +6,9 @@ import com.atsuishio.superbwarfare.data.gun.value.ReloadState
 import com.atsuishio.superbwarfare.data.gun.value.Starter
 import com.atsuishio.superbwarfare.data.gun.value.Timer
 
-class Reload(data: GunData) {
+class Reload(
+    data: GunData,
+) {
     private val data = data.data()
 
     @JvmField
@@ -33,11 +35,12 @@ class Reload(data: GunData) {
     @JvmField
     val stage3Starter = Starter(this.data, "Stage3Forcefully")
 
-    fun state() = when (data.getInt("ReloadState")) {
-        1 -> ReloadState.NORMAL_RELOADING
-        2 -> ReloadState.EMPTY_RELOADING
-        else -> ReloadState.NOT_RELOADING
-    }
+    fun state() =
+        when (data.getInt("ReloadState")) {
+            1 -> ReloadState.NORMAL_RELOADING
+            2 -> ReloadState.EMPTY_RELOADING
+            else -> ReloadState.NOT_RELOADING
+        }
 
     fun normal() = state() == ReloadState.NORMAL_RELOADING
 

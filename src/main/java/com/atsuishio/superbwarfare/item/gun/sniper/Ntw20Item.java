@@ -9,12 +9,15 @@ import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.tools.GunsTool;
 import com.atsuishio.superbwarfare.tools.NBTTool;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+
 import org.jetbrains.annotations.NotNull;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
@@ -37,7 +40,8 @@ public class Ntw20Item extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.ntw_20.idle"));
 
         var data = GunData.from(stack);
@@ -46,18 +50,21 @@ public class Ntw20Item extends GunGeoItem {
         }
 
         if (data.reload.empty()) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.ntw_20.reload_empty"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.ntw_20.reload_empty"));
         }
 
         if (data.reload.normal()) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.ntw_20.reload_normal"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.ntw_20.reload_normal"));
         }
 
         return event.setAndContinue(RawAnimation.begin().thenLoop("animation.ntw_20.idle"));
     }
 
     private PlayState editPredicate(AnimationState<Ntw20Item> event) {
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.ntw_20.idle"));
 
         if (ClientEventHandler.isEditing) {
@@ -68,9 +75,11 @@ public class Ntw20Item extends GunGeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var fireAnimController = new AnimationController<>(this, "fireAnimController", 0, this::fireAnimPredicate);
+        var fireAnimController =
+                new AnimationController<>(this, "fireAnimController", 0, this::fireAnimPredicate);
         data.add(fireAnimController);
-        var editController = new AnimationController<>(this, "editController", 1, this::editPredicate);
+        var editController =
+                new AnimationController<>(this, "editController", 1, this::editPredicate);
         data.add(editController);
     }
 

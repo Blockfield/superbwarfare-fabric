@@ -7,12 +7,8 @@ object JeiCompatHolder {
     const val JEI: String = "jei"
 
     @JvmStatic
-    fun hasJEI(): Boolean {
-        return FabricLoader.getInstance().isModLoaded(JEI)
-    }
+    fun hasJEI(): Boolean = FabricLoader.getInstance().isModLoaded(JEI)
 
     @JvmStatic
-    fun showRecipes(stack: ItemStack): Boolean {
-        return SbwJEIPlugin.showRecipes(stack)
-    }
+    fun showRecipes(stack: ItemStack): Boolean = SbwJEIPlugin.showRecipes(stack)
 }

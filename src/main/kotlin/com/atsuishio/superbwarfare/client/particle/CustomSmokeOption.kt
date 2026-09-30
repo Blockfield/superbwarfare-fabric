@@ -7,10 +7,15 @@ import kotlinx.serialization.Serializable
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleType
 
+/** [age] is in CustomSmokeParticle age units (it ages 2 per tick); 0 for a freshly emitted puff. */
 @GenerateMapCodec
 @Serializable
-/** [age] is in CustomSmokeParticle age units (it ages 2 per tick); 0 for a freshly emitted puff. */
-class CustomSmokeOption(val red: Float, val green: Float, val blue: Float, val age: Int) : ParticleOptions {
+class CustomSmokeOption(
+    val red: Float,
+    val green: Float,
+    val blue: Float,
+    val age: Int,
+) : ParticleOptions {
     override fun getType(): ParticleType<*> = ModParticleTypes.CUSTOM_SMOKE.get()
 
     companion object {

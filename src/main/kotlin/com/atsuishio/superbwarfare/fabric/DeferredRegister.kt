@@ -21,8 +21,8 @@ import java.util.function.Supplier
 class DeferredHolder<R, T : R>(
     private val reference: Holder.Reference<R>,
     private val value: T,
-) : Holder<R> by reference, Supplier<T> {
-
+) : Holder<R> by reference,
+    Supplier<T> {
     override fun get(): T = value
 
     // Свойствами, а не функциями: Java по-прежнему видит getKey()/getId(), а Kotlin
@@ -43,7 +43,10 @@ open class DeferredRegister<T> protected constructor(
     /** Апстрим ходит сюда и как .entries из Kotlin, и как getEntries() из Java. */
     val entries: Collection<DeferredHolder<T, out T>> get() = registered
 
-    open fun <U : T> register(name: String, supplier: Supplier<U>): DeferredHolder<T, U> {
+    open fun <U : T> register(
+        name: String,
+        supplier: Supplier<U>,
+    ): DeferredHolder<T, U> {
         val id = ResourceLocation.fromNamespaceAndPath(namespace, name)
         val value = supplier.get()
         val reference = Registry.registerForHolder(registry, id, value)
@@ -53,22 +56,30 @@ open class DeferredRegister<T> protected constructor(
     }
 
     /** Только Supplier и (ResourceLocation) -> U; java.util.function.Function сюда не подходит. */
-    fun <U : T> register(name: String, factory: (ResourceLocation) -> U): DeferredHolder<T, U> =
-        register(name) { factory(ResourceLocation.fromNamespaceAndPath(namespace, name)) }
+    fun <U : T> register(
+        name: String,
+        factory: (ResourceLocation) -> U,
+    ): DeferredHolder<T, U> = register(name) { factory(ResourceLocation.fromNamespaceAndPath(namespace, name)) }
 
     /** Совместимость с апстримом: на Fabric регистрировать уже нечего, объект инициализирован. */
     fun register(bus: Any?) = Unit
 
     companion object {
         @JvmStatic
-        fun <T> create(registry: Registry<T>, namespace: String): DeferredRegister<T> =
-            DeferredRegister(registry, namespace)
+        fun <T> create(
+            registry: Registry<T>,
+            namespace: String,
+        ): DeferredRegister<T> = DeferredRegister(registry, namespace)
 
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> create(key: ResourceKey<out Registry<T>>, namespace: String): DeferredRegister<T> {
-            val registry = BuiltInRegistries.REGISTRY.get(key.location()) as? Registry<T>
-                ?: error("Реестра ${key.location()} нет в BuiltInRegistries")
+        fun <T> create(
+            key: ResourceKey<out Registry<T>>,
+            namespace: String,
+        ): DeferredRegister<T> {
+            val registry =
+                BuiltInRegistries.REGISTRY.get(key.location()) as? Registry<T>
+                    ?: error("Реестра ${key.location()} нет в BuiltInRegistries")
             return DeferredRegister(registry, namespace)
         }
     }

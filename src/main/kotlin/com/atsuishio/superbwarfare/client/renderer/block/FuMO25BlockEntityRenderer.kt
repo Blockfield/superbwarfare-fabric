@@ -16,7 +16,7 @@ class FuMO25BlockEntityRenderer : BlockEntityRenderer<FuMO25BlockEntity> {
         poseStack: PoseStack,
         buffer: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         val instance = blockEntity.modelInstance ?: return
         val bone = instance.getBone("rolling") ?: return
@@ -32,24 +32,22 @@ class FuMO25BlockEntityRenderer : BlockEntityRenderer<FuMO25BlockEntity> {
                 Mth.lerp(
                     partialTick,
                     blockEntity.tickO.toFloat(),
-                    blockEntity.tick.toFloat()
-                )
-            )
+                    blockEntity.tick.toFloat(),
+                ),
+            ),
         )
 
         instance.renderToBuffer(
             poseStack,
             buffer.getBuffer(RenderType.entityTranslucent(TEXTURE)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         poseStack.popPose()
     }
 
-    override fun getViewDistance(): Int {
-        return 256
-    }
+    override fun getViewDistance(): Int = 256
 
     companion object {
         val TEXTURE = loc("textures/bedrock/block/fumo_25.png")

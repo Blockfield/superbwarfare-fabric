@@ -14,8 +14,13 @@ import net.minecraft.world.level.Level
 import javax.annotation.ParametersAreNonnullByDefault
 import kotlin.math.max
 
-class SmokeDyeRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pCategory) {
-    override fun matches(input: CraftingInput, pLevel: Level): Boolean {
+class SmokeDyeRecipe(
+    pCategory: CraftingBookCategory,
+) : CustomRecipe(pCategory) {
+    override fun matches(
+        input: CraftingInput,
+        pLevel: Level,
+    ): Boolean {
         var itemStack = ItemStack.EMPTY
         val list: MutableList<ItemStack> = mutableListOf()
 
@@ -39,7 +44,10 @@ class SmokeDyeRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pCategory) 
     }
 
     @ParametersAreNonnullByDefault
-    override fun assemble(input: CraftingInput, registries: HolderLookup.Provider): ItemStack {
+    override fun assemble(
+        input: CraftingInput,
+        registries: HolderLookup.Provider,
+    ): ItemStack {
         val list = mutableListOf<DyeItem>()
         var itemStack = ItemStack.EMPTY
 
@@ -63,16 +71,18 @@ class SmokeDyeRecipe(pCategory: CraftingBookCategory) : CustomRecipe(pCategory) 
         return if (!itemStack.isEmpty && !list.isEmpty()) dyeItem(itemStack, list) else ItemStack.EMPTY
     }
 
-    override fun canCraftInDimensions(pWidth: Int, pHeight: Int): Boolean {
-        return pWidth * pHeight >= 2
-    }
+    override fun canCraftInDimensions(
+        pWidth: Int,
+        pHeight: Int,
+    ): Boolean = pWidth * pHeight >= 2
 
-    override fun getSerializer(): RecipeSerializer<*> {
-        return ModRecipes.SMOKE_DYE_SERIALIZER.get()
-    }
+    override fun getSerializer(): RecipeSerializer<*> = ModRecipes.SMOKE_DYE_SERIALIZER.get()
 
     companion object {
-        fun dyeItem(pStack: ItemStack, pDyes: MutableList<DyeItem>): ItemStack {
+        fun dyeItem(
+            pStack: ItemStack,
+            pDyes: MutableList<DyeItem>,
+        ): ItemStack {
             val stack: ItemStack
             val colors = IntArray(3)
             var i = 0

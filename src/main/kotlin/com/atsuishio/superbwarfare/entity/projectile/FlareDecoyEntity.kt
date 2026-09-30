@@ -47,8 +47,14 @@ open class FlareDecoyEntity : Entity {
                         0.95f,
                         (10 + 8 * random).toInt(),
                         0.03f,
-                        size = 0.25f
-                    ), pos.x + random * 0.2, pos.y + random * 0.2, pos.z + random * 0.2, 0.0, 0.0, 0.0
+                        size = 0.25f,
+                    ),
+                    pos.x + random * 0.2,
+                    pos.y + random * 0.2,
+                    pos.z + random * 0.2,
+                    0.0,
+                    0.0,
+                    0.0,
                 )
 
                 level().addParticle(
@@ -60,8 +66,14 @@ open class FlareDecoyEntity : Entity {
                         0.5f,
                         (10 + 8 * random).toInt(),
                         0.2f,
-                        size = 0.25f
-                    ), pos.x + random * 0.2, pos.y + random * 0.2, pos.z + random * 0.2, 0.0, 0.0, 0.0
+                        size = 0.25f,
+                    ),
+                    pos.x + random * 0.2,
+                    pos.y + random * 0.2,
+                    pos.z + random * 0.2,
+                    0.0,
+                    0.0,
+                    0.0,
                 )
 
                 i += 2
@@ -72,12 +84,20 @@ open class FlareDecoyEntity : Entity {
         }
     }
 
-    fun decoyShoot(entity: Entity, shootVec: Vec3, pVelocity: Float, pInaccuracy: Float) {
-        val vec3 = shootVec.normalize().add(
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble())
-        ).scale(pVelocity.toDouble())
+    fun decoyShoot(
+        entity: Entity,
+        shootVec: Vec3,
+        pVelocity: Float,
+        pInaccuracy: Float,
+    ) {
+        val vec3 =
+            shootVec
+                .normalize()
+                .add(
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                ).scale(pVelocity.toDouble())
         this.deltaMovement = entity.deltaMovement.scale(0.75).add(vec3)
         val d0 = vec3.horizontalDistance()
         this.yRot = (Mth.atan2(vec3.x, vec3.z) * 57.2957763671875).toFloat()

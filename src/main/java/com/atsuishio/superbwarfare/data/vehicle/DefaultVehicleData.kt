@@ -32,9 +32,7 @@ class DefaultVehicleData : IDBasedData<DefaultVehicleData> {
     @kotlinx.serialization.Transient
     var isDefaultData: Boolean = true
 
-    override fun getId(): String {
-        return this.id
-    }
+    override fun getId(): String = this.id
 
     override fun setId(id: String) {
         this.id = id
@@ -76,6 +74,7 @@ class DefaultVehicleData : IDBasedData<DefaultVehicleData> {
 
     @SerialName("Radar")
     var radar: ObjectToList<RadarInfo>? = ObjectToList()
+
     fun seats(): MutableList<SeatInfo> {
         if (seats == null) return mutableListOf()
         return Collections.unmodifiableList(seats!!.list)
@@ -228,7 +227,7 @@ class DefaultVehicleData : IDBasedData<DefaultVehicleData> {
             map[entry.key] =
                 DataLoader.JSON.decodeFromJsonElement(
                     DefaultGunData.serializer(),
-                    value.asJsonObject.toKxJson()
+                    value.asJsonObject.toKxJson(),
                 )
         }
 
@@ -315,21 +314,22 @@ class DefaultVehicleData : IDBasedData<DefaultVehicleData> {
         this.maxHealth = max(this.maxHealth, 0f)
         this.repairCooldown = max(this.repairCooldown, 0)
         this.maxEnergy = max(this.maxEnergy, 0)
-        this.obb = this.obb.map {
-            it.limit()
-            it
-        }.toMutableList()
+        this.obb =
+            this.obb
+                .map {
+                    it.limit()
+                    it
+                }.toMutableList()
 
         this.collisionLevel.level = this.collisionLevel.level.coerceIn(0, 4)
     }
 
     companion object {
-        private fun <T> getConfigOrDefault(config: ModConfigSpec.ConfigValue<T>): T {
-            return try {
+        private fun <T> getConfigOrDefault(config: ModConfigSpec.ConfigValue<T>): T =
+            try {
                 config.get()
             } catch (exception: Exception) {
                 config.getDefault()
             }
-        }
     }
 }

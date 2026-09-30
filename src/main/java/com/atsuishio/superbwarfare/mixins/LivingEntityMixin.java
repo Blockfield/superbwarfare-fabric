@@ -6,17 +6,19 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.init.ModAttributes;
 import com.atsuishio.superbwarfare.init.ModTags;
+
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.player.Player;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -31,7 +33,8 @@ public abstract class LivingEntityMixin implements ICustomKnockback, DamageAcces
      * поэтому атрибут добавляется здесь -- одной точкой на все ванильные и модовые типы.
      */
     @Inject(method = "createLivingAttributes", at = @At("RETURN"))
-    private static void sbw$addBulletResistance(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
+    private static void sbw$addBulletResistance(
+            CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
         cir.getReturnValue().add(ModAttributes.BULLET_RESISTANCE);
     }
 
@@ -54,11 +57,9 @@ public abstract class LivingEntityMixin implements ICustomKnockback, DamageAcces
     @Shadow
     protected abstract boolean checkTotemDeathProtection(DamageSource pDamageSource);
 
-    @Shadow
-    protected float lastHurt;
+    @Shadow protected float lastHurt;
 
-    @Unique
-    private double superbwarfare$knockbackStrength = -1;
+    @Unique private double superbwarfare$knockbackStrength = -1;
 
     @Override
     public void superbWarfare$setKnockbackStrength(double strength) {
@@ -77,7 +78,8 @@ public abstract class LivingEntityMixin implements ICustomKnockback, DamageAcces
 
     @Inject(method = "setSprinting(Z)V", at = @At("HEAD"), cancellable = true)
     public void setSprinting(boolean pSprinting, CallbackInfo ci) {
-        if (((LivingEntity) (Object) this) instanceof Player player && player.level().isClientSide) {
+        if (((LivingEntity) (Object) this) instanceof Player player
+                && player.level().isClientSide) {
             if (pSprinting && ClientEventHandler.zoom) {
                 ci.cancel();
             }
@@ -131,12 +133,9 @@ public abstract class LivingEntityMixin implements ICustomKnockback, DamageAcces
         }
     }
 
-    @Shadow
-    @Nullable
-    public DamageSource lastDamageSource;
+    @Shadow @Nullable public DamageSource lastDamageSource;
 
-    @Shadow
-    public long lastDamageStamp;
+    @Shadow public long lastDamageStamp;
 
     @Inject(method = "playHurtSound", at = @At("HEAD"), cancellable = true)
     protected void playHurtSound(DamageSource pSource, CallbackInfo ci) {

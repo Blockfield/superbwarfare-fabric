@@ -9,6 +9,7 @@ import com.atsuishio.superbwarfare.init.ModRarities;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.tools.NBTTool;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -18,14 +19,17 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+
 import org.jetbrains.annotations.NotNull;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.function.Supplier;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 public class TracheliumItem extends GunGeoItem {
 
@@ -43,24 +47,31 @@ public class TracheliumItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle"));
 
         var data = GunData.from(stack);
         boolean stock = data.attachment.get(AttachmentType.STOCK) == 2;
-        boolean grip = data.attachment.get(AttachmentType.GRIP) > 0 || data.attachment.get(AttachmentType.SCOPE) > 0;
+        boolean grip =
+                data.attachment.get(AttachmentType.GRIP) > 0
+                        || data.attachment.get(AttachmentType.SCOPE) > 0;
 
         if (stock) {
             if (grip) {
-                return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle_stock_grip"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenLoop("animation.trachelium.idle_stock_grip"));
             } else {
-                return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle_stock"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenLoop("animation.trachelium.idle_stock"));
             }
         } else {
             if (grip) {
-                return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle_stock_grip"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenLoop("animation.trachelium.idle_stock_grip"));
             } else {
-                return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenLoop("animation.trachelium.idle"));
             }
         }
     }
@@ -70,25 +81,33 @@ public class TracheliumItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle"));
 
         var data = GunData.from(stack);
         boolean stock = data.attachment.get(AttachmentType.STOCK) == 2;
-        boolean grip = data.attachment.get(AttachmentType.GRIP) > 0 || data.attachment.get(AttachmentType.SCOPE) > 0;
+        boolean grip =
+                data.attachment.get(AttachmentType.GRIP) > 0
+                        || data.attachment.get(AttachmentType.SCOPE) > 0;
 
         if (data.bolt.actionTimer.get() > 0) {
             if (stock) {
                 if (grip) {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.trachelium.action_stock_grip"));
+                    return event.setAndContinue(
+                            RawAnimation.begin()
+                                    .thenPlay("animation.trachelium.action_stock_grip"));
                 } else {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.trachelium.action_stock"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.trachelium.action_stock"));
                 }
             } else {
                 if (grip) {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.trachelium.action_grip"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.trachelium.action_grip"));
                 } else {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.trachelium.action"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.trachelium.action"));
                 }
             }
         }
@@ -96,30 +115,39 @@ public class TracheliumItem extends GunGeoItem {
         if (GunData.from(stack).reload.empty()) {
             if (stock) {
                 if (grip) {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.trachelium.reload_stock_grip"));
+                    return event.setAndContinue(
+                            RawAnimation.begin()
+                                    .thenPlay("animation.trachelium.reload_stock_grip"));
                 } else {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.trachelium.reload_stock"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.trachelium.reload_stock"));
                 }
             } else {
                 if (grip) {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.trachelium.reload_grip"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.trachelium.reload_grip"));
                 } else {
-                    return event.setAndContinue(RawAnimation.begin().thenPlay("animation.trachelium.reload"));
+                    return event.setAndContinue(
+                            RawAnimation.begin().thenPlay("animation.trachelium.reload"));
                 }
             }
         }
 
         if (stock) {
             if (grip) {
-                return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle_stock_grip"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenLoop("animation.trachelium.idle_stock_grip"));
             } else {
-                return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle_stock"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenLoop("animation.trachelium.idle_stock"));
             }
         } else {
             if (grip) {
-                return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle_grip"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenLoop("animation.trachelium.idle_grip"));
             } else {
-                return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle"));
+                return event.setAndContinue(
+                        RawAnimation.begin().thenLoop("animation.trachelium.idle"));
             }
         }
     }
@@ -129,7 +157,8 @@ public class TracheliumItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.trachelium.idle"));
 
         if (ClientEventHandler.isEditing) {
@@ -141,34 +170,52 @@ public class TracheliumItem extends GunGeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var fireAnimController = new AnimationController<>(this, "fireAnimController", 0, this::fireAnimPredicate);
+        var fireAnimController =
+                new AnimationController<>(this, "fireAnimController", 0, this::fireAnimPredicate);
         data.add(fireAnimController);
-        var idlePredicate = new AnimationController<>(this, "idlePredicate", 3, this::idlePredicate);
+        var idlePredicate =
+                new AnimationController<>(this, "idlePredicate", 3, this::idlePredicate);
         data.add(idlePredicate);
-        var editController = new AnimationController<>(this, "editController", 1, this::editPredicate);
+        var editController =
+                new AnimationController<>(this, "editController", 1, this::editPredicate);
         data.add(editController);
     }
 
     @Override
     @ParametersAreNonnullByDefault
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
+    public void appendHoverText(
+            ItemStack stack,
+            TooltipContext context,
+            List<Component> list,
+            TooltipFlag tooltipFlag) {
         list.add(Component.empty());
-        list.add(Component.translatable("des.superbwarfare.trachelium_1").withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.ITALIC));
-        list.add(Component.translatable("des.superbwarfare.trachelium_2").withStyle(ChatFormatting.GRAY));
+        list.add(
+                Component.translatable("des.superbwarfare.trachelium_1")
+                        .withStyle(ChatFormatting.GRAY)
+                        .withStyle(ChatFormatting.ITALIC));
+        list.add(
+                Component.translatable("des.superbwarfare.trachelium_2")
+                        .withStyle(ChatFormatting.GRAY));
 
         TooltipTool.addHideText(list, Component.empty());
-        TooltipTool.addHideText(list, Component.translatable("des.superbwarfare.trachelium_3").withStyle(ChatFormatting.WHITE));
-        TooltipTool.addHideText(list, Component.translatable("des.superbwarfare.trachelium_4").withStyle(Style.EMPTY.withColor(0xF4F0FF)));
+        TooltipTool.addHideText(
+                list,
+                Component.translatable("des.superbwarfare.trachelium_3")
+                        .withStyle(ChatFormatting.WHITE));
+        TooltipTool.addHideText(
+                list,
+                Component.translatable("des.superbwarfare.trachelium_4")
+                        .withStyle(Style.EMPTY.withColor(0xF4F0FF)));
     }
 
     @Override
     public int @NotNull [] getValidStocks() {
-        return new int[]{0, 2};
+        return new int[] {0, 2};
     }
 
     @Override
     public int @NotNull [] getValidScopes() {
-        return new int[]{0, 1, 2};
+        return new int[] {0, 1, 2};
     }
 
     @Override

@@ -7,13 +7,13 @@ import com.atsuishio.superbwarfare.data.gun.value.AttachmentType
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.item.gun.GunItem
 import com.atsuishio.superbwarfare.tools.clientLevel
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import java.util.concurrent.ThreadLocalRandom
 
 /**
@@ -26,7 +26,6 @@ import java.util.concurrent.ThreadLocalRandom
  */
 @Environment(EnvType.CLIENT)
 object MuzzleFlashHelper {
-
     // -----------------------------
     // Data
     // -----------------------------
@@ -38,12 +37,17 @@ object MuzzleFlashHelper {
      * @param minLevel  minimum level at expiry (≥1)
      * @param duration  lifetime in client ticks
      */
-    data class FlashParams(val maxLevel: Int, val minLevel: Int, val duration: Int)
+    data class FlashParams(
+        val maxLevel: Int,
+        val minLevel: Int,
+        val duration: Int,
+    )
 
     /** Items that produce no muzzle flash at all. */
-    private val NO_FLASH_ITEMS = setOf(
-        ModItems.BOCEK
-    )
+    private val NO_FLASH_ITEMS =
+        setOf(
+            ModItems.BOCEK,
+        )
 
     // -----------------------------
     // Public API
@@ -59,7 +63,11 @@ object MuzzleFlashHelper {
      * @param params    flash intensity and duration
      */
     @JvmStatic
-    fun spawnFlashCone(origin: Vec3, direction: Vec3, params: FlashParams) {
+    fun spawnFlashCone(
+        origin: Vec3,
+        direction: Vec3,
+        params: FlashParams,
+    ) {
         if (!DisplayConfig.ENABLE_FIRE_FLASH_LIGHT.get()) return
         if (params.maxLevel <= 0) return
 
@@ -91,7 +99,10 @@ object MuzzleFlashHelper {
      * @param stack  the tool item stack
      */
     @JvmStatic
-    fun spawnToolFlash(player: Player, stack: ItemStack) {
+    fun spawnToolFlash(
+        player: Player,
+        stack: ItemStack,
+    ) {
         if (!stack.`is`(ModItems.REPAIR_TOOL.get()) && !stack.`is`(ModItems.TASER.get())) return
         val params = calculateFromStack(stack) ?: return
         spawnFlashCone(player.eyePosition, player.lookAngle, params)
@@ -117,7 +128,7 @@ object MuzzleFlashHelper {
             isSilenced = barrelType == 2,
             isFlashHider = barrelType == 1,
             projectileAmount = data.get(GunProp.PROJECTILE_AMOUNT),
-            stack = data.stack
+            stack = data.stack,
         )
     }
 
@@ -148,7 +159,7 @@ object MuzzleFlashHelper {
         isSilenced: Boolean,
         isFlashHider: Boolean,
         projectileAmount: Int = 1,
-        stack: ItemStack = ItemStack.EMPTY
+        stack: ItemStack = ItemStack.EMPTY,
     ): FlashParams {
         if (!stack.isEmpty) {
             if (stack.`is`(ModItems.REPAIR_TOOL.get())) {
@@ -168,23 +179,28 @@ object MuzzleFlashHelper {
 
         when {
             isMultiProjectile -> {
-                maxLevel = 9; duration = 4
+                maxLevel = 9
+                duration = 4
             }
 
             damage >= 30.0 -> {
-                maxLevel = 11; duration = 4
+                maxLevel = 11
+                duration = 4
             }
 
             damage >= 15.0 -> {
-                maxLevel = 7; duration = 4
+                maxLevel = 7
+                duration = 4
             }
 
             damage >= 8.0 -> {
-                maxLevel = 8; duration = 3
+                maxLevel = 8
+                duration = 3
             }
 
             else -> {
-                maxLevel = 6; duration = 3
+                maxLevel = 6
+                duration = 3
             }
         }
 
@@ -197,12 +213,15 @@ object MuzzleFlashHelper {
         // Attachments overrides
         when {
             isSilenced -> {
-                maxLevel = 4; minLevel = 1; duration = 2
+                maxLevel = 4
+                minLevel = 1
+                duration = 2
             }
 
             isFlashHider -> {
                 maxLevel = (maxLevel * 6 / 10).coerceAtLeast(3)
-                minLevel = 1; duration = 2
+                minLevel = 1
+                duration = 2
             }
         }
 

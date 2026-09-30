@@ -4,17 +4,22 @@ import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.sniper.HuntingRifleItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class HuntingRifleItemModel extends CustomGunModel<HuntingRifleItem> {
 
     @Override
-    public void setCustomAnimations(HuntingRifleItem animatable, long instanceId, AnimationState<HuntingRifleItem> animationState) {
+    public void setCustomAnimations(
+            HuntingRifleItem animatable,
+            long instanceId,
+            AnimationState<HuntingRifleItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -33,7 +38,8 @@ public class HuntingRifleItemModel extends CustomGunModel<HuntingRifleItem> {
         gun.setRotZ((float) (0.05f * zpz));
         gun.setScaleZ(1f - (0.5f * (float) zp));
 
-        ClientEventHandler.handleShootAnimation(fireRoot, 0.5f, 2f, 3f, 2.5f, 0.3f, 0.5f, 0.4f, 0.45f);
+        ClientEventHandler.handleShootAnimation(
+                fireRoot, 0.5f, 2f, 3f, 2.5f, 0.3f, 0.5f, 0.4f, 0.45f);
 
         CrossHairOverlay.gunRot = fireRoot.getRotZ();
 
@@ -46,6 +52,9 @@ public class HuntingRifleItemModel extends CustomGunModel<HuntingRifleItem> {
         float numP = (float) (1 - 0.78 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

@@ -7,7 +7,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.monster.Monster
 import net.minecraft.world.entity.monster.Vex
 
-class TargetProxy(val target: Entity) {
+class TargetProxy(
+    val target: Entity,
+) {
     fun getArmor(): Double = if (target is LivingEntity) target.getAttributeValue(Attributes.ARMOR) else 0.0
 
     fun isUndead(): Boolean = target is LivingEntity && target.type.`is`(EntityTypeTags.UNDEAD)

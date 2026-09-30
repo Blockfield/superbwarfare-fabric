@@ -25,8 +25,9 @@ interface BasicGeoProjectileEntity {
     fun getModelInstance(): BakedModelInstance? {
         val entity = this as Entity
         val (_, namespace, id) = entity.type.descriptionId.split(".")
-        return ProjectileModelReloadListener.getModel(
-            ResourceLocation.fromNamespaceAndPath(namespace, "models/bedrock/projectile/$id.geo.json")
-        )?.createInstance()
+        return ProjectileModelReloadListener
+            .getModel(
+                ResourceLocation.fromNamespaceAndPath(namespace, "models/bedrock/projectile/$id.geo.json"),
+            )?.createInstance()
     }
 }

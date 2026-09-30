@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
  * Замена net.neoforged.neoforge.energy.EnergyStorage: базовая реализация, от которой наследуются
  * DynamicEnergyStorage и SyncedEntityEnergyStorage.
  *
- * INBTSerializable не реализуется: serializeNBT/deserializeNBT вызываются напрямую на конкретных
+ * <p>INBTSerializable не реализуется: serializeNBT/deserializeNBT вызываются напрямую на конкретных
  * типах, интерфейс ради этого тащить незачем.
  */
 public class EnergyStorage implements IEnergyStorage {
@@ -43,7 +43,8 @@ public class EnergyStorage implements IEnergyStorage {
             return 0;
         }
 
-        int energyReceived = Mth.clamp(this.capacity - this.energy, 0, Math.min(this.maxReceive, toReceive));
+        int energyReceived =
+                Mth.clamp(this.capacity - this.energy, 0, Math.min(this.maxReceive, toReceive));
         if (!simulate) {
             this.energy += energyReceived;
         }
@@ -89,7 +90,8 @@ public class EnergyStorage implements IEnergyStorage {
 
     public void deserializeNBT(HolderLookup.Provider provider, Tag nbt) {
         if (!(nbt instanceof IntTag intNbt)) {
-            throw new IllegalArgumentException("Can not deserialize to an instance that isn't the default implementation");
+            throw new IllegalArgumentException(
+                    "Can not deserialize to an instance that isn't the default implementation");
         }
         this.energy = intNbt.getAsInt();
     }

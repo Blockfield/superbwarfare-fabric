@@ -3,6 +3,7 @@ package com.atsuishio.superbwarfare.data.drone_attachment;
 import com.atsuishio.superbwarfare.data.IDBasedData;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
+
 import org.jetbrains.annotations.NotNull;
 
 public class DroneAttachmentData implements IDBasedData<DroneAttachmentData> {
@@ -11,6 +12,7 @@ public class DroneAttachmentData implements IDBasedData<DroneAttachmentData> {
 
     @SerializedName("Entity")
     private String entity = "";
+
     @SerializedName("DisplayEntity")
     private String displayEntity = "";
 
@@ -31,26 +33,23 @@ public class DroneAttachmentData implements IDBasedData<DroneAttachmentData> {
         return this.dropEntity.isEmpty() ? this.displayEntity : this.dropEntity;
     }
 
-
     @SerializedName("DropPosition")
-    private float[] dropPosition = new float[]{0, -0.09f, 0};
+    private float[] dropPosition = new float[] {0, -0.09f, 0};
 
     public float[] dropPosition() {
-        return (this.dropPosition != null && this.dropPosition.length < 3) ? new float[]{0, -0.09f, 0} : this.dropPosition;
+        return (this.dropPosition != null && this.dropPosition.length < 3)
+                ? new float[] {0, -0.09f, 0}
+                : this.dropPosition;
     }
 
     @SerializedName("Data")
     public JsonObject data;
 
-    /**
-     * 无人机显示的挂载实体的实体数据
-     */
+    /** 无人机显示的挂载实体的实体数据 */
     @SerializedName("DisplayData")
     private JsonObject displayData;
 
-    /**
-     * 无人机投弹实体的实体数据
-     */
+    /** 无人机投弹实体的实体数据 */
     @SerializedName("DropData")
     private JsonObject dropData;
 
@@ -100,24 +99,28 @@ public class DroneAttachmentData implements IDBasedData<DroneAttachmentData> {
     // display settings
 
     @SerializedName("Scale")
-    private float[] scale = new float[]{1, 1, 1};
+    private float[] scale = new float[] {1, 1, 1};
 
     @SerializedName("Offset")
-    private float[] offset = new float[]{0, 0, 0};
+    private float[] offset = new float[] {0, 0, 0};
 
     @SerializedName("Rotation")
-    private float[] rotation = new float[]{0, 0, 0};
+    private float[] rotation = new float[] {0, 0, 0};
 
     public float[] scale() {
-        return (this.scale != null && this.scale.length < 3) ? new float[]{1, 1, 1} : this.scale;
+        return (this.scale != null && this.scale.length < 3) ? new float[] {1, 1, 1} : this.scale;
     }
 
     public float[] offset() {
-        return (this.offset != null && this.offset.length < 3) ? new float[]{0, 0, 0} : this.offset;
+        return (this.offset != null && this.offset.length < 3)
+                ? new float[] {0, 0, 0}
+                : this.offset;
     }
 
     public float[] rotation() {
-        return (this.rotation != null && this.rotation.length < 3) ? new float[]{0, 0, 0} : this.rotation;
+        return (this.rotation != null && this.rotation.length < 3)
+                ? new float[] {0, 0, 0}
+                : this.rotation;
     }
 
     @SerializedName("XLength")

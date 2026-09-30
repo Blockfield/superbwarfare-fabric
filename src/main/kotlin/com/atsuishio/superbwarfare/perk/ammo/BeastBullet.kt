@@ -10,7 +10,7 @@ object BeastBullet : AmmoPerk(Builder("beast_bullet", Type.AMMO).bypassArmorRate
     override fun modifyProjectile(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity
+        entity: Entity,
     ) {
         super.modifyProjectile(data, instance, entity)
         if (entity !is IBulletProperties) return

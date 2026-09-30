@@ -7,7 +7,8 @@ import com.atsuishio.superbwarfare.data.gun.GunProp
 import com.atsuishio.superbwarfare.perk.Perk
 
 object BrainStorm : Perk("brain_storm", Type.DAMAGE) {
-    override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) = with(GunProp) {
-        modifier[HEADSHOT] += 0.25 * modifier.data.perk.getLevel(this@BrainStorm)
-    }
+    override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) =
+        with(GunProp) {
+            modifier[HEADSHOT] += 0.25 * modifier.data.perk.getLevel(this@BrainStorm)
+        }
 }

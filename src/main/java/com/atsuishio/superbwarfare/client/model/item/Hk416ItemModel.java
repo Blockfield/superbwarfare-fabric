@@ -1,5 +1,7 @@
 package com.atsuishio.superbwarfare.client.model.item;
 
+import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
+
 import com.atsuishio.superbwarfare.client.animation.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.FireMode;
@@ -7,20 +9,21 @@ import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.rifle.Hk416Item;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.isProne;
 
 public class Hk416ItemModel extends CustomGunModel<Hk416Item> {
     public static float rotXBipod = 0f;
 
     @Override
-    public void setCustomAnimations(Hk416Item animatable, long instanceId, AnimationState<Hk416Item> animationState) {
+    public void setCustomAnimations(
+            Hk416Item animatable, long instanceId, AnimationState<Hk416Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -32,7 +35,14 @@ public class Hk416ItemModel extends CustomGunModel<Hk416Item> {
         GeoBone scope3 = getAnimationProcessor().getBone("Scope3");
         GeoBone kuaimanji = getAnimationProcessor().getBone("kuaimanji");
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
 
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
@@ -40,27 +50,30 @@ public class Hk416ItemModel extends CustomGunModel<Hk416Item> {
 
         int type = GunData.from(stack).attachment.get(AttachmentType.SCOPE);
 
-        float posY = switch (type) {
-            case 0 -> 1.04f;
-            case 1 -> 0.52f;
-            case 2 -> 0.385f;
-            case 3 -> 0.46f;
-            default -> 0f;
-        };
-        float scaleZ = switch (type) {
-            case 0 -> 0.2f;
-            case 1 -> 0.4f;
-            case 2 -> 0.8f;
-            case 3 -> 0.9f;
-            default -> 0f;
-        };
-        float posZ = switch (type) {
-            case 0 -> 3f;
-            case 1 -> 3.5f;
-            case 2 -> 7.4f;
-            case 3 -> 7.5f;
-            default -> 0f;
-        };
+        float posY =
+                switch (type) {
+                    case 0 -> 1.04f;
+                    case 1 -> 0.52f;
+                    case 2 -> 0.385f;
+                    case 3 -> 0.46f;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (type) {
+                    case 0 -> 0.2f;
+                    case 1 -> 0.4f;
+                    case 2 -> 0.8f;
+                    case 3 -> 0.9f;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (type) {
+                    case 0 -> 3f;
+                    case 1 -> 3.5f;
+                    case 2 -> 7.4f;
+                    case 3 -> 7.5f;
+                    default -> 0f;
+                };
 
         gun.setPosX(3.3055f * (float) zp);
         gun.setPosY(posY * (float) zp - (float) (0.2f * zpz));
@@ -75,16 +88,18 @@ public class Hk416ItemModel extends CustomGunModel<Hk416Item> {
         if (zt < 0.5) {
             shen = getAnimationProcessor().getBone("fireRootNormal");
         } else {
-            shen = switch (type) {
-                case 0 -> getAnimationProcessor().getBone("fireRoot0");
-                case 1 -> getAnimationProcessor().getBone("fireRoot1");
-                case 2 -> getAnimationProcessor().getBone("fireRoot2");
-                case 3 -> getAnimationProcessor().getBone("fireRoot3");
-                default -> getAnimationProcessor().getBone("fireRootNormal");
-            };
+            shen =
+                    switch (type) {
+                        case 0 -> getAnimationProcessor().getBone("fireRoot0");
+                        case 1 -> getAnimationProcessor().getBone("fireRoot1");
+                        case 2 -> getAnimationProcessor().getBone("fireRoot2");
+                        case 3 -> getAnimationProcessor().getBone("fireRoot3");
+                        default -> getAnimationProcessor().getBone("fireRootNormal");
+                    };
         }
 
-        ClientEventHandler.handleShootAnimation(shen, 0.95f, -0.95f, 0.85f, 0.8f, 0.9f, 1, 0.5f, 0.75f);
+        ClientEventHandler.handleShootAnimation(
+                shen, 0.95f, -0.95f, 0.85f, 0.8f, 0.9f, 1, 0.5f, 0.75f);
 
         CrossHairOverlay.gunRot = shen.getRotZ();
 
@@ -107,7 +122,10 @@ public class Hk416ItemModel extends CustomGunModel<Hk416Item> {
         float numP = (float) (1 - 0.92 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 1f, 0.55f);
     }
 }

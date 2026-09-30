@@ -19,6 +19,8 @@ import com.atsuishio.superbwarfare.tools.mc
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.CameraType
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.GameRenderer
@@ -26,8 +28,6 @@ import net.minecraft.util.Mth
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 import kotlin.math.min
 
@@ -100,7 +100,11 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             moveX =
                 (-6 * ClientEventHandler.turnRot[1] - (if (player.isSprinting) 10 else 6) * ClientEventHandler.movePosX).toFloat()
             moveY =
-                (-6 * ClientEventHandler.turnRot[0] + 6 * ClientEventHandler.velocityY.toFloat() - (if (player.isSprinting) 10 else 6) * ClientEventHandler.movePosY - 0.25 * ClientEventHandler.boltMove).toFloat()
+                (
+                    -6 * ClientEventHandler.turnRot[0] + 6 * ClientEventHandler.velocityY.toFloat() -
+                        (if (player.isSprinting) 10 else 6) * ClientEventHandler.movePosY -
+                        0.25 * ClientEventHandler.boltMove
+                ).toFloat()
         }
 
         RenderSystem.disableDepthTest()
@@ -111,7 +115,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -128,50 +132,58 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
         // 第一人称下的准星
         if (mc.options.cameraType == CameraType.FIRST_PERSON) {
             when (crosshair) {
-                CROSSHAIR_GUN_DEFAULT -> renderGunDefaultCrosshair(
-                    guiGraphics,
-                    stack,
-                    player,
-                    screenWidth,
-                    screenHeight,
-                    moveX,
-                    moveY,
-                    finPosX,
-                    finPosY,
-                    finLength,
-                    spread
-                )
+                CROSSHAIR_GUN_DEFAULT -> {
+                    renderGunDefaultCrosshair(
+                        guiGraphics,
+                        stack,
+                        player,
+                        screenWidth,
+                        screenHeight,
+                        moveX,
+                        moveY,
+                        finPosX,
+                        finPosY,
+                        finLength,
+                        spread,
+                    )
+                }
 
-                CROSSHAIR_GUN_REPAIR_TOOL -> renderRepairToolCrosshair(
-                    guiGraphics,
-                    data,
-                    player,
-                    screenWidth,
-                    screenHeight,
-                    moveX,
-                    moveY
-                )
+                CROSSHAIR_GUN_REPAIR_TOOL -> {
+                    renderRepairToolCrosshair(
+                        guiGraphics,
+                        data,
+                        player,
+                        screenWidth,
+                        screenHeight,
+                        moveX,
+                        moveY,
+                    )
+                }
 
-                CROSSHAIR_GUN_BOCEK -> renderBocekCrosshair(
-                    guiGraphics,
-                    data,
-                    player,
-                    screenWidth,
-                    screenHeight,
-                    moveX,
-                    moveY,
-                    finPosX,
-                    finPosY,
-                    finLength,
-                    spread
-                )
+                CROSSHAIR_GUN_BOCEK -> {
+                    renderBocekCrosshair(
+                        guiGraphics,
+                        data,
+                        player,
+                        screenWidth,
+                        screenHeight,
+                        moveX,
+                        moveY,
+                        finPosX,
+                        finPosY,
+                        finLength,
+                        spread,
+                    )
+                }
 
-                CROSSHAIR_GUN_GRENADE -> renderGrenadeCrosshair(guiGraphics, stack, screenWidth, screenHeight)
+                CROSSHAIR_GUN_GRENADE -> {
+                    renderGrenadeCrosshair(guiGraphics, stack, screenWidth, screenHeight)
+                }
             }
-        }
-
-        // 第三人称下的准星
-        else if (mc.options.cameraType == CameraType.THIRD_PERSON_BACK && (ClientEventHandler.zoomTime > 0 || ClientEventHandler.bowPullPos > 0)) {
+        } else if (mc.options.cameraType == CameraType.THIRD_PERSON_BACK &&
+            (ClientEventHandler.zoomTime > 0 || ClientEventHandler.bowPullPos > 0)
+        ) {
+            // 第三人称下的准星
             renderGunDefaultCrosshair(
                 guiGraphics,
                 stack,
@@ -183,7 +195,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
                 finPosX,
                 finPosY,
                 finLength,
-                spread
+                spread,
             )
         }
 
@@ -201,7 +213,14 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
     /**
      * 渲染标准十字准星
      */
-    fun normalCrossHair(guiGraphics: GuiGraphics, w: Int, h: Int, spread: Double, moveX: Float, moveY: Float) {
+    fun normalCrossHair(
+        guiGraphics: GuiGraphics,
+        w: Int,
+        h: Int,
+        spread: Double,
+        moveX: Float,
+        moveY: Float,
+    ) {
         val poseStack = guiGraphics.pose()
 
         poseStack.pushPose()
@@ -209,7 +228,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             Axis.ZP.rotationDegrees(-gunRot * Mth.RAD_TO_DEG),
             w / 2f + moveX,
             h / 2f + moveY,
-            0f
+            0f,
         )
 
         RenderHelper.preciseBlit(
@@ -222,7 +241,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             16f,
             16f,
             16f,
-            16f
+            16f,
         )
         RenderHelper.preciseBlit(
             guiGraphics,
@@ -234,7 +253,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             16f,
             16f,
             16f,
-            16f
+            16f,
         )
         RenderHelper.preciseBlit(
             guiGraphics,
@@ -246,7 +265,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             16f,
             16f,
             16f,
-            16f
+            16f,
         )
         RenderHelper.preciseBlit(
             guiGraphics,
@@ -258,7 +277,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             16f,
             16f,
             16f,
-            16f
+            16f,
         )
 
         poseStack.popPose()
@@ -267,7 +286,12 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
     /**
      * 渲染圆形准星
      */
-    fun shotgunCrossHair(guiGraphics: GuiGraphics?, finPosX: Float, finPosY: Float, finLength: Float) {
+    fun shotgunCrossHair(
+        guiGraphics: GuiGraphics?,
+        finPosX: Float,
+        finPosY: Float,
+        finLength: Float,
+    ) {
         RenderHelper.preciseBlit(
             guiGraphics,
             SHOTGUN,
@@ -278,13 +302,22 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             finLength,
             finLength,
             finLength,
-            finLength
+            finLength,
         )
     }
 
     fun renderGunDefaultCrosshair(
-        guiGraphics: GuiGraphics, stack: ItemStack, player: Player, screenWidth: Int, screenHeight: Int,
-        moveX: Float, moveY: Float, finPosX: Float, finPosY: Float, finLength: Float, spread: Double
+        guiGraphics: GuiGraphics,
+        stack: ItemStack,
+        player: Player,
+        screenWidth: Int,
+        screenHeight: Int,
+        moveX: Float,
+        moveY: Float,
+        finPosX: Float,
+        finPosY: Float,
+        finLength: Float,
+        spread: Double,
     ) {
         val data = from(stack)
 
@@ -302,7 +335,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             16f,
             16f,
             16f,
-            16f
+            16f,
         )
         if (!player.isSprinting || ClientEventHandler.noSprintTicks > 0) {
             if (data.get(GunProp.PROJECTILE_AMOUNT) > 1) {
@@ -320,7 +353,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
         screenWidth: Int,
         screenHeight: Int,
         moveX: Float,
-        moveY: Float
+        moveY: Float,
     ) {
         val range = data.get(GunProp.RANGE)
         val lookingEntity = TraceTool.findLookingEntity(player, range.toDouble())
@@ -342,23 +375,36 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             16f,
             16f,
             16f,
-            16f
+            16f,
         )
 
         if (health > 0) {
             RenderHelper.renderCircularRing(
                 guiGraphics,
-                screenWidth / 2f + moveX, screenHeight / 2f + moveY,
-                0.035f, 0.028f,
-                floatArrayOf(0f, 0f, 0f, 0.4f), floatArrayOf(1f, 1f, 1f, 1f),
-                health, true
+                screenWidth / 2f + moveX,
+                screenHeight / 2f + moveY,
+                0.035f,
+                0.028f,
+                floatArrayOf(0f, 0f, 0f, 0.4f),
+                floatArrayOf(1f, 1f, 1f, 1f),
+                health,
+                true,
             )
         }
     }
 
     fun renderBocekCrosshair(
-        guiGraphics: GuiGraphics, data: GunData, player: Player, screenWidth: Int, screenHeight: Int,
-        moveX: Float, moveY: Float, finPosX: Float, finPosY: Float, finLength: Float, spread: Double
+        guiGraphics: GuiGraphics,
+        data: GunData,
+        player: Player,
+        screenWidth: Int,
+        screenHeight: Int,
+        moveX: Float,
+        moveY: Float,
+        finPosX: Float,
+        finPosY: Float,
+        finLength: Float,
+        spread: Double,
     ) {
         if (ClientEventHandler.zoomPos >= 0.7) return
 
@@ -374,15 +420,16 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
             16f,
             16f,
             16f,
-            16f
+            16f,
         )
         if (!player.isSprinting || ClientEventHandler.noSprintTicks > 0 || ClientEventHandler.bowPullPos > 0) {
             if (ClientEventHandler.zoomTime < 0.1) {
-                val isSlug = when (perk) {
-                    is AmmoPerk -> perk.slug
-                    is IAmmoStat -> perk.slug
-                    else -> false
-                }
+                val isSlug =
+                    when (perk) {
+                        is AmmoPerk -> perk.slug
+                        is IAmmoStat -> perk.slug
+                        else -> false
+                    }
                 if (isSlug) {
                     normalCrossHair(guiGraphics, screenWidth, screenHeight, spread, moveX, moveY)
                 } else {
@@ -394,13 +441,24 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
         }
     }
 
-    fun renderGrenadeCrosshair(guiGraphics: GuiGraphics, stack: ItemStack?, screenWidth: Int, screenHeight: Int) {
+    fun renderGrenadeCrosshair(
+        guiGraphics: GuiGraphics,
+        stack: ItemStack?,
+        screenWidth: Int,
+        screenHeight: Int,
+    ) {
         if (ClientEventHandler.zoomTime > 0.8 && GunResource.compute(stack).hideCrosshairWhenZoom) return
 
         guiGraphics.blit(REX, screenWidth / 2 - 16, screenHeight / 2 - 16, 0f, 0f, 32, 32, 32, 32)
     }
 
-    private fun renderKillIndicatorDynamic(guiGraphics: GuiGraphics?, w: Int, h: Int, moveX: Float, moveY: Float) {
+    private fun renderKillIndicatorDynamic(
+        guiGraphics: GuiGraphics?,
+        w: Int,
+        h: Int,
+        moveX: Float,
+        moveY: Float,
+    ) {
         val posX = w / 2f - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
         val posY = h / 2f - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
         val rate: Float = (40 - killIndicator * 5) / 5.5f
@@ -416,7 +474,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
                 16f,
                 16f,
                 16f,
-                16f
+                16f,
             )
         }
 
@@ -431,7 +489,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
                 16f,
                 16f,
                 16f,
-                16f
+                16f,
             )
         }
 
@@ -446,7 +504,7 @@ object CrossHairOverlay : CommonOverlay("cross_hair") {
                 16f,
                 16f,
                 16f,
-                16f
+                16f,
             )
         }
 

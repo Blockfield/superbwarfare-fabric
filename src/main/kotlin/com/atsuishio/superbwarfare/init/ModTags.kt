@@ -12,94 +12,115 @@ import net.minecraft.world.level.block.Block
 
 object ModTags {
     @JvmStatic
-    fun commonItemTag(name: String): TagKey<Item> {
-        return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", name))
-    }
+    fun commonItemTag(name: String): TagKey<Item> = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", name))
 
     @JvmStatic
-    fun commonBlockTag(name: String): TagKey<Block> {
-        return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("c", name))
-    }
+    fun commonBlockTag(name: String): TagKey<Block> = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("c", name))
 
     @JvmStatic
-    fun modItemTag(name: String): TagKey<Item> {
-        return TagKey.create(Registries.ITEM, Mod.loc(name))
-    }
+    fun modItemTag(name: String): TagKey<Item> = TagKey.create(Registries.ITEM, Mod.loc(name))
 
     @JvmStatic
-    fun modBlockTag(name: String): TagKey<Block> {
-        return TagKey.create(Registries.BLOCK, Mod.loc(name))
-    }
+    fun modBlockTag(name: String): TagKey<Block> = TagKey.create(Registries.BLOCK, Mod.loc(name))
 
     @JvmStatic
-    fun modDamageTag(name: String): TagKey<DamageType> {
-        return TagKey.create(Registries.DAMAGE_TYPE, Mod.loc(name))
-    }
+    fun modDamageTag(name: String): TagKey<DamageType> = TagKey.create(Registries.DAMAGE_TYPE, Mod.loc(name))
 
     @JvmStatic
-    fun modEntityTag(name: String): TagKey<EntityType<*>> {
-        return TagKey.create(Registries.ENTITY_TYPE, Mod.loc(name))
-    }
+    fun modEntityTag(name: String): TagKey<EntityType<*>> = TagKey.create(Registries.ENTITY_TYPE, Mod.loc(name))
 
     object Items {
         // @formatter:off
         @JvmField val GUN = modItemTag("gun")
+
         @JvmField val SMG = modItemTag("smg")
+
         @JvmField val RIFLE = modItemTag("rifle")
+
         @JvmField val SNIPER_RIFLE = modItemTag("sniper_rifle")
+
         @JvmField val SHOTGUN = modItemTag("shotgun")
+
         @JvmField val MACHINE_GUN = modItemTag("machine_gun")
+
         @JvmField val LAUNCHER = modItemTag("launcher")
 
         @JvmField val MILITARY_ARMOR = modItemTag("military_armor")
+
         @JvmField val MILITARY_ARMOR_HEAVY = modItemTag("military_armor_heavy")
 
         /** Шлемы с ПНВ (тег из fracturepoint). */
         @JvmField val HAS_NVG = modItemTag("has_nvg")
 
         @JvmField val INGOTS_CEMENTED_CARBIDE = modItemTag("ingots/cemented_carbide")
+
         @JvmField val STORAGE_BLOCK_CEMENTED_CARBIDE = modItemTag("storage_blocks/cemented_carbide")
 
         @JvmField val BLUEPRINT = modItemTag("blueprint")
+
         @JvmField val COMMON_BLUEPRINT = modItemTag("blueprint/common")
+
         @JvmField val RARE_BLUEPRINT = modItemTag("blueprint/rare")
+
         @JvmField val EPIC_BLUEPRINT = modItemTag("blueprint/epic")
+
         @JvmField val LEGENDARY_BLUEPRINT = modItemTag("blueprint/legendary")
+
         @JvmField val SUPERB_BLUEPRINT = modItemTag("blueprint/superb")
+
         @JvmField val VIRTUAL_BLUEPRINT = modItemTag("blueprint/virtual")
+
         @JvmField val CANNON_BLUEPRINT = modItemTag("blueprint/cannon")
 
         // 用于研究台跨级配方的 tag
         @JvmField val ENLARGED_COMMON_BLUEPRINT = modItemTag("blueprint/enlarged/common")
+
         @JvmField val ENLARGED_RARE_BLUEPRINT = modItemTag("blueprint/enlarged/rare")
+
         @JvmField val ENLARGED_EPIC_BLUEPRINT = modItemTag("blueprint/enlarged/epic")
+
         @JvmField val ENLARGED_LEGENDARY_BLUEPRINT = modItemTag("blueprint/enlarged/legendary")
 
         // Perk tag
         @JvmField val AMMO_PERK = modItemTag("perk/ammo")
+
         @JvmField val FUNCTIONAL_PERK = modItemTag("perk/functional")
+
         @JvmField val DAMAGE_PERK = modItemTag("perk/damage")
 
         @JvmField val RESEARCHABLE_AMMO_PERK = modItemTag("perk/researchable/ammo")
+
         @JvmField val RESEARCHABLE_FUNCTIONAL_PERK = modItemTag("perk/researchable/functional")
+
         @JvmField val RESEARCHABLE_DAMAGE_PERK = modItemTag("perk/researchable/damage")
 
         @JvmField val HAMMER = modItemTag("hammer")
+
         @JvmField val WRENCHES = commonItemTag("wrenches")
+
         @JvmField val TOOLS_WRENCH = commonItemTag("tools/wrench")
+
         @JvmField val TOOLS_CROWBAR = commonItemTag("tools/crowbar")
+
         @JvmField val TOOLS_HAMMER = commonItemTag("tools/hammer")
 
         @JvmField val RESEARCH_FUEL = modItemTag("research_fuel")
 
         // 专门给其他模组添加动画用的枪械武器分类 tag
         @JvmField val ANIMATED_PISTOL = modItemTag("animated/pistol")
+
         @JvmField val ANIMATED_SNIPER = modItemTag("animated/sniper")
+
         @JvmField val ANIMATED_RIFLE = modItemTag("animated/rifle")
+
         @JvmField val ANIMATED_SHOTGUN = modItemTag("animated/shotgun")
+
         @JvmField val ANIMATED_SMG = modItemTag("animated/smg")
+
         @JvmField val ANIMATED_RPG = modItemTag("animated/rpg")
+
         @JvmField val ANIMATED_MG = modItemTag("animated/mg")
+
         @JvmField val ANIMATED_MINIGUN = modItemTag("animated/minigun")
         // @formatter:on
     }

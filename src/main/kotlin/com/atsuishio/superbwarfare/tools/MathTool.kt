@@ -4,8 +4,11 @@ import net.minecraft.util.Mth
 import kotlin.math.*
 
 fun ClosedRange<Int>.lerp(delta: Double) = Mth.clamp(delta, start.toDouble(), endInclusive.toDouble())
+
 fun ClosedRange<Int>.lerp(delta: Float) = lerp(delta.toDouble())
+
 fun ClosedFloatingPointRange<Double>.lerp(delta: Double) = Mth.lerp(delta, start, endInclusive)
+
 fun ClosedFloatingPointRange<Double>.lerp(delta: Float) = lerp(delta.toDouble())
 
 object MathTool {
@@ -18,7 +21,12 @@ object MathTool {
      * @return 当前时刻的震荡值
      */
     @JvmStatic
-    fun decayingOscillation(a: Float, t: Float, c: Float, elapsedTime: Float): Float {
+    fun decayingOscillation(
+        a: Float,
+        t: Float,
+        c: Float,
+        elapsedTime: Float,
+    ): Float {
         // 如果时间已超过持续时间，返回0
         if (elapsedTime >= t) {
             return 0.0f
@@ -42,7 +50,12 @@ object MathTool {
      * @param ticks 已过去的tick数
      * @return 当前时刻的震荡值
      */
-    fun decayingOscillation(a: Float, t: Float, c: Float, ticks: Int): Float {
+    fun decayingOscillation(
+        a: Float,
+        t: Float,
+        c: Float,
+        ticks: Int,
+    ): Float {
         // 将tick转换为秒（Minecraft中20ticks=1秒）
         val elapsedTime = ticks / 20.0f
         return decayingOscillation(a, t, c, elapsedTime)
@@ -57,23 +70,34 @@ object MathTool {
      * @return 渐变后的颜色 (16进制RGB)
      */
     @JvmStatic
-    fun getGradientColor(startColor: Int, endColor: Int, progress: Int, mode: Int): Int {
+    fun getGradientColor(
+        startColor: Int,
+        endColor: Int,
+        progress: Int,
+        mode: Int,
+    ): Int {
         // 确保进度在0-100范围内
         var progress = progress
         progress = max(0, min(100, progress))
         val ratio = progress / 100.0f
 
-        return (if (mode == 2) {
-            hsvGradient(startColor, endColor, ratio)
-        } else {
-            hslGradient(startColor, endColor, ratio)
-        }.toLong() or 0xFF000000).toInt()
+        return (
+            if (mode == 2) {
+                hsvGradient(startColor, endColor, ratio)
+            } else {
+                hslGradient(startColor, endColor, ratio)
+            }.toLong() or 0xFF000000
+        ).toInt()
     }
 
     /**
      * 在HSV颜色空间中进行渐变
      */
-    private fun hsvGradient(startColor: Int, endColor: Int, ratio: Float): Int {
+    private fun hsvGradient(
+        startColor: Int,
+        endColor: Int,
+        ratio: Float,
+    ): Int {
         // 将RGB转换为HSV
         val startHSV = rgbToHsv(startColor)
         val endHSV = rgbToHsv(endColor)
@@ -91,7 +115,11 @@ object MathTool {
     /**
      * 在HSL颜色空间中进行渐变
      */
-    private fun hslGradient(startColor: Int, endColor: Int, ratio: Float): Int {
+    private fun hslGradient(
+        startColor: Int,
+        endColor: Int,
+        ratio: Float,
+    ): Int {
         // 将RGB转换为HSL
         val startHSL = rgbToHsl(startColor)
         val endHSL = rgbToHsl(endColor)
@@ -109,7 +137,11 @@ object MathTool {
     /**
      * 插值色相值，考虑色相环的循环特性
      */
-    private fun interpolateHue(startH: Float, endH: Float, ratio: Float): Float {
+    private fun interpolateHue(
+        startH: Float,
+        endH: Float,
+        ratio: Float,
+    ): Float {
         // 确保色相值在0-1范围内
         var startH = startH
         var endH = endH
@@ -152,11 +184,12 @@ object MathTool {
 
         var h = 0f
         if (delta != 0f) {
-            h = when (max) {
-                rNorm -> (gNorm - bNorm) / delta % 6
-                gNorm -> (bNorm - rNorm) / delta + 2
-                else -> (rNorm - gNorm) / delta + 4
-            }
+            h =
+                when (max) {
+                    rNorm -> (gNorm - bNorm) / delta % 6
+                    gNorm -> (bNorm - rNorm) / delta + 2
+                    else -> (rNorm - gNorm) / delta + 4
+                }
             h /= 6f
             if (h < 0) h += 1f
         }
@@ -169,7 +202,11 @@ object MathTool {
     /**
      * 将HSV转换为RGB
      */
-    private fun hsvToRgb(h: Float, s: Float, v: Float): Int {
+    private fun hsvToRgb(
+        h: Float,
+        s: Float,
+        v: Float,
+    ): Int {
         var h = h % 1.0f
         if (h < 0) h += 1.0f
 
@@ -258,7 +295,11 @@ object MathTool {
     /**
      * 将HSL转换为RGB
      */
-    private fun hslToRgb(h: Float, s: Float, l: Float): Int {
+    private fun hslToRgb(
+        h: Float,
+        s: Float,
+        l: Float,
+    ): Int {
         var h = h % 1.0f
         if (h < 0) h += 1.0f
 
@@ -305,14 +346,14 @@ object MathTool {
     /**
      * 获取渐变颜色 (默认HSV模式)
      */
-    fun getGradientColor(startColor: Int, endColor: Int, progress: Int): Int {
-        return getGradientColor(startColor, endColor, progress, 1)
-    }
+    fun getGradientColor(
+        startColor: Int,
+        endColor: Int,
+        progress: Int,
+    ): Int = getGradientColor(startColor, endColor, progress, 1)
 
     /**
      * 将RGB颜色转换为16进制字符串
      */
-    fun toHexString(color: Int): String {
-        return String.format("#%06X", (0xFFFFFF and color))
-    }
+    fun toHexString(color: Int): String = String.format("#%06X", (0xFFFFFF and color))
 }

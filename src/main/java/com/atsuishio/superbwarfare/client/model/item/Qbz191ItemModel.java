@@ -6,10 +6,12 @@ import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.rifle.Qbz191Item;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
@@ -19,7 +21,8 @@ public class Qbz191ItemModel extends CustomGunModel<Qbz191Item> {
     public static float rotXBipod = 0f;
 
     @Override
-    public void setCustomAnimations(Qbz191Item animatable, long instanceId, AnimationState<Qbz191Item> animationState) {
+    public void setCustomAnimations(
+            Qbz191Item animatable, long instanceId, AnimationState<Qbz191Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -32,7 +35,14 @@ public class Qbz191ItemModel extends CustomGunModel<Qbz191Item> {
         GeoBone sight1fold = getAnimationProcessor().getBone("sight1fold");
         GeoBone sight2fold = getAnimationProcessor().getBone("sight2fold");
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
@@ -40,26 +50,29 @@ public class Qbz191ItemModel extends CustomGunModel<Qbz191Item> {
         int type = GunData.from(stack).attachment.get(AttachmentType.SCOPE);
         rotXSight = Mth.lerp(1.5f * times, rotXSight, type == 0 ? 0 : 90);
 
-        float posY = switch (type) {
-            case 0 -> 0.52f;
-            case 1 -> 0.63f;
-            case 2 -> 0.43f;
-            case 3 -> 0.27f;
-            default -> 0f;
-        };
-        float scaleZ = switch (type) {
-            case 0, 1 -> 0.5f;
-            case 2 -> 0.85f;
-            case 3 -> 0.94f;
-            default -> 0f;
-        };
-        float posZ = switch (type) {
-            case 0 -> 3.4f;
-            case 1 -> 3.5f;
-            case 2 -> 6.6f;
-            case 3 -> 6.4f;
-            default -> 0f;
-        };
+        float posY =
+                switch (type) {
+                    case 0 -> 0.52f;
+                    case 1 -> 0.63f;
+                    case 2 -> 0.43f;
+                    case 3 -> 0.27f;
+                    default -> 0f;
+                };
+        float scaleZ =
+                switch (type) {
+                    case 0, 1 -> 0.5f;
+                    case 2 -> 0.85f;
+                    case 3 -> 0.94f;
+                    default -> 0f;
+                };
+        float posZ =
+                switch (type) {
+                    case 0 -> 3.4f;
+                    case 1 -> 3.5f;
+                    case 2 -> 6.6f;
+                    case 3 -> 6.4f;
+                    default -> 0f;
+                };
 
         sight1fold.setRotX(rotXSight * Mth.DEG_TO_RAD);
         sight2fold.setRotX(rotXSight * Mth.DEG_TO_RAD);
@@ -77,16 +90,18 @@ public class Qbz191ItemModel extends CustomGunModel<Qbz191Item> {
         if (zt < 0.5) {
             shen = getAnimationProcessor().getBone("fireRootNormal");
         } else {
-            shen = switch (type) {
-                case 0 -> getAnimationProcessor().getBone("fireRoot0");
-                case 1 -> getAnimationProcessor().getBone("fireRoot1");
-                case 2 -> getAnimationProcessor().getBone("fireRoot2");
-                case 3 -> getAnimationProcessor().getBone("fireRoot3");
-                default -> getAnimationProcessor().getBone("fireRootNormal");
-            };
+            shen =
+                    switch (type) {
+                        case 0 -> getAnimationProcessor().getBone("fireRoot0");
+                        case 1 -> getAnimationProcessor().getBone("fireRoot1");
+                        case 2 -> getAnimationProcessor().getBone("fireRoot2");
+                        case 3 -> getAnimationProcessor().getBone("fireRoot3");
+                        default -> getAnimationProcessor().getBone("fireRootNormal");
+                    };
         }
 
-        ClientEventHandler.handleShootAnimation(shen, 0.95f, -0.95f, 0.85f, 0.8f, 0.9f, 1, 0.5f, 0.75f);
+        ClientEventHandler.handleShootAnimation(
+                shen, 0.95f, -0.95f, 0.85f, 0.8f, 0.9f, 1, 0.5f, 0.75f);
 
         CrossHairOverlay.gunRot = shen.getRotZ();
 
@@ -102,7 +117,10 @@ public class Qbz191ItemModel extends CustomGunModel<Qbz191Item> {
         float numP = (float) (1 - 0.92 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 1f, 0.55f);
     }
 }

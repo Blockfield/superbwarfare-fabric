@@ -15,6 +15,7 @@ fun interface PayloadContext {
 
 sealed class PacketPayload : CustomPacketPayload {
     override fun type() = payloadTypeMap[this::class.java]!!
+
     abstract fun PayloadContext.handler()
 
     /** Вызов обработчика снаружи: расширение объявлено на контексте и иначе недоступно. */

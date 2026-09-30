@@ -1,13 +1,13 @@
 package com.atsuishio.superbwarfare.client.particle
 
 import com.atsuishio.superbwarfare.client.renderer.ModParticleRenderTypes
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.*
 import net.minecraft.core.BlockPos
 import net.minecraft.util.Mth
 import net.minecraft.world.level.LightLayer
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
@@ -27,7 +27,7 @@ open class CustomFlareParticle protected constructor(
     fade: Float,
     size: Float,
     animationSpeed: Int,
-    sizeAdd: Float
+    sizeAdd: Float,
 ) : TextureSheetParticle(world, x, y, z) {
     var fade: Float
     var animationSpeed: Int
@@ -37,7 +37,9 @@ open class CustomFlareParticle protected constructor(
     var targetB: Float
 
     @Environment(EnvType.CLIENT)
-    class Provider(private val spriteSet: SpriteSet) : ParticleProvider<CustomFlareOption> {
+    class Provider(
+        private val spriteSet: SpriteSet,
+    ) : ParticleProvider<CustomFlareOption> {
         override fun createParticle(
             pType: CustomFlareOption,
             pLevel: ClientLevel,
@@ -46,9 +48,9 @@ open class CustomFlareParticle protected constructor(
             z: Double,
             xSpeed: Double,
             ySpeed: Double,
-            zSpeed: Double
-        ): Particle {
-            return CustomFlareParticle(
+            zSpeed: Double,
+        ): Particle =
+            CustomFlareParticle(
                 pLevel,
                 x,
                 y,
@@ -64,9 +66,8 @@ open class CustomFlareParticle protected constructor(
                 pType.fade,
                 pType.size,
                 pType.animationSpeed,
-                pType.sizeAdd
+                pType.sizeAdd,
             )
-        }
     }
 
     init {
@@ -108,9 +109,7 @@ open class CustomFlareParticle protected constructor(
         return (blockLight shl 4) or (skyLight shl 20)
     }
 
-    override fun getRenderType(): ParticleRenderType {
-        return ModParticleRenderTypes.PARTICLE_SHEET_SOFT_TRANSLUCENT
-    }
+    override fun getRenderType(): ParticleRenderType = ModParticleRenderTypes.PARTICLE_SHEET_SOFT_TRANSLUCENT
 
     override fun tick() {
         super.tick()

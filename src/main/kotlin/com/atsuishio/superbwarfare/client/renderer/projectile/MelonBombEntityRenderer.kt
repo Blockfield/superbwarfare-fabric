@@ -12,7 +12,9 @@ import net.minecraft.client.renderer.texture.TextureAtlas
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.block.Blocks
 
-class MelonBombEntityRenderer(context: EntityRendererProvider.Context) : EntityRenderer<MelonBombEntity>(context) {
+class MelonBombEntityRenderer(
+    context: EntityRendererProvider.Context,
+) : EntityRenderer<MelonBombEntity>(context) {
     private val blockRenderer: BlockRenderDispatcher = context.blockRenderDispatcher
 
     init {
@@ -25,7 +27,7 @@ class MelonBombEntityRenderer(context: EntityRendererProvider.Context) : EntityR
         partialTicks: Float,
         matrixStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         matrixStack.pushPose()
         matrixStack.translate(0.0, 0.5, 0.0)
@@ -38,14 +40,12 @@ class MelonBombEntityRenderer(context: EntityRendererProvider.Context) : EntityR
             matrixStack,
             buffer,
             packedLight,
-            false
+            false,
         )
         matrixStack.popPose()
         super.render(entity, entityYaw, partialTicks, matrixStack, buffer, packedLight)
     }
 
     @Suppress("DEPRECATION")
-    override fun getTextureLocation(entity: MelonBombEntity): ResourceLocation {
-        return TextureAtlas.LOCATION_BLOCKS
-    }
+    override fun getTextureLocation(entity: MelonBombEntity): ResourceLocation = TextureAtlas.LOCATION_BLOCKS
 }

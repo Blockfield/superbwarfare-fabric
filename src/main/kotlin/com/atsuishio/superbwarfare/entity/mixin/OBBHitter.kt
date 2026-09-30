@@ -17,8 +17,6 @@ interface OBBHitter {
 
     companion object {
         @JvmStatic
-        fun getInstance(entity: Entity): OBBHitter {
-            return entity as OBBHitter
-        }
+        fun getInstance(entity: Entity): OBBHitter = entity as OBBHitter
     }
 }

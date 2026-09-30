@@ -19,18 +19,19 @@ class VehicleAssemblingTableBlockEntityRenderer : BlockEntityRenderer<VehicleAss
         poseStack: PoseStack,
         buffer: MultiBufferSource,
         packedLight: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         val instance = blockEntity.modelInstance ?: return
 
         poseStack.pushPose()
 
-        val rot = when (blockEntity.blockState.getValue(VehicleAssemblingTableBlock.FACING)) {
-            Direction.EAST -> -90f
-            Direction.SOUTH -> 180f
-            Direction.WEST -> 90f
-            else -> 0f
-        }
+        val rot =
+            when (blockEntity.blockState.getValue(VehicleAssemblingTableBlock.FACING)) {
+                Direction.EAST -> -90f
+                Direction.SOUTH -> 180f
+                Direction.WEST -> 90f
+                else -> 0f
+            }
 
         poseStack.translate(0.5, 0.0, 0.5)
         poseStack.mulPose(Axis.YP.rotationDegrees(rot))
@@ -41,7 +42,7 @@ class VehicleAssemblingTableBlockEntityRenderer : BlockEntityRenderer<VehicleAss
             poseStack,
             buffer.getBuffer(RenderType.entityTranslucent(TEXTURE)),
             packedLight,
-            packedOverlay
+            packedOverlay,
         )
 
         if (blockEntity.level?.isNight == true) {
@@ -49,16 +50,17 @@ class VehicleAssemblingTableBlockEntityRenderer : BlockEntityRenderer<VehicleAss
                 poseStack,
                 buffer.getBuffer(RenderType.eyes(TEXTURE_E)),
                 packedLight,
-                packedOverlay
+                packedOverlay,
             )
         }
 
         poseStack.popPose()
     }
 
-    override fun shouldRender(blockEntity: VehicleAssemblingTableBlockEntity, cameraPos: Vec3): Boolean {
-        return blockEntity.blockState.getValue(VehicleAssemblingTableBlock.BLOCK_PART) == BlockPart.FLB
-    }
+    override fun shouldRender(
+        blockEntity: VehicleAssemblingTableBlockEntity,
+        cameraPos: Vec3,
+    ): Boolean = blockEntity.blockState.getValue(VehicleAssemblingTableBlock.BLOCK_PART) == BlockPart.FLB
 
     // getRenderBoundingBox есть только в NeoForge; ванильный способ не отсекать двухблочную модель
     // по краю экрана -- shouldRenderOffScreen (так же поступают маяк и структурный блок).

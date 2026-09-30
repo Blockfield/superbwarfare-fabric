@@ -114,12 +114,14 @@ object PlayerEventHandler {
                             SoundEvents.ARMOR_EQUIP_IRON.value(),
                             SoundSource.PLAYERS,
                             0.5f,
-                            1f
+                            1f,
                         )
                     }
                 } else {
                     var index0 = 0
-                    while (index0 < ceil(((armorLevel * MiscConfig.ARMOR_POINT_PER_LEVEL.get()) - armorPlate) / MiscConfig.ARMOR_POINT_PER_LEVEL.get())) {
+                    while (index0 <
+                        ceil(((armorLevel * MiscConfig.ARMOR_POINT_PER_LEVEL.get()) - armorPlate) / MiscConfig.ARMOR_POINT_PER_LEVEL.get())
+                    ) {
                         stack.finishUsingItem(player.level(), player)
                         index0++
                     }
@@ -136,7 +138,10 @@ object PlayerEventHandler {
      * @return output, cost, materialCost -- либо null, если пара предметов не подходит
      */
     @JvmStatic
-    fun onAnvilUpdate(left: ItemStack, right: ItemStack): Triple<ItemStack, Int, Int>? {
+    fun onAnvilUpdate(
+        left: ItemStack,
+        right: ItemStack,
+    ): Triple<ItemStack, Int, Int>? {
         if (left.item is GunItem && right.item == ModItems.SHORTCUT_PACK.get()) {
             val output = left.copy()
 
@@ -163,15 +168,24 @@ object PlayerEventHandler {
                         ModSounds.HIT.get(),
                         SoundSource.PLAYERS,
                         1f,
-                        1f
+                        1f,
                     )
                 }
 
                 val level = target.level()
                 if (target.shouldSendHitParticles() && level is ServerLevel) {
                     ParticleTool.sendParticle(
-                        level, ModParticleTypes.FIRE_STAR.get(), position.x, position.y, position.z,
-                        2, 0.0, 0.0, 0.0, 0.2, false
+                        level,
+                        ModParticleTypes.FIRE_STAR.get(),
+                        position.x,
+                        position.y,
+                        position.z,
+                        2,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.2,
+                        false,
                     )
                 }
             }

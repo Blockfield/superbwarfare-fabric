@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Inventory
 abstract class AbstractVehicleContainerScreen<T : AbstractVehicleContainerMenu>(
     menu: T,
     inventory: Inventory,
-    title: Component
+    title: Component,
 ) : AbstractContainerScreen<T>(menu, inventory, title) {
     init {
         this.imageWidth = 176
@@ -21,7 +21,7 @@ abstract class AbstractVehicleContainerScreen<T : AbstractVehicleContainerMenu>(
     override fun renderLabels(
         pGuiGraphics: GuiGraphics,
         pMouseX: Int,
-        pMouseY: Int
+        pMouseY: Int,
     ) {
         pGuiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false)
     }
@@ -30,7 +30,7 @@ abstract class AbstractVehicleContainerScreen<T : AbstractVehicleContainerMenu>(
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
         this.renderBackground(guiGraphics, mouseX, mouseY, partialTick)
         super.render(guiGraphics, mouseX, mouseY, partialTick)

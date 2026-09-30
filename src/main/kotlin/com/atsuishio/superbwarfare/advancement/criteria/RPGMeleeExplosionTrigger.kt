@@ -18,19 +18,22 @@ class RPGMeleeExplosionTrigger : SimpleCriterionTrigger<RPGMeleeExplosionTrigger
     override fun codec() = TriggerInstance.CODEC
 
     @JvmRecord
-    data class TriggerInstance(val playerVar: Optional<ContextAwarePredicate>) : SimpleInstance {
+    data class TriggerInstance(
+        val playerVar: Optional<ContextAwarePredicate>,
+    ) : SimpleInstance {
         override fun player() = this.playerVar
 
         companion object {
-            val CODEC: Codec<TriggerInstance> = RecordCodecBuilder.create { instance ->
-                instance.group(
-                    EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::playerVar)
-                ).apply(instance) { player -> TriggerInstance(player) }
-            }
+            val CODEC: Codec<TriggerInstance> =
+                RecordCodecBuilder.create { instance ->
+                    instance
+                        .group(
+                            EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::playerVar),
+                        ).apply(instance) { player -> TriggerInstance(player) }
+                }
 
             @JvmStatic
-            fun get(): Criterion<TriggerInstance> =
-                ModCriteriaTriggers.RPG_MELEE_EXPLOSION.get().createCriterion(TriggerInstance(Optional.empty()))
+            fun get(): Criterion<TriggerInstance> = ModCriteriaTriggers.RPG_MELEE_EXPLOSION.get().createCriterion(TriggerInstance(Optional.empty()))
         }
     }
 }

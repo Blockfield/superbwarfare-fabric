@@ -16,7 +16,11 @@ object RangeTool {
      * @param g            重力加速度
      */
     @JvmStatic
-    fun getRange(thetaDegrees: Double, v: Double, g: Double): Double {
+    fun getRange(
+        thetaDegrees: Double,
+        v: Double,
+        g: Double,
+    ): Double {
         val t = v * sin(thetaDegrees * Mth.DEG_TO_RAD) / g * 2
         return t * v * cos(thetaDegrees * Mth.DEG_TO_RAD)
     }
@@ -39,7 +43,7 @@ object RangeTool {
         targetPos: Vec3,
         targetVel: Vec3,
         muzzleVelocity: Double,
-        gravity: Double
+        gravity: Double,
     ): Vec3 {
         val d0 = targetPos.subtract(launchPos) // 位置差向量
         val dSqr = d0.lengthSqr() // |d0|²
@@ -98,11 +102,14 @@ object RangeTool {
             return Vec3(
                 horizontal.x * horizontalSpeed,
                 vy,
-                horizontal.z * horizontalSpeed
+                horizontal.z * horizontalSpeed,
             )
         }
     }
 
     // 初始时间估计（无重力无移动的飞行时间）
-    private fun estimateInitialTime(d0: Vec3, velocity: Double) = d0.length() / velocity
+    private fun estimateInitialTime(
+        d0: Vec3,
+        velocity: Double,
+    ) = d0.length() / velocity
 }

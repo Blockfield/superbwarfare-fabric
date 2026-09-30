@@ -35,8 +35,7 @@ import net.minecraft.world.phys.shapes.CollisionContext
 import net.minecraft.world.phys.shapes.VoxelShape
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-class BlueprintResearchTableBlock :
-    BaseEntityBlock(Properties.of().strength(2f).pushReaction(PushReaction.BLOCK)) {
+class BlueprintResearchTableBlock : BaseEntityBlock(Properties.of().strength(2f).pushReaction(PushReaction.BLOCK)) {
     companion object {
         @JvmField
         val PART: EnumProperty<BedPart> = BlockStateProperties.BED_PART
@@ -48,16 +47,19 @@ class BlueprintResearchTableBlock :
         @JvmField
         val ENABLED: BooleanProperty = BlockStateProperties.ENABLED
 
-        fun oppositeDirection(part: BedPart, direction: Direction): Direction =
-            if (part == BedPart.FOOT) direction else direction.opposite
+        fun oppositeDirection(
+            part: BedPart,
+            direction: Direction,
+        ): Direction = if (part == BedPart.FOOT) direction else direction.opposite
     }
 
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(PART, BedPart.FOOT)
                 .setValue(FACING, Direction.NORTH)
-                .setValue(ENABLED, true)
+                .setValue(ENABLED, true),
         )
     }
 
@@ -65,9 +67,9 @@ class BlueprintResearchTableBlock :
         state: BlockState,
         level: BlockGetter,
         pos: BlockPos,
-        context: CollisionContext
-    ): VoxelShape {
-        return if (state.getValue(PART) == BedPart.FOOT) {
+        context: CollisionContext,
+    ): VoxelShape =
+        if (state.getValue(PART) == BedPart.FOOT) {
             when (state.getValue(FACING)) {
                 Direction.SOUTH -> box(0.0, 0.0, 1.0, 16.0, 16.0, 16.0)
                 Direction.EAST -> box(1.0, 0.0, 0.0, 16.0, 16.0, 16.0)
@@ -82,11 +84,10 @@ class BlueprintResearchTableBlock :
                 else -> box(0.0, 0.0, 1.0, 16.0, 16.0, 16.0)
             }
         }
-    }
 
     override fun isPathfindable(
         state: BlockState,
-        pathComputationType: PathComputationType
+        pathComputationType: PathComputationType,
     ) = false
 
     override fun createBlockStateDefinition(pBuilder: StateDefinition.Builder<Block, BlockState>) {
@@ -98,7 +99,7 @@ class BlueprintResearchTableBlock :
         level: Level,
         pos: BlockPos,
         player: Player,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): InteractionResult {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS
@@ -112,22 +113,33 @@ class BlueprintResearchTableBlock :
         stack: ItemStack,
         context: Item.TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.blueprint_research_table_1").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.blueprint_research_table_1").withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.blueprint_research_table_2").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.blueprint_research_table_2").withStyle(ChatFormatting.GRAY),
         )
     }
 
-    private fun openContainer(level: Level, pos: BlockPos, state: BlockState, player: Player) {
+    private fun openContainer(
+        level: Level,
+        pos: BlockPos,
+        state: BlockState,
+        player: Player,
+    ) {
         val entity = level.getBlockEntity(this.getRootPos(pos, state)) as? BlueprintResearchTableBlockEntity ?: return
         player.openMenu(entity)
     }
 
-    override fun onPlace(pState: BlockState, pLevel: Level, pPos: BlockPos, pOldState: BlockState, pIsMoving: Boolean) {
+    override fun onPlace(
+        pState: BlockState,
+        pLevel: Level,
+        pPos: BlockPos,
+        pOldState: BlockState,
+        pIsMoving: Boolean,
+    ) {
         if (!pOldState.`is`(pState.block)) {
             this.checkPoweredState(pLevel, pPos, pState, 2)
         }
@@ -135,21 +147,19 @@ class BlueprintResearchTableBlock :
 
     override fun newBlockEntity(
         pPos: BlockPos,
-        pState: BlockState
-    ): BlockEntity {
-        return BlueprintResearchTableBlockEntity(pPos, pState)
-    }
+        pState: BlockState,
+    ): BlockEntity = BlueprintResearchTableBlockEntity(pPos, pState)
 
     override fun <T : BlockEntity?> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T>
+        pBlockEntityType: BlockEntityType<T>,
     ): BlockEntityTicker<T>? {
         if (!pLevel.isClientSide) {
             return createTickerHelper(
                 pBlockEntityType,
                 ModBlockEntities.BLUEPRINT_RESEARCH_TABLE.get(),
-                BlueprintResearchTableBlockEntity::serverTick
+                BlueprintResearchTableBlockEntity::serverTick,
             )
         }
         return null
@@ -160,7 +170,7 @@ class BlueprintResearchTableBlock :
         pLevel: Level,
         pPos: BlockPos,
         pNewState: BlockState,
-        pMovedByPiston: Boolean
+        pMovedByPiston: Boolean,
     ) {
         if (!pState.`is`(pNewState.block)) {
             val entity = pLevel.getBlockEntity(pPos)
@@ -177,22 +187,31 @@ class BlueprintResearchTableBlock :
     /**
      * Code based on TaC-Z
      */
-    fun getRootPos(pos: BlockPos, state: BlockState): BlockPos {
-        return if (state.getValue(PART) == BedPart.FOOT) pos else pos.relative(
-            oppositeDirection(
-                BedPart.HEAD,
-                state.getValue(FACING)
+    fun getRootPos(
+        pos: BlockPos,
+        state: BlockState,
+    ): BlockPos =
+        if (state.getValue(PART) == BedPart.FOOT) {
+            pos
+        } else {
+            pos.relative(
+                oppositeDirection(
+                    BedPart.HEAD,
+                    state.getValue(FACING),
+                ),
             )
-        )
-    }
+        }
 
     override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
         val direction = context.horizontalDirection.clockWise
         val clickedPos = context.clickedPos
         val relative = clickedPos.relative(direction)
         val level = context.level
-        return if (level.getBlockState(relative).canBeReplaced(context) && level.worldBorder.isWithinBounds(relative))
-            this.defaultBlockState().setValue(FACING, direction) else null
+        return if (level.getBlockState(relative).canBeReplaced(context) && level.worldBorder.isWithinBounds(relative)) {
+            this.defaultBlockState().setValue(FACING, direction)
+        } else {
+            null
+        }
     }
 
     override fun setPlacedBy(
@@ -200,7 +219,7 @@ class BlueprintResearchTableBlock :
         pos: BlockPos,
         state: BlockState,
         placer: LivingEntity?,
-        stack: ItemStack
+        stack: ItemStack,
     ) {
         super.setPlacedBy(worldIn, pos, state, placer, stack)
         if (!worldIn.isClientSide) {
@@ -208,14 +227,19 @@ class BlueprintResearchTableBlock :
             worldIn.setBlock(
                 relative,
                 state.setValue(PART, BedPart.HEAD),
-                3
+                3,
             )
             worldIn.blockUpdated(pos, Blocks.AIR)
             state.updateNeighbourShapes(worldIn, pos, 3)
         }
     }
 
-    override fun playerWillDestroy(level: Level, pos: BlockPos, blockState: BlockState, player: Player): BlockState {
+    override fun playerWillDestroy(
+        level: Level,
+        pos: BlockPos,
+        blockState: BlockState,
+        player: Player,
+    ): BlockState {
         if (!level.isClientSide && player.isCreative) {
             val bedPart = blockState.getValue(PART)
             if (bedPart == BedPart.FOOT) {
@@ -237,14 +261,13 @@ class BlueprintResearchTableBlock :
         facingState: BlockState,
         level: LevelAccessor,
         pos: BlockPos,
-        neighborPos: BlockPos
-    ): BlockState {
-        return if (direction != oppositeDirection(state.getValue(PART), state.getValue(FACING))) {
+        neighborPos: BlockPos,
+    ): BlockState =
+        if (direction != oppositeDirection(state.getValue(PART), state.getValue(FACING))) {
             super.updateShape(state, direction, facingState, level, pos, neighborPos)
         } else {
             if (facingState.`is`(this) && facingState.getValue(PART) != state.getValue(PART)) state else Blocks.AIR.defaultBlockState()
         }
-    }
 
     override fun neighborChanged(
         state: BlockState,
@@ -252,7 +275,7 @@ class BlueprintResearchTableBlock :
         pos: BlockPos,
         block: Block,
         fromPos: BlockPos,
-        isMoving: Boolean
+        isMoving: Boolean,
     ) {
         super.neighborChanged(state, level, pos, block, fromPos, isMoving)
         val part = state.getValue(PART)
@@ -274,7 +297,12 @@ class BlueprintResearchTableBlock :
         }
     }
 
-    private fun checkPoweredState(level: Level, pos: BlockPos, state: BlockState, flags: Int) {
+    private fun checkPoweredState(
+        level: Level,
+        pos: BlockPos,
+        state: BlockState,
+        flags: Int,
+    ) {
         val flag = !level.hasNeighborSignal(pos)
         if (flag != state.getValue(ENABLED)) {
             level.setBlock(pos, state.setValue(ENABLED, flag), flags)

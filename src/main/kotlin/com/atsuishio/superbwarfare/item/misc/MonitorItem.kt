@@ -2,11 +2,15 @@ package com.atsuishio.superbwarfare.item.misc
 
 import com.atsuishio.superbwarfare.control.DroneControlAccess
 import com.atsuishio.superbwarfare.event.ClientEventHandler
+import com.atsuishio.superbwarfare.item.StackAttributeItem
 import com.atsuishio.superbwarfare.network.message.receive.ResetCameraTypeMessage
 import com.atsuishio.superbwarfare.tools.EntityFindUtil
 import com.atsuishio.superbwarfare.tools.FormatTool.format1D
 import com.atsuishio.superbwarfare.tools.NBTTool
 import com.atsuishio.superbwarfare.tools.sendPacket
+import io.github.fabricators_of_create.porting_lib.item.extensions.ReequipAnimationItem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.ChatFormatting
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
@@ -26,13 +30,12 @@ import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import javax.annotation.ParametersAreNonnullByDefault
-import com.atsuishio.superbwarfare.item.StackAttributeItem
-import io.github.fabricators_of_create.porting_lib.item.extensions.ReequipAnimationItem
 
-open class MonitorItem : Item(Properties().stacksTo(1)), StackAttributeItem, ReequipAnimationItem {
+open class MonitorItem :
+    Item(Properties().stacksTo(1)),
+    StackAttributeItem,
+    ReequipAnimationItem {
     @Environment(EnvType.CLIENT)
     private fun beginCamera() {
         ClientEventHandler.lastCameraType = Minecraft.getInstance().options.cameraType
@@ -46,7 +49,11 @@ open class MonitorItem : Item(Properties().stacksTo(1)), StackAttributeItem, Ree
     }
 
     @ParametersAreNonnullByDefault
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?> {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack?> {
         // Control packets use the main hand; an off-hand use must not toggle the other stack.
         if (hand != InteractionHand.MAIN_HAND) return super.use(level, player, hand)
         val stack = player.mainHandItem
@@ -69,8 +76,9 @@ open class MonitorItem : Item(Properties().stacksTo(1)), StackAttributeItem, Ree
             }
             tag.putBoolean(USING, true)
             NBTTool.saveTag(stack, tag)
-            if (level.isClientSide) beginCamera()
-            else {
+            if (level.isClientSide) {
+                beginCamera()
+            } else {
                 // Clear any leftover session before minting the new one for this activation.
                 DroneControlAccess.resetInput(drone)
                 drone.beginControlSession()
@@ -86,14 +94,14 @@ open class MonitorItem : Item(Properties().stacksTo(1)), StackAttributeItem, Ree
                 ItemAttributeModifiers.Entry(
                     Attributes.ATTACK_DAMAGE,
                     AttributeModifier(BASE_ATTACK_DAMAGE_ID, 2.0, AttributeModifier.Operation.ADD_VALUE),
-                    EquipmentSlotGroup.MAINHAND
+                    EquipmentSlotGroup.MAINHAND,
                 ),
                 ItemAttributeModifiers.Entry(
                     Attributes.ATTACK_SPEED,
                     AttributeModifier(BASE_ATTACK_SPEED_ID, -2.4, AttributeModifier.Operation.ADD_VALUE),
-                    EquipmentSlotGroup.MAINHAND
-                )
-            )
+                    EquipmentSlotGroup.MAINHAND,
+                ),
+            ),
         )
 
         return ItemAttributeModifiers(list, true)
@@ -105,7 +113,7 @@ open class MonitorItem : Item(Properties().stacksTo(1)), StackAttributeItem, Ree
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component?>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         val tag = NBTTool.getTag(stack)
         if (!tag.contains(LINKED_DRONE) || tag.getString(LINKED_DRONE) == "none") return
@@ -118,30 +126,35 @@ open class MonitorItem : Item(Properties().stacksTo(1)), StackAttributeItem, Ree
         val droneVec = Vec3(tag.getDouble("PosX"), tag.getDouble("PosY"), tag.getDouble("PosZ"))
 
         tooltipComponents.add(
-            Component.translatable(
-                "des.superbwarfare.monitor",
-                format1D(player.position().distanceTo(droneVec), "m")
-            ).withStyle(ChatFormatting.GRAY)
+            Component
+                .translatable(
+                    "des.superbwarfare.monitor",
+                    format1D(player.position().distanceTo(droneVec), "m"),
+                ).withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(
             Component.literal(
                 "X: " + format1D(droneVec.x) +
-                        " Y: " + format1D(droneVec.y) +
-                        " Z: " + format1D(droneVec.z)
-            )
+                    " Y: " + format1D(droneVec.y) +
+                    " Z: " + format1D(droneVec.z),
+            ),
         )
     }
 
     override fun shouldCauseReequipAnimation(
         oldStack: ItemStack,
         newStack: ItemStack,
-        slotChanged: Boolean
-    ): Boolean {
-        return false
-    }
+        slotChanged: Boolean,
+    ): Boolean = false
 
     @ParametersAreNonnullByDefault
-    override fun inventoryTick(stack: ItemStack, world: Level, entity: Entity, slot: Int, selected: Boolean) {
+    override fun inventoryTick(
+        stack: ItemStack,
+        world: Level,
+        entity: Entity,
+        slot: Int,
+        selected: Boolean,
+    ) {
         super.inventoryTick(stack, world, entity, slot, selected)
         val tag = NBTTool.getTag(stack)
         // Dormant monitor copies do not perform lookups or reset a different active monitor.
@@ -165,14 +178,20 @@ open class MonitorItem : Item(Properties().stacksTo(1)), StackAttributeItem, Ree
         const val USING: String = "Using"
 
         @JvmStatic
-        fun link(tag: CompoundTag, id: String) {
+        fun link(
+            tag: CompoundTag,
+            id: String,
+        ) {
             tag.putBoolean(USING, false)
             tag.putBoolean(LINKED, true)
             tag.putString(LINKED_DRONE, id)
         }
 
         @JvmStatic
-        fun disLink(tag: CompoundTag, player: Player?) {
+        fun disLink(
+            tag: CompoundTag,
+            player: Player?,
+        ) {
             val wasUsing = tag.getBoolean(USING)
             val drone = player?.let { EntityFindUtil.findDrone(it.level(), tag.getString(LINKED_DRONE)) }
             tag.putBoolean(USING, false)
@@ -186,7 +205,10 @@ open class MonitorItem : Item(Properties().stacksTo(1)), StackAttributeItem, Ree
         }
 
         @JvmStatic
-        fun getDronePos(stack: ItemStack, vec3: Vec3) {
+        fun getDronePos(
+            stack: ItemStack,
+            vec3: Vec3,
+        ) {
             val tag = NBTTool.getTag(stack)
             tag.putDouble("PosX", vec3.x)
             tag.putDouble("PosY", vec3.y)

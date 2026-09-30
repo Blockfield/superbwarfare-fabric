@@ -10,14 +10,12 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.util.Mth
 
-class Yx100Renderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
-    override fun hideForTurretControllerWhileZooming(): Boolean {
-        return true
-    }
+class Yx100Renderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
+    override fun hideForTurretControllerWhileZooming(): Boolean = true
 
-    override fun renderScale(): Float {
-        return 1.25f
-    }
+    override fun renderScale(): Float = 1.25f
 
     override fun renderCustomPart(
         entity: VehicleEntity,
@@ -26,7 +24,7 @@ class Yx100Renderer(manager: EntityRendererProvider.Context) : BasicVehicleRende
         entityYaw: Float,
         partialTicks: Float,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         super.renderCustomPart(entity, instance, poseStack, entityYaw, partialTicks, buffer, packedLight)
 
@@ -34,7 +32,7 @@ class Yx100Renderer(manager: EntityRendererProvider.Context) : BasicVehicleRende
             poseStack,
             buffer.getBuffer(ModRenderTypes.LASER.apply(MUZZLE_GLOW)),
             packedLight,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
     }
 
@@ -102,9 +100,7 @@ class Yx100Renderer(manager: EntityRendererProvider.Context) : BasicVehicleRende
         return Mth.lerp((t - 79.25f) / (80f - 79.25f), -4.12f, 0f)
     }
 
-    override fun getTrackDistance(): Float {
-        return 1.96f
-    }
+    override fun getTrackDistance(): Float = 1.96f
 
     companion object {
         val MUZZLE_GLOW = Mod.loc("textures/bedrock/vehicle/yx_100_glow.png")

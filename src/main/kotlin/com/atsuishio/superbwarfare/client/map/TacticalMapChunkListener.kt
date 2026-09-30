@@ -8,20 +8,18 @@ import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.chunk.LevelChunk
 
 object TacticalMapChunkListener {
-
     fun init() {
         ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> onChunkLoad(chunk) }
         LevelEvent.Load.EVENT.register { event -> onLevelLoad(event.level) }
         LevelEvent.Unload.EVENT.register { event -> onLevelUnload(event.level) }
     }
 
-    fun isEnabled(): Boolean {
-        return try {
+    fun isEnabled(): Boolean =
+        try {
             MapConfig.ENABLE_TACTICAL_MAP.get()
         } catch (_: Exception) {
             false
         }
-    }
 
     private fun onChunkLoad(chunk: LevelChunk) {
         if (!isEnabled()) return

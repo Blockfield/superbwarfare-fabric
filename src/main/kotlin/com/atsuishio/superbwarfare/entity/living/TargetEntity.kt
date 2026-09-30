@@ -11,6 +11,7 @@ import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.resource.model.EntityModelReloadListener
 import com.atsuishio.superbwarfare.tools.FormatTool.format1D
 import com.atsuishio.superbwarfare.tools.SoundTool
+import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDeathEvent
 import net.minecraft.commands.arguments.EntityAnchorArgument
 import net.minecraft.core.BlockPos
 import net.minecraft.core.NonNullList
@@ -30,9 +31,11 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingDeathEvent
 
-open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEntity(type, level) {
+open class TargetEntity(
+    type: EntityType<TargetEntity>,
+    level: Level,
+) : LivingEntity(type, level) {
     open val animationInstance: TargetAnimationInstance? =
         if (this.level().isClientSide) TargetAnimationInstance(this) else null
     open val modelInstance = EntityModelReloadListener.getModel(MODEL)?.createInstance()
@@ -44,15 +47,20 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
         builder.define(DOWN_TIME, 0)
     }
 
-    override fun getArmorSlots(): Iterable<ItemStack> {
-        return NonNullList.withSize(1, ItemStack.EMPTY)
-    }
+    override fun getArmorSlots(): Iterable<ItemStack> = NonNullList.withSize(1, ItemStack.EMPTY)
 
     override fun getItemBySlot(pSlot: EquipmentSlot): ItemStack = ItemStack.EMPTY
 
-    override fun setItemSlot(pSlot: EquipmentSlot, pStack: ItemStack) {}
+    override fun setItemSlot(
+        pSlot: EquipmentSlot,
+        pStack: ItemStack,
+    ) {}
 
-    override fun causeFallDamage(l: Float, d: Float, source: DamageSource) = false
+    override fun causeFallDamage(
+        l: Float,
+        d: Float,
+        source: DamageSource,
+    ) = false
 
     override fun shouldRenderAtSqrDistance(pDistance: Double) = true
 
@@ -60,7 +68,10 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
         this.noCulling = true
     }
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         // 不处理/kill伤害
         var amount = amount
         if (source.`is`(DamageTypes.GENERIC_KILL)) {
@@ -80,7 +91,7 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
                 ModSounds.HIT.get(),
                 SoundSource.BLOCKS,
                 1f,
-                1f
+                1f,
             )
         } else {
             this.level().playLocalSound(
@@ -91,7 +102,7 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
                 SoundSource.BLOCKS,
                 1f,
                 1f,
-                false
+                false,
             )
         }
         return super.hurt(source, amount)
@@ -99,7 +110,10 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
 
     override fun isPickable() = downTime == 0
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (!player.mainHandItem.isEmpty && !player.mainHandItem.`is`(ModTags.Items.TOOLS_CROWBAR)) {
             return InteractionResult.PASS
         }
@@ -157,9 +171,7 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
         }
     }
 
-    override fun getPickResult(): ItemStack? {
-        return ItemStack(ModItems.TARGET_DEPLOYER.get())
-    }
+    override fun getPickResult(): ItemStack? = ItemStack(ModItems.TARGET_DEPLOYER.get())
 
     companion object {
         fun init() {
@@ -172,10 +184,11 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
 
         val MODEL = loc("models/bedrock/entity/target.geo.json")
 
-        private val DAMAGE_MODIFIER = createDefaultModifier()
-            .immuneTo(DamageTypes.LIGHTNING_BOLT)
-            .immuneTo(DamageTypes.FALLING_ANVIL)
-            .immuneTo(DamageTypes.MAGIC)
+        private val DAMAGE_MODIFIER =
+            createDefaultModifier()
+                .immuneTo(DamageTypes.LIGHTNING_BOLT)
+                .immuneTo(DamageTypes.FALLING_ANVIL)
+                .immuneTo(DamageTypes.MAGIC)
 
         private fun onTargetDown(event: LivingDeathEvent) {
             val entity = event.entity
@@ -191,8 +204,9 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
                     sourceEntity.displayClientMessage(
                         Component.translatable(
                             "tips.superbwarfare.target.down",
-                            format1D((entity.position()).distanceTo((sourceEntity.position())), "m")
-                        ), true
+                            format1D((entity.position()).distanceTo((sourceEntity.position())), "m"),
+                        ),
+                        true,
                     )
                     SoundTool.playLocalSound(sourceEntity, ModSounds.TARGET_DOWN.get(), 1f, 1f)
                     entity.downTime = 40
@@ -200,8 +214,9 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
             }
         }
 
-        fun createAttributes(): AttributeSupplier.Builder {
-            return Mob.createMobAttributes()
+        fun createAttributes(): AttributeSupplier.Builder =
+            Mob
+                .createMobAttributes()
                 .add(Attributes.MOVEMENT_SPEED, 0.0)
                 .add(Attributes.MAX_HEALTH, 40.0)
                 .add(Attributes.ARMOR, 0.0)
@@ -209,6 +224,5 @@ open class TargetEntity(type: EntityType<TargetEntity>, level: Level) : LivingEn
                 .add(Attributes.FOLLOW_RANGE, 16.0)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 10.0)
                 .add(Attributes.FLYING_SPEED, 0.0)
-        }
     }
 }

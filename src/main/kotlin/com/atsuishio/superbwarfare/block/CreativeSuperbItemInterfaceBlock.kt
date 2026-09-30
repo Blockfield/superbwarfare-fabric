@@ -21,40 +21,43 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
 
 class CreativeSuperbItemInterfaceBlock : SuperbItemInterfaceBlock() {
-
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.creative_superb_item_interface").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.creative_superb_item_interface").withStyle(ChatFormatting.GRAY),
         )
     }
 
-    override fun newBlockEntity(pPos: BlockPos, pState: BlockState): BlockEntity {
-        return CreativeSuperbItemInterfaceBlockEntity(pPos, pState)
-    }
+    override fun newBlockEntity(
+        pPos: BlockPos,
+        pState: BlockState,
+    ): BlockEntity = CreativeSuperbItemInterfaceBlockEntity(pPos, pState)
 
     override fun <T : BlockEntity> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T>
-    ): BlockEntityTicker<T>? {
-        return if (pLevel.isClientSide) null else createTickerHelper(
-            pBlockEntityType,
-            ModBlockEntities.CREATIVE_SUPERB_ITEM_INTERFACE.get(),
-            CreativeSuperbItemInterfaceBlockEntity::serverTick
-        )
-    }
+        pBlockEntityType: BlockEntityType<T>,
+    ): BlockEntityTicker<T>? =
+        if (pLevel.isClientSide) {
+            null
+        } else {
+            createTickerHelper(
+                pBlockEntityType,
+                ModBlockEntities.CREATIVE_SUPERB_ITEM_INTERFACE.get(),
+                CreativeSuperbItemInterfaceBlockEntity::serverTick,
+            )
+        }
 
     override fun useWithoutItem(
         state: BlockState,
         level: Level,
         pos: BlockPos,
         player: Player,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): InteractionResult {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS
@@ -73,7 +76,7 @@ class CreativeSuperbItemInterfaceBlock : SuperbItemInterfaceBlock() {
         pLevel: Level,
         pPos: BlockPos,
         pNewState: BlockState,
-        pIsMoving: Boolean
+        pIsMoving: Boolean,
     ) {
         if (!pState.`is`(pNewState.block)) {
             val blockEntity = pLevel.getBlockEntity(pPos)

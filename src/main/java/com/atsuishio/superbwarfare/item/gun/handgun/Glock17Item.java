@@ -4,8 +4,10 @@ import com.atsuishio.superbwarfare.client.GunRendererBuilder;
 import com.atsuishio.superbwarfare.client.model.item.Glock17ItemModel;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
+
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 import java.util.Map;

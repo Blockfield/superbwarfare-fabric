@@ -21,7 +21,7 @@ object OBBRenderer {
         green: Float,
         blue: Float,
         alpha: Float,
-        pPartialTicks: Float
+        pPartialTicks: Float,
     ) {
         val position = entity.position()
         for (obb in obbList) {
@@ -30,27 +30,51 @@ object OBBRenderer {
             val rotation = obb.rotation
             if (obb.part == OBB.Part.INTERACTIVE) {
                 renderOBB(
-                    poseStack, buffer,
-                    center.x() - position.x(), center.y() - position.y(), center.z() - position.z(),
+                    poseStack,
+                    buffer,
+                    center.x() - position.x(),
+                    center.y() - position.y(),
+                    center.z() - position.z(),
                     rotation,
-                    halfExtents.x(), halfExtents.y(), halfExtents.z(),
-                    1f, 0.8f, 0f, 1f
+                    halfExtents.x(),
+                    halfExtents.y(),
+                    halfExtents.z(),
+                    1f,
+                    0.8f,
+                    0f,
+                    1f,
                 )
             } else if (obb.part == OBB.Part.COLLISION) {
                 renderOBB(
-                    poseStack, buffer,
-                    center.x() - position.x(), center.y() - position.y(), center.z() - position.z(),
+                    poseStack,
+                    buffer,
+                    center.x() - position.x(),
+                    center.y() - position.y(),
+                    center.z() - position.z(),
                     rotation,
-                    halfExtents.x(), halfExtents.y(), halfExtents.z(),
-                    1f, 0f, 0f, 1f
+                    halfExtents.x(),
+                    halfExtents.y(),
+                    halfExtents.z(),
+                    1f,
+                    0f,
+                    0f,
+                    1f,
                 )
             } else {
                 renderOBB(
-                    poseStack, buffer,
-                    center.x() - position.x(), center.y() - position.y(), center.z() - position.z(),
+                    poseStack,
+                    buffer,
+                    center.x() - position.x(),
+                    center.y() - position.y(),
+                    center.z() - position.z(),
                     rotation,
-                    halfExtents.x(), halfExtents.y(), halfExtents.z(),
-                    red, green, blue, alpha
+                    halfExtents.x(),
+                    halfExtents.y(),
+                    halfExtents.z(),
+                    red,
+                    green,
+                    blue,
+                    alpha,
                 )
             }
         }
@@ -69,7 +93,7 @@ object OBBRenderer {
         red: Float,
         green: Float,
         blue: Float,
-        alpha: Float
+        alpha: Float,
     ) {
         poseStack.pushPose()
         poseStack.translate(centerX, centerY, centerZ)
@@ -86,7 +110,7 @@ object OBBRenderer {
             red,
             green,
             blue,
-            alpha
+            alpha,
         )
         poseStack.popPose()
     }

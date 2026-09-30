@@ -33,31 +33,35 @@ class CollisionLevel {
 
     @Serializable(LimitSerializer::class)
     @JvmRecord
-    data class Limit(val power: Float, val motion: Float, val equals: Boolean) {
-        override fun toString(): String {
-            return "[$power, $motion, $equals]"
-        }
+    data class Limit(
+        val power: Float,
+        val motion: Float,
+        val equals: Boolean,
+    ) {
+        override fun toString(): String = "[$power, $motion, $equals]"
     }
 
     object LimitSerializer : KSerializer<Limit> {
-        override val descriptor = buildClassSerialDescriptor("CollisionLevelLimit") {
-            element<Float>("power")
-            element<Float>("motion")
-            element<Boolean>("equals")
-        }
+        override val descriptor =
+            buildClassSerialDescriptor("CollisionLevelLimit") {
+                element<Float>("power")
+                element<Float>("motion")
+                element<Boolean>("equals")
+            }
 
         override fun serialize(
             encoder: Encoder,
-            value: Limit
+            value: Limit,
         ) {
             require(encoder is JsonEncoder) { "Only JsonEncoder is supported" }
-            val jsonArray = JsonArray(
-                listOf(
-                    JsonPrimitive(value.power),
-                    JsonPrimitive(value.motion),
-                    JsonPrimitive(value.equals)
+            val jsonArray =
+                JsonArray(
+                    listOf(
+                        JsonPrimitive(value.power),
+                        JsonPrimitive(value.motion),
+                        JsonPrimitive(value.equals),
+                    ),
                 )
-            )
             encoder.encodeJsonElement(jsonArray)
         }
 
@@ -87,7 +91,10 @@ class CollisionLevel {
 
     class LimitAdapter : TypeAdapter<Limit>() {
         @Throws(IOException::class)
-        override fun write(out: JsonWriter, value: Limit?) {
+        override fun write(
+            out: JsonWriter,
+            value: Limit?,
+        ) {
             if (value == null) {
                 out.nullValue()
                 return

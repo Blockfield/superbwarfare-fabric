@@ -13,14 +13,15 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.util.Mth
 import net.minecraft.world.item.DyeColor
 
-class TinySpeedboatRenderer(manager: EntityRendererProvider.Context) :
-    GeoVehicleRenderer<TinySpeedboatEntity>(manager) {
+class TinySpeedboatRenderer(
+    manager: EntityRendererProvider.Context,
+) : GeoVehicleRenderer<TinySpeedboatEntity>(manager) {
     override fun transformCustomModelPart(
         entity: TinySpeedboatEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 
@@ -40,7 +41,7 @@ class TinySpeedboatRenderer(manager: EntityRendererProvider.Context) :
         entityYaw: Float,
         partialTicks: Float,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         super.renderCustomPart(entity, instance, poseStack, entityYaw, partialTicks, buffer, packedLight)
         val emissive = this.getEmissiveTextureLocation(poseStack, entity) ?: return
@@ -57,11 +58,12 @@ class TinySpeedboatRenderer(manager: EntityRendererProvider.Context) :
             packedLight = LightTexture.FULL_BRIGHT
         } else {
             val intColor = DyeColor.byId(id).textureDiffuseColor
-            color = floatArrayOf(
-                ((intColor shr 16) and 0xFF).toFloat(),
-                ((intColor shr 8) and 0xFF).toFloat(),
-                (intColor and 0xFF).toFloat()
-            )
+            color =
+                floatArrayOf(
+                    ((intColor shr 16) and 0xFF).toFloat(),
+                    ((intColor shr 8) and 0xFF).toFloat(),
+                    (intColor and 0xFF).toFloat(),
+                )
         }
 
         if (ClientEventHandler.activeThermalImaging) {
@@ -79,7 +81,7 @@ class TinySpeedboatRenderer(manager: EntityRendererProvider.Context) :
             color[0] / 255.0f,
             color[1] / 255.0f,
             color[2] / 255.0f,
-            1f
+            1f,
         )
     }
 
@@ -107,27 +109,32 @@ class TinySpeedboatRenderer(manager: EntityRendererProvider.Context) :
      * HSV→RGB转换：仅通过调整色相(H)来改变颜色，
      * S和V固定时，输出RGB至少有一个通道为1.0，符合RGB灯效特征
      */
-    fun hsvToRgb(h: Float, s: Float, v: Float): FloatArray {
+    fun hsvToRgb(
+        h: Float,
+        s: Float,
+        v: Float,
+    ): FloatArray {
         if (s == 0f) {
             return floatArrayOf(v, v, v, 1.0f)
         }
 
         val hue = h * 6f
-        val sector = hue.toInt()       // 色相扇区 0-5
-        val fraction = hue - sector     // 扇区内插值 0-1
+        val sector = hue.toInt() // 色相扇区 0-5
+        val fraction = hue - sector // 扇区内插值 0-1
         val p = v * (1f - s)
         val q = v * (1f - s * fraction)
         val t = v * (1f - s * (1f - fraction))
 
-        val (r, g, b) = when (sector % 6) {
-            0 -> Triple(v, t, p)
-            1 -> Triple(q, v, p)
-            2 -> Triple(p, v, t)
-            3 -> Triple(p, q, v)
-            4 -> Triple(t, p, v)
-            5 -> Triple(v, p, q)
-            else -> Triple(v, v, v)  // unreachable
-        }
+        val (r, g, b) =
+            when (sector % 6) {
+                0 -> Triple(v, t, p)
+                1 -> Triple(q, v, p)
+                2 -> Triple(p, v, t)
+                3 -> Triple(p, q, v)
+                4 -> Triple(t, p, v)
+                5 -> Triple(v, p, q)
+                else -> Triple(v, v, v) // unreachable
+            }
 
         return floatArrayOf(r, g, b, 1.0f)
     }

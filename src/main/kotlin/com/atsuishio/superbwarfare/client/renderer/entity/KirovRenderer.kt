@@ -6,17 +6,17 @@ import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class KirovRenderer(manager: EntityRendererProvider.Context) : GeoVehicleRenderer<KirovEntity>(manager) {
-    override fun hideForTurretControllerWhileZooming(): Boolean {
-        return true
-    }
+class KirovRenderer(
+    manager: EntityRendererProvider.Context,
+) : GeoVehicleRenderer<KirovEntity>(manager) {
+    override fun hideForTurretControllerWhileZooming(): Boolean = true
 
     override fun transformCustomModelPart(
         entity: KirovEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 

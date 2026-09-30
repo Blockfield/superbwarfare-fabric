@@ -19,7 +19,14 @@ import net.minecraft.world.phys.Vec3
 
 fun main() {
     var count = 0
-    fun expect(value: Boolean, label: String) { check(value) { label }; count++ }
+
+    fun expect(
+        value: Boolean,
+        label: String,
+    ) {
+        check(value) { label }
+        count++
+    }
     val server = TestServer()
     val world = ServerLevel(server)
     val otherWorld = ServerLevel(server)
@@ -31,12 +38,20 @@ fun main() {
     world.drones["drone"] = drone
     drone.entityData.set(DroneEntity.LINKED, true)
     drone.entityData.set(DroneEntity.CONTROLLER, "owner")
-    fun monitor(id: String = "drone") = ItemStack(ModItems.MONITOR.get()).also {
-        it.data.putBoolean(MonitorItem.LINKED, true)
-        it.data.putBoolean(MonitorItem.USING, true)
-        it.data.putString(MonitorItem.LINKED_DRONE, id)
+
+    fun monitor(id: String = "drone") =
+        ItemStack(ModItems.MONITOR.get()).also {
+            it.data.putBoolean(MonitorItem.LINKED, true)
+            it.data.putBoolean(MonitorItem.USING, true)
+            it.data.putString(MonitorItem.LINKED_DRONE, id)
+        }
+
+    fun armed() {
+        drone.processInput(511)
+        drone.mouseInput(9.0, -4.0)
+        drone.fire = true
     }
-    fun armed() { drone.processInput(511); drone.mouseInput(9.0, -4.0); drone.fire = true }
+
     fun cleared() = drone.keys == 0.toShort() && drone.mouseX == 0.0 && drone.mouseY == 0.0 && !drone.fire
     player.mainHandItem = monitor()
     expect(DroneControlAccess.resolve(player) === drone, "resolve valid owner")
@@ -116,26 +131,45 @@ fun main() {
 
     // Run the actual production callback bodies with a minimal event-bus test double.
     DroneControlEvents.onInitialize()
-    fun tick() { ServerTickEvents.START_WORLD_TICK.listeners.forEach { it(world) } }
-    fun load() { ServerEntityEvents.ENTITY_LOAD.listeners.forEach { it(drone, world) } }
-    fun unload() { ServerEntityEvents.ENTITY_UNLOAD.listeners.forEach { it(drone, world) } }
+
+    fun tick() {
+        ServerTickEvents.START_WORLD_TICK.listeners.forEach { it(world) }
+    }
+
+    fun load() {
+        ServerEntityEvents.ENTITY_LOAD.listeners.forEach { it(drone, world) }
+    }
+
+    fun unload() {
+        ServerEntityEvents.ENTITY_UNLOAD.listeners.forEach { it(drone, world) }
+    }
     player.mainHandItem = monitor()
-    armed(); load()
+    armed()
+    load()
     expect(cleared(), "load resets persisted input")
-    armed(); tick()
+    armed()
+    tick()
     expect(!cleared(), "loaded active drone retains control")
-    player.isAlive = false; tick()
+    player.isAlive = false
+    tick()
     expect(cleared(), "tick lifecycle clears dead owner")
-    player.isAlive = true; player.mainHandItem = monitor(); armed()
+    player.isAlive = true
+    player.mainHandItem = monitor()
+    armed()
     ServerPlayConnectionEvents.DISCONNECT.listeners.forEach { it(TestHandler(player), server) }
     expect(cleared(), "disconnect callback resets inputs")
     expect(!player.mainHandItem.data.getBoolean(MonitorItem.USING), "disconnect does not auto-resume monitor")
-    player.mainHandItem = monitor(); armed(); unload()
+    player.mainHandItem = monitor()
+    armed()
+    unload()
     expect(cleared(), "unload resets inputs")
     expect(!player.mainHandItem.data.getBoolean(MonitorItem.USING), "unload stops view")
-    armed(); player.isAlive = false; tick()
+    armed()
+    player.isAlive = false
+    tick()
     expect(!cleared(), "unloaded entity is not retained by lifecycle")
-    load(); armed()
+    load()
+    armed()
     ServerLifecycleEvents.SERVER_STOPPED.listeners.forEach { it(server) }
     tick()
     expect(!cleared(), "stopped server no longer retained")

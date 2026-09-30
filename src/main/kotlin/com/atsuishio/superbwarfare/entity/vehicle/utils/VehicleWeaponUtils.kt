@@ -23,7 +23,7 @@ import net.minecraft.world.phys.Vec3
 object VehicleWeaponUtils {
     /**
      * 根据操控者调整载具炮塔角度
-     * 
+     *
      * @param vehicle 载具
      */
     @JvmStatic
@@ -44,11 +44,14 @@ object VehicleWeaponUtils {
 
     /**
      * 根据方向向量，使炮塔自动瞄准
-     * 
+     *
      * @param shootVec 需要让炮塔以这个角度发射的向量
      */
     @JvmStatic
-    fun turretAutoAimFromVector(vehicle: VehicleEntity, shootVec: Vec3) {
+    fun turretAutoAimFromVector(
+        vehicle: VehicleEntity,
+        shootVec: Vec3,
+    ) {
         if (vehicle.isWreck) return
         var ySpeed = vehicle.turretTurnYSpeed
         var xSpeed = vehicle.turretTurnXSpeed
@@ -65,21 +68,23 @@ object VehicleWeaponUtils {
         val min = -ySpeed
         val max = ySpeed
 
-        vehicle.turretXRot = Mth.clamp(
-            vehicle.turretXRot + Mth.clamp(0.75f * diffX, -xSpeed, xSpeed),
-            -vehicle.turretMaxPitch + vehicle.customTurretMaxPitch,
-            -vehicle.turretMinPitch - vehicle.customTurretMinPitch
-        )
-        vehicle.turretYRot = Mth.clamp(
-            vehicle.turretYRot - Mth.clamp(1f * diffY, min, max),
-            -vehicle.turretMaxYaw,
-            -vehicle.turretMinYaw
-        )
+        vehicle.turretXRot =
+            Mth.clamp(
+                vehicle.turretXRot + Mth.clamp(0.75f * diffX, -xSpeed, xSpeed),
+                -vehicle.turretMaxPitch + vehicle.customTurretMaxPitch,
+                -vehicle.turretMinPitch - vehicle.customTurretMinPitch,
+            )
+        vehicle.turretYRot =
+            Mth.clamp(
+                vehicle.turretYRot - Mth.clamp(1f * diffY, min, max),
+                -vehicle.turretMaxYaw,
+                -vehicle.turretMinYaw,
+            )
 
         vehicle.turretTurnSound(
             vehicle.turretXRot - vehicle.turretXRotO,
             vehicle.turretYRot - vehicle.turretYRotO,
-            0.95f
+            0.95f,
         )
 
         vehicle.turretYRotLock = Mth.clamp(-1f * diffY, min, max)
@@ -87,12 +92,16 @@ object VehicleWeaponUtils {
 
     /**
      * 根据UUID，使炮塔自动瞄准
-     * 
+     *
      * @param uuid    目标的UUID字符串
      * @param pLiving 操控载具的实体
      */
     @JvmStatic
-    fun turretAutoAimFromUuid(vehicle: VehicleEntity, uuid: String?, pLiving: LivingEntity) {
+    fun turretAutoAimFromUuid(
+        vehicle: VehicleEntity,
+        uuid: String?,
+        pLiving: LivingEntity,
+    ) {
         if (vehicle.isWreck) return
         var target = findEntity(vehicle.level(), uuid) ?: return
 
@@ -112,26 +121,30 @@ object VehicleWeaponUtils {
             targetVel = targetVel.multiply(2.0, 1.0, 2.0)
         }
 
-        val targetVec = calculateFiringSolution(
-            vehicle.getShootPos(pLiving, 1f).subtract(
-                vehicle.getShootVec(pLiving, 1f).scale(vehicle.getShootPos(pLiving, 1f).distanceTo(pLiving.position()))
-            ),
-            targetPos,
-            targetVel,
-            vehicle.getProjectileVelocity(pLiving).toDouble(),
-            vehicle.getProjectileGravity(pLiving).toDouble()
-        )
+        val targetVec =
+            calculateFiringSolution(
+                vehicle.getShootPos(pLiving, 1f).subtract(
+                    vehicle.getShootVec(pLiving, 1f).scale(vehicle.getShootPos(pLiving, 1f).distanceTo(pLiving.position())),
+                ),
+                targetPos,
+                targetVel,
+                vehicle.getProjectileVelocity(pLiving).toDouble(),
+                vehicle.getProjectileGravity(pLiving).toDouble(),
+            )
         vehicle.turretAutoAimFromVector(targetVec)
     }
 
     /**
      * 发射烟雾诱饵
-     * 
+     *
      * @param vehicle 载具
      * @param vec3    发射方向
      */
     @JvmStatic
-    fun releaseSmokeDecoy(vehicle: VehicleEntity, vec3: Vec3) {
+    fun releaseSmokeDecoy(
+        vehicle: VehicleEntity,
+        vec3: Vec3,
+    ) {
         if (vehicle.decoyInputDown) {
             if (vehicle.decoyCount > 0) {
                 for (i in 0..7) {
@@ -142,7 +155,8 @@ object VehicleWeaponUtils {
                     vehicle.level().addFreshEntity(smokeDecoyEntity)
                 }
 
-                vehicle.level()
+                vehicle
+                    .level()
                     .playSound(null, vehicle, ModSounds.DECOY_RELEASE.get(), vehicle.soundSource, 1f, 1f)
                 vehicle.decoyCount--
                 if (vehicle.decoyCount == 0) {
@@ -183,13 +197,16 @@ object VehicleWeaponUtils {
     }
 
     @JvmStatic
-    fun shootDecoy(vehicle: VehicleEntity, shootVec: Vec3) {
+    fun shootDecoy(
+        vehicle: VehicleEntity,
+        shootVec: Vec3,
+    ) {
         val flareDecoyEntity = FlareDecoyEntity(vehicle.level())
 
         flareDecoyEntity.setPos(
             vehicle.x + vehicle.deltaMovement.x,
             vehicle.y + 0.5 + vehicle.deltaMovement.y,
-            vehicle.z + vehicle.deltaMovement.z
+            vehicle.z + vehicle.deltaMovement.z,
         )
         flareDecoyEntity.decoyShoot(vehicle, shootVec, (vehicle.deltaMovement.length() * 0.3f + 0.7).toFloat(), 8f)
 
@@ -200,7 +217,7 @@ object VehicleWeaponUtils {
             ModSounds.DECOY_RELEASE.get(),
             vehicle.soundSource,
             3f,
-            1f
+            1f,
         )
     }
 
@@ -232,7 +249,11 @@ object VehicleWeaponUtils {
      * @param pLiving 操控载具的实体
      */
     @JvmStatic
-    fun passengerWeaponAutoAimFormUuid(vehicle: VehicleEntity, uuid: String?, pLiving: LivingEntity) {
+    fun passengerWeaponAutoAimFormUuid(
+        vehicle: VehicleEntity,
+        uuid: String?,
+        pLiving: LivingEntity,
+    ) {
         var target = findEntity(vehicle.level(), uuid)
         if (target != null) {
             if (target.vehicle != null) {
@@ -251,17 +272,18 @@ object VehicleWeaponUtils {
                 targetVel = targetVel.multiply(2.0, 1.0, 2.0)
             }
 
-            val targetVec = calculateFiringSolution(
-                vehicle.getShootPos(pLiving, 1f).subtract(
-                    vehicle.getShootVec(pLiving, 1f).scale(
-                        vehicle.getShootPos(pLiving, 1f).distanceTo(pLiving.position())
-                    )
-                ),
-                targetPos,
-                targetVel,
-                vehicle.getProjectileVelocity(pLiving).toDouble(),
-                vehicle.getProjectileGravity(pLiving).toDouble()
-            )
+            val targetVec =
+                calculateFiringSolution(
+                    vehicle.getShootPos(pLiving, 1f).subtract(
+                        vehicle.getShootVec(pLiving, 1f).scale(
+                            vehicle.getShootPos(pLiving, 1f).distanceTo(pLiving.position()),
+                        ),
+                    ),
+                    targetPos,
+                    targetVel,
+                    vehicle.getProjectileVelocity(pLiving).toDouble(),
+                    vehicle.getProjectileGravity(pLiving).toDouble(),
+                )
             passengerWeaponAutoAimFormVector(vehicle, targetVec)
         }
     }
@@ -273,30 +295,41 @@ object VehicleWeaponUtils {
      * @param shootVec 需要让武器站以这个角度发射的向量
      */
     @JvmStatic
-    fun passengerWeaponAutoAimFormVector(vehicle: VehicleEntity, shootVec: Vec3) {
+    fun passengerWeaponAutoAimFormVector(
+        vehicle: VehicleEntity,
+        shootVec: Vec3,
+    ) {
         val ySpeed = vehicle.passengerWeaponYSpeed
         val xSpeed = vehicle.passengerWeaponXSpeed
-        val diffY = Mth.wrapDegrees(
-            -getYRotFromVector(shootVec) + getYRotFromVector(
-                vehicle.getPassengerWeaponStationVector(1f)
-            )
-        ).toFloat()
-        val diffX = Mth.wrapDegrees(
-            -getXRotFromVector(shootVec) + getXRotFromVector(
-                vehicle.getPassengerWeaponStationVector(1f)
-            )
-        ).toFloat()
+        val diffY =
+            Mth
+                .wrapDegrees(
+                    -getYRotFromVector(shootVec) +
+                        getYRotFromVector(
+                            vehicle.getPassengerWeaponStationVector(1f),
+                        ),
+                ).toFloat()
+        val diffX =
+            Mth
+                .wrapDegrees(
+                    -getXRotFromVector(shootVec) +
+                        getXRotFromVector(
+                            vehicle.getPassengerWeaponStationVector(1f),
+                        ),
+                ).toFloat()
 
-        vehicle.gunXRot = Mth.clamp(
-            vehicle.gunXRot + Mth.clamp(diffX, -xSpeed, xSpeed),
-            -vehicle.passengerWeaponMaxPitch,
-            -vehicle.passengerWeaponMinPitch
-        )
-        vehicle.gunYRot = Mth.clamp(
-            vehicle.gunYRot - Mth.clamp(diffY, -ySpeed, ySpeed),
-            -vehicle.passengerWeaponMaxYaw,
-            -vehicle.passengerWeaponMinYaw
-        )
+        vehicle.gunXRot =
+            Mth.clamp(
+                vehicle.gunXRot + Mth.clamp(diffX, -xSpeed, xSpeed),
+                -vehicle.passengerWeaponMaxPitch,
+                -vehicle.passengerWeaponMinPitch,
+            )
+        vehicle.gunYRot =
+            Mth.clamp(
+                vehicle.gunYRot - Mth.clamp(diffY, -ySpeed, ySpeed),
+                -vehicle.passengerWeaponMaxYaw,
+                -vehicle.passengerWeaponMinYaw,
+            )
 
         vehicle.turretTurnSound(vehicle.gunXRot - vehicle.gunXRotO, vehicle.gunYRot - vehicle.gunYRotO, 0.95f)
     }

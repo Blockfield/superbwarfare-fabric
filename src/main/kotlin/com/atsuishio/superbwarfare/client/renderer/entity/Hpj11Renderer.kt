@@ -14,24 +14,27 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.util.Mth
 
-class Hpj11Renderer(manager: EntityRendererProvider.Context) : BasicAutoAimableRenderer(manager) {
-    override fun hideForTurretControllerWhileZooming(): Boolean {
-        return true
-    }
+class Hpj11Renderer(
+    manager: EntityRendererProvider.Context,
+) : BasicAutoAimableRenderer(manager) {
+    override fun hideForTurretControllerWhileZooming(): Boolean = true
 
     override fun transformCustomModelPart(
         entity: AutoAimableEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 
         val radar2 = instance.getBone("move_radar2")
 
         radar2?.visible =
-            !(entity.getNthEntity(entity.turretControllerIndex) === localPlayer && (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle))
+            !(
+                entity.getNthEntity(entity.turretControllerIndex) === localPlayer &&
+                    (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
+            )
 
         val rdr = instance.getBone("move_rdr")
         val rdr2 = instance.getBone("move_rdr2")
@@ -49,7 +52,7 @@ class Hpj11Renderer(manager: EntityRendererProvider.Context) : BasicAutoAimableR
         entityYaw: Float,
         partialTicks: Float,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         super.renderCustomPart(entity, instance, poseStack, entityYaw, partialTicks, buffer, packedLight)
 
@@ -64,7 +67,7 @@ class Hpj11Renderer(manager: EntityRendererProvider.Context) : BasicAutoAimableR
                 heat / 100,
                 heat / 100,
                 heat / 100,
-                1f
+                1f,
             )
         }
     }

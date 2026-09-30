@@ -14,7 +14,6 @@ data class DogTagFinishEditMessage(
     val name: String,
     val mainHand: Boolean,
 ) : ServerPacketPayload() {
-
     override fun PayloadContext.handler() {
         val serverPlayer = sender()
 

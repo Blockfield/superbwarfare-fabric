@@ -24,7 +24,6 @@ import net.minecraft.world.phys.Vec3
 import kotlin.math.atan2
 
 open class CatapultShuttleItem : AbstractDeployerItem(Properties().rarity(Rarity.COMMON)) {
-
     override fun useOn(context: UseOnContext): InteractionResult {
         val level = context.level
         if (level !is ServerLevel) {
@@ -39,11 +38,12 @@ open class CatapultShuttleItem : AbstractDeployerItem(Properties().rarity(Rarity
 
             if (!blockstate.`is`(ModBlocks.AIRCRAFT_CATAPULT.get())) return InteractionResult.PASS
 
-            val pos = if (blockstate.getCollisionShape(level, clickedPos).isEmpty) {
-                clickedPos
-            } else {
-                clickedPos.relative(direction)
-            }
+            val pos =
+                if (blockstate.getCollisionShape(level, clickedPos).isEmpty) {
+                    clickedPos
+                } else {
+                    clickedPos.relative(direction)
+                }
 
             val entity = this.spawnDeployedEntity(level, player)
             entity.setPos(pos.x.toDouble() + 0.5, pos.y.toDouble() - 1, pos.z.toDouble() + 0.5)
@@ -59,7 +59,11 @@ open class CatapultShuttleItem : AbstractDeployerItem(Properties().rarity(Rarity
         }
     }
 
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val itemstack = player.getItemInHand(hand)
         val hitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY)
         if (hitResult.type != HitResult.Type.BLOCK) {
@@ -74,14 +78,14 @@ open class CatapultShuttleItem : AbstractDeployerItem(Properties().rarity(Rarity
 
             if (blockstate.block !is LiquidBlock) {
                 return InteractionResultHolder.pass(itemstack)
-            } else if (level.mayInteract(player, blockpos)
-                && player.mayUseItemAt(blockpos, hitResult.direction, itemstack)
+            } else if (level.mayInteract(player, blockpos) &&
+                player.mayUseItemAt(blockpos, hitResult.direction, itemstack)
             ) {
                 val entity = this.spawnDeployedEntity(level, player)
                 entity.setPos(
                     blockpos.x.toDouble() + 0.5,
                     blockpos.y.toDouble() - 1,
-                    blockpos.z.toDouble() + 0.5
+                    blockpos.z.toDouble() + 0.5,
                 )
                 entity.yRot = -getWorldYRot(level, blockpos, blockstate)
                 level.addFreshEntity(entity)
@@ -101,12 +105,14 @@ open class CatapultShuttleItem : AbstractDeployerItem(Properties().rarity(Rarity
 
     override fun spawnDeployedEntity(
         level: Level,
-        player: Player
-    ): Entity {
-        return CatapultShuttleEntity(level)
-    }
+        player: Player,
+    ): Entity = CatapultShuttleEntity(level)
 
-    private fun getWorldYRot(level: Level, pos: BlockPos, blockstate: BlockState): Float {
+    private fun getWorldYRot(
+        level: Level,
+        pos: BlockPos,
+        blockstate: BlockState,
+    ): Float {
         val facing = blockstate.getValue(AircraftCatapultBlock.FACING)
         val localDir = Vec3(facing.stepX.toDouble(), 0.0, facing.stepZ.toDouble())
         return Math.toDegrees(atan2(localDir.x, localDir.z)).toFloat()

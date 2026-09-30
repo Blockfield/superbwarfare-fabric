@@ -2,6 +2,8 @@ package com.atsuishio.superbwarfare.init
 
 import com.atsuishio.superbwarfare.Mod
 import com.atsuishio.superbwarfare.Mod.loc
+import com.atsuishio.superbwarfare.fabric.DeferredHolder
+import com.atsuishio.superbwarfare.fabric.DeferredRegister
 import com.atsuishio.superbwarfare.perk.AmmoPerk
 import com.atsuishio.superbwarfare.perk.EmptyPerk
 import com.atsuishio.superbwarfare.perk.Perk
@@ -12,14 +14,12 @@ import com.atsuishio.superbwarfare.perk.js.JsPerk
 import com.atsuishio.superbwarfare.perk.js.PerkDescriptor
 import com.google.gson.JsonParser
 import com.mojang.serialization.JsonOps
-import net.minecraft.core.Registry
-import net.minecraft.resources.ResourceKey
-import net.minecraft.world.effect.MobEffects
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute
 import net.fabricmc.loader.api.FabricLoader
-import com.atsuishio.superbwarfare.fabric.DeferredHolder
-import com.atsuishio.superbwarfare.fabric.DeferredRegister
+import net.minecraft.core.Registry
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.effect.MobEffects
 import java.nio.file.Files
 
 private typealias PERK = DeferredHolder<Perk, Perk>
@@ -36,9 +36,11 @@ object ModPerks {
     // buildAndRegister сразу кладёт реестр в корневой BuiltInRegistries.REGISTRY,
     // отдельного события регистрации реестров у Fabric нет.
     @JvmField
-    val PERK_REGISTRY: Registry<Perk> = FabricRegistryBuilder.createDefaulted(PERK_KEY, loc("ap_bullet"))
-        .attribute(RegistryAttribute.SYNCED)
-        .buildAndRegister()
+    val PERK_REGISTRY: Registry<Perk> =
+        FabricRegistryBuilder
+            .createDefaulted(PERK_KEY, loc("ap_bullet"))
+            .attribute(RegistryAttribute.SYNCED)
+            .buildAndRegister()
 
     /**
      * Ammo Perks
@@ -47,7 +49,11 @@ object ModPerks {
     val AMMO_PERKS: DeferredRegister<Perk> = DeferredRegister.create(PERK_REGISTRY, Mod.MODID)
     private val registeredIds = mutableSetOf<String>()
     private val autoRegistryObjects = mutableMapOf<String, PERK>()
-    private fun registerAmmoPerk(id: String, perk: () -> Perk): PERK {
+
+    private fun registerAmmoPerk(
+        id: String,
+        perk: () -> Perk,
+    ): PERK {
         registeredIds.add(id)
         return AMMO_PERKS.register(id, perk)
     }
@@ -75,7 +81,11 @@ object ModPerks {
      */
     @JvmField
     val FUNC_PERKS: DeferredRegister<Perk> = DeferredRegister.create(PERK_REGISTRY, Mod.MODID)
-    private fun registerFuncPerk(id: String, perk: () -> Perk): PERK {
+
+    private fun registerFuncPerk(
+        id: String,
+        perk: () -> Perk,
+    ): PERK {
         registeredIds.add(id)
         return FUNC_PERKS.register(id, perk)
     }
@@ -100,7 +110,11 @@ object ModPerks {
      */
     @JvmField
     val DAMAGE_PERKS: DeferredRegister<Perk> = DeferredRegister.create(PERK_REGISTRY, Mod.MODID)
-    private fun registerDamagePerk(id: String, perk: () -> Perk): PERK {
+
+    private fun registerDamagePerk(
+        id: String,
+        perk: () -> Perk,
+    ): PERK {
         registeredIds.add(id)
         return DAMAGE_PERKS.register(id, perk)
     }
@@ -134,21 +148,26 @@ object ModPerks {
 
     private fun autoRegisterFromJsons() {
         try {
-            val perksDir = FabricLoader.getInstance().getModContainer(Mod.MODID)
-                .flatMap { it.findPath("data/${Mod.MODID}/sbw/perks") }
-                .orElse(null) ?: return
+            val perksDir =
+                FabricLoader
+                    .getInstance()
+                    .getModContainer(Mod.MODID)
+                    .flatMap { it.findPath("data/${Mod.MODID}/sbw/perks") }
+                    .orElse(null) ?: return
             Files.list(perksDir).use { stream ->
-                stream.filter { it.fileName.toString().endsWith(".json") }
+                stream
+                    .filter { it.fileName.toString().endsWith(".json") }
                     .forEach { path ->
                         val id = path.fileName.toString().substringBeforeLast(".json")
                         if (id in registeredIds) return@forEach
                         val descriptor = parsePerkJson(path) ?: return@forEach
                         val perk = JsPerk(id, descriptor)
-                        val ro: PERK = when (descriptor.perkType) {
-                            Perk.Type.AMMO -> registerAmmoPerk(id) { perk }
-                            Perk.Type.FUNCTIONAL -> registerFuncPerk(id) { perk }
-                            Perk.Type.DAMAGE -> registerDamagePerk(id) { perk }
-                        }
+                        val ro: PERK =
+                            when (descriptor.perkType) {
+                                Perk.Type.AMMO -> registerAmmoPerk(id) { perk }
+                                Perk.Type.FUNCTIONAL -> registerFuncPerk(id) { perk }
+                                Perk.Type.DAMAGE -> registerDamagePerk(id) { perk }
+                            }
                         autoRegistryObjects[id] = ro
                         Mod.LOGGER.debug("Auto-registered perk '{}' from JSON", id)
                     }
@@ -158,25 +177,24 @@ object ModPerks {
         }
     }
 
-    private fun parsePerkJson(path: java.nio.file.Path): PerkDescriptor? {
-        return try {
+    private fun parsePerkJson(path: java.nio.file.Path): PerkDescriptor? =
+        try {
             Files.newBufferedReader(path).use { reader ->
                 val element = JsonParser.parseReader(reader)
-                PerkDescriptor.CODEC.parse(JsonOps.INSTANCE, element)
+                PerkDescriptor.CODEC
+                    .parse(JsonOps.INSTANCE, element)
                     .resultOrPartial { error ->
                         Mod.LOGGER.error(
                             "Failed to parse perk JSON '{}': {}",
                             path.fileName,
-                            error
+                            error,
                         )
-                    }
-                    .orElse(null)
+                    }.orElse(null)
             }
         } catch (e: Exception) {
             Mod.LOGGER.error("Failed to load perk JSON: {}", path, e)
             null
         }
-    }
 
     private fun registerHardcoded() {
         // Ammo Perks
@@ -186,9 +204,13 @@ object ModPerks {
         SILVER_BULLET = autoRegistryObjects["silver_bullet"] ?: registerAmmoPerk("silver_bullet") { SilverBullet }
         POISONOUS_BULLET = autoRegistryObjects["poisonous_bullet"] ?: registerAmmoPerk("poisonous_bullet") {
             AmmoPerk(
-                AmmoPerk.Builder("poisonous_bullet", Perk.Type.AMMO).bypassArmorRate(0.0).damageRate(1.0)
-                    .speedRate(1.0).rgb(48, 131, 6)
-                    .mobEffect(MobEffects.POISON)
+                AmmoPerk
+                    .Builder("poisonous_bullet", Perk.Type.AMMO)
+                    .bypassArmorRate(0.0)
+                    .damageRate(1.0)
+                    .speedRate(1.0)
+                    .rgb(48, 131, 6)
+                    .mobEffect(MobEffects.POISON),
             )
         }
         BEAST_BULLET = autoRegistryObjects["beast_bullet"] ?: registerAmmoPerk("beast_bullet") { BeastBullet }
@@ -220,7 +242,7 @@ object ModPerks {
         INTELLIGENT_CHIP = autoRegistryObjects["intelligent_chip"] ?: registerFuncPerk("intelligent_chip") {
             Perk(
                 "intelligent_chip",
-                Perk.Type.FUNCTIONAL
+                Perk.Type.FUNCTIONAL,
             )
         }
         BACKPACK_LINKED_MAGAZINE = autoRegistryObjects["backpack_linked_magazine"]

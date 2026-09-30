@@ -33,9 +33,10 @@ import net.minecraft.world.level.entity.EntityTypeTest
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 
-open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, level: Level) :
-    ArtilleryEntity(type, level) {
-
+open class SodayoPickUpRocketEntity(
+    type: EntityType<SodayoPickUpRocketEntity>,
+    level: Level,
+) : ArtilleryEntity(type, level) {
     val barrelObbs: List<OBB>
         get() = getOBBs().filter { it.part == OBB.Part.INTERACTIVE }
 
@@ -55,7 +56,10 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
         setChanged()
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val stack = player.mainHandItem
         val lookingObb = getLookingObb(player, player.getEntityReach())
         val level = this.level()
@@ -79,7 +83,7 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
                                 ModSounds.TYPE_63_RELOAD.get(),
                                 SoundSource.PLAYERS,
                                 1f,
-                                random.nextFloat() * 0.1f + 0.9f
+                                random.nextFloat() * 0.1f + 0.9f,
                             )
                             cooldown = 5
                             getItems()[i] = ItemStack.EMPTY
@@ -107,7 +111,7 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
                         ModSounds.TYPE_63_RELOAD.get(),
                         SoundSource.PLAYERS,
                         1f,
-                        random.nextFloat() * 0.1f + 0.9f
+                        random.nextFloat() * 0.1f + 0.9f,
                     )
                     cooldown = 5
                     setChanged()
@@ -162,11 +166,13 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
         return false
     }
 
-    override fun canBind(): Boolean {
-        return true
-    }
+    override fun canBind(): Boolean = true
 
-    override fun vehicleShoot(living: LivingEntity?, weaponName: String, targetPos: Vec3?) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        weaponName: String,
+        targetPos: Vec3?,
+    ) {
         if (this.isWreck) return
         // 顺序发射
         for (i in 0..11) {
@@ -179,7 +185,10 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
         }
     }
 
-    fun shoot(player: Player?, i: Int) {
+    fun shoot(
+        player: Player?,
+        i: Int,
+    ) {
         val stack = getItems()[i]
         val item = stack.item
         val level = this.level()
@@ -197,21 +206,22 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
         val obb = barrelObbs[i]
         val shootPos = vector3dToVec3(obb.center)
 
-        val entityToSpawn = MediumRocketEntity(
-            ModEntities.MEDIUM_ROCKET.get(),
-            shootPos.x,
-            shootPos.y,
-            shootPos.z,
-            level(),
-            gunData.get(GunProp.DAMAGE).toFloat(),
-            gunData.get(GunProp.EXPLOSION_RADIUS).toFloat(),
-            gunData.get(GunProp.EXPLOSION_DAMAGE).toFloat(),
-            0f,
-            0,
-            item.type,
-            gunData.get(GunProp.SPREAD_AMOUNT),
-            gunData.get(GunProp.SPREAD_ANGLE)
-        )
+        val entityToSpawn =
+            MediumRocketEntity(
+                ModEntities.MEDIUM_ROCKET.get(),
+                shootPos.x,
+                shootPos.y,
+                shootPos.z,
+                level(),
+                gunData.get(GunProp.DAMAGE).toFloat(),
+                gunData.get(GunProp.EXPLOSION_RADIUS).toFloat(),
+                gunData.get(GunProp.EXPLOSION_DAMAGE).toFloat(),
+                0f,
+                0,
+                item.type,
+                gunData.get(GunProp.SPREAD_AMOUNT),
+                gunData.get(GunProp.SPREAD_ANGLE),
+            )
         entityToSpawn.durability(gunData.get(GunProp.AP_DURABILITY))
         entityToSpawn.setCustomGravity(shootGravity)
         entityToSpawn.owner = player
@@ -230,17 +240,20 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
                 sound,
                 SoundSource.PLAYERS,
                 gunData.get(GunProp.SOUND_RADIUS).toFloat(),
-                random.nextFloat() * 0.1f + 0.95f
+                random.nextFloat() * 0.1f + 0.95f,
             )
         }
 
-        val ab = AABB(boundingBox.center, boundingBox.center).inflate(0.75)
-            .move(barrelVector.scale(-2.0)).expandTowards(barrelVector.scale(-5.0))
+        val ab =
+            AABB(boundingBox.center, boundingBox.center)
+                .inflate(0.75)
+                .move(barrelVector.scale(-2.0))
+                .expandTowards(barrelVector.scale(-5.0))
 
         // 尾焰
         for (entity in level.getEntities(
             EntityTypeTest.forClass(Entity::class.java),
-            ab
+            ab,
         ) { it !== this }) {
             entity.hurt(causeBurnDamage(entity.level().registryAccess(), player), 30 - 2 * entity.distanceTo(this))
             val force = 4 - 0.7 * entity.distanceTo(this)
@@ -252,13 +265,13 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
                 barrelVector.scale(-1.0),
                 shootPos.add(barrelVector.scale(-0.5)),
                 level,
-                this
+                this,
             )
             spawnMediumCannonMuzzleParticles(
                 barrelVector.scale(-1.0),
                 shootPos.add(barrelVector.scale(-1.5)),
                 level,
-                this
+                this,
             )
             spawnMediumCannonMuzzleParticles(barrelVector, shootPos.add(barrelVector.scale(1.5)), level, this)
         }
@@ -282,9 +295,10 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
 
     override var maxStackSize: Int = 1
 
-    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
-        return false
-    }
+    override fun canPlaceItem(
+        slot: Int,
+        stack: ItemStack,
+    ): Boolean = false
 
     override fun setChanged() {
         super.setChanged()
@@ -302,9 +316,10 @@ open class SodayoPickUpRocketEntity(type: EntityType<SodayoPickUpRocketEntity>, 
 
     companion object {
         @JvmField
-        val LOADED_AMMO: EntityDataAccessor<List<Int>> = SynchedEntityData.defineId(
-            SodayoPickUpRocketEntity::class.java,
-            ModSerializers.INT_LIST_SERIALIZER.get()
-        )
+        val LOADED_AMMO: EntityDataAccessor<List<Int>> =
+            SynchedEntityData.defineId(
+                SodayoPickUpRocketEntity::class.java,
+                ModSerializers.INT_LIST_SERIALIZER.get(),
+            )
     }
 }

@@ -3,17 +3,16 @@ package com.atsuishio.superbwarfare.client.map.context
 import com.atsuishio.superbwarfare.client.map.context.MapMarker.Companion.getColorRGB
 import com.atsuishio.superbwarfare.client.map.context.MapMarker.Companion.rgbToFloat3
 import com.atsuishio.superbwarfare.client.screens.TacticalMapScreen.Companion.SelBox
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.network.chat.Component
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.roundToInt
 
 @Environment(EnvType.CLIENT)
 class MapContextMenu {
-
     // ── Context menu state ──
     var ctxMenuVisible = false
         private set
@@ -47,6 +46,7 @@ class MapContextMenu {
     // Callback: called when a marker is created or edited
     var onMarkerCreated: ((MapMarker) -> Unit)? = null
     var onMarkerEdited: ((MapMarker) -> Unit)? = null
+
     // Callback: delete a marker
     var onMarkerDelete: ((MapMarker) -> Unit)? = null
     var onConnectRequested: ((MapMarker) -> Unit)? = null
@@ -70,7 +70,10 @@ class MapContextMenu {
     var onLoiterPointEdit: (() -> Unit)? = null
     var onLoiterPointDelete: (() -> Unit)? = null
 
-    fun openLoiterPointMenu(screenX: Int, screenY: Int) {
+    fun openLoiterPointMenu(
+        screenX: Int,
+        screenY: Int,
+    ) {
         loiterPointMenuX = screenX
         loiterPointMenuY = screenY
         loiterPointMenuVisible = true
@@ -103,15 +106,24 @@ class MapContextMenu {
     data class MissileWeaponEntry(
         val weaponName: String,
         val displayName: String,
-        val ammoCount: Int
+        val ammoCount: Int,
     )
 
     // ── Internal data class for menu items ──
-    data class ContextMenuItem(val label: String, val action: () -> Unit)
+    data class ContextMenuItem(
+        val label: String,
+        val action: () -> Unit,
+    )
 
     // ── Public API: open menus ──
 
-    fun openMapMenu(screenX: Int, screenY: Int, worldX: Int, worldY: Int, worldZ: Int) {
+    fun openMapMenu(
+        screenX: Int,
+        screenY: Int,
+        worldX: Int,
+        worldY: Int,
+        worldZ: Int,
+    ) {
         ctxTargetMarker = null
         ctxTargetSelBox = null
         ctxWorldX = worldX
@@ -123,7 +135,11 @@ class MapContextMenu {
         editPanelVisible = false
     }
 
-    fun openMarkerMenu(screenX: Int, screenY: Int, marker: MapMarker) {
+    fun openMarkerMenu(
+        screenX: Int,
+        screenY: Int,
+        marker: MapMarker,
+    ) {
         ctxTargetMarker = marker
         ctxTargetSelBox = null
         ctxWorldX = marker.x
@@ -135,7 +151,14 @@ class MapContextMenu {
         editPanelVisible = false
     }
 
-    fun openSelBoxMenu(screenX: Int, screenY: Int, worldX: Int, worldY: Int, worldZ: Int, selBox: SelBox) {
+    fun openSelBoxMenu(
+        screenX: Int,
+        screenY: Int,
+        worldX: Int,
+        worldY: Int,
+        worldZ: Int,
+        selBox: SelBox,
+    ) {
         ctxTargetMarker = null
         ctxTargetSelBox = selBox
         ctxWorldX = worldX
@@ -156,7 +179,11 @@ class MapContextMenu {
     }
 
     /** Open the missile strike sub-menu at the given screen position. */
-    fun openMissileSubMenu(screenX: Int, screenY: Int, weapons: List<MissileWeaponEntry>) {
+    fun openMissileSubMenu(
+        screenX: Int,
+        screenY: Int,
+        weapons: List<MissileWeaponEntry>,
+    ) {
         missileWeapons = weapons
         missileSubMenuX = screenX
         missileSubMenuY = screenY
@@ -193,45 +220,48 @@ class MapContextMenu {
             buildList {
                 add(
                     ContextMenuItem(
-                        Component.translatable(
-                            "context.superbwarfare.tactical_map.teleport",
-                            target.x, target.y + 1, target.z
-                        ).string
+                        Component
+                            .translatable(
+                                "context.superbwarfare.tactical_map.teleport",
+                                target.x,
+                                target.y + 1,
+                                target.z,
+                            ).string,
                     ) {
                         val mc = Minecraft.getInstance()
                         mc.player?.connection?.sendCommand("tp ${target.x} ${target.y + 1} ${target.z}")
-                    }
+                    },
                 )
                 add(
                     ContextMenuItem(
-                        Component.translatable("context.superbwarfare.tactical_map.edit_marker").string
+                        Component.translatable("context.superbwarfare.tactical_map.edit_marker").string,
                     ) {
                         openEditPanel(target)
-                    }
+                    },
                 )
                 add(
                     ContextMenuItem(
-                        Component.translatable("context.superbwarfare.tactical_map.connect").string
+                        Component.translatable("context.superbwarfare.tactical_map.connect").string,
                     ) {
                         onConnectRequested?.invoke(target)
-                    }
+                    },
                 )
                 if (canCruiseHere) {
                     add(
                         ContextMenuItem(
-                            Component.translatable("context.superbwarfare.tactical_map.cruise_here").string
+                            Component.translatable("context.superbwarfare.tactical_map.cruise_here").string,
                         ) {
                             onCruiseHere?.invoke(target.x, target.z)
                             closeMenu()
-                        }
+                        },
                     )
                 }
                 add(
                     ContextMenuItem(
-                        Component.translatable("context.superbwarfare.tactical_map.delete_marker").string
+                        Component.translatable("context.superbwarfare.tactical_map.delete_marker").string,
                     ) {
                         onMarkerDelete?.invoke(target)
-                    }
+                    },
                 )
             }
         } else {
@@ -239,61 +269,64 @@ class MapContextMenu {
             buildList {
                 add(
                     ContextMenuItem(
-                        Component.translatable(
-                            "context.superbwarfare.tactical_map.teleport",
-                            ctxWorldX, ctxWorldY + 1, ctxWorldZ
-                        ).string
+                        Component
+                            .translatable(
+                                "context.superbwarfare.tactical_map.teleport",
+                                ctxWorldX,
+                                ctxWorldY + 1,
+                                ctxWorldZ,
+                            ).string,
                     ) {
                         val mc = Minecraft.getInstance()
                         mc.player?.connection?.sendCommand("tp $ctxWorldX ${ctxWorldY + 1} $ctxWorldZ")
-                    }
+                    },
                 )
                 add(
                     ContextMenuItem(
-                        Component.translatable("context.superbwarfare.tactical_map.create_marker").string
+                        Component.translatable("context.superbwarfare.tactical_map.create_marker").string,
                     ) {
                         openEditPanel(null)
-                    }
+                    },
                 )
                 // Cruise here: only shown when player is riding an aircraft capable of loitering
                 if (canCruiseHere) {
                     add(
                         ContextMenuItem(
-                            Component.translatable("context.superbwarfare.tactical_map.cruise_here").string
+                            Component.translatable("context.superbwarfare.tactical_map.cruise_here").string,
                         ) {
                             onCruiseHere?.invoke(ctxWorldX, ctxWorldZ)
                             closeMenu()
-                        }
+                        },
                     )
                 }
                 // Missile strike: shown for both empty ground and selection boxes
                 if (missileWeapons.isNotEmpty()) {
                     add(
                         ContextMenuItem(
-                            Component.translatable("context.superbwarfare.tactical_map.missile_strike").string
+                            Component.translatable("context.superbwarfare.tactical_map.missile_strike").string,
                         ) {
                             openMissileSubMenu(ctxMenuX, ctxMenuY, missileWeapons)
-                        }
+                        },
                     )
                 }
                 // Selection-box-specific items
                 if (selBox != null) {
                     add(
                         ContextMenuItem(
-                            Component.translatable("context.superbwarfare.tactical_map.sel_menu.remove").string
+                            Component.translatable("context.superbwarfare.tactical_map.sel_menu.remove").string,
                         ) {
                             onRemoveSelBox?.invoke()
                             closeMenu()
-                        }
+                        },
                     )
                     if (canClearSelBoxArea) {
                         add(
                             ContextMenuItem(
-                                Component.translatable("context.superbwarfare.tactical_map.sel_menu.clear").string
+                                Component.translatable("context.superbwarfare.tactical_map.sel_menu.clear").string,
                             ) {
                                 onClearSelBoxArea?.invoke()
                                 closeMenu()
-                            }
+                            },
                         )
                     }
                 }
@@ -316,7 +349,7 @@ class MapContextMenu {
         viewBlockZ: Double,
         scale: Double,
         mapCenterX: Float,
-        mapCenterY: Float
+        mapCenterY: Float,
     ): MapMarker? {
         val hw = MARKER_TEX_W / 2.0
         val hh = MARKER_TEX_H.toDouble()
@@ -340,7 +373,7 @@ class MapContextMenu {
         mouseX: Int,
         mouseY: Int,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         if (ctxMenuVisible) {
             renderContextMenu(guiGraphics, font, mouseX, mouseY, screenWidth, screenHeight)
@@ -367,7 +400,7 @@ class MapContextMenu {
         mouseX: Int,
         mouseY: Int,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         val items = buildItems()
         if (items.isEmpty()) return
@@ -400,8 +433,12 @@ class MapContextMenu {
             val hovered = mouseX in mx..mx + menuW && mouseY in iy..iy + itemHeight
             if (hovered) guiGraphics.fill(mx + 1, iy, mx + menuW - 1, iy + itemHeight, 0x664444FF)
             guiGraphics.drawString(
-                font, item.label, mx + padding, iy + 2,
-                if (hovered) 0xFFFFFFFF.toInt() else 0xFFCCCCCC.toInt(), false
+                font,
+                item.label,
+                mx + padding,
+                iy + 2,
+                if (hovered) 0xFFFFFFFF.toInt() else 0xFFCCCCCC.toInt(),
+                false,
             )
         }
 
@@ -422,12 +459,13 @@ class MapContextMenu {
         mouseX: Int,
         mouseY: Int,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
-        val items = listOf(
-            Component.translatable("context.superbwarfare.tactical_map.edit_loiter").string,
-            Component.translatable("context.superbwarfare.tactical_map.delete_loiter").string,
-        )
+        val items =
+            listOf(
+                Component.translatable("context.superbwarfare.tactical_map.edit_loiter").string,
+                Component.translatable("context.superbwarfare.tactical_map.delete_loiter").string,
+            )
         val padding = 4
         val itemHeight = 12
         var mx = loiterPointMenuX
@@ -451,19 +489,27 @@ class MapContextMenu {
             val hovered = mouseX in mx..mx + menuW && mouseY in iy..iy + itemHeight
             if (hovered) guiGraphics.fill(mx + 1, iy, mx + menuW - 1, iy + itemHeight, 0x66448844)
             guiGraphics.drawString(
-                font, label, mx + padding, iy + 2,
-                if (hovered) 0xFFFFFFFF.toInt() else 0xFFCCCCCC.toInt(), false
+                font,
+                label,
+                mx + padding,
+                iy + 2,
+                if (hovered) 0xFFFFFFFF.toInt() else 0xFFCCCCCC.toInt(),
+                false,
             )
         }
     }
 
-    fun handleLoiterPointMenuClick(mouseX: Int, mouseY: Int): Boolean {
+    fun handleLoiterPointMenuClick(
+        mouseX: Int,
+        mouseY: Int,
+    ): Boolean {
         if (!loiterPointMenuVisible) return false
         val font = Minecraft.getInstance().font
-        val items = listOf(
-            Component.translatable("context.superbwarfare.tactical_map.edit_loiter").string,
-            Component.translatable("context.superbwarfare.tactical_map.delete_loiter").string,
-        )
+        val items =
+            listOf(
+                Component.translatable("context.superbwarfare.tactical_map.edit_loiter").string,
+                Component.translatable("context.superbwarfare.tactical_map.delete_loiter").string,
+            )
         val padding = 4
         val itemHeight = 12
         val menuW = items.maxOf { font.width(it) } + padding * 2
@@ -473,7 +519,11 @@ class MapContextMenu {
         val screenHeight = Minecraft.getInstance().window.guiScaledHeight
 
         if (mx + menuW > screenWidth) mx = screenWidth - menuW - 4
-        if (my + items.size * itemHeight + padding * 2 + 2 > screenHeight) my = screenHeight - (items.size * itemHeight + padding * 2 + 2) - 4
+        if (my + items.size * itemHeight + padding * 2 + 2 >
+            screenHeight
+        ) {
+            my = screenHeight - (items.size * itemHeight + padding * 2 + 2) - 4
+        }
 
         for ((i, _) in items.withIndex()) {
             val iy = my + padding + i * itemHeight
@@ -496,7 +546,7 @@ class MapContextMenu {
         mouseX: Int,
         mouseY: Int,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         val padding = 4
         val itemHeight = 12
@@ -528,8 +578,12 @@ class MapContextMenu {
             val hovered = mouseX in smx..smx + subMenuW && mouseY in iy..iy + itemHeight
             if (hovered) guiGraphics.fill(smx + 1, iy, smx + subMenuW - 1, iy + itemHeight, 0x66448844)
             guiGraphics.drawString(
-                font, label, smx + padding, iy + 2,
-                if (hovered) 0xFFFFFFFF.toInt() else 0xFFAACCAA.toInt(), false
+                font,
+                label,
+                smx + padding,
+                iy + 2,
+                if (hovered) 0xFFFFFFFF.toInt() else 0xFFAACCAA.toInt(),
+                false,
             )
 
             // Tooltip on hover: full ammo info
@@ -539,18 +593,20 @@ class MapContextMenu {
                     listOf(
                         Component.translatable(
                             "context.superbwarfare.tactical_map.missile_ammo",
-                            entry.ammoCount
-                        )
+                            entry.ammoCount,
+                        ),
                     ),
                     java.util.Optional.empty(),
-                    mouseX, mouseY
+                    mouseX,
+                    mouseY,
                 )
             } else if (hovered) {
                 guiGraphics.renderTooltip(
                     font,
                     listOf(Component.translatable("context.superbwarfare.tactical_map.missile_no_ammo")),
                     java.util.Optional.empty(),
-                    mouseX, mouseY
+                    mouseX,
+                    mouseY,
                 )
             }
         }
@@ -562,13 +618,14 @@ class MapContextMenu {
         mouseX: Int,
         mouseY: Int,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
-        val items = listOf(
-            Component.translatable("context.superbwarfare.tactical_map.direct_attack").string,
-            Component.translatable("context.superbwarfare.tactical_map.queue_attack").string,
-            Component.translatable("context.superbwarfare.tactical_map.range_bombardment").string,
-        )
+        val items =
+            listOf(
+                Component.translatable("context.superbwarfare.tactical_map.direct_attack").string,
+                Component.translatable("context.superbwarfare.tactical_map.queue_attack").string,
+                Component.translatable("context.superbwarfare.tactical_map.range_bombardment").string,
+            )
         val padding = 4
         val itemHeight = 12
         val menuW = items.maxOf { font.width(it) } + padding * 2
@@ -591,24 +648,35 @@ class MapContextMenu {
             val hovered = mouseX in smx..smx + menuW && mouseY in iy..iy + itemHeight
             if (hovered) guiGraphics.fill(smx + 1, iy, smx + menuW - 1, iy + itemHeight, 0x66448844)
             guiGraphics.drawString(
-                font, label, smx + padding, iy + 2,
-                if (hovered) 0xFFFFFFFF.toInt() else 0xFFAACCAA.toInt(), false
+                font,
+                label,
+                smx + padding,
+                iy + 2,
+                if (hovered) 0xFFFFFFFF.toInt() else 0xFFAACCAA.toInt(),
+                false,
             )
         }
     }
 
     // ── Context menu click handling ──
 
-    fun handleContextMenuClick(mouseX: Double, mouseY: Double, font: net.minecraft.client.gui.Font, screenWidth: Int, screenHeight: Int): Boolean {
+    fun handleContextMenuClick(
+        mouseX: Double,
+        mouseY: Double,
+        font: net.minecraft.client.gui.Font,
+        screenWidth: Int,
+        screenHeight: Int,
+    ): Boolean {
         if (!ctxMenuVisible) return false
 
         // ── Action sub-menu (Level 3) click handling ──
         if (actionSubMenuVisible && actionSelectedWeapon != null) {
-            val items = listOf(
-                Component.translatable("context.superbwarfare.tactical_map.direct_attack").string,
-                Component.translatable("context.superbwarfare.tactical_map.queue_attack").string,
-                Component.translatable("context.superbwarfare.tactical_map.range_bombardment").string,
-            )
+            val items =
+                listOf(
+                    Component.translatable("context.superbwarfare.tactical_map.direct_attack").string,
+                    Component.translatable("context.superbwarfare.tactical_map.queue_attack").string,
+                    Component.translatable("context.superbwarfare.tactical_map.range_bombardment").string,
+                )
             val padding = 4
             val itemHeight = 12
             val menuW = items.maxOf { font.width(it) } + padding * 2
@@ -666,9 +734,12 @@ class MapContextMenu {
             }
 
             // Click outside sub-menu closes it (but keeps main menu if click is in main menu area)
-            val inMainMenu = mouseX in mainMenuMx.toDouble()..(mainMenuMx + mainMenuW).toDouble()
-                && mouseY in mainMenuMy.toDouble()..(mainMenuMy + mainMenuH).toDouble()
-            if (!inMainMenu && !(mouseX in smx.toDouble()..(smx + subMenuW).toDouble() && mouseY in smy.toDouble()..(smy + subMenuH).toDouble())) {
+            val inMainMenu =
+                mouseX in mainMenuMx.toDouble()..(mainMenuMx + mainMenuW).toDouble() &&
+                    mouseY in mainMenuMy.toDouble()..(mainMenuMy + mainMenuH).toDouble()
+            if (!inMainMenu &&
+                !(mouseX in smx.toDouble()..(smx + subMenuW).toDouble() && mouseY in smy.toDouble()..(smy + subMenuH).toDouble())
+            ) {
                 missileSubMenuVisible = false
                 return true
             }
@@ -712,7 +783,7 @@ class MapContextMenu {
         mouseX: Int,
         mouseY: Int,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
         val isCreating = editMarker == null
         val panelW = 180
@@ -730,8 +801,12 @@ class MapContextMenu {
         guiGraphics.fill(px + panelW, py, px + panelW + 1, py + panelH, 0xFF555555.toInt())
 
         // Title
-        val titleKey = if (isCreating) "context.superbwarfare.tactical_map.create_marker_title"
-        else "context.superbwarfare.tactical_map.edit_marker_title"
+        val titleKey =
+            if (isCreating) {
+                "context.superbwarfare.tactical_map.create_marker_title"
+            } else {
+                "context.superbwarfare.tactical_map.edit_marker_title"
+            }
         val title = Component.translatable(titleKey).string
         guiGraphics.drawString(font, title, px + (panelW - font.width(title)) / 2, py + 6, 0xFFFFFFFF.toInt(), false)
 
@@ -795,15 +870,29 @@ class MapContextMenu {
         val cancelLabel = Component.translatable("context.superbwarfare.tactical_map.cancel").string
         val cancelX = px + panelW - btnW - 8
         val cancelHovered = mouseX in cancelX..cancelX + btnW && mouseY in okY..okY + btnH
-        guiGraphics.fill(cancelX,
-            okY, cancelX + btnW, okY + btnH, if (cancelHovered) 0xFF664444.toInt() else 0xFF553333.toInt())
-        guiGraphics.drawString(font, cancelLabel, cancelX + (btnW - font.width(cancelLabel)) / 2,
-            okY + 4, 0xFFFFFFFF.toInt(), false)
+        guiGraphics.fill(
+            cancelX,
+            okY,
+            cancelX + btnW,
+            okY + btnH,
+            if (cancelHovered) 0xFF664444.toInt() else 0xFF553333.toInt(),
+        )
+        guiGraphics.drawString(
+            font,
+            cancelLabel,
+            cancelX + (btnW - font.width(cancelLabel)) / 2,
+            okY + 4,
+            0xFFFFFFFF.toInt(),
+            false,
+        )
     }
 
     // ── Edit panel click handling ──
 
-    fun handleEditPanelClick(mouseX: Double, mouseY: Double): Boolean {
+    fun handleEditPanelClick(
+        mouseX: Double,
+        mouseY: Double,
+    ): Boolean {
         if (!editPanelVisible) return false
 
         val px = editPanelX
@@ -868,13 +957,14 @@ class MapContextMenu {
             onMarkerEdited?.invoke(existing)
         } else {
             // Create new marker
-            val newMarker = MapMarker(
-                name = name,
-                x = ctxWorldX,
-                y = ctxWorldY,
-                z = ctxWorldZ,
-                colorIndex = editColorIndex
-            )
+            val newMarker =
+                MapMarker(
+                    name = name,
+                    x = ctxWorldX,
+                    y = ctxWorldY,
+                    z = ctxWorldZ,
+                    colorIndex = editColorIndex,
+                )
             onMarkerCreated?.invoke(newMarker)
         }
         closeEditPanel()
@@ -882,15 +972,22 @@ class MapContextMenu {
 
     // ── EditBox event delegation (called from TacticalMapScreen) ──
 
-    fun editBoxMouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return editNameBox?.mouseClicked(mouseX, mouseY, button) ?: false
-    }
+    fun editBoxMouseClicked(
+        mouseX: Double,
+        mouseY: Double,
+        button: Int,
+    ): Boolean = editNameBox?.mouseClicked(mouseX, mouseY, button) ?: false
 
-    fun editBoxKeyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return editNameBox?.keyPressed(keyCode, scanCode, modifiers) ?: false
-    }
+    fun editBoxKeyPressed(
+        keyCode: Int,
+        scanCode: Int,
+        modifiers: Int,
+    ): Boolean = editNameBox?.keyPressed(keyCode, scanCode, modifiers) ?: false
 
-    fun editBoxCharTyped(codePoint: Char, modifiers: Int): Boolean {
+    fun editBoxCharTyped(
+        codePoint: Char,
+        modifiers: Int,
+    ): Boolean {
         // Enter key confirms
         if (codePoint == '\r' || codePoint == '\n') {
             confirmEdit()
@@ -933,21 +1030,23 @@ class MapContextMenu {
             mapAreaW: Int,
             mapAreaH: Int,
             markerTexture: net.minecraft.resources.ResourceLocation,
-            isDragging: Boolean
+            isDragging: Boolean,
         ) {
             // 世界坐标 → 屏幕坐标（贴图底边中点 = 世界坐标锚点）
             val anchorX = mapCenterX + (marker.x - viewBlockX) * scale
             val anchorY = mapCenterY + (marker.z - viewBlockZ) * scale
 
             // 将锚点 clamp 到地图区域内，确保整张贴图可见
-            val clampedAX = anchorX.coerceIn(
-                (mapLeft + MARKER_TEX_W / 2).toDouble(),
-                (mapLeft + mapAreaW - MARKER_TEX_W / 2).toDouble()
-            )
-            val clampedAY = anchorY.coerceIn(
-                (mapTop + MARKER_TEX_H).toDouble(),
-                (mapTop + mapAreaH).toDouble()
-            )
+            val clampedAX =
+                anchorX.coerceIn(
+                    (mapLeft + MARKER_TEX_W / 2).toDouble(),
+                    (mapLeft + mapAreaW - MARKER_TEX_W / 2).toDouble(),
+                )
+            val clampedAY =
+                anchorY.coerceIn(
+                    (mapTop + MARKER_TEX_H).toDouble(),
+                    (mapTop + mapAreaH).toDouble(),
+                )
             val alpha = if (clampedAX == anchorX && clampedAY == anchorY) 1f else 0.5f
 
             val (r, g, b) = rgbToFloat3(getColorRGB(marker.colorIndex))
@@ -957,15 +1056,25 @@ class MapContextMenu {
             pose.pushPose()
             pose.translate(clampedAX.toFloat(), clampedAY.toFloat(), 0f)
 
-            com.mojang.blaze3d.systems.RenderSystem.setShaderColor(r, g, b, alpha)
-            com.mojang.blaze3d.systems.RenderSystem.enableBlend()
+            com.mojang.blaze3d.systems.RenderSystem
+                .setShaderColor(r, g, b, alpha)
+            com.mojang.blaze3d.systems.RenderSystem
+                .enableBlend()
             guiGraphics.blit(
                 markerTexture,
-                -MARKER_TEX_W / 2, -MARKER_TEX_H,
-                MARKER_TEX_W, MARKER_TEX_H,
-                0f, 0f, MARKER_TEX_W, MARKER_TEX_H, MARKER_TEX_W, MARKER_TEX_H
+                -MARKER_TEX_W / 2,
+                -MARKER_TEX_H,
+                MARKER_TEX_W,
+                MARKER_TEX_H,
+                0f,
+                0f,
+                MARKER_TEX_W,
+                MARKER_TEX_H,
+                MARKER_TEX_W,
+                MARKER_TEX_H,
             )
-            com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+            com.mojang.blaze3d.systems.RenderSystem
+                .setShaderColor(1f, 1f, 1f, 1f)
 
             pose.popPose()
 

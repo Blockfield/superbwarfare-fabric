@@ -7,6 +7,7 @@ import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.DispenserLaunchable
 import com.atsuishio.superbwarfare.tools.NBTTool
 import com.atsuishio.superbwarfare.tools.getOrCreateTag
+import io.github.fabricators_of_create.porting_lib.item.extensions.CustomFuelItem
 import net.minecraft.ChatFormatting
 import net.minecraft.core.dispenser.BlockSource
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior
@@ -25,10 +26,16 @@ import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.DispenserBlock
 import net.minecraft.world.phys.Vec3
-import io.github.fabricators_of_create.porting_lib.item.extensions.CustomFuelItem
 
-open class C4BombItem : Item(Properties()), DispenserLaunchable, CustomFuelItem {
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?> {
+open class C4BombItem :
+    Item(Properties()),
+    DispenserLaunchable,
+    CustomFuelItem {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack?> {
         val stack = player.getItemInHand(hand)
 
         if (!level.isClientSide) {
@@ -38,12 +45,12 @@ open class C4BombItem : Item(Properties()), DispenserLaunchable, CustomFuelItem 
             entity.setPos(
                 player.x + 0.25 * player.lookAngle.x,
                 player.eyeY - 0.2f + 0.25 * player.lookAngle.y,
-                player.z + 0.25 * player.lookAngle.z
+                player.z + 0.25 * player.lookAngle.z,
             )
             entity.setDeltaMovement(
                 0.5 * player.lookAngle.x,
                 0.5 * player.lookAngle.y,
-                0.5 * player.lookAngle.z
+                0.5 * player.lookAngle.z,
             )
             entity.ownerUUID = player.getUUID()
 
@@ -67,23 +74,26 @@ open class C4BombItem : Item(Properties()), DispenserLaunchable, CustomFuelItem 
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         val tag = NBTTool.getTag(stack)
         if (tag.getBoolean(TAG_CONTROL)) {
             tooltipComponents.add(
-                Component.translatable("des.superbwarfare.c4_bomb.control").withStyle(ChatFormatting.GRAY)
+                Component.translatable("des.superbwarfare.c4_bomb.control").withStyle(ChatFormatting.GRAY),
             )
         } else {
             tooltipComponents.add(
-                Component.translatable("des.superbwarfare.c4_bomb.time").withStyle(ChatFormatting.GRAY)
+                Component.translatable("des.superbwarfare.c4_bomb.time").withStyle(ChatFormatting.GRAY),
             )
         }
     }
 
     override fun getLaunchBehavior(): DispenseItemBehavior {
         return object : DefaultDispenseItemBehavior() {
-            public override fun execute(pSource: BlockSource, pStack: ItemStack): ItemStack {
+            public override fun execute(
+                pSource: BlockSource,
+                pStack: ItemStack,
+            ): ItemStack {
                 val level: Level = pSource.level
                 val position = DispenserBlock.getDispensePosition(pSource)
                 val direction = pSource.state().getValue(DispenserBlock.FACING)
@@ -109,9 +119,10 @@ open class C4BombItem : Item(Properties()), DispenserLaunchable, CustomFuelItem 
         }
     }
 
-    override fun getBurnTime(itemStack: ItemStack, recipeType: RecipeType<*>?): Int {
-        return 20000
-    }
+    override fun getBurnTime(
+        itemStack: ItemStack,
+        recipeType: RecipeType<*>?,
+    ): Int = 20000
 
     companion object {
         const val TAG_CONTROL: String = "Control"

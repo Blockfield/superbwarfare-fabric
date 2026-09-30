@@ -4,7 +4,9 @@ import com.atsuishio.superbwarfare.entity.projectile.Ptkm1rEntity
 import com.maydaymemory.mae.basic.Pose
 import com.maydaymemory.mae.control.statemachine.AnimationStateMachine
 
-class Ptkm1rAnimationInstance(entity: Ptkm1rEntity) {
+class Ptkm1rAnimationInstance(
+    entity: Ptkm1rEntity,
+) {
     val context = Ptkm1rContext(entity)
     private val stateMachine = AnimationStateMachine(Ptkm1rStates.INIT, context) { System.nanoTime() }
 
@@ -13,7 +15,5 @@ class Ptkm1rAnimationInstance(entity: Ptkm1rEntity) {
         context.tick()
     }
 
-    fun getPose(): Pose {
-        return stateMachine.getPose()
-    }
+    fun getPose(): Pose = stateMachine.getPose()
 }

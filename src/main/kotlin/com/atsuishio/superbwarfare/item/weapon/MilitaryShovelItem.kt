@@ -6,6 +6,9 @@ import com.atsuishio.superbwarfare.init.ModTags
 import com.atsuishio.superbwarfare.item.CustomDamageProperty
 import com.atsuishio.superbwarfare.tiers.ModItemTier
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import net.minecraft.ChatFormatting
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer
 import net.minecraft.core.component.DataComponents
@@ -14,37 +17,35 @@ import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.*
 import net.minecraft.world.item.component.Tool
 import net.minecraft.world.item.context.UseOnContext
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 
 open class MilitaryShovelItem :
     AxeItem(
         ModItemTier.CEMENTED_CARBIDE,
-        CustomDamageProperty(810).rarity(Rarity.RARE)
+        CustomDamageProperty(810)
+            .rarity(Rarity.RARE)
             .component(
-                DataComponents.TOOL, Tool(
+                DataComponents.TOOL,
+                Tool(
                     listOf(
                         Tool.Rule.deniesDrops(ModItemTier.CEMENTED_CARBIDE.incorrectBlocksForDrops),
                         Tool.Rule.minesAndDrops(
                             ModTags.Blocks.MINEABLE_WITH_MILITARY_SHOVEL,
-                            ModItemTier.CEMENTED_CARBIDE.speed
-                        )
+                            ModItemTier.CEMENTED_CARBIDE.speed,
+                        ),
                     ),
-                    1f, 1
-                )
-            )
-            .attributes(createAttributes(ModItemTier.CEMENTED_CARBIDE, 2f, -2.6f))
+                    1f,
+                    1,
+                ),
+            ).attributes(createAttributes(ModItemTier.CEMENTED_CARBIDE, 2f, -2.6f)),
     ) {
-
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.military_shovel").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.military_shovel").withStyle(ChatFormatting.GRAY),
         )
     }
 
@@ -74,9 +75,7 @@ open class MilitaryShovelItem :
         return vanilla.useOn(context)
     }
 
-    override fun getEnchantmentValue(): Int {
-        return ModItemTier.CEMENTED_CARBIDE.enchantmentValue
-    }
+    override fun getEnchantmentValue(): Int = ModItemTier.CEMENTED_CARBIDE.enchantmentValue
 
     companion object {
         /** Клиент: BEWLR из IClientItemExtensions#getCustomRenderer заменён на DynamicItemRenderer из Fabric API. */
@@ -91,9 +90,8 @@ open class MilitaryShovelItem :
                         renderer = MilitaryShovelRenderer(mc.blockEntityRenderDispatcher, mc.entityModels)
                     }
                     renderer!!.renderByItem(stack, mode, poseStack, buffer, light, overlay)
-                }
+                },
             )
         }
-
     }
 }

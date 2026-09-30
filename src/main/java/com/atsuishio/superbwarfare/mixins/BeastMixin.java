@@ -1,8 +1,10 @@
 package com.atsuishio.superbwarfare.mixins;
 
 import com.atsuishio.superbwarfare.entity.mixin.BeastEntityKiller;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,15 +15,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = LivingEntity.class, priority = Integer.MAX_VALUE)
 public abstract class BeastMixin implements BeastEntityKiller {
 
-    @Unique
-    public boolean sbw$beastKilled = false;
+    @Unique public boolean sbw$beastKilled = false;
 
     @Override
     public void sbw$kill() {
         this.sbw$beastKilled = true;
     }
 
-    @Inject(method = "isDeadOrDying", at = @At("HEAD"), cancellable = true, order = Integer.MAX_VALUE)
+    @Inject(
+            method = "isDeadOrDying",
+            at = @At("HEAD"),
+            cancellable = true,
+            order = Integer.MAX_VALUE)
     public void isDeadOrDying(CallbackInfoReturnable<Boolean> cir) {
         if (this.sbw$beastKilled) {
             cir.cancel();

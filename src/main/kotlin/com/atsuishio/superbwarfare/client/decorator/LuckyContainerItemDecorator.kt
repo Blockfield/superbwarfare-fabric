@@ -2,17 +2,23 @@ package com.atsuishio.superbwarfare.client.decorator
 
 import com.atsuishio.superbwarfare.client.RenderHelper
 import com.atsuishio.superbwarfare.item.container.LuckyContainerBlockItem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.core.component.DataComponents
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 class LuckyContainerItemDecorator : ItemDecorator {
-    override fun render(guiGraphics: GuiGraphics, font: Font, stack: ItemStack, xOffset: Int, yOffset: Int): Boolean {
+    override fun render(
+        guiGraphics: GuiGraphics,
+        font: Font,
+        stack: ItemStack,
+        xOffset: Int,
+        yOffset: Int,
+    ): Boolean {
         if (stack.item !is LuckyContainerBlockItem) return false
         val tag = stack.get(DataComponents.BLOCK_ENTITY_DATA)?.copyTag() ?: return false
         if (!tag.contains("Icon")) return false

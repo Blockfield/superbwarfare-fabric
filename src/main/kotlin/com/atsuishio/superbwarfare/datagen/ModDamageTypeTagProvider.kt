@@ -18,42 +18,47 @@ import java.util.concurrent.CompletableFuture
 class ModDamageTypeTagProvider(
     pOutput: PackOutput,
     pLookupProvider: CompletableFuture<HolderLookup.Provider>,
-    existingFileHelper: ExistingFileHelper
+    existingFileHelper: ExistingFileHelper,
 ) : DamageTypeTagsProvider(pOutput, pLookupProvider, Mod.MODID, existingFileHelper) {
     override fun addTags(pProvider: HolderLookup.Provider) {
-        this.tag(ModTags.DamageTypes.PROJECTILE).add(
-            ModDamageTypes.GUN_FIRE,
-            ModDamageTypes.GUN_FIRE_HEADSHOT,
-            DamageTypes.ARROW,
-            DamageTypes.TRIDENT,
-            DamageTypes.THROWN,
-            ModDamageTypes.SUPER_STAR_HIT,
-            ModDamageTypes.SUPER_STAR_SLASH
-        )
-            .addOptional(ResourceLocation.fromNamespaceAndPath("tacz", "bullet"))
+        this
+            .tag(ModTags.DamageTypes.PROJECTILE)
+            .add(
+                ModDamageTypes.GUN_FIRE,
+                ModDamageTypes.GUN_FIRE_HEADSHOT,
+                DamageTypes.ARROW,
+                DamageTypes.TRIDENT,
+                DamageTypes.THROWN,
+                ModDamageTypes.SUPER_STAR_HIT,
+                ModDamageTypes.SUPER_STAR_SLASH,
+            ).addOptional(ResourceLocation.fromNamespaceAndPath("tacz", "bullet"))
             .addOptional(ResourceLocation.fromNamespaceAndPath("tacz", "bullet_void"))
             .addOptional(ResourceLocation.fromNamespaceAndPath("virtuarealcraft", "rain_crystal"))
             .addOptional(ResourceLocation.fromNamespaceAndPath("virtuarealcraft", "rain_shower_butterfly"))
             .addOptional(ResourceLocation.fromNamespaceAndPath("virtuarealcraft", "sparkle_butterfly"))
             .addOptional(ResourceLocation.fromNamespaceAndPath("dreamaticvoyage", "blood_crystal"))
             .addOptional(ResourceLocation.fromNamespaceAndPath("dreamaticvoyage", "leviy_beam"))
-        this.tag(ModTags.DamageTypes.PROJECTILE_ABSOLUTE)
+        this
+            .tag(ModTags.DamageTypes.PROJECTILE_ABSOLUTE)
             .add(ModDamageTypes.GUN_FIRE_ABSOLUTE, ModDamageTypes.GUN_FIRE_HEADSHOT_ABSOLUTE)
             .addOptional(ResourceLocation.fromNamespaceAndPath("tacz", "bullet_ignore_armor"))
             .addOptional(ResourceLocation.fromNamespaceAndPath("tacz", "bullet_void_ignore_armor"))
             .addOptional(ResourceLocation.fromNamespaceAndPath("dreamaticvoyage", "leviy_beam_absolute"))
-        this.tag(ModTags.DamageTypes.VEHICLE_IGNORE)
+        this
+            .tag(ModTags.DamageTypes.VEHICLE_IGNORE)
             .addOptional(ResourceLocation.fromNamespaceAndPath("sona", "injury"))
-        this.tag(ModTags.DamageTypes.VEHICLE_NOT_ABSORB)
+        this
+            .tag(ModTags.DamageTypes.VEHICLE_NOT_ABSORB)
             .add(
                 DamageTypes.EXPLOSION,
                 DamageTypes.PLAYER_EXPLOSION,
                 ModDamageTypes.CUSTOM_EXPLOSION,
                 ModDamageTypes.MINE,
                 ModDamageTypes.PROJECTILE_EXPLOSION,
-                ModDamageTypes.AMMO_CONSUMPTION
+                ModDamageTypes.AMMO_CONSUMPTION,
             )
-        this.tag(ModTags.DamageTypes.VEHICLE_IMMUNE)
+        this
+            .tag(ModTags.DamageTypes.VEHICLE_IMMUNE)
             .add(DamageTypes.CACTUS, DamageTypes.SWEET_BERRY_BUSH, DamageTypes.IN_WALL)
             .addOptional(ResourceLocation.fromNamespaceAndPath("iceandfire", "gorgon"))
         this.tag(ModTags.DamageTypes.GUN_DAMAGE).add(
@@ -72,13 +77,13 @@ class ModDamageTypeTagProvider(
             ModDamageTypes.SUPER_STAR_SLASH,
             ModDamageTypes.PHOSPHORUS_FIRE,
             ModDamageTypes.CUSTOM_EXPLOSION,
-            ModDamageTypes.PROJECTILE_EXPLOSION
+            ModDamageTypes.PROJECTILE_EXPLOSION,
         )
         this.tag(ModTags.DamageTypes.SBW_GUN_FIRE_DAMAGE).add(
             ModDamageTypes.GUN_FIRE,
             ModDamageTypes.GUN_FIRE_HEADSHOT,
             ModDamageTypes.GUN_FIRE_ABSOLUTE,
-            ModDamageTypes.GUN_FIRE_HEADSHOT_ABSOLUTE
+            ModDamageTypes.GUN_FIRE_HEADSHOT_ABSOLUTE,
         )
 
         this.tag(DamageTypeTags.ALWAYS_HURTS_ENDER_DRAGONS).add(
@@ -92,7 +97,7 @@ class ModDamageTypeTagProvider(
             ModDamageTypes.REPAIR_TOOL,
             ModDamageTypes.SUPER_STAR_HIT,
             ModDamageTypes.SUPER_STAR_SLASH,
-            ModDamageTypes.PHOSPHORUS_FIRE
+            ModDamageTypes.PHOSPHORUS_FIRE,
         )
         this.tag(DamageTypeTags.BYPASSES_ARMOR).add(
             ModDamageTypes.GUN_FIRE_ABSOLUTE,
@@ -110,12 +115,12 @@ class ModDamageTypeTagProvider(
             ModDamageTypes.SUPER_STAR_HIT,
             ModDamageTypes.SUPER_STAR_SLASH,
             ModDamageTypes.PHOSPHORUS_FIRE,
-            ModDamageTypes.AMMO_CONSUMPTION
+            ModDamageTypes.AMMO_CONSUMPTION,
         )
         this.tag(DamageTypeTags.BYPASSES_EFFECTS).add(
             ModDamageTypes.SHOCK,
             ModDamageTypes.PHOSPHORUS_FIRE,
-            ModDamageTypes.AMMO_CONSUMPTION
+            ModDamageTypes.AMMO_CONSUMPTION,
         )
         this.tag(DamageTypeTags.BYPASSES_ENCHANTMENTS).add(
             ModDamageTypes.GUN_FIRE_ABSOLUTE,
@@ -132,13 +137,13 @@ class ModDamageTypeTagProvider(
             ModDamageTypes.SUPER_STAR_HIT,
             ModDamageTypes.SUPER_STAR_SLASH,
             ModDamageTypes.PHOSPHORUS_FIRE,
-            ModDamageTypes.AMMO_CONSUMPTION
+            ModDamageTypes.AMMO_CONSUMPTION,
         )
         this.tag(DamageTypeTags.IS_EXPLOSION).add(
             ModDamageTypes.PROJECTILE_EXPLOSION,
             ModDamageTypes.CUSTOM_EXPLOSION,
             ModDamageTypes.LUNGE_MINE,
-            ModDamageTypes.AMMO_CONSUMPTION
+            ModDamageTypes.AMMO_CONSUMPTION,
         )
         this.tag(DamageTypeTags.NO_KNOCKBACK).add(
             ModDamageTypes.AMMO_CONSUMPTION,
@@ -183,13 +188,14 @@ class ModDamageTypeTagProvider(
             ModDamageTypes.VEHICLE_STRIKE,
             ModDamageTypes.SUPER_STAR_HIT,
             ModDamageTypes.SUPER_STAR_SLASH,
-            ModDamageTypes.PHOSPHORUS_FIRE
+            ModDamageTypes.PHOSPHORUS_FIRE,
         )
     }
 
     companion object {
-        fun otherModTag(modId: String, name: String): TagKey<DamageType> {
-            return TagKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(modId, name))
-        }
+        fun otherModTag(
+            modId: String,
+            name: String,
+        ): TagKey<DamageType> = TagKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(modId, name))
     }
 }

@@ -9,6 +9,9 @@ import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.projectile.AbstractProjectileDispenseBehavior
 import com.atsuishio.superbwarfare.tools.CustomExplosion
 import com.atsuishio.superbwarfare.tools.mc
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer
 import net.minecraft.core.Position
 import net.minecraft.core.dispenser.BlockSource
@@ -26,12 +29,11 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Rarity
 import net.minecraft.world.item.UseAnim
 import net.minecraft.world.level.Level
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry
 import kotlin.math.min
 
-open class HandGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLaunchable {
+open class HandGrenade :
+    Item(Properties().rarity(Rarity.UNCOMMON)),
+    DispenserLaunchable {
     companion object {
         /** Клиент: BEWLR из IClientItemExtensions#getCustomRenderer заменён на DynamicItemRenderer из Fabric API. */
         @Environment(EnvType.CLIENT)
@@ -45,7 +47,7 @@ open class HandGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLa
                         renderer = HandGrenadeRenderer(mc.blockEntityRenderDispatcher, mc.entityModels)
                     }
                     renderer!!.renderByItem(stack, mode, poseStack, buffer, light, overlay)
-                }
+                },
             )
         }
     }
@@ -53,22 +55,26 @@ open class HandGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLa
     override fun use(
         worldIn: Level,
         playerIn: Player,
-        handIn: InteractionHand
+        handIn: InteractionHand,
     ): InteractionResultHolder<ItemStack> {
         val stack = playerIn.getItemInHand(handIn)
         playerIn.startUsingItem(handIn)
         if (playerIn is ServerPlayer) {
-            playerIn.level()
+            playerIn
+                .level()
                 .playSound(null, playerIn.onPos, ModSounds.GRENADE_PULL.get(), SoundSource.PLAYERS, 1f, 1f)
         }
         return InteractionResultHolder.consume(stack)
     }
 
-    override fun getUseAnimation(stack: ItemStack): UseAnim {
-        return UseAnim.SPEAR
-    }
+    override fun getUseAnimation(stack: ItemStack): UseAnim = UseAnim.SPEAR
 
-    override fun releaseUsing(stack: ItemStack, level: Level, living: LivingEntity, timeLeft: Int) {
+    override fun releaseUsing(
+        stack: ItemStack,
+        level: Level,
+        living: LivingEntity,
+        timeLeft: Int,
+    ) {
         if (!level.isClientSide) {
             if (living is Player) {
                 val usingTime = this.getUseDuration(stack, living) - timeLeft
@@ -84,7 +90,7 @@ open class HandGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLa
                         living.yRot,
                         0.0f,
                         power,
-                        0.0f
+                        0.0f,
                     )
                     level.addFreshEntity(handGrenade)
 
@@ -95,7 +101,7 @@ open class HandGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLa
                             ModSounds.GRENADE_THROW.get(),
                             SoundSource.PLAYERS,
                             1f,
-                            1f
+                            1f,
                         )
                     }
 
@@ -107,11 +113,16 @@ open class HandGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLa
         }
     }
 
-    override fun finishUsingItem(pStack: ItemStack, pLevel: Level, pLivingEntity: LivingEntity): ItemStack {
+    override fun finishUsingItem(
+        pStack: ItemStack,
+        pLevel: Level,
+        pLivingEntity: LivingEntity,
+    ): ItemStack {
         if (!pLevel.isClientSide) {
             val handGrenade = HandGrenadeEntity(pLivingEntity, pLevel)
 
-            CustomExplosion.Builder(handGrenade)
+            CustomExplosion
+                .Builder(handGrenade)
                 .attacker(pLivingEntity)
                 .damage(ExplosionConfig.M67_GRENADE_EXPLOSION_DAMAGE.get().toFloat())
                 .radius(ExplosionConfig.M67_GRENADE_EXPLOSION_RADIUS.get().toFloat())
@@ -129,25 +140,28 @@ open class HandGrenade : Item(Properties().rarity(Rarity.UNCOMMON)), DispenserLa
         return super.finishUsingItem(pStack, pLevel, pLivingEntity)
     }
 
-    override fun getUseDuration(stack: ItemStack, entity: LivingEntity): Int {
-        return 100
-    }
+    override fun getUseDuration(
+        stack: ItemStack,
+        entity: LivingEntity,
+    ): Int = 100
 
-    override fun getLaunchBehavior(): DispenseItemBehavior {
-        return object : AbstractProjectileDispenseBehavior() {
-            override fun getProjectile(level: Level, position: Position, stack: ItemStack): Projectile {
-                return HandGrenadeEntity(
+    override fun getLaunchBehavior(): DispenseItemBehavior =
+        object : AbstractProjectileDispenseBehavior() {
+            override fun getProjectile(
+                level: Level,
+                position: Position,
+                stack: ItemStack,
+            ): Projectile =
+                HandGrenadeEntity(
                     ModEntities.HAND_GRENADE.get(),
                     position.x(),
                     position.y(),
                     position.z(),
-                    level
+                    level,
                 )
-            }
 
             override fun playSound(source: BlockSource) {
                 source.level.playSound(null, source.pos, ModSounds.GRENADE_THROW.get(), SoundSource.BLOCKS, 1f, 1f)
             }
         }
-    }
 }

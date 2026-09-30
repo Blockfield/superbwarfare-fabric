@@ -39,19 +39,26 @@ import net.minecraft.world.phys.Vec3
 import org.joml.Math
 import java.util.*
 
-open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) : ArtilleryEntity(type, world) {
+open class AnnihilatorEntity(
+    type: EntityType<AnnihilatorEntity>,
+    world: Level,
+) : ArtilleryEntity(type, world) {
     init {
         this.noCulling = true
     }
 
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
         super.defineSynchedData(builder)
-        builder.define(LASER_LEFT_LENGTH, 0f)
+        builder
+            .define(LASER_LEFT_LENGTH, 0f)
             .define(LASER_MIDDLE_LENGTH, 0f)
             .define(LASER_RIGHT_LENGTH, 0f)
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val mainStack = player.mainHandItem
         val offStack = player.offhandItem
 
@@ -98,19 +105,32 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
         }
     }
 
-    private fun laserLength(pos: Vec3, living: LivingEntity?, data: GunData): Float {
-        val result = level().clip(
-            ClipContext(
-                pos, pos.add(getBarrelVector(1f).scale(512.0)),
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this
+    private fun laserLength(
+        pos: Vec3,
+        living: LivingEntity?,
+        data: GunData,
+    ): Float {
+        val result =
+            level().clip(
+                ClipContext(
+                    pos,
+                    pos.add(getBarrelVector(1f).scale(512.0)),
+                    ClipContext.Block.COLLIDER,
+                    ClipContext.Fluid.NONE,
+                    this,
+                ),
             )
-        )
 
         val hitPos = result.location
         val blockPos = result.blockPos
         causeLaserExplode(hitPos, data, living)
 
-        val hardness = this.level().getBlockState(blockPos).block.defaultDestroyTime()
+        val hardness =
+            this
+                .level()
+                .getBlockState(blockPos)
+                .block
+                .defaultDestroyTime()
 
         if (ExplosionConfig.EXPLOSION_DESTROY.get() && ExplosionConfig.EXTRA_EXPLOSION_EFFECT.get() && hardness != -1f) {
             Block.dropResources(this.level().getBlockState(blockPos), this.level(), blockPos, null)
@@ -120,7 +140,11 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
         return pos.distanceTo(hitPos).toFloat()
     }
 
-    private fun laserLengthEntity(pos: Vec3, living: LivingEntity?, data: GunData): Float {
+    private fun laserLengthEntity(
+        pos: Vec3,
+        living: LivingEntity?,
+        data: GunData,
+    ): Float {
         if (this.level() is ServerLevel) {
             var distance = (512 * 512).toDouble()
             var hitResult = TraceTool.pickNew(pos, 512.0, getBarrelVector(1f), this)
@@ -136,23 +160,25 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
             val viewVec = getBarrelVector(1f)
             val toVec = pos.add(viewVec.x * 512, viewVec.y * 512, viewVec.z * 512)
             val aabb = this.boundingBox.expandTowards(viewVec.scale(512.0)).inflate(1.0)
-            val result = ProjectileUtil.getEntityHitResult(
-                this,
-                pos,
-                toVec,
-                aabb,
-                { !it.isSpectator },
-                distance
-            )
+            val result =
+                ProjectileUtil.getEntityHitResult(
+                    this,
+                    pos,
+                    toVec,
+                    aabb,
+                    { !it.isSpectator },
+                    distance,
+                )
             if (result != null) {
                 val targetPos = result.location
                 val distanceToTarget = pos.distanceToSqr(targetPos)
                 if (distanceToTarget > distance || distanceToTarget > 512 * 512) {
-                    hitResult = BlockHitResult.miss(
-                        targetPos,
-                        Direction.getNearest(viewVec.x, viewVec.y, viewVec.z),
-                        BlockPos.containing(targetPos)
-                    )
+                    hitResult =
+                        BlockHitResult.miss(
+                            targetPos,
+                            Direction.getNearest(viewVec.x, viewVec.y, viewVec.z),
+                            BlockPos.containing(targetPos),
+                        )
                 } else if (distanceToTarget < distance) {
                     hitResult = result
                 }
@@ -163,7 +189,7 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
                     DamageHandler.doDamage(
                         target,
                         ModDamageTypes.causeLaserDamage(this.level().registryAccess(), this, passenger),
-                        data.get(GunProp.DAMAGE).toFloat()
+                        data.get(GunProp.DAMAGE).toFloat(),
                     )
                     target.invulnerableTime = 0
                     causeLaserExplode(targetPos, data, living)
@@ -174,7 +200,11 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
         return 512f
     }
 
-    private fun causeLaserExplode(vec3: Vec3, gunData: GunData, living: Entity?) {
+    private fun causeLaserExplode(
+        vec3: Vec3,
+        gunData: GunData,
+        living: Entity?,
+    ) {
         val radius = gunData.get(GunProp.EXPLOSION_RADIUS).toFloat()
 
         createCustomExplosion()
@@ -185,19 +215,30 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
             .explode()
     }
 
-    override fun vehicleShoot(living: LivingEntity?, weaponName: String, targetPos: Vec3?) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        weaponName: String,
+        targetPos: Vec3?,
+    ) {
         if (this.isWreck) return
         val data = getGunData(weaponName)
         shoot(living, data)
     }
 
-    override fun vehicleShoot(living: LivingEntity?, uuid: UUID?, targetPos: Vec3?) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        uuid: UUID?,
+        targetPos: Vec3?,
+    ) {
         if (this.isWreck) return
         val data = getGunData(living)
         shoot(living, data)
     }
 
-    fun shoot(living: LivingEntity?, gunData: GunData?) {
+    fun shoot(
+        living: LivingEntity?,
+        gunData: GunData?,
+    ) {
         if (gunData == null) return
         if (level() is ServerLevel) {
             chargeProgress = 0f
@@ -217,22 +258,22 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
                         LASER_LEFT_LENGTH,
                         Math.min(
                             laserLength(barrelLeftPos, living, gunData),
-                            laserLengthEntity(barrelLeftPos, living, gunData)
-                        )
+                            laserLengthEntity(barrelLeftPos, living, gunData),
+                        ),
                     )
                     this.entityData.set(
                         LASER_MIDDLE_LENGTH,
                         Math.min(
                             laserLength(barrelMiddlePos, living, gunData),
-                            laserLengthEntity(barrelMiddlePos, living, gunData)
-                        )
+                            laserLengthEntity(barrelMiddlePos, living, gunData),
+                        ),
                     )
                     this.entityData.set(
                         LASER_RIGHT_LENGTH,
                         Math.min(
                             laserLength(barrelRightPos, living, gunData),
-                            laserLengthEntity(barrelRightPos, living, gunData)
-                        )
+                            laserLengthEntity(barrelRightPos, living, gunData),
+                        ),
                     )
                 }
             }
@@ -248,7 +289,7 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
                         gunData.get(GunProp.SOUND_INFO).vehicleReload,
                         SoundSource.PLAYERS,
                         1f,
-                        1f
+                        1f,
                     )
                 }
             }
@@ -257,11 +298,12 @@ open class AnnihilatorEntity(type: EntityType<AnnihilatorEntity>, world: Level) 
                 val shootPos = gunData.get(GunProp.SHOOT_POS)
                 val list = shootPos.positions
                 val size = list.size
-                val index: Int = if (shootPos.boundUpWithAmmoAmount) {
-                    Mth.clamp(gunData.ammo.get() - 1, 0, size)
-                } else {
-                    gunData.fireIndex.get() % size
-                }
+                val index: Int =
+                    if (shootPos.boundUpWithAmmoAmount) {
+                        Mth.clamp(gunData.ammo.get() - 1, 0, size)
+                    } else {
+                        gunData.fireIndex.get() % size
+                    }
                 sendPacketToAll(VehicleShootClientMessage(living.uuid, this.uuid, index))
             }
             laserScale = gunData.get(GunProp.SHOOT_ANIMATION_TIME).toFloat()

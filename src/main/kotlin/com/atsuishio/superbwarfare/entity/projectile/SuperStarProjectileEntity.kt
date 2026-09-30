@@ -2,6 +2,7 @@ package com.atsuishio.superbwarfare.entity.projectile
 
 import com.atsuishio.superbwarfare.Mod.queueServerWork
 import com.atsuishio.superbwarfare.client.particle.CustomCloudOption
+import com.atsuishio.superbwarfare.fabric.MultipartEntities
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModParticleTypes
 import com.atsuishio.superbwarfare.init.ModSounds
@@ -30,12 +31,12 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.MultipartEntities
 import kotlin.math.min
 
-open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEntity>, world: Level) :
-    FastThrowableProjectile(type, world) {
-
+open class SuperStarProjectileEntity(
+    type: EntityType<out SuperStarProjectileEntity>,
+    world: Level,
+) : FastThrowableProjectile(type, world) {
     private var currentTarget: Entity? = null
 
     var tickO = 0
@@ -65,7 +66,7 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
     override fun performDamage(
         entity: Entity,
         damage: Float,
-        isHeadshot: Boolean
+        isHeadshot: Boolean,
     ) {
     }
 
@@ -75,7 +76,10 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
     }
 
     @JvmOverloads
-    open fun hitAndSlash(entity: Entity, headshot: Boolean = false) {
+    open fun hitAndSlash(
+        entity: Entity,
+        headshot: Boolean = false,
+    ) {
         val level = level() as? ServerLevel ?: return
 
         var hitVec = entity.position()
@@ -84,15 +88,17 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
             hitVec = entity.eyePosition
         }
 
-        level.addFreshEntity(PrismaticBoltEntity(level).apply {
-            setPos(hitVec.x, hitVec.y, hitVec.z)
-        })
+        level.addFreshEntity(
+            PrismaticBoltEntity(level).apply {
+                setPos(hitVec.x, hitVec.y, hitVec.z)
+            },
+        )
 
         // 命中伤害
         val headShotModifier = if (headshot) this.getHeadShot() else 1f
         entity.forceHurt(
             ModDamageTypes.causeSuperStarHitDamage(level.registryAccess(), this, this.owner),
-            damageValue * headShotModifier
+            damageValue * headShotModifier,
         )
         entity.invulnerableTime = 0
 
@@ -100,7 +106,7 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
         queueServerWork(2) {
             entity.forceHurt(
                 ModDamageTypes.causeSuperStarSlashDamage(level.registryAccess(), this, this.owner),
-                explosionDamageValue
+                explosionDamageValue,
             )
             level.playSound(null, entity.onPos, ModSounds.KNIFE_FLESH.get(), SoundSource.PLAYERS, 2f, 1f)
 
@@ -131,7 +137,7 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
             event,
             SoundSource.AMBIENT,
             volume,
-            1f
+            1f,
         )
 
         if (level is ServerLevel) {
@@ -152,12 +158,17 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
                 ModSounds.LAND.get(),
                 SoundSource.BLOCKS,
                 1f,
-                1f
+                1f,
             )
         }
     }
 
-    open fun summonVectorParticle(serverLevel: ServerLevel, state: BlockState, pos: Vec3, dir: Vec3) {
+    open fun summonVectorParticle(
+        serverLevel: ServerLevel,
+        state: BlockState,
+        pos: Vec3,
+        dir: Vec3,
+    ) {
         repeat(2) {
             val vec3 = randomVec(dir, 80.0)
             ParticleTool.sendParticle(
@@ -171,17 +182,23 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
                 vec3.y,
                 vec3.z,
                 0.2 + 0.1 * Math.random(),
-                true
+                true,
             )
         }
 
         val soundType = state.soundType
-        if (soundType === SoundType.METAL || soundType === SoundType.ANVIL || soundType === SoundType.CHAIN || soundType === SoundType.COPPER || soundType === SoundType.NETHERITE_BLOCK) {
+        if (soundType === SoundType.METAL || soundType === SoundType.ANVIL || soundType === SoundType.CHAIN ||
+            soundType === SoundType.COPPER ||
+            soundType === SoundType.NETHERITE_BLOCK
+        ) {
             serverLevel.playSound(null, pos.x, pos.y, pos.z, ModSounds.HIT.get(), SoundSource.BLOCKS, 2f, 1f)
         }
     }
 
-    open fun onHitWater(location: Vec3, result: BlockHitResult) {
+    open fun onHitWater(
+        location: Vec3,
+        result: BlockHitResult,
+    ) {
         val serverLevel = this.level() as? ServerLevel ?: return
 
         val pos = result.blockPos
@@ -209,7 +226,7 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
                     vec3.y,
                     vec3.z,
                     15.0,
-                    true
+                    true,
                 )
             }
 
@@ -220,13 +237,15 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
                 ModSounds.HIT_WATER.get(),
                 SoundSource.BLOCKS,
                 1f,
-                1f
+                1f,
             )
         }
     }
 
-    fun randomVec(vec3: Vec3, spread: Double): Vec3 =
-        randomSpreadVec(this.random, vec3, spread)
+    fun randomVec(
+        vec3: Vec3,
+        spread: Double,
+    ): Vec3 = randomSpreadVec(this.random, vec3, spread)
 
     override fun tick() {
         tickO = tick
@@ -237,10 +256,11 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
         if (!level.isClientSide) {
             val startVec = this.position()
             val endVec = startVec.add(this.deltaMovement)
-            val fluidResult = IAdvancedHitDetection.rayTraceBlocks(
-                level,
-                ClipContext(startVec, endVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this)
-            ) { _ -> false }
+            val fluidResult =
+                IAdvancedHitDetection.rayTraceBlocks(
+                    level,
+                    ClipContext(startVec, endVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this),
+                ) { _ -> false }
             this.onHitWater(fluidResult.getLocation(), fluidResult)
 
             val target = this.currentTarget
@@ -257,7 +277,7 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
                 zo,
                 vec3.x,
                 vec3.y,
-                vec3.z
+                vec3.z,
             )
         }
     }
@@ -266,7 +286,5 @@ open class SuperStarProjectileEntity(type: EntityType<out SuperStarProjectileEnt
 
     override fun isFastMoving() = false
 
-    override fun isNoGravity(): Boolean {
-        return true
-    }
+    override fun isNoGravity(): Boolean = true
 }

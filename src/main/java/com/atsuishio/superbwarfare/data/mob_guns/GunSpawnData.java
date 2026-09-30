@@ -13,13 +13,16 @@ public class GunSpawnData implements DeserializeFromString {
 
     @SerializedName("AimTime")
     public int aimTime = 30;
+
     @SerializedName("ClearAimTimeWhenLostSight")
     public boolean clearAimTimeWhenLostSight = true;
+
     @SerializedName("SemiFireInterval")
     public long semiFireInterval = 500;
 
     @SerializedName("BackupAmmo")
     public int backupAmmo;
+
     @SerializedName("SpawnWithLoadedAmmo")
     public boolean spawnWithLoadedAmmo = true;
 
@@ -28,6 +31,7 @@ public class GunSpawnData implements DeserializeFromString {
 
     @SerializedName("Zoom")
     public boolean zoom = true;
+
     @SerializedName("Spread")
     public double spread = 1;
 

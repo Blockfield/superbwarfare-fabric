@@ -4,12 +4,12 @@ import com.atsuishio.superbwarfare.block.ChargingStationBlock
 import com.atsuishio.superbwarfare.block.entity.ChargingStationBlockEntity
 import com.atsuishio.superbwarfare.client.renderer.ModRenderTypes
 import com.mojang.blaze3d.vertex.PoseStack
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 class ChargingStationBlockEntityRenderer : BlockEntityRenderer<ChargingStationBlockEntity> {
@@ -19,7 +19,7 @@ class ChargingStationBlockEntityRenderer : BlockEntityRenderer<ChargingStationBl
         pPoseStack: PoseStack,
         pBuffer: MultiBufferSource,
         pPackedLight: Int,
-        pPackedOverlay: Int
+        pPackedOverlay: Int,
     ) {
         if (!pBlockEntity.blockState.getValue(ChargingStationBlock.SHOW_RANGE)) return
 
@@ -41,10 +41,8 @@ class ChargingStationBlockEntityRenderer : BlockEntityRenderer<ChargingStationBl
         val blue = 0.0f
         val alpha = 0.2f
 
-
         val builder = pBuffer.getBuffer(ModRenderTypes.BLOCK_OVERLAY)
         val m4f = pPoseStack.last().pose()
-
 
         // east
         builder.addVertex(m4f, startX, startY, startZ).setColor(red, green, blue, alpha)
@@ -52,13 +50,11 @@ class ChargingStationBlockEntityRenderer : BlockEntityRenderer<ChargingStationBl
         builder.addVertex(m4f, endX, endY, startZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, endX, startY, startZ).setColor(red, green, blue, alpha)
 
-
         // west
         builder.addVertex(m4f, startX, startY, endZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, endX, startY, endZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, endX, endY, endZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, startX, endY, endZ).setColor(red, green, blue, alpha)
-
 
         // south
         builder.addVertex(m4f, endX, startY, startZ).setColor(red, green, blue, alpha)
@@ -66,20 +62,17 @@ class ChargingStationBlockEntityRenderer : BlockEntityRenderer<ChargingStationBl
         builder.addVertex(m4f, endX, endY, endZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, endX, startY, endZ).setColor(red, green, blue, alpha)
 
-
         // north
         builder.addVertex(m4f, startX, startY, startZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, startX, startY, endZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, startX, endY, endZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, startX, endY, startZ).setColor(red, green, blue, alpha)
 
-
         // top
         builder.addVertex(m4f, startX, endY, startZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, endX, endY, startZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, endX, endY, endZ).setColor(red, green, blue, alpha)
         builder.addVertex(m4f, startX, endY, endZ).setColor(red, green, blue, alpha)
-
 
         // bottom
         builder.addVertex(m4f, startX, startY, startZ).setColor(red, green, blue, alpha)
@@ -90,11 +83,10 @@ class ChargingStationBlockEntityRenderer : BlockEntityRenderer<ChargingStationBl
         pPoseStack.popPose()
     }
 
-    override fun shouldRenderOffScreen(pBlockEntity: ChargingStationBlockEntity): Boolean {
-        return true
-    }
+    override fun shouldRenderOffScreen(pBlockEntity: ChargingStationBlockEntity): Boolean = true
 
-    override fun shouldRender(pBlockEntity: ChargingStationBlockEntity, pCameraPos: Vec3): Boolean {
-        return true
-    }
+    override fun shouldRender(
+        pBlockEntity: ChargingStationBlockEntity,
+        pCameraPos: Vec3,
+    ): Boolean = true
 }

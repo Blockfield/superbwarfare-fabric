@@ -5,7 +5,10 @@ import net.minecraft.util.Mth
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.level.Level
 
-class Yx100Entity(type: EntityType<Yx100Entity>, world: Level) : VehicleEntity(type, world) {
+class Yx100Entity(
+    type: EntityType<Yx100Entity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     override fun getTrackAnimationLength() = 80
 
     override val customTurretMinPitch: Float

@@ -20,7 +20,6 @@ import net.minecraft.world.phys.Vec3
  * 处理载具销毁、爆炸等方法的工具类
  */
 object VehicleDestroyUtils {
-
     /**
      * 载具销毁逻辑：处理殉爆、炮塔残骸生成等
      */
@@ -28,7 +27,9 @@ object VehicleDestroyUtils {
     fun destroy(vehicle: VehicleEntity) {
         val destroyInfo = vehicle.computed().destroyInfo
 
-        if (vehicle.vehicleType != VehicleType.AIRPLANE && vehicle.vehicleType != VehicleType.HELICOPTER && vehicle.vehicleType != VehicleType.AIRSHIP) {
+        if (vehicle.vehicleType != VehicleType.AIRPLANE && vehicle.vehicleType != VehicleType.HELICOPTER &&
+            vehicle.vehicleType != VehicleType.AIRSHIP
+        ) {
             if (destroyInfo.explodePassengers) {
                 if (vehicle.crash && destroyInfo.crashPassengers) {
                     crashPassengers(vehicle)
@@ -52,11 +53,14 @@ object VehicleDestroyUtils {
             val dir = vehicle.getUpVec(1f) + (vehicle.deltaMovement + Vec3(0.0, vehicle.computed().gravity, 0.0))
 
             val rdm = (Math.random() - 0.5) * 0.4 + 1
-            turretWreckEntity.deltaMovement = Vec3(dir.x, dir.y, dir.z).normalize().add(
-                vehicle.getRandom().triangle(0.0, 0.0172275 * 12.0),
-                vehicle.getRandom().triangle(0.0, 0.0172275 * 12.0),
-                vehicle.getRandom().triangle(0.0, 0.0172275 * 12.0)
-            ).scale(destroyInfo.sympatheticDetonationForce.toDouble() * rdm)
+            turretWreckEntity.deltaMovement =
+                Vec3(dir.x, dir.y, dir.z)
+                    .normalize()
+                    .add(
+                        vehicle.getRandom().triangle(0.0, 0.0172275 * 12.0),
+                        vehicle.getRandom().triangle(0.0, 0.0172275 * 12.0),
+                        vehicle.getRandom().triangle(0.0, 0.0172275 * 12.0),
+                    ).scale(destroyInfo.sympatheticDetonationForce.toDouble() * rdm)
 
             val quaternion = combineRotationsTurret(1f, vehicle)
             turretWreckEntity.vehicleName = BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.type).toString()
@@ -76,16 +80,21 @@ object VehicleDestroyUtils {
      * 载具爆炸
      */
     @JvmStatic
-    fun vehicleExplosion(vehicle: VehicleEntity, destroyInfo: DestroyInfo) {
+    fun vehicleExplosion(
+        vehicle: VehicleEntity,
+        destroyInfo: DestroyInfo,
+    ) {
         val radius = destroyInfo.explosionRadius
         if (radius > 0) {
             queueServerWork(1) {
                 val damage = destroyInfo.explosionDamage
 
-                val explosion = CustomExplosion.Builder(vehicle)
-                    .attacker(vehicle.lastAttacker)
-                    .radius(radius)
-                    .damage(damage)
+                val explosion =
+                    CustomExplosion
+                        .Builder(vehicle)
+                        .attacker(vehicle.lastAttacker)
+                        .radius(radius)
+                        .damage(damage)
 
                 if (!destroyInfo.explodeBlocks) {
                     explosion.keepBlock()
@@ -108,7 +117,7 @@ object VehicleDestroyUtils {
                     entity.invulnerableTime = 0
                     entity.hurt(
                         ModDamageTypes.causeAirCrashDamage(vehicle.level().registryAccess(), null, tempAttacker),
-                        VehicleConfig.AIR_CRASH_EXPLOSION_DAMAGE.get().toFloat()
+                        VehicleConfig.AIR_CRASH_EXPLOSION_DAMAGE.get().toFloat(),
                     )
                 }
             }
@@ -129,8 +138,9 @@ object VehicleDestroyUtils {
                     ModDamageTypes.causeVehicleExplosionDamage(
                         vehicle.level().registryAccess(),
                         null,
-                        tempAttacker
-                    ), VehicleConfig.SELF_EXPLOSION_DAMAGE.get().toFloat()
+                        tempAttacker,
+                    ),
+                    VehicleConfig.SELF_EXPLOSION_DAMAGE.get().toFloat(),
                 )
             }
         }

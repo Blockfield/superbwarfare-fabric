@@ -27,7 +27,6 @@ import java.nio.file.Files
  * at the C level; Java's System.setProperty has no effect on native libraries.
  */
 object SoundLimit {
-
     /** Maximum static (non-streaming) sound sources */
     @JvmField
     var maxSourcesCount: Int = 4096
@@ -49,23 +48,26 @@ object SoundLimit {
             Files.writeString(tempFile, confContent)
 
             // Register shutdown hook to clean up
-            Runtime.getRuntime().addShutdownHook(Thread {
-                try {
-                    Files.deleteIfExists(tempFile)
-                } catch (_: Throwable) {
-                }
-            })
+            Runtime.getRuntime().addShutdownHook(
+                Thread {
+                    try {
+                        Files.deleteIfExists(tempFile)
+                    } catch (_: Throwable) {
+                    }
+                },
+            )
 
             // Set ALSOFT_CONF via native putenv (OpenAL reads env vars at C level)
             val envString = "ALSOFT_CONF=${tempFile.toAbsolutePath()}"
             Mod.LOGGER.info("Setting ALSOFT_CONF via native putenv: {}", envString)
 
             val buf = MemoryUtil.memASCII(envString)
-            val libName = when {
-                PlatformDependent.isWindows() -> "msvcrt.dll"
-                PlatformDependent.isOsx() -> "libSystem.dylib"
-                else -> "libc.so.6"
-            }
+            val libName =
+                when {
+                    PlatformDependent.isWindows() -> "msvcrt.dll"
+                    PlatformDependent.isOsx() -> "libSystem.dylib"
+                    else -> "libc.so.6"
+                }
             val funcName = if (PlatformDependent.isWindows()) "_putenv" else "putenv"
             val lib = APIUtil.apiCreateLibrary(libName)
             val funcAddr = APIUtil.apiGetFunctionAddress(lib, funcName)

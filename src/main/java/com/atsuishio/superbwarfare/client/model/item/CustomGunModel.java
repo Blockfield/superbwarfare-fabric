@@ -7,10 +7,12 @@ import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.resource.ModelResource;
 import com.atsuishio.superbwarfare.resource.gun.DefaultGunResource;
 import com.atsuishio.superbwarfare.resource.gun.GunResource;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.animation.AnimationState;
@@ -90,7 +92,8 @@ public abstract class CustomGunModel<T extends GunGeoItem & GeoAnimatable> exten
             return;
         }
 
-        if (animationState.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
+        if (animationState.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
             resetQueryValue();
             return;
         }
@@ -113,6 +116,7 @@ public abstract class CustomGunModel<T extends GunGeoItem & GeoAnimatable> exten
         if (!(stack.getItem() instanceof GunItem)) return true;
         var item = animationState.getData(DataTickets.ITEMSTACK);
         if (item == null || GeoItem.getId(item) != GeoItem.getId(stack)) return true;
-        return animationState.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+        return animationState.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
     }
 }

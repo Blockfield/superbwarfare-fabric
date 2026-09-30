@@ -33,12 +33,13 @@ class OBBInfo {
 
     fun getOBB(): OBB {
         if (this.obb == null) {
-            this.obb = OBB(
-                OBB.vec3ToVector3d(Vec3.ZERO),
-                OBB.vec3ToVector3d(this.size),
-                Quaterniond(),
-                this.part
-            )
+            this.obb =
+                OBB(
+                    OBB.vec3ToVector3d(Vec3.ZERO),
+                    OBB.vec3ToVector3d(this.size),
+                    Quaterniond(),
+                    this.part,
+                )
         }
         return this.obb!!
     }

@@ -1,8 +1,5 @@
 package com.atsuishio.superbwarfare.event
 
-import com.atsuishio.superbwarfare.network.message.receive.ResetCameraTypeMessage
-import com.atsuishio.superbwarfare.item.misc.MonitorItem
-import com.atsuishio.superbwarfare.control.DroneControlAccess
 import com.atsuishio.superbwarfare.api.event.ExplosionEvent
 import com.atsuishio.superbwarfare.api.event.ExplosionKnockbackEvent
 import com.atsuishio.superbwarfare.api.event.PreKillEvent.Indicator
@@ -12,6 +9,7 @@ import com.atsuishio.superbwarfare.compat.tacz.TaczHeadshotCompat
 import com.atsuishio.superbwarfare.config.common.GameplayConfig
 import com.atsuishio.superbwarfare.config.server.MiscConfig
 import com.atsuishio.superbwarfare.config.server.VehicleConfig
+import com.atsuishio.superbwarfare.control.DroneControlAccess
 import com.atsuishio.superbwarfare.data.gun.Ammo
 import com.atsuishio.superbwarfare.data.gun.GunData
 import com.atsuishio.superbwarfare.data.gun.GunProp
@@ -25,9 +23,11 @@ import com.atsuishio.superbwarfare.fabric.ModEventBus
 import com.atsuishio.superbwarfare.init.*
 import com.atsuishio.superbwarfare.item.ammo.ammoBoxData
 import com.atsuishio.superbwarfare.item.gun.GunItem
+import com.atsuishio.superbwarfare.item.misc.MonitorItem
 import com.atsuishio.superbwarfare.network.message.receive.ClientIndicatorMessage
 import com.atsuishio.superbwarfare.network.message.receive.DrawClientMessage
 import com.atsuishio.superbwarfare.network.message.receive.LivingGunKillMessage
+import com.atsuishio.superbwarfare.network.message.receive.ResetCameraTypeMessage
 import com.atsuishio.superbwarfare.perk.Perk
 import com.atsuishio.superbwarfare.tools.*
 import com.atsuishio.superbwarfare.tools.DamageTypeTool.isGunDamage
@@ -49,8 +49,8 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.tags.DamageTypeTags
 import net.minecraft.sounds.SoundSource
+import net.minecraft.tags.DamageTypeTags
 import net.minecraft.util.Mth
 import net.minecraft.world.damagesource.DamageTypes
 import net.minecraft.world.effect.MobEffectCategory
@@ -115,9 +115,9 @@ object LivingEventHandler {
         val source = event.source
         val entity = event.entity ?: return
         val vehicle = entity.vehicle
-        if (!source.`is`(ModDamageTypes.VEHICLE_EXPLOSION) && !source.`is`(ModDamageTypes.AIR_CRASH)
-            && vehicle is VehicleEntity
-            && vehicle.isEnclosed(event.entity)
+        if (!source.`is`(ModDamageTypes.VEHICLE_EXPLOSION) && !source.`is`(ModDamageTypes.AIR_CRASH) &&
+            vehicle is VehicleEntity &&
+            vehicle.isEnclosed(event.entity)
         ) {
             if (!source.`is`(ModTags.DamageTypes.VEHICLE_NOT_ABSORB)) {
                 vehicle.hurt(source, event.amount)
@@ -156,7 +156,8 @@ object LivingEventHandler {
         if (!tag.getBoolean(MonitorItem.USING)) return
         tag.putBoolean(MonitorItem.USING, false)
         NBTTool.saveTag(stack, tag)
-        EntityFindUtil.findDrone(player.level(), tag.getString(MonitorItem.LINKED_DRONE))
+        EntityFindUtil
+            .findDrone(player.level(), tag.getString(MonitorItem.LINKED_DRONE))
             ?.let { if (DroneControlAccess.owns(player, it)) DroneControlAccess.resetInput(it) }
         player.sendPacket(ResetCameraTypeMessage)
     }
@@ -190,7 +191,9 @@ object LivingEventHandler {
     private fun LivingEntity.bulletResistance(): Double =
         if (attributes.hasAttribute(ModAttributes.BULLET_RESISTANCE)) {
             getAttributeValue(ModAttributes.BULLET_RESISTANCE)
-        } else 0.0
+        } else {
+            0.0
+        }
 
     /**
      * 计算伤害减免
@@ -243,10 +246,11 @@ object LivingEventHandler {
             damage *= 1 - 0.2 * Mth.clamp(entity.bulletResistance(), 0.0, 1.0)
         }
 
-        if (source.`is`(ModDamageTypes.PROJECTILE_EXPLOSION) || source.`is`(ModDamageTypes.MINE) || source.`is`(
-                ModDamageTypes.PROJECTILE_HIT
-            ) || source.`is`(ModDamageTypes.CUSTOM_EXPLOSION)
-            || source.`is`(DamageTypes.EXPLOSION) || source.`is`(DamageTypes.PLAYER_EXPLOSION)
+        if (source.`is`(ModDamageTypes.PROJECTILE_EXPLOSION) || source.`is`(ModDamageTypes.MINE) ||
+            source.`is`(
+                ModDamageTypes.PROJECTILE_HIT,
+            ) || source.`is`(ModDamageTypes.CUSTOM_EXPLOSION) ||
+            source.`is`(DamageTypes.EXPLOSION) || source.`is`(DamageTypes.PLAYER_EXPLOSION)
         ) {
             damage *= 1 - 0.3 * Mth.clamp(entity.bulletResistance(), 0.0, 1.0)
         }
@@ -262,15 +266,19 @@ object LivingEventHandler {
                 Component.translatable(
                     "tips.superbwarfare.target.damage",
                     format2D(damage),
-                    format1D(entity.position().distanceTo(sourceEntity.position()), "m")
-                ), false
+                    format1D(entity.position().distanceTo(sourceEntity.position()), "m"),
+                ),
+                false,
             )
         }
     }
 
-    private fun reduceDamageByDistance(amount: Double, distance: Double, rate: Double, minDistance: Double): Double {
-        return amount / (1 + rate * max(0.0, distance - minDistance))
-    }
+    private fun reduceDamageByDistance(
+        amount: Double,
+        distance: Double,
+        rate: Double,
+        minDistance: Double,
+    ): Double = amount / (1 + rate * max(0.0, distance - minDistance))
 
     /**
      * 根据造成的伤害，提供武器经验
@@ -387,8 +395,10 @@ object LivingEventHandler {
         val damagesource = event.source
         val sourceEntity = damagesource.entity ?: return
 
-        if (sourceEntity is ServerPlayer && (damagesource.`is`(DamageTypes.EXPLOSION) || damagesource.`is`(DamageTypes.PLAYER_EXPLOSION)
-                    || damagesource.`is`(ModDamageTypes.MINE) || damagesource.`is`(ModDamageTypes.PROJECTILE_EXPLOSION))
+        if (sourceEntity is ServerPlayer && (
+                damagesource.`is`(DamageTypes.EXPLOSION) || damagesource.`is`(DamageTypes.PLAYER_EXPLOSION) ||
+                    damagesource.`is`(ModDamageTypes.MINE) || damagesource.`is`(ModDamageTypes.PROJECTILE_EXPLOSION)
+            )
         ) {
             SoundTool.playLocalSound(sourceEntity, ModSounds.INDICATION.get(), 1f, 1f)
             sendPacketTo(sourceEntity, ClientIndicatorMessage(0, 5))
@@ -398,7 +408,12 @@ object LivingEventHandler {
     /**
      * 换弹时切换枪械，取消换弹音效播放
      */
-    private fun handleChangeSlot(entity: LivingEntity, slot: EquipmentSlot, oldStack: ItemStack, newStack: ItemStack) {
+    private fun handleChangeSlot(
+        entity: LivingEntity,
+        slot: EquipmentSlot,
+        oldStack: ItemStack,
+        newStack: ItemStack,
+    ) {
         if (entity is Player && slot == EquipmentSlot.MAINHAND) {
             if (entity.level().isClientSide) return
 
@@ -407,14 +422,22 @@ object LivingEventHandler {
                     checkCopyGuns(newStack, entity)
                 }
 
-                if (newStack.item !== oldStack.item || (newStack.item is GunItem && !GunData.from(newStack)
-                        .initialized())
-                    || (oldStack.item is GunItem && !GunData.from(oldStack).initialized())
-                    || (newStack.item is GunItem && oldStack.item is GunItem && (GunsTool.getGunUUID(
-                        NBTTool.getTag(
-                            newStack
+                if (newStack.item !== oldStack.item || (
+                        newStack.item is GunItem &&
+                            !GunData
+                                .from(newStack)
+                                .initialized()
+                    ) ||
+                    (oldStack.item is GunItem && !GunData.from(oldStack).initialized()) ||
+                    (
+                        newStack.item is GunItem && oldStack.item is GunItem && (
+                            GunsTool.getGunUUID(
+                                NBTTool.getTag(
+                                    newStack,
+                                ),
+                            ) != GunsTool.getGunUUID(NBTTool.getTag(oldStack))
                         )
-                    ) != GunsTool.getGunUUID(NBTTool.getTag(oldStack))))
+                    )
                 ) {
                     sendPacketTo(entity, DrawClientMessage)
 
@@ -481,7 +504,7 @@ object LivingEventHandler {
                                 perk.perk.onChangeSlot(
                                     newData,
                                     perk,
-                                    entity
+                                    entity,
                                 )
                             }
                         }
@@ -493,7 +516,10 @@ object LivingEventHandler {
         }
     }
 
-    private fun checkCopyGuns(stack: ItemStack, player: Player) {
+    private fun checkCopyGuns(
+        stack: ItemStack,
+        player: Player,
+    ) {
         val data = GunData.from(stack)
         if (!data.initialized()) return
         val uuid = data.gunDataTag.getUUID("UUID")
@@ -513,7 +539,10 @@ object LivingEventHandler {
     }
 
     @JvmStatic
-    fun stopGunReloadSound(player: ServerPlayer, data: GunData) {
+    fun stopGunReloadSound(
+        player: ServerPlayer,
+        data: GunData,
+    ) {
         val soundInfo: SoundInfo = data.get(GunProp.SOUND_INFO)
         soundInfo.cancellableSounds.list
             .forEach { str ->
@@ -531,8 +560,15 @@ object LivingEventHandler {
         val entity = event.entity
         val source = event.source
 
-        val damageTypeResourceKey = if (source.typeHolder().unwrapKey().isPresent) source.typeHolder().unwrapKey()
-            .get() else DamageTypes.GENERIC
+        val damageTypeResourceKey =
+            if (source.typeHolder().unwrapKey().isPresent) {
+                source
+                    .typeHolder()
+                    .unwrapKey()
+                    .get()
+            } else {
+                DamageTypes.GENERIC
+            }
 
         var attacker: LivingEntity? = null
         val sourceEntity = source.entity
@@ -571,8 +607,8 @@ object LivingEventHandler {
                     damageTypeResourceKey,
                     attacker.uuid,
                     entity.uuid,
-                    BuiltInRegistries.ITEM.getKey(attacker.mainHandItem.item)
-                )
+                    BuiltInRegistries.ITEM.getKey(attacker.mainHandItem.item),
+                ),
             )
         }
     }
@@ -661,7 +697,10 @@ object LivingEventHandler {
      * @return true, если предмет забрало транспортное средство и ванильный подбор надо отменить
      */
     @JvmStatic
-    fun onPickup(entity: Player, pickUp: ItemEntity): Boolean {
+    fun onPickup(
+        entity: Player,
+        pickUp: ItemEntity,
+    ): Boolean {
         if (!VehicleConfig.VEHICLE_ITEM_PICKUP.get()) return false
         val vehicle = entity.vehicle as? VehicleEntity ?: return false
         if (!vehicle.level().isClientSide) {
@@ -781,9 +820,12 @@ object LivingEventHandler {
     private fun onEffectApply(event: Applicable) {
         val entity = event.entity
         val vehicle = entity.vehicle
-        if (event.effectInstance?.effect?.value()?.category == MobEffectCategory.HARMFUL
-            && vehicle is VehicleEntity
-            && vehicle.isEnclosed(vehicle.getSeatIndex(entity))
+        if (event.effectInstance
+                ?.effect
+                ?.value()
+                ?.category == MobEffectCategory.HARMFUL &&
+            vehicle is VehicleEntity &&
+            vehicle.isEnclosed(vehicle.getSeatIndex(entity))
         ) {
             event.result = Applicable.Result.DO_NOT_APPLY
         }
@@ -807,10 +849,12 @@ object LivingEventHandler {
                     val dz = entity.z - explosionPos.z
                     val distance = sqrt(dx * dx + dy * dy + dz * dz)
                     if (distance != 0.0) {
-                        val visibilityFactor = if (!entity.enableAABB())
-                            CustomExplosion.getSeenPercentOptimized(entity.level(), explosionPos, entity)
-                        else
-                            Explosion.getSeenPercent(explosionPos, entity)
+                        val visibilityFactor =
+                            if (!entity.enableAABB()) {
+                                CustomExplosion.getSeenPercentOptimized(entity.level(), explosionPos, entity)
+                            } else {
+                                Explosion.getSeenPercent(explosionPos, entity)
+                            }
                         val impactStrength = (1.0 - distanceRatio) * visibilityFactor
                         val damage = (impactStrength * impactStrength + impactStrength) / 2.0 * explosion.damage
 

@@ -18,17 +18,25 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
 
-open class AmmoSupplierItem(val type: Ammo, val ammoToAdd: Int, properties: Properties) : Item(properties) {
+open class AmmoSupplierItem(
+    val type: Ammo,
+    val ammoToAdd: Int,
+    properties: Properties,
+) : Item(properties) {
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(Component.translatable("des.superbwarfare.ammo_supplier").withStyle(ChatFormatting.AQUA))
     }
 
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
         var count = stack.count
 
@@ -38,37 +46,40 @@ open class AmmoSupplierItem(val type: Ammo, val ammoToAdd: Int, properties: Prop
 
         val offhandItem = player.offhandItem
 
-        val addedCount = if (offhandItem.`is`(ModItems.AMMO_BOX.get())) {
-            val canAddAmount = type.ammoBoxLimit - type.get(offhandItem)
-            val toAddCount = (canAddAmount / ammoToAdd).coerceAtMost(count)
-            if (toAddCount <= 0) {
-                player.displayClientMessage(
-                    Component.translatable("item.superbwarfare.ammo_supplier.fail").withStyle(ChatFormatting.RED), true
-                )
-                return InteractionResultHolder.fail(stack)
+        val addedCount =
+            if (offhandItem.`is`(ModItems.AMMO_BOX.get())) {
+                val canAddAmount = type.ammoBoxLimit - type.get(offhandItem)
+                val toAddCount = (canAddAmount / ammoToAdd).coerceAtMost(count)
+                if (toAddCount <= 0) {
+                    player.displayClientMessage(
+                        Component.translatable("item.superbwarfare.ammo_supplier.fail").withStyle(ChatFormatting.RED),
+                        true,
+                    )
+                    return InteractionResultHolder.fail(stack)
+                }
+
+                this.type.add(offhandItem, ammoToAdd * toAddCount)
+
+                toAddCount
+            } else {
+                val capability = player.getData(ModAttachments.PLAYER_VARIABLE).watch()
+
+                val canAddAmount = type.limit - type.get(capability)
+                val toAddCount = (canAddAmount / ammoToAdd).coerceAtMost(count)
+                if (toAddCount <= 0) {
+                    player.displayClientMessage(
+                        Component.translatable("item.superbwarfare.ammo_supplier.fail").withStyle(ChatFormatting.RED),
+                        true,
+                    )
+                    return InteractionResultHolder.fail(stack)
+                }
+
+                this.type.add(capability, ammoToAdd * toAddCount)
+                player.setData(ModAttachments.PLAYER_VARIABLE, capability)
+                capability.sync(player)
+
+                toAddCount
             }
-
-            this.type.add(offhandItem, ammoToAdd * toAddCount)
-
-            toAddCount
-        } else {
-            val capability = player.getData(ModAttachments.PLAYER_VARIABLE).watch()
-
-            val canAddAmount = type.limit - type.get(capability)
-            val toAddCount = (canAddAmount / ammoToAdd).coerceAtMost(count)
-            if (toAddCount <= 0) {
-                player.displayClientMessage(
-                    Component.translatable("item.superbwarfare.ammo_supplier.fail").withStyle(ChatFormatting.RED), true
-                )
-                return InteractionResultHolder.fail(stack)
-            }
-
-            this.type.add(capability, ammoToAdd * toAddCount)
-            player.setData(ModAttachments.PLAYER_VARIABLE, capability)
-            capability.sync(player)
-
-            toAddCount
-        }
 
         player.cooldowns.addCooldown(this, 10)
 
@@ -81,8 +92,9 @@ open class AmmoSupplierItem(val type: Ammo, val ammoToAdd: Int, properties: Prop
                 Component.translatable(
                     "item.superbwarfare.ammo_supplier.supply",
                     Component.translatable(this.type.translationKey),
-                    ammoToAdd * count
-                ), true
+                    ammoToAdd * count,
+                ),
+                true,
             )
             level.playSound(null, player.blockPosition(), ModSounds.BULLET_SUPPLY.get(), SoundSource.PLAYERS, 1f, 1f)
         }

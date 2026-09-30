@@ -16,7 +16,10 @@ object TraumaMobEffect : MobEffect(MobEffectCategory.HARMFUL, 0xF4ADB4) {
      * как событие. Логика сохранена как чистая функция — она возвращает итоговое лечение
      * (0 = полностью подавить), остаётся вызвать её из миксина на LivingEntity#heal.
      */
-    private fun modifyHealAmount(entity: LivingEntity, amount: Float): Float {
+    private fun modifyHealAmount(
+        entity: LivingEntity,
+        amount: Float,
+    ): Float {
         val effect = entity.getEffect(ModMobEffects.TRAUMA) ?: return amount
 
         val amp = effect.amplifier + 1

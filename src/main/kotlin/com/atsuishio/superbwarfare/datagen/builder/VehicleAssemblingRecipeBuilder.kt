@@ -41,49 +41,61 @@ class VehicleAssemblingRecipeBuilder : RecipeBuilder {
     }
 
     @JvmOverloads
-    fun require(item: ItemLike, count: Int = 1): VehicleAssemblingRecipeBuilder {
+    fun require(
+        item: ItemLike,
+        count: Int = 1,
+    ): VehicleAssemblingRecipeBuilder {
         this.ingredients.merge(
             BuiltInRegistries.ITEM.getKey(item.asItem()).toString(),
-            count
+            count,
         ) { _, v -> count + v }
         return this
     }
 
     @JvmOverloads
-    fun require(tag: TagKey<Item>, count: Int = 1): VehicleAssemblingRecipeBuilder {
+    fun require(
+        tag: TagKey<Item>,
+        count: Int = 1,
+    ): VehicleAssemblingRecipeBuilder {
         this.ingredients.merge("#" + tag.location(), count) { _, v -> count + v }
         return this
     }
 
-    override fun unlockedBy(s: String, criterion: Criterion<*>): RecipeBuilder {
+    override fun unlockedBy(
+        s: String,
+        criterion: Criterion<*>,
+    ): RecipeBuilder {
         this.criteria[s] = criterion
         return this
     }
 
-    override fun group(s: String?): RecipeBuilder {
-        return this
-    }
+    override fun group(s: String?): RecipeBuilder = this
 
-    override fun getResult(): Item {
-        return this.result
-    }
+    override fun getResult(): Item = this.result
 
-    override fun save(recipeOutput: RecipeOutput, pRecipeId: ResourceLocation) {
+    override fun save(
+        recipeOutput: RecipeOutput,
+        pRecipeId: ResourceLocation,
+    ) {
         this.ensureValid(pRecipeId)
         val builder =
-            recipeOutput.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(pRecipeId))
-                .rewards(AdvancementRewards.Builder.recipe(pRecipeId)).requirements(AdvancementRequirements.Strategy.OR)
+            recipeOutput
+                .advancement()
+                .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(pRecipeId))
+                .rewards(AdvancementRewards.Builder.recipe(pRecipeId))
+                .requirements(AdvancementRequirements.Strategy.OR)
         Objects.requireNonNull(builder)
         this.criteria.forEach { (key, criterion) -> builder.addCriterion(key, criterion) }
-        val recipe = if (this.entityType != null) {
-            VehicleAssemblingRecipe.create(this.ingredients, this.category, this.entityType)
-        } else {
-            VehicleAssemblingRecipe.create(this.ingredients, this.category, this.result, this.count)
-        }
+        val recipe =
+            if (this.entityType != null) {
+                VehicleAssemblingRecipe.create(this.ingredients, this.category, this.entityType)
+            } else {
+                VehicleAssemblingRecipe.create(this.ingredients, this.category, this.result, this.count)
+            }
         recipeOutput.accept(
             pRecipeId,
             recipe,
-            builder.build(pRecipeId.withPrefix("recipes/" + RecipeCategory.MISC.folderName + "/"))
+            builder.build(pRecipeId.withPrefix("recipes/" + RecipeCategory.MISC.folderName + "/")),
         )
     }
 
@@ -95,13 +107,12 @@ class VehicleAssemblingRecipeBuilder : RecipeBuilder {
         fun item(
             pResult: ItemLike,
             pCount: Int,
-            category: VehicleAssemblingRecipe.Category
-        ): VehicleAssemblingRecipeBuilder {
-            return VehicleAssemblingRecipeBuilder(pResult, pCount, category)
-        }
+            category: VehicleAssemblingRecipe.Category,
+        ): VehicleAssemblingRecipeBuilder = VehicleAssemblingRecipeBuilder(pResult, pCount, category)
 
-        fun entity(type: EntityType<*>, category: VehicleAssemblingRecipe.Category): VehicleAssemblingRecipeBuilder {
-            return VehicleAssemblingRecipeBuilder(type, category)
-        }
+        fun entity(
+            type: EntityType<*>,
+            category: VehicleAssemblingRecipe.Category,
+        ): VehicleAssemblingRecipeBuilder = VehicleAssemblingRecipeBuilder(type, category)
     }
 }

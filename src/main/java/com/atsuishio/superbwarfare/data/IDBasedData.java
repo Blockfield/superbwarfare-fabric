@@ -1,12 +1,14 @@
 package com.atsuishio.superbwarfare.data;
 
 import com.google.gson.JsonObject;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
 public interface IDBasedData<T extends IDBasedData<T>> extends Serializable {
-    @NotNull String getId();
+    @NotNull
+    String getId();
 
     void setId(@NotNull String id);
 
@@ -23,6 +25,5 @@ public interface IDBasedData<T extends IDBasedData<T>> extends Serializable {
         return fromJson(toJson());
     }
 
-    default void limit() {
-    }
+    default void limit() {}
 }

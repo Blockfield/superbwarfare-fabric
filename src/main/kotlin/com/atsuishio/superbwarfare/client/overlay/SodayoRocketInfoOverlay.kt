@@ -4,11 +4,11 @@ import com.atsuishio.superbwarfare.entity.vehicle.SodayoPickUpRocketEntity
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.tools.OBB
 import com.atsuishio.superbwarfare.tools.worldToScreen
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 object SodayoRocketInfoOverlay : CommonOverlay("sodayo_rocket_info") {
@@ -26,12 +26,13 @@ object SodayoRocketInfoOverlay : CommonOverlay("sodayo_rocket_info") {
             if (OBB.getLookingObb(player, player.entityInteractionRange()) === lookingEntity.barrelObbs[i]) {
                 val type: Int = items[i]
 
-                val stack = when (type) {
-                    0 -> AP
-                    1 -> HE
-                    2 -> CM
-                    else -> ItemStack.EMPTY
-                }
+                val stack =
+                    when (type) {
+                        0 -> AP
+                        1 -> HE
+                        2 -> CM
+                        else -> ItemStack.EMPTY
+                    }
 
                 val pos = OBB.vector3dToVec3(lookingEntity.barrelObbs[i].center)
                 val point = pos.worldToScreen()

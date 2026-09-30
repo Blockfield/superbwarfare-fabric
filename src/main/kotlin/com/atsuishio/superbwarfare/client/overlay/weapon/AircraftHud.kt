@@ -16,6 +16,9 @@ import com.atsuishio.superbwarfare.tools.MathTool.getGradientColor
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.math.Axis
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -25,9 +28,6 @@ import net.minecraft.util.Mth
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import org.joml.Math
 
 @Environment(EnvType.CLIENT)
@@ -80,12 +80,16 @@ object AircraftHud {
 
         val shootPos = vehicle.getShootPosForHud(player, 1f)
 
-        val result = player.level().clip(
-            ClipContext(
-                shootPos, shootPos.add(vehicle.getShootDirectionForHud(player, 1f).scale(512.0)),
-                ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, player
+        val result =
+            player.level().clip(
+                ClipContext(
+                    shootPos,
+                    shootPos.add(vehicle.getShootDirectionForHud(player, 1f).scale(512.0)),
+                    ClipContext.Block.VISUAL,
+                    ClipContext.Fluid.NONE,
+                    player,
+                ),
             )
-        )
         val hitPos = result.location
 
         dis = shootPos.distanceTo(hitPos)
@@ -103,9 +107,8 @@ object AircraftHud {
         guiGraphics: GuiGraphics,
         partialTick: Float,
         screenWidth: Int,
-        screenHeight: Int
+        screenHeight: Int,
     ) {
-
         if (vehicle is Ac130hEntity) {
             ac130GunnerHud.render(vehicle, player, guiGraphics, partialTick, screenWidth, screenHeight)
         }
@@ -129,12 +132,14 @@ object AircraftHud {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
-        lerpVy = Mth.lerp((0.021f * partialTick).toDouble(), lerpVy.toDouble(), vehicle.deltaMovement.y() * 20)
-            .toFloat()
+        lerpVy =
+            Mth
+                .lerp((0.021f * partialTick).toDouble(), lerpVy.toDouble(), vehicle.deltaMovement.y() * 20)
+                .toFloat()
         diffY = Mth.lerp(partialTick.toDouble(), diffY.toDouble(), ClientMouseHandler.lerpSpeedX).toFloat()
         diffX = Mth.lerp(partialTick.toDouble(), diffX.toDouble(), ClientMouseHandler.lerpSpeedY).toFloat()
         val speed = vehicle.absoluteSpeed * 72
@@ -183,7 +188,7 @@ object AircraftHud {
                     (3 * i).toFloat(),
                     (3 * j).toFloat(),
                     (3 * i).toFloat(),
-                    (3 * j).toFloat()
+                    (3 * j).toFloat(),
                 )
 
                 poseStack.pushPose()
@@ -198,12 +203,12 @@ object AircraftHud {
                     (3 * i).toFloat(),
                     (3 * j).toFloat(),
                     (3 * i).toFloat(),
-                    (3 * j).toFloat()
+                    (3 * j).toFloat(),
                 )
                 renderKillIndicatorDynamic(
                     guiGraphics,
                     x - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
                 )
                 poseStack.popPose()
                 return
@@ -228,7 +233,7 @@ object AircraftHud {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -244,7 +249,7 @@ object AircraftHud {
                     320f,
                     320f,
                     320f,
-                    color
+                    color,
                 )
             } else {
                 RenderHelper.preciseBlitWithColor(
@@ -258,11 +263,11 @@ object AircraftHud {
                     320f,
                     320f,
                     320f,
-                    color
+                    color,
                 )
             }
 
-            //指南针
+            // 指南针
             RenderHelper.preciseBlitWithColor(
                 guiGraphics,
                 COMPASS,
@@ -274,11 +279,11 @@ object AircraftHud {
                 16f,
                 512f,
                 16f,
-                color
+                color,
             )
             RenderHelper.preciseBlitWithColor(guiGraphics, COMPASS_IND, x - 4, y - 130, 0f, 0f, 8f, 8f, 8f, 8f, color)
 
-            //滚转指示
+            // 滚转指示
             poseStack.pushPose()
             poseStack.rotateAround(Axis.ZP.rotationDegrees(vehicle.getRoll(partialTick)), x, y + 48, 0f)
             RenderHelper.preciseBlitWithColor(
@@ -292,7 +297,7 @@ object AircraftHud {
                 8f,
                 8f,
                 8f,
-                color
+                color,
             )
             poseStack.popPose()
 
@@ -310,7 +315,7 @@ object AircraftHud {
                 Math.min(lerpPower, 1f) * 117.6f,
                 4f,
                 Math.min(lerpPower, 1f) * 117.6f,
-                color
+                color,
             )
 
             if (lerpPower > 1) {
@@ -325,7 +330,7 @@ object AircraftHud {
                     (lerpPower - 1f) * 58.8f,
                     4f,
                     (lerpPower - 1f) * 58.8f,
-                    0xFF6B00
+                    0xFF6B00,
                 )
             }
 
@@ -340,37 +345,46 @@ object AircraftHud {
                 128f,
                 64f,
                 128f,
-                color
+                color,
             )
 
-            //一些文本
+            // 一些文本
 
             poseStack.pushPose()
             poseStack.translate(x.toDouble(), y.toDouble(), 0.0)
-            //时速
+            // 时速
             guiGraphics.drawString(
-                mc.font, Component.literal(format0D(speed)),
-                -105, -61, color, false
+                mc.font,
+                Component.literal(format0D(speed)),
+                -105,
+                -61,
+                color,
+                false,
             )
 
-            //高度
+            // 高度
             guiGraphics.drawString(
-                mc.font, Component.literal(format0D(vehicle.y)),
-                75, -61, color, false
+                mc.font,
+                Component.literal(format0D(vehicle.y)),
+                75,
+                -61,
+                color,
+                false,
             )
 
-            //垂直速度
+            // 垂直速度
             guiGraphics.drawString(
                 mc.font,
                 Component.literal(FormatTool.DECIMAL_FORMAT_1ZZ.format(lerpVy.toDouble())),
                 -96,
                 60,
                 color,
-                false
+                false,
             )
-            //加速度
+            // 加速度
             lerpG =
-                Mth.lerp((0.25f * partialTick).toDouble(), lerpG.toDouble(), (400 * vehicle.getAcceleration()) / 9.8)
+                Mth
+                    .lerp((0.25f * partialTick).toDouble(), lerpG.toDouble(), (400 * vehicle.getAcceleration()) / 9.8)
                     .toFloat()
             guiGraphics.drawString(mc.font, Component.literal("M"), -105, 70, color, false)
             guiGraphics.drawString(mc.font, Component.literal("0.2"), -96, 70, color, false)
@@ -381,7 +395,7 @@ object AircraftHud {
                 -96,
                 78,
                 color,
-                false
+                false,
             )
 
             // 热诱弹
@@ -395,8 +409,12 @@ object AircraftHud {
                 val component = vehicle.firstPersonAmmoComponent(gunData, player)
 
                 guiGraphics.drawString(
-                    mc.font, component, -mc.font.width(component) / 2, 91,
-                    getGradientColor(color, 0xFF0000, heat, 2), false
+                    mc.font,
+                    component,
+                    -mc.font.width(component) / 2,
+                    91,
+                    getGradientColor(color, 0xFF0000, heat, 2),
+                    false,
                 )
             }
 
@@ -404,20 +422,28 @@ object AircraftHud {
             if (vehicle.hasEnergyStorage()) {
                 if (vehicle.energy < 0.02 * vehicle.maxEnergy) {
                     guiGraphics.drawString(
-                        mc.font, Component.literal("NO POWER!"),
-                        -144, 14, -65536, false
+                        mc.font,
+                        Component.literal("NO POWER!"),
+                        -144,
+                        14,
+                        -65536,
+                        false,
                     )
                 } else if (vehicle.energy < 0.2 * vehicle.maxEnergy) {
                     guiGraphics.drawString(
-                        mc.font, Component.literal("LOW POWER"),
-                        -144, 14, 0xFF6B00, false
+                        mc.font,
+                        Component.literal("LOW POWER"),
+                        -144,
+                        14,
+                        0xFF6B00,
+                        false,
                     )
                 }
             }
 
             poseStack.popPose()
 
-            //框
+            // 框
             RenderHelper.preciseBlitWithColor(
                 guiGraphics,
                 HELICOPTER_SPEED_FRAME,
@@ -429,7 +455,7 @@ object AircraftHud {
                 12f,
                 36f,
                 12f,
-                color
+                color,
             )
             RenderHelper.preciseBlitWithColor(
                 guiGraphics,
@@ -442,10 +468,10 @@ object AircraftHud {
                 12f,
                 36f,
                 12f,
-                color
+                color,
             )
 
-            //角度
+            // 角度
             poseStack.pushPose()
 
             RenderSystem.disableDepthTest()
@@ -456,7 +482,7 @@ object AircraftHud {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -473,7 +499,7 @@ object AircraftHud {
                 256f,
                 288f,
                 1701f,
-                color
+                color,
             )
 
             if (bomb) {
@@ -488,7 +514,7 @@ object AircraftHud {
                     128f,
                     128f,
                     128f,
-                    color
+                    color,
                 )
             } else {
                 RenderHelper.preciseBlitWithColor(
@@ -502,7 +528,7 @@ object AircraftHud {
                     24f,
                     36f,
                     24f,
-                    color
+                    color,
                 )
             }
 
@@ -517,9 +543,9 @@ object AircraftHud {
             val xCross = x
             val yCross = y
 
-            if ((mc.options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
-                && (gunData?.get(GunProp.CROSSHAIR) != "@AirBomb")
-                && (gunData?.get(GunProp.CROSSHAIR) != "@AirCraftMissile")
+            if ((mc.options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle) &&
+                (gunData?.get(GunProp.CROSSHAIR) != "@AirBomb") &&
+                (gunData?.get(GunProp.CROSSHAIR) != "@AirCraftMissile")
             ) {
                 RenderSystem.disableDepthTest()
                 RenderSystem.depthMask(false)
@@ -529,7 +555,7 @@ object AircraftHud {
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                     GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ZERO
+                    GlStateManager.DestFactor.ZERO,
                 )
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
                 RenderHelper.preciseBlitWithColor(
@@ -543,7 +569,7 @@ object AircraftHud {
                     144f,
                     144f,
                     144f,
-                    color
+                    color,
                 )
             } else if (mc.options.cameraType != CameraType.FIRST_PERSON && !ClientEventHandler.zoomVehicle) {
                 if (gunData?.get(GunProp.CROSSHAIR) == "@AirBomb") {
@@ -560,7 +586,7 @@ object AircraftHud {
                         24f,
                         24f,
                         24f,
-                        24f
+                        24f,
                     )
                     x = p.x.toFloat()
                     y = p.y.toFloat()
@@ -570,7 +596,15 @@ object AircraftHud {
                 mouseY = Mth.lerp(0.1f * partialTick, mouseY, ClientMouseHandler.lerpSpeedY.toFloat())
                 RenderHelper.preciseBlit(
                     guiGraphics,
-                    HelicopterHud.RING, x - 2 + mouseX, y - 2 + mouseY, 0f, 0f, 4f, 4f, 4f, 4f
+                    HelicopterHud.RING,
+                    x - 2 + mouseX,
+                    y - 2 + mouseY,
+                    0f,
+                    0f,
+                    4f,
+                    4f,
+                    4f,
+                    4f,
                 )
 
                 val originPos = Vec3(x.toDouble(), y.toDouble(), 0.0)
@@ -592,7 +626,7 @@ object AircraftHud {
                         0.5f,
                         0.5f,
                         0.5f,
-                        -1
+                        -1,
                     )
                     i += 3
                 }
@@ -609,7 +643,7 @@ object AircraftHud {
                     96f,
                     192f,
                     486f,
-                    -1
+                    -1,
                 )
 
                 RenderHelper.preciseBlitWithColor(
@@ -623,19 +657,27 @@ object AircraftHud {
                     96f,
                     96f,
                     96f,
-                    -1
+                    -1,
                 )
 
                 poseStack.pushPose()
                 poseStack.rotateAround(Axis.ZP.rotationDegrees(vehicle.getRoll(partialTick)), x, y, 0f)
                 RenderHelper.preciseBlit(
                     guiGraphics,
-                    HelicopterHud.CROSSHAIR_3P, x - 34, y - 8.5f, 0f, 0f, 68f, 17f, 68f, 17f
+                    HelicopterHud.CROSSHAIR_3P,
+                    x - 34,
+                    y - 8.5f,
+                    0f,
+                    0f,
+                    68f,
+                    17f,
+                    68f,
+                    17f,
                 )
                 renderKillIndicatorDynamic(
                     guiGraphics,
                     x - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
-                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat()
+                    y - 7.5f + (2 * (Math.random() - 0.5f)).toFloat(),
                 )
 
                 //
@@ -648,7 +690,7 @@ object AircraftHud {
                     -42,
                     -9,
                     -1,
-                    false
+                    false,
                 )
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
@@ -656,7 +698,7 @@ object AircraftHud {
                     -42,
                     2,
                     -1,
-                    false
+                    false,
                 )
 
                 poseStack.popPose()
@@ -674,7 +716,7 @@ object AircraftHud {
                     -60,
                     -52,
                     -1,
-                    false
+                    false,
                 )
 
                 val component = Component.literal(format0D(lerpVy.toDouble()) + "m/s")

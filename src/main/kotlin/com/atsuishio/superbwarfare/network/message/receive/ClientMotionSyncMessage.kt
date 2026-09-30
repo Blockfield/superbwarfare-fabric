@@ -14,7 +14,6 @@ data class ClientMotionSyncMessage(
     val y: Float,
     val z: Float,
 ) : ClientPacketPayload() {
-
     constructor(id: Int, motion: Vec3) : this(id, motion.x.toFloat(), motion.y.toFloat(), motion.z.toFloat())
     constructor(entity: Entity) : this(entity.id, entity.deltaMovement)
 

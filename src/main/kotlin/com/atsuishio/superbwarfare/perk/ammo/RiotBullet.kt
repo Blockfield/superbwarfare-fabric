@@ -10,15 +10,21 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.monster.Vex
 
 object RiotBullet : AmmoPerk(
-    Builder("riot_bullet", Type.AMMO).bypassArmorRate(-0.3).damageRate(0.9).speedRate(0.8).slug().rgb(70, 35, 230)
-        .mobEffect(MobEffects.MOVEMENT_SLOWDOWN).mobEffect(MobEffects.WEAKNESS)
+    Builder("riot_bullet", Type.AMMO)
+        .bypassArmorRate(-0.3)
+        .damageRate(0.9)
+        .speedRate(0.8)
+        .slug()
+        .rgb(70, 35, 230)
+        .mobEffect(MobEffects.MOVEMENT_SLOWDOWN)
+        .mobEffect(MobEffects.WEAKNESS),
 ) {
     override fun getModifiedDamage(
         damage: Float,
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ): Float {
         if (target.type.`is`(EntityTypeTags.RAIDERS) || target is Vex) {
             return damage * (1 + 0.5f * instance.level)
@@ -26,11 +32,7 @@ object RiotBullet : AmmoPerk(
         return super.getModifiedDamage(damage, data, instance, target, source)
     }
 
-    override fun getEffectAmplifier(instance: PerkInstance): Int {
-        return instance.level / 4
-    }
+    override fun getEffectAmplifier(instance: PerkInstance): Int = instance.level / 4
 
-    override fun getEffectDuration(instance: PerkInstance): Int {
-        return 20 + instance.level * 10
-    }
+    override fun getEffectDuration(instance: PerkInstance): Int = 20 + instance.level * 10
 }

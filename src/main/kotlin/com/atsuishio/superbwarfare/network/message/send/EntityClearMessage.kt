@@ -6,7 +6,9 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EntityClearMessage(val entityId: Int) : ServerPacketPayload() {
+data class EntityClearMessage(
+    val entityId: Int,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         if (!player.hasPermissions(2)) return

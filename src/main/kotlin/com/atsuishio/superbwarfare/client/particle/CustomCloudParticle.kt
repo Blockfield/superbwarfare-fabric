@@ -1,11 +1,11 @@
 package com.atsuishio.superbwarfare.client.particle
 
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.*
 import net.minecraft.client.renderer.LevelRenderer
 import net.minecraft.core.BlockPos
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 import kotlin.math.min
 
@@ -26,13 +26,15 @@ open class CustomCloudParticle protected constructor(
     size: Float,
     gravity: Float,
     cooldown: Boolean,
-    light: Boolean
+    light: Boolean,
 ) : TextureSheetParticle(world, x, y, z) {
     protected var cooldown: Boolean
     protected var light: Boolean
 
     @Environment(EnvType.CLIENT)
-    class Provider(private val spriteSet: SpriteSet) : ParticleProvider<CustomCloudOption> {
+    class Provider(
+        private val spriteSet: SpriteSet,
+    ) : ParticleProvider<CustomCloudOption> {
         override fun createParticle(
             pType: CustomCloudOption,
             pLevel: ClientLevel,
@@ -41,9 +43,9 @@ open class CustomCloudParticle protected constructor(
             z: Double,
             xSpeed: Double,
             ySpeed: Double,
-            zSpeed: Double
-        ): Particle {
-            return CustomCloudParticle(
+            zSpeed: Double,
+        ): Particle =
+            CustomCloudParticle(
                 pLevel,
                 x,
                 y,
@@ -59,9 +61,8 @@ open class CustomCloudParticle protected constructor(
                 pType.size,
                 pType.gravity,
                 pType.cooldown,
-                pType.light
+                pType.light,
             )
-        }
     }
 
     init {
@@ -87,9 +88,7 @@ open class CustomCloudParticle protected constructor(
         return if (light) 15728880 else lightLevel
     }
 
-    override fun getRenderType(): ParticleRenderType {
-        return if (light) ParticleRenderType.PARTICLE_SHEET_LIT else ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-    }
+    override fun getRenderType(): ParticleRenderType = if (light) ParticleRenderType.PARTICLE_SHEET_LIT else ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
 
     override fun tick() {
         super.tick()

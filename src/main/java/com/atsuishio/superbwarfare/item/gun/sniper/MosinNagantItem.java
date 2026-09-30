@@ -4,14 +4,16 @@ import com.atsuishio.superbwarfare.client.renderer.gun.MosinNagantItemRenderer;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
@@ -35,33 +37,41 @@ public class MosinNagantItem extends GunGeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
-            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.mosin_nagant.idle"));
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE)
+                != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(
+                    RawAnimation.begin().thenLoop("animation.mosin_nagant.idle"));
 
         var data = GunData.from(stack);
 
         if (data.bolt.actionTimer.get() > 0) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.mosin_nagant.shift"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.mosin_nagant.shift"));
         }
 
         if (data.reload.stage() == 1 && !GunData.from(stack).hasEnoughAmmoToShoot(player)) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.mosin_nagant.prepare_empty"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.mosin_nagant.prepare_empty"));
         }
 
         if (data.reload.stage() == 1 && GunData.from(stack).hasEnoughAmmoToShoot(player)) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.mosin_nagant.prepare"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.mosin_nagant.prepare"));
         }
 
         if (data.loadIndex.get() == 0 && data.reload.stage() == 2) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.mosin_nagant.iterativeload"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.mosin_nagant.iterativeload"));
         }
 
         if (data.loadIndex.get() == 1 && data.reload.stage() == 2) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.mosin_nagant.iterativeload2"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.mosin_nagant.iterativeload2"));
         }
 
         if (data.reload.stage() == 3) {
-            return event.setAndContinue(RawAnimation.begin().thenPlay("animation.mosin_nagant.finish"));
+            return event.setAndContinue(
+                    RawAnimation.begin().thenPlay("animation.mosin_nagant.finish"));
         }
 
         return event.setAndContinue(RawAnimation.begin().thenLoop("animation.mosin_nagant.idle"));
@@ -69,7 +79,8 @@ public class MosinNagantItem extends GunGeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
-        var fireAnimController = new AnimationController<>(this, "fireAnimController", 1, this::fireAnimPredicate);
+        var fireAnimController =
+                new AnimationController<>(this, "fireAnimController", 1, this::fireAnimPredicate);
         data.add(fireAnimController);
     }
 }

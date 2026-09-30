@@ -4,19 +4,17 @@ import com.atsuishio.superbwarfare.config.server.*
 
 val SERVER_CONFIG_BUILDER = ModConfigBuilder()
 
-inline fun <T : ModConfigValue> buildServerConfig(block: ModConfigBuilder.() -> T): (T & Any) {
-    return SERVER_CONFIG_BUILDER.block()!!
-}
+inline fun <T : ModConfigValue> buildServerConfig(block: ModConfigBuilder.() -> T): (T & Any) = SERVER_CONFIG_BUILDER.block()!!
 
-val SERVER_CONFIG = buildConfig(
-    SERVER_CONFIG_BUILDER,
-
-    SpawnConfig,
-    ProjectileConfig,
-    ExplosionConfig,
-    VehicleConfig,
-    MiscConfig,
-    AmmoConfig,
-    MapConfig,
-    SyncConfig,
-)
+val SERVER_CONFIG =
+    buildConfig(
+        SERVER_CONFIG_BUILDER,
+        SpawnConfig,
+        ProjectileConfig,
+        ExplosionConfig,
+        VehicleConfig,
+        MiscConfig,
+        AmmoConfig,
+        MapConfig,
+        SyncConfig,
+    )

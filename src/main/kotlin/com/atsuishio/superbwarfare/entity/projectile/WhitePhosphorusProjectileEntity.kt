@@ -31,14 +31,12 @@ open class WhitePhosphorusProjectileEntity : FastThrowableProjectile {
         this.explosionRadiusValue = 5.0f
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.WP_HEAD.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.WP_HEAD.get()
 
     override fun performDamage(
         entity: Entity,
         damage: Float,
-        isHeadshot: Boolean
+        isHeadshot: Boolean,
     ) {
         entity.invulnerableTime = 0
 
@@ -46,7 +44,7 @@ open class WhitePhosphorusProjectileEntity : FastThrowableProjectile {
         if (damage > 0) {
             entity.forceHurt(
                 ModDamageTypes.causeBurnDamage(this.level().registryAccess(), this.owner),
-                damage * headShotModifier
+                damage * headShotModifier,
             )
             entity.invulnerableTime = 0
         }
@@ -68,16 +66,22 @@ open class WhitePhosphorusProjectileEntity : FastThrowableProjectile {
         this.discard()
     }
 
-    open fun causeWPEffect(pos: Vec3, shooter: Entity) {
+    open fun causeWPEffect(
+        pos: Vec3,
+        shooter: Entity,
+    ) {
         if (this.level() is ServerLevel) {
-            val entities = SeekTool.Builder(shooter)
-                .withinRange(pos, explosionRadiusValue.toDouble())
-                .notItsVehicle()
-                .baseFilter()
-                .noVehicle()
-                .build()
+            val entities =
+                SeekTool
+                    .Builder(shooter)
+                    .withinRange(pos, explosionRadiusValue.toDouble())
+                    .notItsVehicle()
+                    .baseFilter()
+                    .noVehicle()
+                    .build()
 
-            entities.asSequence()
+            entities
+                .asSequence()
                 .filter { it is LivingEntity && !(it is Player && it.isCreative) }
                 .forEach {
                     val dis = pos.distanceTo(it.position())
@@ -91,8 +95,9 @@ open class WhitePhosphorusProjectileEntity : FastThrowableProjectile {
                         MobEffectInstance(
                             ModMobEffects.PHOSPHORUS_FIRE,
                             (300 - 30 * dis).toInt(),
-                            max(explosionRadiusValue - dis, 0.0).toInt()
-                        ), this.owner
+                            max(explosionRadiusValue - dis, 0.0).toInt(),
+                        ),
+                        this.owner,
                     )
 
                     if (owner is ServerPlayer) {
@@ -102,7 +107,7 @@ open class WhitePhosphorusProjectileEntity : FastThrowableProjectile {
                             ModSounds.INDICATION.get(),
                             SoundSource.VOICE,
                             1f,
-                            1f
+                            1f,
                         )
                         sendPacketTo(owner, ClientIndicatorMessage(0, 5))
                     }

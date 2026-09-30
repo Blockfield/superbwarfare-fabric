@@ -3,17 +3,20 @@ package com.atsuishio.superbwarfare.client.model.item;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.launcher.JavelinItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
 public class JavelinItemModel extends CustomGunModel<JavelinItem> {
 
     @Override
-    public void setCustomAnimations(JavelinItem animatable, long instanceId, AnimationState<JavelinItem> animationState) {
+    public void setCustomAnimations(
+            JavelinItem animatable, long instanceId, AnimationState<JavelinItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -38,6 +41,9 @@ public class JavelinItemModel extends CustomGunModel<JavelinItem> {
         ClientEventHandler.gunRootMove(getAnimationProcessor(), 4, 0, 2, false);
 
         GeoBone camera = getAnimationProcessor().getBone("camera");
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
     }
 }

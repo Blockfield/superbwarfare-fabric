@@ -24,7 +24,7 @@ open class ReforgingTableMenu(
     pContainerId: Int,
     inventory: Inventory,
     container: Container,
-    pContainerLevelAccess: ContainerLevelAccess
+    pContainerLevelAccess: ContainerLevelAccess,
 ) : AbstractContainerMenu(ModMenuTypes.REFORGING_TABLE_MENU.get(), pContainerId) {
     protected val container: Container
     protected val access: ContainerLevelAccess
@@ -42,14 +42,14 @@ open class ReforgingTableMenu(
         pContainerId,
         pPlayerInventory,
         SimpleContainer(5),
-        ContainerLevelAccess.NULL
+        ContainerLevelAccess.NULL,
     )
 
     constructor(pContainerId: Int, pPlayerInventory: Inventory, access: ContainerLevelAccess) : this(
         pContainerId,
         pPlayerInventory,
         SimpleContainer(5),
-        access
+        access,
     )
 
     init {
@@ -83,7 +83,10 @@ open class ReforgingTableMenu(
         }
     }
 
-    override fun quickMoveStack(pPlayer: Player, pIndex: Int): ItemStack {
+    override fun quickMoveStack(
+        pPlayer: Player,
+        pIndex: Int,
+    ): ItemStack {
         var itemstack = ItemStack.EMPTY
         val slot = this.slots[pIndex]
         if (slot.hasItem()) {
@@ -144,16 +147,15 @@ open class ReforgingTableMenu(
         return itemstack
     }
 
-    override fun stillValid(pPlayer: Player): Boolean {
-        return this.access.evaluate({ level, pos ->
-            level.getBlockState(pos).`is`(ModBlocks.REFORGING_TABLE.get())
-                    && pPlayer.distanceToSqr(
-                pos.x.toDouble() + 0.5,
-                pos.y.toDouble() + 0.5,
-                pos.z.toDouble() + 0.5
-            ) <= 64
+    override fun stillValid(pPlayer: Player): Boolean =
+        this.access.evaluate({ level, pos ->
+            level.getBlockState(pos).`is`(ModBlocks.REFORGING_TABLE.get()) &&
+                pPlayer.distanceToSqr(
+                    pos.x.toDouble() + 0.5,
+                    pos.y.toDouble() + 0.5,
+                    pos.z.toDouble() + 0.5,
+                ) <= 64
         }, true)
-    }
 
     val gunStack: ItemStack?
         get() {
@@ -179,10 +181,12 @@ open class ReforgingTableMenu(
                 val itemstack = this.container.getItem(i)
                 val item = itemstack.item
 
-                if (copy.item is GunItem
-                    && item is PerkItem
-                    && !copy.isEmpty && GunData.from(copy).perk.getLevel(item) > 0
-                ) continue
+                if (copy.item is GunItem &&
+                    item is PerkItem &&
+                    !copy.isEmpty && GunData.from(copy).perk.getLevel(item) > 0
+                ) {
+                    continue
+                }
 
                 if (!itemstack.isEmpty) {
                     pPlayer.inventory.placeItemBackInInventory(itemstack)
@@ -204,7 +208,11 @@ open class ReforgingTableMenu(
         return max(0, totalLevel)
     }
 
-    fun setPerkLevel(type: Perk.Type, upgrade: Boolean, isCreative: Boolean) {
+    fun setPerkLevel(
+        type: Perk.Type,
+        upgrade: Boolean,
+        isCreative: Boolean,
+    ) {
         if (upgrade && availableLevel() <= 0 && !isCreative) {
             return
         }
@@ -214,26 +222,44 @@ open class ReforgingTableMenu(
         }
 
         when (type) {
-            Perk.Type.AMMO -> this.ammoPerkLevel.set(
-                if (upgrade) min(
-                    MAX_PERK_LEVEL,
-                    this.ammoPerkLevel.get() + 1
-                ) else max(1, this.ammoPerkLevel.get() - 1)
-            )
+            Perk.Type.AMMO -> {
+                this.ammoPerkLevel.set(
+                    if (upgrade) {
+                        min(
+                            MAX_PERK_LEVEL,
+                            this.ammoPerkLevel.get() + 1,
+                        )
+                    } else {
+                        max(1, this.ammoPerkLevel.get() - 1)
+                    },
+                )
+            }
 
-            Perk.Type.FUNCTIONAL -> this.funcPerkLevel.set(
-                if (upgrade) min(
-                    MAX_PERK_LEVEL,
-                    this.funcPerkLevel.get() + 1
-                ) else max(1, this.funcPerkLevel.get() - 1)
-            )
+            Perk.Type.FUNCTIONAL -> {
+                this.funcPerkLevel.set(
+                    if (upgrade) {
+                        min(
+                            MAX_PERK_LEVEL,
+                            this.funcPerkLevel.get() + 1,
+                        )
+                    } else {
+                        max(1, this.funcPerkLevel.get() - 1)
+                    },
+                )
+            }
 
-            Perk.Type.DAMAGE -> this.damagePerkLevel.set(
-                if (upgrade) min(
-                    MAX_PERK_LEVEL,
-                    this.damagePerkLevel.get() + 1
-                ) else max(1, this.damagePerkLevel.get() - 1)
-            )
+            Perk.Type.DAMAGE -> {
+                this.damagePerkLevel.set(
+                    if (upgrade) {
+                        min(
+                            MAX_PERK_LEVEL,
+                            this.damagePerkLevel.get() + 1,
+                        )
+                    } else {
+                        max(1, this.damagePerkLevel.get() - 1)
+                    },
+                )
+            }
         }
     }
 
@@ -255,24 +281,28 @@ open class ReforgingTableMenu(
 
         listOf(ammo, func, damage).forEach { item ->
             val perkItem = item.item
-            if (!item.isEmpty && perkItem is PerkItem && GunData.from(container.getItem(INPUT_SLOT))
+            if (!item.isEmpty && perkItem is PerkItem &&
+                GunData
+                    .from(container.getItem(INPUT_SLOT))
                     .canApplyPerk(perkItem.perk)
             ) {
                 data.perk.set(
                     PerkInstance(
-                        perkItem.perk, when (perkItem.perk.type) {
+                        perkItem.perk,
+                        when (perkItem.perk.type) {
                             Perk.Type.AMMO -> this.ammoPerkLevel.get()
                             Perk.Type.FUNCTIONAL -> this.funcPerkLevel.get()
                             Perk.Type.DAMAGE -> this.damagePerkLevel.get()
-                        }.toShort()
-                    )
+                        }.toShort(),
+                    ),
                 )
                 this.container.setItem(
                     when (perkItem.perk.type) {
                         Perk.Type.AMMO -> AMMO_PERK_SLOT
                         Perk.Type.FUNCTIONAL -> FUNC_PERK_SLOT
                         Perk.Type.DAMAGE -> DAMAGE_PERK_SLOT
-                    }, ItemStack.EMPTY
+                    },
+                    ItemStack.EMPTY,
                 )
             }
         }
@@ -290,7 +320,7 @@ open class ReforgingTableMenu(
 
     /**
      * 从Perk槽中取出对应的Perk物品时，根据其类型移除输入槽中枪械的Perk
-     * 
+     *
      * @param perk Perk物品
      */
     private fun onTakePerk(perk: ItemStack) {
@@ -325,7 +355,7 @@ open class ReforgingTableMenu(
 
     /**
      * 放置perk物品时，将对应位置的level设置为1
-     * 
+     *
      * @param pStack Perk物品
      */
     private fun onPlacePerk(pStack: ItemStack) {
@@ -340,7 +370,7 @@ open class ReforgingTableMenu(
 
     /**
      * 将枪械放入输入槽中时，根据枪械上已有的Perk生成对应的Perk物品，并将等级调整为当前的等级
-     * 
+     *
      * @param stack 输入的枪械
      */
     private fun onPlaceGun(stack: ItemStack) {
@@ -363,7 +393,8 @@ open class ReforgingTableMenu(
                         Perk.Type.AMMO -> AMMO_PERK_SLOT
                         Perk.Type.FUNCTIONAL -> FUNC_PERK_SLOT
                         Perk.Type.DAMAGE -> DAMAGE_PERK_SLOT
-                    }, ammoPerkItem.defaultInstance
+                    },
+                    ammoPerkItem.defaultInstance,
                 )
             }
         }
@@ -374,7 +405,7 @@ open class ReforgingTableMenu(
 
     /**
      * 拿走输入槽中的枪械时，如果Perk槽中存在放入枪械时生成的Perk物品，则将其移除，如果是没有的Perk则无视
-     * 
+     *
      * @param stack 输入的枪械
      */
     private fun onTakeGun(stack: ItemStack) {
@@ -383,11 +414,12 @@ open class ReforgingTableMenu(
 
         for (type in Perk.Type.entries) {
             val perk: Perk? = data.perk.get(type)
-            val slot: Int = when (type) {
-                Perk.Type.AMMO -> AMMO_PERK_SLOT
-                Perk.Type.FUNCTIONAL -> FUNC_PERK_SLOT
-                Perk.Type.DAMAGE -> DAMAGE_PERK_SLOT
-            }
+            val slot: Int =
+                when (type) {
+                    Perk.Type.AMMO -> AMMO_PERK_SLOT
+                    Perk.Type.FUNCTIONAL -> FUNC_PERK_SLOT
+                    Perk.Type.DAMAGE -> DAMAGE_PERK_SLOT
+                }
 
             val perkItem = this.container.getItem(slot).item
             if (perk != null && perkItem is PerkItem && perkItem.perk == perk) {
@@ -417,16 +449,19 @@ open class ReforgingTableMenu(
         this.container.setChanged()
     }
 
-    fun getPerkItemBySlot(type: Perk.Type): ItemStack? {
-        return when (type) {
+    fun getPerkItemBySlot(type: Perk.Type): ItemStack? =
+        when (type) {
             Perk.Type.AMMO -> this.container.getItem(AMMO_PERK_SLOT)
             Perk.Type.FUNCTIONAL -> this.container.getItem(FUNC_PERK_SLOT)
             Perk.Type.DAMAGE -> this.container.getItem(DAMAGE_PERK_SLOT)
         }
-    }
 
-    internal inner class InputSlot(pContainer: Container, pSlot: Int, pX: Int, pY: Int) :
-        Slot(pContainer, pSlot, pX, pY) {
+    internal inner class InputSlot(
+        pContainer: Container,
+        pSlot: Int,
+        pX: Int,
+        pY: Int,
+    ) : Slot(pContainer, pSlot, pX, pY) {
         override fun mayPlace(pStack: ItemStack): Boolean {
             if (pStack.item is GunItem) {
                 val ammoPerk = this.container.getItem(AMMO_PERK_SLOT)
@@ -437,18 +472,19 @@ open class ReforgingTableMenu(
                 val flag2 = funcPerk.isEmpty
                 val flag3 = damagePerk.isEmpty
 
-                return flag1 && flag2 && flag3
-                        && this.container.getItem(RESULT_SLOT).isEmpty
-                        && this.container.getItem(INPUT_SLOT).isEmpty
+                return flag1 && flag2 && flag3 &&
+                    this.container.getItem(RESULT_SLOT).isEmpty &&
+                    this.container.getItem(INPUT_SLOT).isEmpty
             }
             return false
         }
 
-        override fun getMaxStackSize(): Int {
-            return 1
-        }
+        override fun getMaxStackSize(): Int = 1
 
-        override fun onTake(pPlayer: Player, pStack: ItemStack) {
+        override fun onTake(
+            pPlayer: Player,
+            pStack: ItemStack,
+        ) {
             super.onTake(pPlayer, pStack)
             onTakeGun(pStack)
         }
@@ -459,29 +495,36 @@ open class ReforgingTableMenu(
         }
     }
 
-    internal inner class PerkSlot(pContainer: Container, pSlot: Int, var type: Perk.Type, pX: Int, pY: Int) :
-        Slot(pContainer, pSlot, pX, pY) {
+    internal inner class PerkSlot(
+        pContainer: Container,
+        pSlot: Int,
+        var type: Perk.Type,
+        pX: Int,
+        pY: Int,
+    ) : Slot(pContainer, pSlot, pX, pY) {
         override fun mayPlace(pStack: ItemStack): Boolean {
-            val slot = when (type) {
-                Perk.Type.AMMO -> AMMO_PERK_SLOT
-                Perk.Type.FUNCTIONAL -> FUNC_PERK_SLOT
-                Perk.Type.DAMAGE -> DAMAGE_PERK_SLOT
-            }
+            val slot =
+                when (type) {
+                    Perk.Type.AMMO -> AMMO_PERK_SLOT
+                    Perk.Type.FUNCTIONAL -> FUNC_PERK_SLOT
+                    Perk.Type.DAMAGE -> DAMAGE_PERK_SLOT
+                }
 
             val perkItem = pStack.item as? PerkItem ?: return false
 
-            return perkItem.perk.type == type && !container.getItem(INPUT_SLOT).isEmpty
-                    && container.getItem(INPUT_SLOT).item is GunItem
-                    && GunData.from(container.getItem(INPUT_SLOT)).canApplyPerk(perkItem.perk)
-                    && container.getItem(slot).isEmpty
+            return perkItem.perk.type == type && !container.getItem(INPUT_SLOT).isEmpty &&
+                container.getItem(INPUT_SLOT).item is GunItem &&
+                GunData.from(container.getItem(INPUT_SLOT)).canApplyPerk(perkItem.perk) &&
+                container.getItem(slot).isEmpty
         }
 
-        override fun getMaxStackSize(): Int {
-            return 1
-        }
+        override fun getMaxStackSize(): Int = 1
 
         @ParametersAreNonnullByDefault
-        override fun onTake(pPlayer: Player, pStack: ItemStack) {
+        override fun onTake(
+            pPlayer: Player,
+            pStack: ItemStack,
+        ) {
             onTakePerk(pStack)
             super.onTake(pPlayer, pStack)
         }
@@ -492,14 +535,15 @@ open class ReforgingTableMenu(
         }
     }
 
-    internal class ResultSlot(pContainer: Container, pSlot: Int, pX: Int, pY: Int) : Slot(pContainer, pSlot, pX, pY) {
-        override fun mayPlace(pStack: ItemStack): Boolean {
-            return false
-        }
+    internal class ResultSlot(
+        pContainer: Container,
+        pSlot: Int,
+        pX: Int,
+        pY: Int,
+    ) : Slot(pContainer, pSlot, pX, pY) {
+        override fun mayPlace(pStack: ItemStack): Boolean = false
 
-        override fun getMaxStackSize(): Int {
-            return 1
-        }
+        override fun getMaxStackSize(): Int = 1
     }
 
     companion object {

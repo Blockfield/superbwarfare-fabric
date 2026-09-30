@@ -8,9 +8,15 @@ import org.jetbrains.annotations.ApiStatus
 @ApiStatus.AvailableSince("0.8.9")
 open class LoadingDataEvent<T : Any> private constructor(
     val id: String,
-    var data: T
+    var data: T,
 ) : CancellableEvent() {
-    class Gun(id: String, data: DefaultGunData) : LoadingDataEvent<DefaultGunData>(id, data)
+    class Gun(
+        id: String,
+        data: DefaultGunData,
+    ) : LoadingDataEvent<DefaultGunData>(id, data)
 
-    class Vehicle(id: String, data: DefaultVehicleData) : LoadingDataEvent<DefaultVehicleData>(id, data)
+    class Vehicle(
+        id: String,
+        data: DefaultVehicleData,
+    ) : LoadingDataEvent<DefaultVehicleData>(id, data)
 }

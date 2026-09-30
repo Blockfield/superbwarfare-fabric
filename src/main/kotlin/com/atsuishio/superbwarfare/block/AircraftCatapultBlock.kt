@@ -24,15 +24,23 @@ import kotlin.math.max
 
 @Suppress("OVERRIDE_DEPRECATION")
 open class AircraftCatapultBlock :
-    Block(Properties.of().sound(SoundType.METAL).strength(3.0f).requiresCorrectToolForDrops().friction(0.989f)) {
+    Block(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .requiresCorrectToolForDrops()
+            .friction(0.989f),
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(LAUNCH_POWER, 0)
                 .setValue(UPDATING, false)
                 .setValue(CONTROLLED, false)
-                .setValue(REVERSED, false)
+                .setValue(REVERSED, false),
         )
     }
 
@@ -41,17 +49,19 @@ open class AircraftCatapultBlock :
         level: Level,
         pos: BlockPos,
         pOldState: BlockState,
-        pMovedByPiston: Boolean
+        pMovedByPiston: Boolean,
     ) {
         if (level is ServerLevel) {
             val behind = pos.relative(state.getValue(FACING).opposite)
             if (level.getBlockState(behind).block is CatapultControllerBlock) {
                 val controllerState = level.getBlockState(behind)
                 level.setBlock(
-                    pos, state
+                    pos,
+                    state
                         .setValue(LAUNCH_POWER, controllerState.getValue(CatapultControllerBlock.LAUNCH_POWER))
                         .setValue(CONTROLLED, true)
-                        .setValue(REVERSED, !controllerState.getValue(CatapultControllerBlock.POWERED)), 3
+                        .setValue(REVERSED, !controllerState.getValue(CatapultControllerBlock.POWERED)),
+                    3,
                 )
                 return
             }
@@ -63,17 +73,20 @@ open class AircraftCatapultBlock :
     }
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block?, BlockState?>) {
-        builder.add(FACING).add(LAUNCH_POWER).add(UPDATING).add(CONTROLLED).add(REVERSED)
+        builder
+            .add(FACING)
+            .add(LAUNCH_POWER)
+            .add(UPDATING)
+            .add(CONTROLLED)
+            .add(REVERSED)
     }
 
-    override fun getRenderShape(pState: BlockState): RenderShape {
-        return RenderShape.MODEL
-    }
+    override fun getRenderShape(pState: BlockState): RenderShape = RenderShape.MODEL
 
-    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? =
+        this
+            .defaultBlockState()
             .setValue(FACING, context.horizontalDirection.opposite)
-    }
 
     override fun neighborChanged(
         pState: BlockState,
@@ -81,14 +94,19 @@ open class AircraftCatapultBlock :
         pPos: BlockPos,
         pBlock: Block,
         pFromPos: BlockPos,
-        pIsMoving: Boolean
+        pIsMoving: Boolean,
     ) {
         if (!pLevel.isClientSide && !pState.getValue(UPDATING)) {
             pLevel.scheduleTick(pPos, this, 1)
         }
     }
 
-    override fun tick(state: BlockState, level: ServerLevel, pos: BlockPos, pRandom: RandomSource) {
+    override fun tick(
+        state: BlockState,
+        level: ServerLevel,
+        pos: BlockPos,
+        pRandom: RandomSource,
+    ) {
         val currentState = level.getBlockState(pos)
         if (currentState.getValue(CONTROLLED)) {
             val behind = pos.relative(currentState.getValue(FACING).opposite)
@@ -100,7 +118,11 @@ open class AircraftCatapultBlock :
         this.updateSignal(currentState, level, pos)
     }
 
-    private fun updateSignal(state: BlockState, level: ServerLevel, pos: BlockPos) {
+    private fun updateSignal(
+        state: BlockState,
+        level: ServerLevel,
+        pos: BlockPos,
+    ) {
         if (state.getValue(UPDATING) || state.getValue(CONTROLLED)) return
         level.setBlock(pos, state.setValue(UPDATING, true), 2)
 
@@ -114,7 +136,11 @@ open class AircraftCatapultBlock :
         level.setBlock(pos, newState.setValue(UPDATING, false), 2)
     }
 
-    private fun getFacingPower(level: Level, pos: BlockPos, state: BlockState): Int {
+    private fun getFacingPower(
+        level: Level,
+        pos: BlockPos,
+        state: BlockState,
+    ): Int {
         var max = 0
         val relative = pos.relative(state.getValue(FACING))
         val blockState = level.getBlockState(relative)
@@ -124,7 +150,12 @@ open class AircraftCatapultBlock :
         return max
     }
 
-    override fun entityInside(pState: BlockState, pLevel: Level, pPos: BlockPos, pEntity: Entity) {
+    override fun entityInside(
+        pState: BlockState,
+        pLevel: Level,
+        pPos: BlockPos,
+        pEntity: Entity,
+    ) {
         super.entityInside(pState, pLevel, pPos, pEntity)
         if (pEntity !is CatapultShuttleEntity) return
 

@@ -7,17 +7,20 @@ import com.github.mcmodderanchor.simplebedrockmodel.v1.common.animation.SimpleTr
 
 object Ptkm1rStates {
     val INIT: SimpleAnimationState<BasicEntityContext<Ptkm1rEntity>> =
-        SimpleAnimationState.Builder<BasicEntityContext<Ptkm1rEntity>>()
+        SimpleAnimationState
+            .Builder<BasicEntityContext<Ptkm1rEntity>>()
             .evaluatePose { it.getPose() }
             .build()
 
     val DEPLOYED: SimpleAnimationState<BasicEntityContext<Ptkm1rEntity>> =
-        SimpleAnimationState.Builder<BasicEntityContext<Ptkm1rEntity>>()
+        SimpleAnimationState
+            .Builder<BasicEntityContext<Ptkm1rEntity>>()
             .evaluatePose { it.getPose() }
             .build()
 
     val INIT_TRANS: SimpleTransition<BasicEntityContext<Ptkm1rEntity>> =
-        SimpleTransition.Builder<BasicEntityContext<Ptkm1rEntity>>()
+        SimpleTransition
+            .Builder<BasicEntityContext<Ptkm1rEntity>>()
             .predicate { true }
             .target(DEPLOYED)
             .from(INIT)

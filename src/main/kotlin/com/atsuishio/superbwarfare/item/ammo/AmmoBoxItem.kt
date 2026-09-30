@@ -9,6 +9,7 @@ import com.atsuishio.superbwarfare.init.setData
 import com.atsuishio.superbwarfare.tools.FormatTool.format0D
 import com.atsuishio.superbwarfare.tools.SoundTool
 import com.atsuishio.superbwarfare.tools.plus
+import io.github.fabricators_of_create.porting_lib.item.extensions.EntitySwingListenerItem
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
@@ -25,17 +26,18 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
-import io.github.fabricators_of_create.porting_lib.item.extensions.EntitySwingListenerItem
 import kotlin.math.min
 
 var ItemStack.ammoBoxData: AmmoBoxItem.AmmoBoxData
     get() {
         val info = get(ModDataComponents.AMMO_BOX_INFO.get()) ?: AmmoBoxInfo("All", false)
 
-        val map = Ammo.entries.mapNotNull {
-            val count = this@ammoBoxData.get(it.dataComponent.get()) ?: return@mapNotNull null
-            it to count
-        }.toMap()
+        val map =
+            Ammo.entries
+                .mapNotNull {
+                    val count = this@ammoBoxData.get(it.dataComponent.get()) ?: return@mapNotNull null
+                    it to count
+                }.toMap()
 
         return AmmoBoxItem.AmmoBoxData(Ammo.getType(info.type), info.isDrop, map)
     }
@@ -50,7 +52,9 @@ var ItemStack.ammoBoxData: AmmoBoxItem.AmmoBoxData
         }
     }
 
-open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem {
+open class AmmoBoxItem :
+    Item(Properties().stacksTo(1)),
+    EntitySwingListenerItem {
     data class AmmoBoxData(
         val selectedType: Ammo? = null,
         val isDrop: Boolean = false,
@@ -60,6 +64,7 @@ open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem
         val selectedTypes get() = if (type == null) Ammo.entries.toTypedArray() else arrayOf(type)
 
         val selectedAmmoCount get() = storedAmmo[type] ?: 0
+
         fun restCount(type: Ammo) = type.ammoBoxLimit - (storedAmmo[type] ?: 0)
 
         fun switchToNextType(): AmmoBoxData {
@@ -79,7 +84,11 @@ open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem
         fun asDrop(): AmmoBoxData = copy(selectedType = null, isDrop = true)
     }
 
-    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        level: Level,
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
 
         if (hand == InteractionHand.OFF_HAND) return InteractionResultHolder.fail(stack)
@@ -119,7 +128,10 @@ open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem
         return InteractionResultHolder.consume(stack)
     }
 
-    override fun onEntitySwing(stack: ItemStack, entity: LivingEntity): Boolean {
+    override fun onEntitySwing(
+        stack: ItemStack,
+        entity: LivingEntity,
+    ): Boolean {
         if (entity.isCrouching && entity is ServerPlayer) {
             stack.ammoBoxData = stack.ammoBoxData.switchToNextType()
 
@@ -127,14 +139,15 @@ open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem
             val type = stack.ammoBoxData.type
             if (type == null) {
                 entity.displayClientMessage(
-                    Component.translatable("des.superbwarfare.ammo_box.type.all").withStyle(ChatFormatting.WHITE), true
+                    Component.translatable("des.superbwarfare.ammo_box.type.all").withStyle(ChatFormatting.WHITE),
+                    true,
                 )
                 return true
             }
 
             entity.displayClientMessage(
                 Component.translatable("des.superbwarfare.ammo_box.type." + type.name).withStyle(type.color),
-                true
+                true,
             )
         }
 
@@ -145,7 +158,7 @@ open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         val type = stack.ammoBoxData.type
 
@@ -153,14 +166,14 @@ open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem
 
         for (ammo in Ammo.entries) {
             tooltipComponents.add(
-                Component.translatable("des.superbwarfare.ammo_box." + ammo.name).withStyle(ammo.color)
-                        + Component.empty().withStyle(ChatFormatting.RESET)
-                        + Component.literal(
-                    format0D(
-                        ammo.get(stack).toDouble()
-                    ) + (if (type != null && type != ammo) " " else " ←-")
-                )
-                    .withStyle(ChatFormatting.BOLD)
+                Component.translatable("des.superbwarfare.ammo_box." + ammo.name).withStyle(ammo.color) +
+                    Component.empty().withStyle(ChatFormatting.RESET) +
+                    Component
+                        .literal(
+                            format0D(
+                                ammo.get(stack).toDouble(),
+                            ) + (if (type != null && type != ammo) " " else " ←-"),
+                        ).withStyle(ChatFormatting.BOLD),
             )
         }
     }
@@ -172,7 +185,7 @@ open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem
         slot: Slot,
         action: ClickAction,
         player: Player,
-        access: SlotAccess
+        access: SlotAccess,
     ): Boolean {
         val info = stack.ammoBoxData
         if (!info.isDrop && other.isEmpty && action == ClickAction.SECONDARY) {
@@ -183,7 +196,12 @@ open class AmmoBoxItem : Item(Properties().stacksTo(1)), EntitySwingListenerItem
         return super.overrideOtherStackedOnMe(stack, other, slot, action, player, access)
     }
 
-    override fun overrideStackedOnOther(stack: ItemStack, slot: Slot, action: ClickAction, player: Player): Boolean {
+    override fun overrideStackedOnOther(
+        stack: ItemStack,
+        slot: Slot,
+        action: ClickAction,
+        player: Player,
+    ): Boolean {
         val slotStack = slot.item
         val slotItem = slotStack.item
         val info = stack.ammoBoxData

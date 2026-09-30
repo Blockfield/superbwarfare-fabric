@@ -7,7 +7,9 @@ import com.atsuishio.superbwarfare.serialization.kserializer.SerializedBlockPos
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RadarMenuOpenMessage(var pos: SerializedBlockPos) : ClientPacketPayload() {
+data class RadarMenuOpenMessage(
+    var pos: SerializedBlockPos,
+) : ClientPacketPayload() {
     override fun PayloadContext.handler() {
         FuMO25ScreenHelper.resetEntities()
         FuMO25ScreenHelper.pos = pos

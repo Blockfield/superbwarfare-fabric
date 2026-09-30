@@ -4,6 +4,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.item.IVehicleInteract
 import com.atsuishio.superbwarfare.tools.EntityFindUtil
 import com.atsuishio.superbwarfare.tools.NBTTool
+import com.atsuishio.superbwarfare.tools.clientLevel
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.sounds.SoundEvents
@@ -15,16 +16,18 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
-import com.atsuishio.superbwarfare.tools.clientLevel
 
-open class VehicleKeyItem(properties: Properties) : Item(properties), IVehicleInteract {
+open class VehicleKeyItem(
+    properties: Properties,
+) : Item(properties),
+    IVehicleInteract {
     constructor() : this(Properties().stacksTo(1))
 
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltip: MutableList<Component>,
-        flag: TooltipFlag
+        flag: TooltipFlag,
     ) {
         val tag = NBTTool.getTag(stack)
         // Item.TooltipContext из ванили уровня не отдаёт (level() добавлял NeoForge), а подсказка
@@ -36,15 +39,17 @@ open class VehicleKeyItem(properties: Properties) : Item(properties), IVehicleIn
             val entity = if (level != null) EntityFindUtil.findEntity(level, tag.getString(TAG_UUID)) else null
             if (entity != null && entity.displayName != null) {
                 tooltip.add(
-                    Component.translatable(
-                        "des.superbwarfare.vehicle_key.bind", Component.empty().append(entity.displayName!!).withStyle(
-                            ChatFormatting.GREEN
-                        )
-                    ).withStyle(ChatFormatting.GRAY)
+                    Component
+                        .translatable(
+                            "des.superbwarfare.vehicle_key.bind",
+                            Component.empty().append(entity.displayName!!).withStyle(
+                                ChatFormatting.GREEN,
+                            ),
+                        ).withStyle(ChatFormatting.GRAY),
                 )
             } else {
                 tooltip.add(
-                    Component.translatable("des.superbwarfare.vehicle_key.not_found").withStyle(ChatFormatting.GRAY)
+                    Component.translatable("des.superbwarfare.vehicle_key.not_found").withStyle(ChatFormatting.GRAY),
                 )
             }
         }
@@ -53,7 +58,7 @@ open class VehicleKeyItem(properties: Properties) : Item(properties), IVehicleIn
     override fun use(
         level: Level,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
         val tag = NBTTool.getTag(stack)
@@ -62,11 +67,14 @@ open class VehicleKeyItem(properties: Properties) : Item(properties), IVehicleIn
             NBTTool.saveTag(stack, tag)
             if (player.displayName != null) {
                 player.displayClientMessage(
-                    Component.translatable(
-                        "des.superbwarfare.vehicle_key.bind", Component.empty().append(player.displayName!!).withStyle(
-                            ChatFormatting.GREEN
-                        )
-                    ).withStyle(ChatFormatting.GRAY), true
+                    Component
+                        .translatable(
+                            "des.superbwarfare.vehicle_key.bind",
+                            Component.empty().append(player.displayName!!).withStyle(
+                                ChatFormatting.GREEN,
+                            ),
+                        ).withStyle(ChatFormatting.GRAY),
+                    true,
                 )
             }
             player.playSound(SoundEvents.ARROW_HIT_PLAYER)
@@ -79,13 +87,15 @@ open class VehicleKeyItem(properties: Properties) : Item(properties), IVehicleIn
         vehicle: VehicleEntity,
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult {
         val uuid = NBTTool.getTag(stack).getString(TAG_UUID) ?: return InteractionResult.FAIL
         if (!vehicle.passengers.isEmpty()) {
             player.displayClientMessage(
-                Component.translatable("tips.superbwarfare.vehicle.lock_not_empty")
-                    .withStyle(ChatFormatting.RED), true
+                Component
+                    .translatable("tips.superbwarfare.vehicle.lock_not_empty")
+                    .withStyle(ChatFormatting.RED),
+                true,
             )
             return InteractionResult.FAIL
         }
@@ -96,16 +106,20 @@ open class VehicleKeyItem(properties: Properties) : Item(properties), IVehicleIn
                 vehicle.locked = true
 
                 player.displayClientMessage(
-                    Component.translatable(
-                        "tips.superbwarfare.vehicle.lock_vehicle",
-                        vehicle.displayName
-                    ).withStyle(ChatFormatting.GREEN), true
+                    Component
+                        .translatable(
+                            "tips.superbwarfare.vehicle.lock_vehicle",
+                            vehicle.displayName,
+                        ).withStyle(ChatFormatting.GREEN),
+                    true,
                 )
                 return InteractionResult.SUCCESS
             } else {
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.vehicle.lock_fail")
-                        .withStyle(ChatFormatting.RED), true
+                    Component
+                        .translatable("tips.superbwarfare.vehicle.lock_fail")
+                        .withStyle(ChatFormatting.RED),
+                    true,
                 )
                 return InteractionResult.FAIL
             }
@@ -115,16 +129,20 @@ open class VehicleKeyItem(properties: Properties) : Item(properties), IVehicleIn
                 vehicle.locked = false
 
                 player.displayClientMessage(
-                    Component.translatable(
-                        "tips.superbwarfare.vehicle.unlock_vehicle",
-                        vehicle.displayName
-                    ).withStyle(ChatFormatting.GREEN), true
+                    Component
+                        .translatable(
+                            "tips.superbwarfare.vehicle.unlock_vehicle",
+                            vehicle.displayName,
+                        ).withStyle(ChatFormatting.GREEN),
+                    true,
                 )
                 return InteractionResult.SUCCESS
             } else {
                 player.displayClientMessage(
-                    Component.translatable("tips.superbwarfare.vehicle.lock_fail")
-                        .withStyle(ChatFormatting.RED), true
+                    Component
+                        .translatable("tips.superbwarfare.vehicle.lock_fail")
+                        .withStyle(ChatFormatting.RED),
+                    true,
                 )
                 return InteractionResult.FAIL
             }

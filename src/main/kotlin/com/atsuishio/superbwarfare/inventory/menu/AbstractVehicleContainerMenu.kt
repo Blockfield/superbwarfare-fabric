@@ -1,16 +1,20 @@
 package com.atsuishio.superbwarfare.inventory.menu
 
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import com.atsuishio.superbwarfare.fabric.SlotItemHandler
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
-import com.atsuishio.superbwarfare.fabric.SlotItemHandler
 
-abstract class AbstractVehicleContainerMenu(type: MenuType<*>?, id: Int, inventory: Inventory, entityId: Int) :
-    AbstractContainerMenu(type, id) {
+abstract class AbstractVehicleContainerMenu(
+    type: MenuType<*>?,
+    id: Int,
+    inventory: Inventory,
+    entityId: Int,
+) : AbstractContainerMenu(type, id) {
     val vehicle: VehicleEntity? = inventory.player.level().getEntity(entityId) as? VehicleEntity
 
     init {
@@ -34,7 +38,7 @@ abstract class AbstractVehicleContainerMenu(type: MenuType<*>?, id: Int, invento
 
     override fun quickMoveStack(
         player: Player,
-        index: Int
+        index: Int,
     ): ItemStack {
         var stack1 = ItemStack.EMPTY
         val slot = this.slots[index]
@@ -77,10 +81,8 @@ abstract class AbstractVehicleContainerMenu(type: MenuType<*>?, id: Int, invento
         private val vehicle: VehicleEntity?,
         @get:JvmName("slotIndex") val slotIndex: Int,
         x: Int,
-        y: Int
+        y: Int,
     ) : SlotItemHandler(vehicle?.inventory, slotIndex, x, y) {
-        override fun mayPickup(playerIn: Player): Boolean {
-            return this.vehicle?.canTakeItem(slotIndex) ?: false
-        }
+        override fun mayPickup(playerIn: Player): Boolean = this.vehicle?.canTakeItem(slotIndex) ?: false
     }
 }

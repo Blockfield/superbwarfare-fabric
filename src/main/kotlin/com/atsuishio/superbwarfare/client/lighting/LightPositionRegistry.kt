@@ -4,10 +4,10 @@ import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongArrayList
 import it.unimi.dsi.fastutil.longs.LongIterator
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
-import net.minecraft.client.Minecraft
-import net.minecraft.core.BlockPos
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.Minecraft
+import net.minecraft.core.BlockPos
 
 /**
  * High-performance, zero-allocation registry for client-side dynamic block light sources.
@@ -23,7 +23,6 @@ import net.fabricmc.api.Environment
  */
 @Environment(EnvType.CLIENT)
 object LightPositionRegistry {
-
     private const val MAX_ACTIVE_LIGHTS = 2048
 
     private val sparks = Long2LongOpenHashMap(512).also { it.defaultReturnValue(0L) }
@@ -44,7 +43,12 @@ object LightPositionRegistry {
      * @param ttlTicks   lifetime in client ticks
      */
     @JvmStatic
-    fun putSpark(packedPos: Long, maxLevel: Int, minLevel: Int, ttlTicks: Int) {
+    fun putSpark(
+        packedPos: Long,
+        maxLevel: Int,
+        minLevel: Int,
+        ttlTicks: Int,
+    ) {
         if (maxLevel <= 0 || ttlTicks <= 0) return
         if (!active.contains(packedPos) && active.size >= MAX_ACTIVE_LIGHTS) return
 
@@ -53,7 +57,8 @@ object LightPositionRegistry {
         val expiry = currentTick + ttlTicks
 
         // Reset start to currentTick so continuous refresh maintains peak brightness
-        val packed = (clampedMax.toLong() shl 48) or
+        val packed =
+            (clampedMax.toLong() shl 48) or
                 (clampedMin.toLong() shl 32) or
                 ((currentTick and 0xFFFFL) shl 16) or
                 (expiry and 0xFFFFL)
@@ -72,7 +77,13 @@ object LightPositionRegistry {
      * @param radius     attenuation radius in blocks
      */
     @JvmStatic
-    fun putSparkRadius(centerPos: BlockPos, maxLevel: Int, minLevel: Int, ttlTicks: Int, radius: Int = 3) {
+    fun putSparkRadius(
+        centerPos: BlockPos,
+        maxLevel: Int,
+        minLevel: Int,
+        ttlTicks: Int,
+        radius: Int = 3,
+    ) {
         if (maxLevel <= 0 || ttlTicks <= 0) return
         val clampedMax = maxLevel.coerceIn(1, 15)
         val clampedMin = minLevel.coerceIn(1, clampedMax)

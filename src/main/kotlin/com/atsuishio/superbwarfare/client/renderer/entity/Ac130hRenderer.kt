@@ -10,13 +10,15 @@ import net.minecraft.client.CameraType
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class Ac130hRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
+class Ac130hRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
     override fun transformCustomModelPart(
         entity: VehicleEntity,
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 
@@ -44,8 +46,8 @@ class Ac130hRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRend
             Mth.clamp(
                 Mth.lerp(partialTicks, entity.flap3RotO, entity.flap3Rot),
                 -20f,
-                20f
-            ) * Mth.DEG_TO_RAD
+                20f,
+            ) * Mth.DEG_TO_RAD,
         )
 
         val propeller = instance.getBone("move_prop1")
@@ -61,7 +63,8 @@ class Ac130hRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRend
 
         val player = localPlayer
         val hide =
-            player != null && entity === player.vehicle && entity.hasWeapon(entity.getSeatIndex(player)) && (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
+            player != null && entity === player.vehicle && entity.hasWeapon(entity.getSeatIndex(player)) &&
+                (options.cameraType == CameraType.FIRST_PERSON || ClientEventHandler.zoomVehicle)
 
         val gd = instance.getBone("move_gd")
         gd?.visible = !hide

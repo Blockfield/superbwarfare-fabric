@@ -12,7 +12,7 @@ object MicroMissile : AmmoPerk(Builder("micro_missile", Type.AMMO).speedRate(1.2
     override fun modifyProjectile(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity
+        entity: Entity,
     ) {
         entity.isNoGravity = true
     }

@@ -133,9 +133,7 @@ class DefaultGunData : IDBasedData<DefaultGunData> {
     @SerialName("Projectile")
     var projectile: StringToObject<ProjectileInfo> = StringToObject(ProjectileInfo())
 
-    fun projectile(): ProjectileInfo {
-        return projectile.value
-    }
+    fun projectile(): ProjectileInfo = projectile.value
 
     @ServerOnly
     @SerialName("ShootPos")
@@ -204,20 +202,20 @@ class DefaultGunData : IDBasedData<DefaultGunData> {
 
     fun getProcessedAmmoConsumers(): List<AmmoConsumer> {
         if (ammoConsumersCache == null) {
-            this.ammoConsumersCache = this.ammoConsumers.list
-                .map { c ->
-                    if (!c.value.initialized()) {
-                        c.value.init()
+            this.ammoConsumersCache =
+                this.ammoConsumers.list
+                    .map { c ->
+                        if (!c.value.initialized()) {
+                            c.value.init()
+                        }
+                        c.value
+                    }.filter { c ->
+                        if (c.type == AmmoConsumer.AmmoConsumeType.INVALID) {
+                            Mod.LOGGER.warn("invalid ammo string {} for {}", c.ammo, this.id)
+                            return@filter false
+                        }
+                        true
                     }
-                    c.value
-                }
-                .filter { c ->
-                    if (c.type == AmmoConsumer.AmmoConsumeType.INVALID) {
-                        Mod.LOGGER.warn("invalid ammo string {} for {}", c.ammo, this.id)
-                        return@filter false
-                    }
-                    true
-                }
         }
 
         return this.ammoConsumersCache!!
@@ -230,11 +228,12 @@ class DefaultGunData : IDBasedData<DefaultGunData> {
     val fireModes: List<FireModeInfo>
         get() {
             if (fireModesCache == null) {
-                this.fireModesCache = this.availableFireModes.list
-                    .map { c ->
-                        c.value.init()
-                        c.value
-                    }
+                this.fireModesCache =
+                    this.availableFireModes.list
+                        .map { c ->
+                            c.value.init()
+                            c.value
+                        }
             }
 
             return this.fireModesCache!!
@@ -308,21 +307,20 @@ class DefaultGunData : IDBasedData<DefaultGunData> {
     var heatPerShoot = 0.0
 
     @SerialName("AvailablePerks")
-    var availablePerks = ObjectToList(
-        "@Ammo",
-        "superbwarfare:field_doctor",
-        "superbwarfare:powerful_attraction",
-        "superbwarfare:intelligent_chip",
-        "superbwarfare:monster_hunter",
-        "superbwarfare:vorpal_weapon",
-        "!superbwarfare:micro_missile",
-        "!superbwarfare:longer_wire",
-        "!superbwarfare:cupid_arrow"
-    )
+    var availablePerks =
+        ObjectToList(
+            "@Ammo",
+            "superbwarfare:field_doctor",
+            "superbwarfare:powerful_attraction",
+            "superbwarfare:intelligent_chip",
+            "superbwarfare:monster_hunter",
+            "superbwarfare:vorpal_weapon",
+            "!superbwarfare:micro_missile",
+            "!superbwarfare:longer_wire",
+            "!superbwarfare:cupid_arrow",
+        )
 
-    fun availablePerks(): List<String> {
-        return availablePerks.list
-    }
+    fun availablePerks(): List<String> = availablePerks.list
 
     @ServerOnly
     @SerialName("DamageReduce")
@@ -411,9 +409,9 @@ class DefaultGunData : IDBasedData<DefaultGunData> {
     @SerialName("AddShooterDeltaMovement")
     var addShooterDeltaMovement = false
 
-    @SerialName("Icon")
     // String, а не SerializedResourceLocation: см. комментарий у shootShake -- ванильный тип
     // в сигнатуре геттера ломает kotlin-reflect в собранном jar. Формат JSON тот же, строка.
+    @SerialName("Icon")
     var icon: String = DEFAULT_ICON.toString()
 
     /*
@@ -467,11 +465,12 @@ class DefaultGunData : IDBasedData<DefaultGunData> {
         projectileAmount = max(0, projectileAmount)
         weight = max(1.0, weight)
 
-        magazine = if (projectileAmount == 0 && meleeDamage > 0) {
-            0
-        } else {
-            max(0, magazine)
-        }
+        magazine =
+            if (projectileAmount == 0 && meleeDamage > 0) {
+                0
+            } else {
+                max(0, magazine)
+            }
 
         if (seekType == null) {
             seekType = SeekType.NONE
@@ -484,6 +483,5 @@ class DefaultGunData : IDBasedData<DefaultGunData> {
 
     companion object {
         val DEFAULT_ICON: ResourceLocation = loc("textures/gun_icon/default_icon.png")
-
     }
 }

@@ -37,8 +37,12 @@ import kotlin.math.*
  * 已由调用方（Screen.render()）设置好，仅在其内部做颜色/透明度微调。
  */
 class MapEntityRenderer {
-
-    data class EntityRenderEntry(val entity: Entity, val screenX: Float, val screenY: Float, val relation: String)
+    data class EntityRenderEntry(
+        val entity: Entity,
+        val screenX: Float,
+        val screenY: Float,
+        val relation: String,
+    )
 
     // ── Textures ──
     companion object {
@@ -68,18 +72,36 @@ class MapEntityRenderer {
         private val playerFaceCache = WeakHashMap<UUID, ResourceLocation>()
 
         /** 绘制玩家头像贴图，优先使用缓存，缺失时从 SkinManager 获取 */
-        fun drawPlayerFace(guiGraphics: GuiGraphics, uuid: java.util.UUID, name: String, x: Int, y: Int, size: Int) {
-            val skin = playerFaceCache.getOrPut(uuid) {
-                val gameProfile = GameProfile(uuid, name)
-                Minecraft.getInstance().skinManager.getInsecureSkin(gameProfile).texture
-            }
+        fun drawPlayerFace(
+            guiGraphics: GuiGraphics,
+            uuid: java.util.UUID,
+            name: String,
+            x: Int,
+            y: Int,
+            size: Int,
+        ) {
+            val skin =
+                playerFaceCache.getOrPut(uuid) {
+                    val gameProfile = GameProfile(uuid, name)
+                    Minecraft
+                        .getInstance()
+                        .skinManager
+                        .getInsecureSkin(gameProfile)
+                        .texture
+                }
             PlayerFaceRenderer.draw(guiGraphics, skin, x, y, size)
         }
 
         /** Liang-Barsky 线裁剪到地图可视区域，返回本地虚线坐标范围 */
         fun clipDashRange(
-            sx: Float, sy: Float, ex: Float, ey: Float,
-            mapLeft: Int, mapTop: Int, mapAreaW: Int, mapAreaH: Int
+            sx: Float,
+            sy: Float,
+            ex: Float,
+            ey: Float,
+            mapLeft: Int,
+            mapTop: Int,
+            mapAreaW: Int,
+            mapAreaH: Int,
         ): Pair<Int, Int>? {
             val cx1 = mapLeft.toFloat()
             val cx2 = (mapLeft + mapAreaW).toFloat()
@@ -124,15 +146,24 @@ class MapEntityRenderer {
         level: Level,
         tintColor: Int,
         relationKey: String,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float,
-        mapLeft: Int, mapTop: Int, mapAreaW: Int, mapAreaH: Int,
-        scale: Double, pPartialTick: Float,
-        mouseX: Int, mouseY: Int,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        mapLeft: Int,
+        mapTop: Int,
+        mapAreaW: Int,
+        mapAreaH: Int,
+        scale: Double,
+        pPartialTick: Float,
+        mouseX: Int,
+        mouseY: Int,
         selectedEntities: List<Entity>,
         outEntries: MutableList<EntityRenderEntry>,
         onHover: (lines: List<Component>, tipX: Int, tipY: Int) -> Unit,
-        isDraggingLoiter: Boolean, loiterDragNewX: Double, loiterDragNewZ: Double,
+        isDraggingLoiter: Boolean,
+        loiterDragNewX: Double,
+        loiterDragNewZ: Double,
         loiterDragExpireTime: Long,
     ) {
         val iconSize = 12
@@ -142,17 +173,39 @@ class MapEntityRenderer {
             val pos = ClientSyncedEntityHandler.getExtrapolatedPos(level, e)
             val screenX = CoordinateConverter.worldToScreenX(pos.x, mapCenterX, viewBlockX, scale).toFloat()
             val screenY = CoordinateConverter.worldToScreenY(pos.z, mapCenterY, viewBlockZ, scale).toFloat()
-            val (clampedX, clampedY) = CoordinateConverter.clampToMapArea(
-                screenX.toDouble(), screenY.toDouble(), mapLeft, mapTop, mapAreaW, mapAreaH
-            )
+            val (clampedX, clampedY) =
+                CoordinateConverter.clampToMapArea(
+                    screenX.toDouble(),
+                    screenY.toDouble(),
+                    mapLeft,
+                    mapTop,
+                    mapAreaW,
+                    mapAreaH,
+                )
             renderMapEntity(
-                e, level, scale, pPartialTick, guiGraphics, tintColor,
-                viewBlockX, viewBlockZ, mapCenterX, mapCenterY, mapLeft, mapTop, mapAreaW, mapAreaH,
-                isDraggingLoiter, loiterDragNewX, loiterDragNewZ, loiterDragExpireTime
+                e,
+                level,
+                scale,
+                pPartialTick,
+                guiGraphics,
+                tintColor,
+                viewBlockX,
+                viewBlockZ,
+                mapCenterX,
+                mapCenterY,
+                mapLeft,
+                mapTop,
+                mapAreaW,
+                mapAreaH,
+                isDraggingLoiter,
+                loiterDragNewX,
+                loiterDragNewZ,
+                loiterDragExpireTime,
             )
 
-            if (selectedEntities.any { it.id == e.id })
+            if (selectedEntities.any { it.id == e.id }) {
                 drawSelectedBorder(guiGraphics, clampedX, clampedY)
+            }
 
             if (mouseX.toFloat() in (clampedX - half)..(clampedX + half) &&
                 mouseY.toFloat() in (clampedY - half)..(clampedY + half)
@@ -165,42 +218,57 @@ class MapEntityRenderer {
                     e,
                     clampedX,
                     clampedY,
-                    relationKey.removePrefix("context.superbwarfare.tactical_map.relation.")
-                )
+                    relationKey.removePrefix("context.superbwarfare.tactical_map.relation."),
+                ),
             )
         }
     }
 
-    private fun buildEntityTooltip(entity: Entity, level: Level, relationKey: String): List<Component> {
+    private fun buildEntityTooltip(
+        entity: Entity,
+        level: Level,
+        relationKey: String,
+    ): List<Component> {
         val lines = mutableListOf<Component>()
         lines.add(
-            Component.translatable(
-                "context.superbwarfare.tactical_map.tooltip.name", entity.displayName
-            ).withStyle(ChatFormatting.WHITE)
+            Component
+                .translatable(
+                    "context.superbwarfare.tactical_map.tooltip.name",
+                    entity.displayName,
+                ).withStyle(ChatFormatting.WHITE),
         )
         val pos = ClientSyncedEntityHandler.getExtrapolatedPos(level, entity)
         lines.add(
-            Component.translatable(
-                "context.superbwarfare.tactical_map.tooltip.pos",
-                pos.x.toInt().toString(), pos.y.toInt().toString(), pos.z.toInt().toString()
-            ).withStyle(ChatFormatting.GRAY)
+            Component
+                .translatable(
+                    "context.superbwarfare.tactical_map.tooltip.pos",
+                    pos.x.toInt().toString(),
+                    pos.y.toInt().toString(),
+                    pos.z.toInt().toString(),
+                ).withStyle(ChatFormatting.GRAY),
         )
-        val teamName = (entity as? LivingEntity)?.team?.name
-            ?: (entity as? VehicleEntity)?.lastDriver?.let { (it as? LivingEntity)?.team?.name }
+        val teamName =
+            (entity as? LivingEntity)?.team?.name
+                ?: (entity as? VehicleEntity)?.lastDriver?.let { (it as? LivingEntity)?.team?.name }
         if (!teamName.isNullOrEmpty()) {
             lines.add(
-                Component.translatable(
-                    "context.superbwarfare.tactical_map.tooltip.team", teamName
-                ).withStyle(ChatFormatting.AQUA)
+                Component
+                    .translatable(
+                        "context.superbwarfare.tactical_map.tooltip.team",
+                        teamName,
+                    ).withStyle(ChatFormatting.AQUA),
             )
         }
         val syncedEntry = ClientSyncedEntityHandler.getSyncedEntry(level, entity.id)
-        val hag = syncedEntry?.heightAboveGround
-            ?: computeEntityHeightAboveGround(level, entity)
+        val hag =
+            syncedEntry?.heightAboveGround
+                ?: computeEntityHeightAboveGround(level, entity)
         lines.add(
-            if (hag >= 0)
+            if (hag >= 0) {
                 Component.translatable("context.superbwarfare.tactical_map.tooltip.height", "%.1f".format(hag))
-            else Component.translatable("context.superbwarfare.tactical_map.tooltip.height_na")
+            } else {
+                Component.translatable("context.superbwarfare.tactical_map.tooltip.height_na")
+            },
         )
         // Missile speed in Mach: computed from per-tick velocity × 20 ticks/s
         if (entity is MissileProjectile) {
@@ -208,10 +276,11 @@ class MapEntityRenderer {
             val speedMs = vel.length() * 20.0
             val mach = speedMs / 340.0
             lines.add(
-                Component.translatable(
-                    "context.superbwarfare.tactical_map.tooltip.speed",
-                    "%.1f".format(mach)
-                ).withStyle(ChatFormatting.GOLD)
+                Component
+                    .translatable(
+                        "context.superbwarfare.tactical_map.tooltip.speed",
+                        "%.1f".format(mach),
+                    ).withStyle(ChatFormatting.GOLD),
             )
         }
         lines.add(Component.translatable(relationKey).withStyle(ChatFormatting.YELLOW))
@@ -219,12 +288,16 @@ class MapEntityRenderer {
     }
 
     /** 对客户端 level 中已存在的实体（非超视距同步），使用高度图实时计算离地高度 */
-    private fun computeEntityHeightAboveGround(level: Level, entity: Entity): Double {
-        val surfaceY = level.getHeight(
-            Heightmap.Types.WORLD_SURFACE,
-            entity.blockX,
-            entity.blockZ
-        )
+    private fun computeEntityHeightAboveGround(
+        level: Level,
+        entity: Entity,
+    ): Double {
+        val surfaceY =
+            level.getHeight(
+                Heightmap.Types.WORLD_SURFACE,
+                entity.blockX,
+                entity.blockZ,
+            )
         return (entity.y - surfaceY).coerceAtLeast(0.0)
     }
 
@@ -239,10 +312,17 @@ class MapEntityRenderer {
         pPartialTick: Float,
         guiGraphics: GuiGraphics,
         tintColor: Int,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float,
-        mapLeft: Int, mapTop: Int, mapAreaW: Int, mapAreaH: Int,
-        isDraggingLoiter: Boolean = false, loiterDragNewX: Double = 0.0, loiterDragNewZ: Double = 0.0,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        mapLeft: Int,
+        mapTop: Int,
+        mapAreaW: Int,
+        mapAreaH: Int,
+        isDraggingLoiter: Boolean = false,
+        loiterDragNewX: Double = 0.0,
+        loiterDragNewZ: Double = 0.0,
         loiterDragExpireTime: Long = 0L,
     ) {
         val r = ((tintColor shr 16) and 0xFF) / 255f
@@ -255,9 +335,15 @@ class MapEntityRenderer {
         val icon = getVehicleIcon(entity)
         val iconSize = 12
 
-        val (clampedX, clampedY) = CoordinateConverter.clampToMapArea(
-            screenX.toDouble(), screenY.toDouble(), mapLeft, mapTop, mapAreaW, mapAreaH
-        )
+        val (clampedX, clampedY) =
+            CoordinateConverter.clampToMapArea(
+                screenX.toDouble(),
+                screenY.toDouble(),
+                mapLeft,
+                mapTop,
+                mapAreaW,
+                mapAreaH,
+            )
         val alpha = if (screenX == clampedX && screenY == clampedY) 1f else 0.5f
 
         RenderSystem.setShaderColor(r, g, b, alpha)
@@ -277,8 +363,20 @@ class MapEntityRenderer {
             val targetPos = synced?.targetPos ?: entity.getTargetPos()
             if (targetPos != null) {
                 renderTargetPos(
-                    targetPos, scale, screenX, screenY, guiGraphics, entity,
-                    viewBlockX, viewBlockZ, mapCenterX, mapCenterY, mapLeft, mapTop, mapAreaW, mapAreaH
+                    targetPos,
+                    scale,
+                    screenX,
+                    screenY,
+                    guiGraphics,
+                    entity,
+                    viewBlockX,
+                    viewBlockZ,
+                    mapCenterX,
+                    mapCenterY,
+                    mapLeft,
+                    mapTop,
+                    mapAreaW,
+                    mapAreaH,
                 )
             }
         }
@@ -296,16 +394,17 @@ class MapEntityRenderer {
             val ldy = navScreenY - screenY
             val len = sqrt((ldx * ldx + ldy * ldy)).toFloat()
             if (len > 2f) {
-                val range = clipDashRange(
-                    screenX,
-                    screenY,
-                    navScreenX.toFloat(),
-                    navScreenY.toFloat(),
-                    mapLeft,
-                    mapTop,
-                    mapAreaW,
-                    mapAreaH
-                )
+                val range =
+                    clipDashRange(
+                        screenX,
+                        screenY,
+                        navScreenX.toFloat(),
+                        navScreenY.toFloat(),
+                        mapLeft,
+                        mapTop,
+                        mapAreaW,
+                        mapAreaH,
+                    )
                 if (range != null) {
                     val angle = atan2(ldy, ldx)
                     val midX = ((screenX + navScreenX) / 2f).toFloat()
@@ -330,7 +429,7 @@ class MapEntityRenderer {
                         (navScreenX + 10).toInt(),
                         (navScreenY + 6).toInt(),
                         0xFFCDFFF6.toInt(),
-                        true
+                        true,
                     )
                 }
             }
@@ -352,9 +451,13 @@ class MapEntityRenderer {
     // ═══════════════════════════════════════════════════════════════
 
     fun renderPlayerMarker(
-        guiGraphics: GuiGraphics, player: Player,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, scale: Double
+        guiGraphics: GuiGraphics,
+        player: Player,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        scale: Double,
     ) {
         if (player.vehicle is VehicleEntity) return
 
@@ -380,20 +483,24 @@ class MapEntityRenderer {
         guiGraphics: GuiGraphics,
         syncedPlayers: List<ClientSyncedEntityHandler.ClientSyncedPlayer>,
         localPlayer: Player,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, scale: Double,
-        mouseX: Int = -1, mouseY: Int = -1,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        scale: Double,
+        mouseX: Int = -1,
+        mouseY: Int = -1,
         onHover: ((lines: List<Component>, tipX: Int, tipY: Int) -> Unit)? = null,
         outEntries: MutableList<EntityRenderEntry>? = null,
         outSyncedHitEntries: MutableList<Triple<ClientSyncedEntityHandler.ClientSyncedPlayer, Float, Float>>? = null,
     ) {
         val faceSize = 8
         val faceHalf = faceSize / 2
-        val hitHalf = 4  // 命中判定略小于实际贴图，避免误触
+        val hitHalf = 4 // 命中判定略小于实际贴图，避免误触
         val level = localPlayer.level()
         for (info in syncedPlayers) {
             if (info.uuid == localPlayer.uuid) continue
-            if (info.onVehicle) continue  // 载具已由实体批次渲染
+            if (info.onVehicle) continue // 载具已由实体批次渲染
 
             val px = CoordinateConverter.worldToScreenX(info.pos.x, mapCenterX, viewBlockX, scale).toFloat()
             val py = CoordinateConverter.worldToScreenY(info.pos.z, mapCenterY, viewBlockZ, scale).toFloat()
@@ -408,60 +515,79 @@ class MapEntityRenderer {
             }
 
             // 根据关系选择颜色和关系文本
-            val (r, g, b) = when (info.relation) {
-                "hostile" -> Triple(1f, 0.74f, 0.5f)
-                "neutral" -> Triple(0.67f, 0.67f, 0.67f)
-                else -> Triple(0.5f, 1f, 0.68f)
-            }
-            val relationKey = when (info.relation) {
-                "hostile" -> "context.superbwarfare.tactical_map.relation.hostile"
-                "neutral" -> "context.superbwarfare.tactical_map.relation.neutral"
-                else -> "context.superbwarfare.tactical_map.relation.friendly"
-            }
-            val relationStyle = when (info.relation) {
-                "hostile" -> ChatFormatting.RED
-                "neutral" -> ChatFormatting.GRAY
-                else -> ChatFormatting.GREEN
-            }
+            val (r, g, b) =
+                when (info.relation) {
+                    "hostile" -> Triple(1f, 0.74f, 0.5f)
+                    "neutral" -> Triple(0.67f, 0.67f, 0.67f)
+                    else -> Triple(0.5f, 1f, 0.68f)
+                }
+            val relationKey =
+                when (info.relation) {
+                    "hostile" -> "context.superbwarfare.tactical_map.relation.hostile"
+                    "neutral" -> "context.superbwarfare.tactical_map.relation.neutral"
+                    else -> "context.superbwarfare.tactical_map.relation.friendly"
+                }
+            val relationStyle =
+                when (info.relation) {
+                    "hostile" -> ChatFormatting.RED
+                    "neutral" -> ChatFormatting.GRAY
+                    else -> ChatFormatting.GREEN
+                }
 
             // 悬停检测
-            if (onHover != null && mouseX >= 0
-                && mouseX.toFloat() in (px - hitHalf)..(px + hitHalf)
-                && mouseY.toFloat() in (py - hitHalf)..(py + hitHalf)
+            if (onHover != null && mouseX >= 0 &&
+                mouseX.toFloat() in (px - hitHalf)..(px + hitHalf) &&
+                mouseY.toFloat() in (py - hitHalf)..(py + hitHalf)
             ) {
                 val lines = mutableListOf<Component>()
                 lines.add(Component.literal(info.name).withStyle(ChatFormatting.WHITE))
                 lines.add(
-                    Component.translatable(
-                        "context.superbwarfare.tactical_map.tooltip.pos",
-                        info.pos.x.toInt().toString(),
-                        info.pos.y.toInt().toString(),
-                        info.pos.z.toInt().toString()
-                    ).withStyle(ChatFormatting.GRAY)
+                    Component
+                        .translatable(
+                            "context.superbwarfare.tactical_map.tooltip.pos",
+                            info.pos.x
+                                .toInt()
+                                .toString(),
+                            info.pos.y
+                                .toInt()
+                                .toString(),
+                            info.pos.z
+                                .toInt()
+                                .toString(),
+                        ).withStyle(ChatFormatting.GRAY),
                 )
                 // 离地高度（本地实体用高度图，远端用缓存）
-                val hag = if (foundPlayer != null) {
-                    val surfaceY = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, foundPlayer.blockX, foundPlayer.blockZ)
-                    (foundPlayer.y - surfaceY).coerceAtLeast(0.0)
-                } else {
-                    val cachedH = TacticalMapCache.getCachedHeight(info.pos.x.toInt(), info.pos.z.toInt())
-                    if (cachedH != null) (info.pos.y - cachedH).coerceAtLeast(0.0) else -1.0
-                }
+                val hag =
+                    if (foundPlayer != null) {
+                        val surfaceY =
+                            level.getHeight(
+                                net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE,
+                                foundPlayer.blockX,
+                                foundPlayer.blockZ,
+                            )
+                        (foundPlayer.y - surfaceY).coerceAtLeast(0.0)
+                    } else {
+                        val cachedH = TacticalMapCache.getCachedHeight(info.pos.x.toInt(), info.pos.z.toInt())
+                        if (cachedH != null) (info.pos.y - cachedH).coerceAtLeast(0.0) else -1.0
+                    }
                 lines.add(
-                    if (hag >= 0)
+                    if (hag >= 0) {
                         Component.translatable("context.superbwarfare.tactical_map.tooltip.height", "%.1f".format(hag))
-                    else Component.translatable("context.superbwarfare.tactical_map.tooltip.height_na")
+                    } else {
+                        Component.translatable("context.superbwarfare.tactical_map.tooltip.height_na")
+                    },
                 )
                 lines.add(Component.translatable(relationKey).withStyle(relationStyle))
                 onHover.invoke(lines, mouseX, mouseY)
             }
 
             // 关系色边框 + 头像
-            val borderColor = when (info.relation) {
-                "hostile" -> 0xFFFF0000.toInt()
-                "neutral" -> 0xFFFFFFFF.toInt()
-                else -> 0xFF00FF00.toInt()
-            }
+            val borderColor =
+                when (info.relation) {
+                    "hostile" -> 0xFFFF0000.toInt()
+                    "neutral" -> 0xFFFFFFFF.toInt()
+                    else -> 0xFF00FF00.toInt()
+                }
             val border = 1
             val pose = guiGraphics.pose()
             pose.pushPose()
@@ -477,15 +603,23 @@ class MapEntityRenderer {
     }
 
     fun renderPlayerOffscreenIndicator(
-        guiGraphics: GuiGraphics, player: Player,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float, scale: Double,
-        mapLeft: Int, mapTop: Int, mapAreaW: Int, mapAreaH: Int
+        guiGraphics: GuiGraphics,
+        player: Player,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        scale: Double,
+        mapLeft: Int,
+        mapTop: Int,
+        mapAreaW: Int,
+        mapAreaH: Int,
     ) {
         val px = CoordinateConverter.worldToScreenX(player.x, mapCenterX, viewBlockX, scale).toFloat()
         val py = CoordinateConverter.worldToScreenY(player.z, mapCenterY, viewBlockZ, scale).toFloat()
 
-        val inBounds = px >= mapLeft && px <= mapLeft + mapAreaW &&
+        val inBounds =
+            px >= mapLeft && px <= mapLeft + mapAreaW &&
                 py >= mapTop && py <= mapTop + mapAreaH
         if (inBounds) return
 
@@ -510,8 +644,13 @@ class MapEntityRenderer {
     // ═══════════════════════════════════════════════════════════════
 
     fun renderRadarsIcon(
-        level: Level, scale: Double, guiGraphics: GuiGraphics,
-        mapCenterX: Float, mapCenterY: Float, viewBlockX: Double, viewBlockZ: Double
+        level: Level,
+        scale: Double,
+        guiGraphics: GuiGraphics,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        viewBlockX: Double,
+        viewBlockZ: Double,
     ) {
         val radars = ClientSyncedEntityHandler.getSyncedRadars(level)
         if (radars.isEmpty()) return
@@ -525,8 +664,14 @@ class MapEntityRenderer {
                 RenderSystem.setShaderColor(1f, 1f, 1f, 0.9f)
                 guiGraphics.blit(
                     RADAR_ICON,
-                    (rx - iconSize / 2).toInt(), (ry - iconSize / 2).toInt(),
-                    0f, 0f, iconSize, iconSize, iconSize, iconSize
+                    (rx - iconSize / 2).toInt(),
+                    (ry - iconSize / 2).toInt(),
+                    0f,
+                    0f,
+                    iconSize,
+                    iconSize,
+                    iconSize,
+                    iconSize,
                 )
             }
         }
@@ -534,8 +679,13 @@ class MapEntityRenderer {
     }
 
     fun renderRadars(
-        level: Level, scale: Double, guiGraphics: GuiGraphics,
-        mapCenterX: Float, mapCenterY: Float, viewBlockX: Double, viewBlockZ: Double
+        level: Level,
+        scale: Double,
+        guiGraphics: GuiGraphics,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        viewBlockX: Double,
+        viewBlockZ: Double,
     ) {
         val radars = ClientSyncedEntityHandler.getSyncedRadars(level)
         if (radars.isEmpty()) return
@@ -558,7 +708,7 @@ class MapEntityRenderer {
         cy: Float,
         radius: Float,
         startDeg: Float,
-        sweepDeg: Float
+        sweepDeg: Float,
     ) {
         if (radius < 2f || sweepDeg <= 0f) return
         RenderSystem.setShaderColor(0f, 1f, 0f, 0.2f)
@@ -594,11 +744,20 @@ class MapEntityRenderer {
     // ═══════════════════════════════════════════════════════════════
 
     fun renderTargetPos(
-        targetPos: Vec3, scale: Double, screenX: Float, screenY: Float,
-        guiGraphics: GuiGraphics, entity: Entity,
-        viewBlockX: Double, viewBlockZ: Double,
-        mapCenterX: Float, mapCenterY: Float,
-        mapLeft: Int, mapTop: Int, mapAreaW: Int, mapAreaH: Int
+        targetPos: Vec3,
+        scale: Double,
+        screenX: Float,
+        screenY: Float,
+        guiGraphics: GuiGraphics,
+        entity: Entity,
+        viewBlockX: Double,
+        viewBlockZ: Double,
+        mapCenterX: Float,
+        mapCenterY: Float,
+        mapLeft: Int,
+        mapTop: Int,
+        mapAreaW: Int,
+        mapAreaH: Int,
     ) {
         val targetScreenX = CoordinateConverter.worldToScreenX(targetPos.x, mapCenterX, viewBlockX, scale).toFloat()
         val targetScreenY = CoordinateConverter.worldToScreenY(targetPos.z, mapCenterY, viewBlockZ, scale).toFloat()
@@ -635,7 +794,7 @@ class MapEntityRenderer {
                 (targetScreenX + 10).toInt(),
                 (targetScreenY + 6).toInt(),
                 0xFFFF0000.toInt(),
-                true
+                true,
             )
         }
 
@@ -655,7 +814,11 @@ class MapEntityRenderer {
     //  Selection border
     // ═══════════════════════════════════════════════════════════════
 
-    fun drawSelectedBorder(guiGraphics: GuiGraphics, centerX: Float, centerY: Float) {
+    fun drawSelectedBorder(
+        guiGraphics: GuiGraphics,
+        centerX: Float,
+        centerY: Float,
+    ) {
         guiGraphics.blit(SEL_TARGET, (centerX - 8).toInt(), (centerY - 8).toInt(), 0f, 0f, 16, 16, 16, 16)
     }
 
@@ -663,8 +826,8 @@ class MapEntityRenderer {
     //  Vehicle icon lookup
     // ═══════════════════════════════════════════════════════════════
 
-    fun getVehicleIcon(entity: Entity): ResourceLocation {
-        return if (entity is Boat) {
+    fun getVehicleIcon(entity: Entity): ResourceLocation =
+        if (entity is Boat) {
             ICON_BOAT
         } else if (entity is VehicleEntity) {
             when (entity.vehicleType) {
@@ -690,6 +853,4 @@ class MapEntityRenderer {
         } else {
             TEAMMATE_MARKER
         }
-    }
-
 }

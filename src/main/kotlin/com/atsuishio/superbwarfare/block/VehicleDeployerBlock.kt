@@ -27,12 +27,19 @@ import javax.annotation.ParametersAreNonnullByDefault
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
 open class VehicleDeployerBlock :
-    BaseEntityBlock(Properties.of().sound(SoundType.METAL).strength(3.0f).requiresCorrectToolForDrops()) {
+    BaseEntityBlock(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .requiresCorrectToolForDrops(),
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(TRIGGERED, false)
+                .setValue(TRIGGERED, false),
         )
     }
 
@@ -40,10 +47,10 @@ open class VehicleDeployerBlock :
         stack: ItemStack,
         context: Item.TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.vehicle_deployer").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.vehicle_deployer").withStyle(ChatFormatting.GRAY),
         )
     }
 
@@ -59,25 +66,29 @@ open class VehicleDeployerBlock :
         pos: BlockPos,
         player: Player,
         hand: InteractionHand,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): ItemInteractionResult {
         val blockEntity = level.getBlockEntity(pos)
-        if (level.isClientSide
-            || blockEntity !is VehicleDeployerBlockEntity
-        ) return ItemInteractionResult.SUCCESS
+        if (level.isClientSide ||
+            blockEntity !is VehicleDeployerBlockEntity
+        ) {
+            return ItemInteractionResult.SUCCESS
+        }
 
         if (!player.isCreative) return ItemInteractionResult.FAIL
 
         if (stack.item !== ModItems.CONTAINER.get()) {
             player.displayClientMessage(
-                Component.translatable("des.superbwarfare.vehicle_deployer.fail").withStyle(ChatFormatting.RED), true
+                Component.translatable("des.superbwarfare.vehicle_deployer.fail").withStyle(ChatFormatting.RED),
+                true,
             )
             return ItemInteractionResult.FAIL
         }
 
         blockEntity.writeEntityInfo(stack)
         player.displayClientMessage(
-            Component.translatable("des.superbwarfare.vehicle_deployer.success").withStyle(ChatFormatting.GREEN), true
+            Component.translatable("des.superbwarfare.vehicle_deployer.success").withStyle(ChatFormatting.GREEN),
+            true,
         )
 
         return ItemInteractionResult.SUCCESS
@@ -89,7 +100,7 @@ open class VehicleDeployerBlock :
         pos: BlockPos,
         neighborBlock: Block,
         neighborPos: BlockPos,
-        pMovedByPiston: Boolean
+        pMovedByPiston: Boolean,
     ) {
         val charged = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above())
         val triggered = state.getValue(TRIGGERED)
@@ -105,20 +116,19 @@ open class VehicleDeployerBlock :
         }
     }
 
-    override fun newBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? {
-        return VehicleDeployerBlockEntity(pos, state)
-    }
+    override fun newBlockEntity(
+        pos: BlockPos,
+        state: BlockState,
+    ): BlockEntity? = VehicleDeployerBlockEntity(pos, state)
 
     override fun codec() = CODEC
 
-    override fun getRenderShape(pState: BlockState): RenderShape {
-        return RenderShape.MODEL
-    }
+    override fun getRenderShape(pState: BlockState): RenderShape = RenderShape.MODEL
 
-    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(context: BlockPlaceContext): BlockState? =
+        this
+            .defaultBlockState()
             .setValue(FACING, context.horizontalDirection.opposite)
-    }
 
     companion object {
         @JvmField

@@ -14,17 +14,15 @@ import java.util.concurrent.CompletableFuture
 class ModPerkTagProvider(
     output: PackOutput,
     lookupProvider: CompletableFuture<HolderLookup.Provider>,
-    existingFileHelper: ExistingFileHelper
-) :
-    IntrinsicHolderTagsProvider<Perk>(
+    existingFileHelper: ExistingFileHelper,
+) : IntrinsicHolderTagsProvider<Perk>(
         output,
         ModPerks.PERK_KEY,
         lookupProvider,
         { perk -> ResourceKey.create(ModPerks.PERK_KEY, Mod.loc(perk.descriptionId)) },
         Mod.MODID,
-        existingFileHelper
+        existingFileHelper,
     ) {
-
     override fun addTags(provider: HolderLookup.Provider) {
         this.tag(ModTags.Perks.TEST).add(ModPerks.AP_BULLET.get())
     }

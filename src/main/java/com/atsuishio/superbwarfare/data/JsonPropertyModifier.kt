@@ -7,8 +7,9 @@ import com.google.gson.JsonObject
 // TODO 取代StringPropModifier
 class JsonPropertyModifier<DATA : DefaultDataSupplier<DEFAULT_DATA>, DEFAULT_DATA>(
     // TODO 实现VehicleProp后禁止该项为空
-    val props: List<Prop<DATA, DEFAULT_DATA, *, *, *>>? = null
-) : OldPropertyModifier<DATA, DEFAULT_DATA>, PropertyModifier<DATA, DEFAULT_DATA> {
+    val props: List<Prop<DATA, DEFAULT_DATA, *, *, *>>? = null,
+) : OldPropertyModifier<DATA, DEFAULT_DATA>,
+    PropertyModifier<DATA, DEFAULT_DATA> {
     private var obj: JsonObject? = null
     private var str: String? = null
 
@@ -28,7 +29,10 @@ class JsonPropertyModifier<DATA : DefaultDataSupplier<DEFAULT_DATA>, DEFAULT_DAT
         }
     }
 
-    override fun computeProperties(data: DATA, rawData: DEFAULT_DATA): DEFAULT_DATA {
+    override fun computeProperties(
+        data: DATA,
+        rawData: DEFAULT_DATA,
+    ): DEFAULT_DATA {
         if (obj == null || obj!!.isEmpty) return rawData
 
         val dataJson = DataLoader.GSON.toJsonTree(rawData).getAsJsonObject()
@@ -49,12 +53,13 @@ class JsonPropertyModifier<DATA : DefaultDataSupplier<DEFAULT_DATA>, DEFAULT_DAT
         for ((key, value) in element) {
             val prop = propsMap[key] ?: continue
 
-            val deserialized = try {
-                prop.deserialize(value)!!
-            } catch (exception: Exception) {
-                Mod.LOGGER.error("Failed to deserialize prop: {}", value, exception)
-                continue
-            }
+            val deserialized =
+                try {
+                    prop.deserialize(value)!!
+                } catch (exception: Exception) {
+                    Mod.LOGGER.error("Failed to deserialize prop: {}", value, exception)
+                    continue
+                }
             @Suppress("UNCHECKED_CAST")
             modifier[prop as Prop<DATA, DEFAULT_DATA, *, Any, *>] = deserialized
         }

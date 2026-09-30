@@ -4,7 +4,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class VehicleContainerType(val row: Int, val col: Int, private val hasMenu: Boolean) {
+enum class VehicleContainerType(
+    val row: Int,
+    val col: Int,
+    private val hasMenu: Boolean,
+) {
     @SerialName("Empty")
     EMPTY(0, 0, false),
 
@@ -27,11 +31,10 @@ enum class VehicleContainerType(val row: Int, val col: Int, private val hasMenu:
     HUGE(6, 17, true),
 
     @SerialName("Special")
-    SPECIAL(3, 4, false);
+    SPECIAL(3, 4, false),
+    ;
 
-    fun hasMenu(): Boolean {
-        return hasMenu
-    }
+    fun hasMenu(): Boolean = hasMenu
 
     val size: Int
         get() = row * col

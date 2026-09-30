@@ -19,6 +19,7 @@ import net.minecraft.world.phys.Vec3
 open class SmokeDecoyEntity : Entity {
     var life: Int = 400
     var igniteTime: Int = 4
+
     /** Blockfield: lets the M18 remember where its cloud actually opened, to replay it to returning players. */
     var onPuff: ((Vec3) -> Unit)? = null
     var releaseSmoke: Boolean = true
@@ -67,7 +68,11 @@ open class SmokeDecoyEntity : Entity {
         compoundTag.putFloat("BColor", this.blue)
     }
 
-    fun setColor(r: Float, g: Float, b: Float): SmokeDecoyEntity {
+    fun setColor(
+        r: Float,
+        g: Float,
+        b: Float,
+    ): SmokeDecoyEntity {
         this.red = r
         this.green = g
         this.blue = b
@@ -85,8 +90,17 @@ open class SmokeDecoyEntity : Entity {
                 if (level is ServerLevel) {
                     onPuff?.invoke(Vec3(this.xo, this.yo, this.zo))
                     ParticleTool.sendParticle(
-                        level, CustomSmokeOption(this.red, this.green, this.blue, 0), this.xo, this.yo, this.zo,
-                        50, 0.0, 0.0, 0.0, 0.07, true
+                        level,
+                        CustomSmokeOption(this.red, this.green, this.blue, 0),
+                        this.xo,
+                        this.yo,
+                        this.zo,
+                        50,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.07,
+                        true,
                     )
                     ParticleTool.sendParticle(
                         level,
@@ -99,7 +113,7 @@ open class SmokeDecoyEntity : Entity {
                         1.0,
                         1.0,
                         0.1,
-                        true
+                        true,
                     )
                     ParticleTool.sendParticle(
                         level,
@@ -112,7 +126,7 @@ open class SmokeDecoyEntity : Entity {
                         0.0,
                         0.0,
                         0.2,
-                        true
+                        true,
                     )
                 }
                 level.playSound(
@@ -121,7 +135,7 @@ open class SmokeDecoyEntity : Entity {
                     ModSounds.SMOKE_FIRE.get(),
                     this.soundSource,
                     2f,
-                    random.nextFloat() * 0.05f + 1
+                    random.nextFloat() * 0.05f + 1,
                 )
             }
             this.deltaMovement = Vec3.ZERO
@@ -132,12 +146,20 @@ open class SmokeDecoyEntity : Entity {
         }
     }
 
-    fun decoyShoot(entity: Entity, shootVec: Vec3, pVelocity: Float, pInaccuracy: Float) {
-        val vec3 = shootVec.normalize().add(
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
-            this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble())
-        ).scale(pVelocity.toDouble())
+    fun decoyShoot(
+        entity: Entity,
+        shootVec: Vec3,
+        pVelocity: Float,
+        pInaccuracy: Float,
+    ) {
+        val vec3 =
+            shootVec
+                .normalize()
+                .add(
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                    this.random.triangle(0.0, 0.0172275 * pInaccuracy.toDouble()),
+                ).scale(pVelocity.toDouble())
         this.deltaMovement = entity.deltaMovement.scale(0.75).add(vec3)
         val d0 = vec3.horizontalDistance()
         this.yRot = (Mth.atan2(vec3.x, vec3.z) * 57.2957763671875).toFloat()

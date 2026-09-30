@@ -2,6 +2,8 @@ package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.client.RenderHelper
+import com.atsuishio.superbwarfare.client.boundKey
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.data.gun.GunData.Companion.from
 import com.atsuishio.superbwarfare.data.gun.GunProp
 import com.atsuishio.superbwarfare.event.ClientEventHandler.editModelShake
@@ -13,6 +15,8 @@ import com.atsuishio.superbwarfare.tools.localPlayer
 import com.atsuishio.superbwarfare.tools.sendPacketToServer
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.narration.NarrationElementOutput
@@ -20,19 +24,20 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.min
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
-import com.atsuishio.superbwarfare.client.boundKey
 
 @Environment(EnvType.CLIENT)
-class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty()) {
-    override fun isPauseScreen(): Boolean {
-        return false
-    }
+class WeaponEditScreen(
+    private val stack: ItemStack,
+) : Screen(Component.empty()) {
+    override fun isPauseScreen(): Boolean = false
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderEdit(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
     }
@@ -41,11 +46,16 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
     }
 
-    fun renderEdit(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    fun renderEdit(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         if (stack.item !is GunItem) return
         val player = localPlayer ?: return
         val itemStack = player.mainHandItem
@@ -64,7 +74,7 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
             16,
             min(this.width + this.font.width(this.stack.hoverName) - 159, this.width - 6),
             17,
-            -0x1
+            -0x1,
         )
 
         val posX1 = this.width - 163
@@ -82,7 +92,7 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
 
         val data = from(stack)
@@ -99,7 +109,7 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
                 24f,
                 24f,
                 24f,
-                24f
+                24f,
             )
         }
 
@@ -115,7 +125,7 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
                 24f,
                 24f,
                 24f,
-                24f
+                24f,
             )
         }
 
@@ -131,7 +141,7 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
                 24f,
                 24f,
                 24f,
-                24f
+                24f,
             )
         }
 
@@ -147,7 +157,7 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
                 24f,
                 24f,
                 24f,
-                24f
+                24f,
             )
         }
 
@@ -163,7 +173,7 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
                 24f,
                 24f,
                 24f,
-                24f
+                24f,
             )
         }
 
@@ -180,7 +190,7 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
                 24f,
                 24f,
                 24f,
-                24f
+                24f,
             )
         } else {
             val size = currentData.get(GunProp.AMMO_CONSUMER).size
@@ -192,8 +202,14 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
                 RenderHelper.preciseBlit(
                     pGuiGraphics,
                     if (i == currentData.selectedAmmoType.get()) CHOSEN else NOT_CHOSEN,
-                    tempPos - offset + 6 * i, posY3.toFloat(), 0f, 0f,
-                    4f, 4f, 4f, 4f
+                    tempPos - offset + 6 * i,
+                    posY3.toFloat(),
+                    0f,
+                    0f,
+                    4f,
+                    4f,
+                    4f,
+                    4f,
                 )
             }
         }
@@ -236,7 +252,11 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
         this.addRenderableWidget(EditButton(posX2 + 24, posY3, 16, 16, 5, false))
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
+    override fun mouseClicked(
+        pMouseX: Double,
+        pMouseY: Double,
+        pButton: Int,
+    ): Boolean {
         if (pMouseX < this.width - 165 || pMouseY < 4 || pMouseX > this.width - 4 || pMouseY > 110) {
             this.onClose()
         }
@@ -248,7 +268,11 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
         onCloseEditScreen()
     }
 
-    override fun keyPressed(pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
+    override fun keyPressed(
+        pKeyCode: Int,
+        pScanCode: Int,
+        pModifiers: Int,
+    ): Boolean {
         if (pKeyCode == ModKeyMappings.EDIT_MODE.boundKey.value) {
             this.onClose()
             return true
@@ -263,9 +287,15 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
         pWidth: Int,
         pHeight: Int, // 0 = barrel, 1 = scope, 2 = grip, 3 = stock, 4 = magazine, 5 = ammoType
         var type: Int,
-        var left: Boolean
-    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()), AccessoriesButtonStub {
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        var left: Boolean,
+    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()),
+        AccessoriesButtonStub {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             pGuiGraphics.pose().pushPose()
 
             RenderSystem.disableDepthTest()
@@ -276,18 +306,32 @@ class WeaponEditScreen(private val stack: ItemStack) : Screen(Component.empty())
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE,
-                GlStateManager.DestFactor.ZERO
+                GlStateManager.DestFactor.ZERO,
             )
 
             if (this.isHovered && this.isActive()) {
                 pGuiGraphics.blit(
-                    if (this.left) BUTTON_LEFT_HOVERED else BUTTON_RIGHT_HOVERED, this.x, this.y,
-                    0f, 0f, 16, 16, 16, 16
+                    if (this.left) BUTTON_LEFT_HOVERED else BUTTON_RIGHT_HOVERED,
+                    this.x,
+                    this.y,
+                    0f,
+                    0f,
+                    16,
+                    16,
+                    16,
+                    16,
                 )
             } else {
                 pGuiGraphics.blit(
-                    if (this.left) BUTTON_LEFT else BUTTON_RIGHT, this.x, this.y,
-                    0f, 0f, 16, 16, 16, 16
+                    if (this.left) BUTTON_LEFT else BUTTON_RIGHT,
+                    this.x,
+                    this.y,
+                    0f,
+                    0f,
+                    16,
+                    16,
+                    16,
+                    16,
                 )
             }
 

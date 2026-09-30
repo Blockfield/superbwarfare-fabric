@@ -18,9 +18,8 @@ class StringValue(
     private val tag: CompoundTag,
     private val name: String,
     override val defaultValue: String = "",
-    private val onSet: (() -> Unit)? = null
+    private val onSet: (() -> Unit)? = null,
 ) : TagValue<String> {
-
     /** Returns the stored value, or [defaultValue] if the key is absent. */
     override fun get(): String = if (tag.contains(name)) tag.getString(name) else defaultValue
 
@@ -31,7 +30,7 @@ class StringValue(
      */
     override fun set(value: String) {
         val current = if (tag.contains(name)) tag.getString(name) else defaultValue
-        if (current == value) return                          // no-op: value unchanged
+        if (current == value) return // no-op: value unchanged
         if (value == defaultValue) tag.remove(name) else tag.putString(name, value)
         onSet?.invoke()
     }

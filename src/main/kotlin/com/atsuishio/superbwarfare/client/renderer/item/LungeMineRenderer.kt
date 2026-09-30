@@ -20,10 +20,8 @@ open class LungeMineRenderer : GeoItemRenderer<LungeMine>(LungeMineModel()) {
         animatable: LungeMine?,
         texture: ResourceLocation?,
         bufferSource: MultiBufferSource?,
-        partialTick: Float
-    ): RenderType {
-        return RenderType.entityTranslucent(getTextureLocation(animatable))
-    }
+        partialTick: Float,
+    ): RenderType = RenderType.entityTranslucent(getTextureLocation(animatable))
 
     protected var renderArms: Boolean = false
     protected var currentBuffer: MultiBufferSource? = null
@@ -37,7 +35,7 @@ open class LungeMineRenderer : GeoItemRenderer<LungeMine>(LungeMineModel()) {
         matrixStack: PoseStack,
         bufferIn: MultiBufferSource,
         combinedLightIn: Int,
-        packedOverlay: Int
+        packedOverlay: Int,
     ) {
         this.transformType = transformType
         if (this.animatable != null) this.animatable!!.getTransformType(transformType)
@@ -55,7 +53,7 @@ open class LungeMineRenderer : GeoItemRenderer<LungeMine>(LungeMineModel()) {
         partialTicks: Float,
         packedLightIn: Int,
         packedOverlayIn: Int,
-        color: Int
+        color: Int,
     ) {
         this.currentBuffer = renderTypeBuffer
         this.renderType = type
@@ -71,7 +69,7 @@ open class LungeMineRenderer : GeoItemRenderer<LungeMine>(LungeMineModel()) {
             partialTicks,
             packedLightIn,
             packedOverlayIn,
-            color
+            color,
         )
         if (this.renderArms) {
             this.renderArms = false
@@ -89,7 +87,7 @@ open class LungeMineRenderer : GeoItemRenderer<LungeMine>(LungeMineModel()) {
         partialTick: Float,
         packedLightIn: Int,
         packedOverlayIn: Int,
-        color: Int
+        color: Int,
     ) {
         val mc = Minecraft.getInstance()
         val name = bone.name
@@ -114,7 +112,7 @@ open class LungeMineRenderer : GeoItemRenderer<LungeMine>(LungeMineModel()) {
                 buffer,
                 type,
                 packedLightIn,
-                false
+                false,
             )
         }
         super.renderRecursively(
@@ -128,8 +126,7 @@ open class LungeMineRenderer : GeoItemRenderer<LungeMine>(LungeMineModel()) {
             partialTick,
             packedLightIn,
             packedOverlayIn,
-            color
+            color,
         )
     }
 }
-

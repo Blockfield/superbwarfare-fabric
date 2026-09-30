@@ -12,16 +12,20 @@ import net.minecraft.world.item.Item
 @Serializable
 class WreckageLootData(
     @SerialName("ID") val id: SerializedResourceLocation,
-    @SerialName("Pools") val pools: List<Pool>
+    @SerialName("Pools") val pools: List<Pool>,
 ) {
     @Serializable
     class Pool(
         @SerialName("Entries") val entries: List<Entry> = listOf(),
         @SerialName("Rolls") val rolls: Int = 1,
         @SerialName("Source") val source: String = "@Default",
-        @SerialName("Type") val type: Type = Type.DEFAULT
+        @SerialName("Type") val type: Type = Type.DEFAULT,
     ) {
-        class Builder(val rolls: Int = 1, var source: String = "@Default", var type: Type = Type.DEFAULT) {
+        class Builder(
+            val rolls: Int = 1,
+            var source: String = "@Default",
+            var type: Type = Type.DEFAULT,
+        ) {
             val entries = mutableListOf<Entry>()
 
             fun addEntry(entry: Entry): Builder {
@@ -44,9 +48,7 @@ class WreckageLootData(
                 return this
             }
 
-            fun build(): Pool {
-                return Pool(entries, rolls, source, type)
-            }
+            fun build(): Pool = Pool(entries, rolls, source, type)
         }
 
         @Serializable
@@ -63,19 +65,19 @@ class WreckageLootData(
             @SerialName("default")
             DEFAULT,
         }
-
     }
 
     @Serializable
     class Entry(
         @SerialName("Name") val name: String,
         @SerialName("Count") val count: Int = 1,
-        @SerialName("Chance") val chance: Double = 1.0
+        @SerialName("Chance") val chance: Double = 1.0,
     ) {
         constructor(item: Item, count: Int = 1, chance: Double = 1.0) : this(
-            BuiltInRegistries.ITEM.getKey(item).toString(), count, chance
+            BuiltInRegistries.ITEM.getKey(item).toString(),
+            count,
+            chance,
         )
-
     }
 
     class Builder {
@@ -101,9 +103,6 @@ class WreckageLootData(
             return this
         }
 
-        fun build(id: ResourceLocation): WreckageLootData {
-            return WreckageLootData(id, pools)
-        }
+        fun build(id: ResourceLocation): WreckageLootData = WreckageLootData(id, pools)
     }
-
 }

@@ -1,6 +1,8 @@
 package com.atsuishio.superbwarfare.block
 
 import com.atsuishio.superbwarfare.block.entity.CreativeChargingStationBlockEntity
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModBlockEntities
 import com.mojang.serialization.MapCodec
 import net.minecraft.ChatFormatting
@@ -22,11 +24,17 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.DirectionProperty
 import net.minecraft.world.phys.BlockHitResult
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
 
-class CreativeChargingStationBlock(properties: Properties) : BaseEntityBlock(properties) {
-    constructor() : this(Properties.of().sound(SoundType.METAL).strength(3.0f).requiresCorrectToolForDrops()) {
+class CreativeChargingStationBlock(
+    properties: Properties,
+) : BaseEntityBlock(properties) {
+    constructor() : this(
+        Properties
+            .of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .requiresCorrectToolForDrops(),
+    ) {
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH))
     }
 
@@ -34,27 +42,25 @@ class CreativeChargingStationBlock(properties: Properties) : BaseEntityBlock(pro
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH))
     }
 
-    override fun codec(): MapCodec<out BaseEntityBlock> {
-        return CODEC
-    }
+    override fun codec(): MapCodec<out BaseEntityBlock> = CODEC
 
-    public override fun getRenderShape(pState: BlockState): RenderShape {
-        return RenderShape.MODEL
-    }
+    public override fun getRenderShape(pState: BlockState): RenderShape = RenderShape.MODEL
 
-    override fun newBlockEntity(pPos: BlockPos, pState: BlockState): BlockEntity {
-        return CreativeChargingStationBlockEntity(pPos, pState)
-    }
+    override fun newBlockEntity(
+        pPos: BlockPos,
+        pState: BlockState,
+    ): BlockEntity = CreativeChargingStationBlockEntity(pPos, pState)
 
     override fun <T : BlockEntity> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T>
+        pBlockEntityType: BlockEntityType<T>,
     ): BlockEntityTicker<T>? {
         if (!pLevel.isClientSide) {
             return createTickerHelper<CreativeChargingStationBlockEntity, T>(
-                pBlockEntityType, ModBlockEntities.CREATIVE_CHARGING_STATION.get(),
-                CreativeChargingStationBlockEntity::serverTick
+                pBlockEntityType,
+                ModBlockEntities.CREATIVE_CHARGING_STATION.get(),
+                CreativeChargingStationBlockEntity::serverTick,
             )
         }
         return null
@@ -65,7 +71,7 @@ class CreativeChargingStationBlock(properties: Properties) : BaseEntityBlock(pro
         pLevel: Level,
         pPos: BlockPos,
         pNewState: BlockState,
-        pMovedByPiston: Boolean
+        pMovedByPiston: Boolean,
     ) {
         if (!pState.`is`(pNewState.block)) {
             val blockEntity = pLevel.getBlockEntity(pPos)
@@ -84,7 +90,7 @@ class CreativeChargingStationBlock(properties: Properties) : BaseEntityBlock(pro
         pos: BlockPos,
         player: Player,
         hand: InteractionHand,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): ItemInteractionResult {
         if (stack.isEmpty) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
 
@@ -94,23 +100,29 @@ class CreativeChargingStationBlock(properties: Properties) : BaseEntityBlock(pro
             cap.receiveEnergy(Int.MAX_VALUE, false)
             if (!level.isClientSide) {
                 player.displayClientMessage(
-                    Component.translatable("des.superbwarfare.creative_charging_station.charge.success")
-                        .withStyle(ChatFormatting.GREEN), true
+                    Component
+                        .translatable("des.superbwarfare.creative_charging_station.charge.success")
+                        .withStyle(ChatFormatting.GREEN),
+                    true,
                 )
             }
         } else if (cap.canExtract()) {
             cap.extractEnergy(Int.MAX_VALUE, false)
             if (!level.isClientSide) {
                 player.displayClientMessage(
-                    Component.translatable("des.superbwarfare.creative_charging_station.extract.success")
-                        .withStyle(ChatFormatting.GREEN), true
+                    Component
+                        .translatable("des.superbwarfare.creative_charging_station.extract.success")
+                        .withStyle(ChatFormatting.GREEN),
+                    true,
                 )
             }
         } else {
             if (!level.isClientSide) {
                 player.displayClientMessage(
-                    Component.translatable("des.superbwarfare.creative_charging_station.fail")
-                        .withStyle(ChatFormatting.RED), true
+                    Component
+                        .translatable("des.superbwarfare.creative_charging_station.fail")
+                        .withStyle(ChatFormatting.RED),
+                    true,
                 )
             }
             return ItemInteractionResult.FAIL
@@ -124,7 +136,7 @@ class CreativeChargingStationBlock(properties: Properties) : BaseEntityBlock(pro
         level: Level,
         pos: BlockPos,
         player: Player,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): InteractionResult {
         val blockEntity = level.getBlockEntity(pos)
         if (blockEntity is CreativeChargingStationBlockEntity) {
@@ -143,22 +155,18 @@ class CreativeChargingStationBlock(properties: Properties) : BaseEntityBlock(pro
         pBuilder.add(FACING)
     }
 
-    override fun getStateForPlacement(pContext: BlockPlaceContext): BlockState? {
-        return this.defaultBlockState()
+    override fun getStateForPlacement(pContext: BlockPlaceContext): BlockState? =
+        this
+            .defaultBlockState()
             .setValue(FACING, pContext.horizontalDirection.opposite)
-    }
 
-    override fun hasAnalogOutputSignal(state: BlockState): Boolean {
-        return true
-    }
+    override fun hasAnalogOutputSignal(state: BlockState): Boolean = true
 
     override fun getAnalogOutputSignal(
         state: BlockState,
         level: Level,
-        pos: BlockPos
-    ): Int {
-        return 15
-    }
+        pos: BlockPos,
+    ): Int = 15
 
     companion object {
         val FACING: DirectionProperty = HorizontalDirectionalBlock.FACING

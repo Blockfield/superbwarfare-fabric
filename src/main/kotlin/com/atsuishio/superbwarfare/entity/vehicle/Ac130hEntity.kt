@@ -5,8 +5,10 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.level.Level
 
-open class Ac130hEntity(type: EntityType<Ac130hEntity>, world: Level) : VehicleEntity(type, world) {
-
+open class Ac130hEntity(
+    type: EntityType<Ac130hEntity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     override fun baseTick() {
         super.baseTick()
 

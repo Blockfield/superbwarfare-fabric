@@ -15,7 +15,7 @@ object Firefly : Perk("firefly", Type.DAMAGE) {
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         if (!DamageTypeTool.isHeadshotDamage(source)) return
         val sourceEntity = source.entity
@@ -27,7 +27,8 @@ object Firefly : Perk("firefly", Type.DAMAGE) {
                     return
                 } ?: return
 
-        CustomExplosion.Builder(target)
+        CustomExplosion
+            .Builder(target)
             .damage(6 + instance.level * 2f)
             .radius(2 + instance.level * 0.5f)
             .directSource(attacker)

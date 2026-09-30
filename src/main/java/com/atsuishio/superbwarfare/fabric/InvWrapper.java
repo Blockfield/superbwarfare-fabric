@@ -33,7 +33,8 @@ public class InvWrapper implements IItemHandler {
 
         int m;
         if (!stackInSlot.isEmpty()) {
-            if (stackInSlot.getCount() >= Math.min(stackInSlot.getMaxStackSize(), getSlotLimit(slot))) return stack;
+            if (stackInSlot.getCount()
+                    >= Math.min(stackInSlot.getMaxStackSize(), getSlotLimit(slot))) return stack;
             if (!ItemStack.isSameItemSameComponents(stack, stackInSlot)) return stack;
             if (!inv.canPlaceItem(slot, stack)) return stack;
 

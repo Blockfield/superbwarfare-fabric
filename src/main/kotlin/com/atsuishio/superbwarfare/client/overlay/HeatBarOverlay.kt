@@ -11,18 +11,19 @@ import com.atsuishio.superbwarfare.event.ClientEventHandler
 import com.atsuishio.superbwarfare.item.gun.GunItem
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.util.FastColor
 import net.minecraft.util.Mth
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 @Environment(EnvType.CLIENT)
 object HeatBarOverlay : CommonOverlay("heat_bar") {
     private val TEXTURE = loc("textures/overlay/heat_bar/heat_bar.png")
 
-    private val ANIMATION_TIMER: AnimationTimer = AnimationTimer(200)
-        .animation(AnimationCurves.EASE_IN_QUART)
+    private val ANIMATION_TIMER: AnimationTimer =
+        AnimationTimer(200)
+            .animation(AnimationCurves.EASE_IN_QUART)
 
     override fun shouldRender() = super.shouldRender() && DisplayConfig.ENABLE_HEAT_BAR_HUD.get()
 
@@ -30,14 +31,15 @@ object HeatBarOverlay : CommonOverlay("heat_bar") {
         val heat: Double
         val vehicle = player.vehicle
 
-        heat = if (ClientEventHandler.isEditing
-            || (player.mainHandItem.item !is GunItem)
-            || (vehicle is VehicleEntity && vehicle.banHand(player))
-        ) {
-            0.0
-        } else {
-            from(player.mainHandItem).heat.get()
-        }
+        heat =
+            if (ClientEventHandler.isEditing ||
+                (player.mainHandItem.item !is GunItem) ||
+                (vehicle is VehicleEntity && vehicle.banHand(player))
+            ) {
+                0.0
+            } else {
+                from(player.mainHandItem).heat.get()
+            }
 
         val currentTime = System.currentTimeMillis()
         if (heat <= 0) {
@@ -61,7 +63,7 @@ object HeatBarOverlay : CommonOverlay("heat_bar") {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
 
         val width = 16
@@ -86,7 +88,7 @@ object HeatBarOverlay : CommonOverlay("heat_bar") {
             37 / 4f,
             233 / 4f,
             width.toFloat(),
-            height.toFloat()
+            height.toFloat(),
         )
 
         val rate = Mth.clamp(heat / 100.0, 0.0, 1.0).toFloat()
@@ -101,8 +103,16 @@ object HeatBarOverlay : CommonOverlay("heat_bar") {
 
         RenderSystem.setShaderColor(red, green, blue, alpha)
         RenderHelper.preciseBlit(
-            guiGraphics, TEXTURE, posX + 2.5f, posY + 1.5f + 56 - barHeight,
-            10.5f, 0f, 2.25f, barHeight, width.toFloat(), height.toFloat()
+            guiGraphics,
+            TEXTURE,
+            posX + 2.5f,
+            posY + 1.5f + 56 - barHeight,
+            10.5f,
+            0f,
+            2.25f,
+            barHeight,
+            width.toFloat(),
+            height.toFloat(),
         )
 
         poseStack.popPose()

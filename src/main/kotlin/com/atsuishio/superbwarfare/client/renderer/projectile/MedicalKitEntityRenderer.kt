@@ -12,15 +12,14 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.Mth
 
-class MedicalKitEntityRenderer(renderManager: EntityRendererProvider.Context) :
-    EntityRenderer<MedicalKitEntity>(renderManager) {
+class MedicalKitEntityRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<MedicalKitEntity>(renderManager) {
     init {
         this.shadowRadius = 0f
     }
 
-    override fun shouldShowName(pEntity: MedicalKitEntity): Boolean {
-        return false
-    }
+    override fun shouldShowName(pEntity: MedicalKitEntity): Boolean = false
 
     override fun render(
         entityIn: MedicalKitEntity,
@@ -28,7 +27,7 @@ class MedicalKitEntityRenderer(renderManager: EntityRendererProvider.Context) :
         partialTicks: Float,
         poseStack: PoseStack,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         val instance = entityIn.modelInstance ?: return
 
@@ -45,15 +44,13 @@ class MedicalKitEntityRenderer(renderManager: EntityRendererProvider.Context) :
             poseStack,
             vertexConsumer,
             packedLightIn,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
     }
 
-    override fun getTextureLocation(pEntity: MedicalKitEntity): ResourceLocation {
-        return TEXTURE
-    }
+    override fun getTextureLocation(pEntity: MedicalKitEntity): ResourceLocation = TEXTURE
 
     companion object {
         val TEXTURE = loc("textures/bedrock/projectile/medical_kit.png")

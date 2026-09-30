@@ -21,17 +21,16 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import kotlin.math.max
 
-open class Ru9m100MissileEntity(type: EntityType<out Ru9m100MissileEntity>, level: Level) :
-    MissileProjectile(type, level),
+open class Ru9m100MissileEntity(
+    type: EntityType<out Ru9m100MissileEntity>,
+    level: Level,
+) : MissileProjectile(type, level),
     BasicGeoProjectileEntity {
-
     init {
         this.noCulling = true
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.LARGE_ANTI_AIR_MISSILE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.LARGE_ANTI_AIR_MISSILE.get()
 
     override fun tick() {
         super.tick()
@@ -40,8 +39,8 @@ open class Ru9m100MissileEntity(type: EntityType<out Ru9m100MissileEntity>, leve
         val level = this.level()
 
         if (entity != null && this.getTargetUUID() != "none") {
-            if ((entity.getPassengers().isNotEmpty() || entity is VehicleEntity)
-                && entity.tickCount % (max(0.04 * this.distanceTo(entity), 2.0).toInt()) == 0
+            if ((entity.getPassengers().isNotEmpty() || entity is VehicleEntity) &&
+                entity.tickCount % (max(0.04 * this.distanceTo(entity), 2.0).toInt()) == 0
             ) {
                 entity.level().playSound(
                     null,
@@ -49,29 +48,30 @@ open class Ru9m100MissileEntity(type: EntityType<out Ru9m100MissileEntity>, leve
                     if (entity is Pig) SoundEvents.PIG_HURT else ModSounds.MISSILE_WARNING.get(),
                     SoundSource.PLAYERS,
                     2f,
-                    1f
+                    1f,
                 )
             }
 
-            val targetPos = Vec3(
-                entity.x,
-                entity.y + 0.5f * entity.bbHeight + (if (entity is EnderDragon) -3 else 0),
-                entity.z
-            )
-            val toVec = RangeTool.calculateFiringSolution(
-                position(),
-                targetPos,
-                entity.deltaMovement,
-                deltaMovement.length(),
-                0.0
-            )
+            val targetPos =
+                Vec3(
+                    entity.x,
+                    entity.y + 0.5f * entity.bbHeight + (if (entity is EnderDragon) -3 else 0),
+                    entity.z,
+                )
+            val toVec =
+                RangeTool.calculateFiringSolution(
+                    position(),
+                    targetPos,
+                    entity.deltaMovement,
+                    deltaMovement.length(),
+                    0.0,
+                )
 
             if (tickCount in 2..10) {
                 turnYaw(toVec, 30f)
             }
 
             if (this.tickCount > 10) {
-
                 if (this.tickCount > 20 && !isLostTarget()) {
                     setLostTarget(VectorTool.calculateAngle(deltaMovement, toVec) > 120)
                 }
@@ -98,7 +98,7 @@ open class Ru9m100MissileEntity(type: EntityType<out Ru9m100MissileEntity>, leve
                 ModSounds.MISSILE_START.get(),
                 SoundSource.PLAYERS,
                 4f,
-                1f
+                1f,
             )
             if (level is ServerLevel) {
                 ParticleTool.sendParticle(
@@ -112,7 +112,7 @@ open class Ru9m100MissileEntity(type: EntityType<out Ru9m100MissileEntity>, leve
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
                 ParticleTool.sendParticle(
                     level,
@@ -125,7 +125,7 @@ open class Ru9m100MissileEntity(type: EntityType<out Ru9m100MissileEntity>, leve
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
             }
         }
@@ -135,22 +135,14 @@ open class Ru9m100MissileEntity(type: EntityType<out Ru9m100MissileEntity>, leve
         }
     }
 
-    override fun getCustomGravity(): Float {
-        return if (tickCount < 8) 0.1f else super.getCustomGravity()
-    }
+    override fun getCustomGravity(): Float = if (tickCount < 8) 0.1f else super.getCustomGravity()
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
     override val maxHealth: Float
         get() = 50f
 
-    override fun getFlareHiddenTicks(): Int {
-        return 9
-    }
+    override fun getFlareHiddenTicks(): Int = 9
 
-    override fun getNoHitTicks(): Int {
-        return 9
-    }
+    override fun getNoHitTicks(): Int = 9
 }

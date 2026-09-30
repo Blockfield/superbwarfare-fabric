@@ -8,7 +8,9 @@ import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
 import net.minecraft.world.entity.EntityType
 
-class VehicleResource private constructor(val vehicle: VehicleEntity) : DefaultDataSupplier<DefaultVehicleResource> {
+class VehicleResource private constructor(
+    val vehicle: VehicleEntity,
+) : DefaultDataSupplier<DefaultVehicleResource> {
     val id: String = getRegistryId(vehicle.type)
 
     private var cache: DefaultVehicleResource? = null
@@ -27,48 +29,36 @@ class VehicleResource private constructor(val vehicle: VehicleEntity) : DefaultD
         this.cache = null
     }
 
-    override fun getDefault(): DefaultVehicleResource {
-        return getDefault(this.id)
-    }
+    override fun getDefault(): DefaultVehicleResource = getDefault(this.id)
 
     companion object {
-        val RESOURCE_CACHE: LoadingCache<VehicleEntity, VehicleResource> = CacheBuilder.newBuilder()
-            .weakKeys()
-            .weakValues()
-            .build(object : CacheLoader<VehicleEntity, VehicleResource>() {
-                override fun load(vehicle: VehicleEntity): VehicleResource {
-                    return VehicleResource(vehicle)
-                }
-            })
+        val RESOURCE_CACHE: LoadingCache<VehicleEntity, VehicleResource> =
+            CacheBuilder
+                .newBuilder()
+                .weakKeys()
+                .weakValues()
+                .build(
+                    object : CacheLoader<VehicleEntity, VehicleResource>() {
+                        override fun load(vehicle: VehicleEntity): VehicleResource = VehicleResource(vehicle)
+                    },
+                )
 
         @JvmStatic
-        fun compute(vehicle: VehicleEntity): DefaultVehicleResource {
-            return from(vehicle).compute()
-        }
+        fun compute(vehicle: VehicleEntity): DefaultVehicleResource = from(vehicle).compute()
 
         @JvmStatic
-        fun getDefault(id: String): DefaultVehicleResource {
-            return CustomData.VEHICLE_RESOURCE.getOrElseGet(id) { DefaultVehicleResource() }
-        }
+        fun getDefault(id: String): DefaultVehicleResource = CustomData.VEHICLE_RESOURCE.getOrElseGet(id) { DefaultVehicleResource() }
 
         @JvmStatic
-        fun getDefault(vehicle: VehicleEntity): DefaultVehicleResource {
-            return getDefault(vehicle.type)
-        }
+        fun getDefault(vehicle: VehicleEntity): DefaultVehicleResource = getDefault(vehicle.type)
 
         @JvmStatic
-        fun getDefault(type: EntityType<*>): DefaultVehicleResource {
-            return getDefault(getRegistryId(type))
-        }
+        fun getDefault(type: EntityType<*>): DefaultVehicleResource = getDefault(getRegistryId(type))
 
         @JvmStatic
-        fun from(stack: VehicleEntity): VehicleResource {
-            return RESOURCE_CACHE.getUnchecked(stack)
-        }
+        fun from(stack: VehicleEntity): VehicleResource = RESOURCE_CACHE.getUnchecked(stack)
 
         @JvmStatic
-        fun getRegistryId(type: EntityType<*>): String {
-            return EntityType.getKey(type).toString()
-        }
+        fun getRegistryId(type: EntityType<*>): String = EntityType.getKey(type).toString()
     }
 }

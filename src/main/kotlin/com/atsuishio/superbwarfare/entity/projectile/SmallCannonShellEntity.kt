@@ -23,8 +23,10 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.Vec3
 
-open class SmallCannonShellEntity(type: EntityType<out SmallCannonShellEntity>, level: Level) :
-    FastThrowableProjectile(type, level) {
+open class SmallCannonShellEntity(
+    type: EntityType<out SmallCannonShellEntity>,
+    level: Level,
+) : FastThrowableProjectile(type, level) {
     private var aa = false
     open val modelInstance = ProjectileModelReloadListener.getModel(MODEL)?.createInstance()
 
@@ -34,9 +36,7 @@ open class SmallCannonShellEntity(type: EntityType<out SmallCannonShellEntity>, 
         this.explosionRadiusValue = 5f
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.SMALL_SHELL_AP.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.SMALL_SHELL_AP.get()
 
     override fun afterHitEntity(result: EntityHitResult) {
         if (this.level() is ServerLevel) {
@@ -50,7 +50,12 @@ open class SmallCannonShellEntity(type: EntityType<out SmallCannonShellEntity>, 
     override fun afterHitBlock(result: BlockHitResult) {
         val resultPos = result.blockPos
         if (this.level() is ServerLevel) {
-            val hardness = this.level().getBlockState(resultPos).block.defaultDestroyTime()
+            val hardness =
+                this
+                    .level()
+                    .getBlockState(resultPos)
+                    .block
+                    .defaultDestroyTime()
             if (hardness != -1f) {
                 if (ExplosionConfig.EXPLOSION_DESTROY.get() && ExplosionConfig.EXTRA_EXPLOSION_EFFECT.get() && this.explosionDestroyValue) {
                     val destroy = Math.random() < (1.0 - (hardness / 50.0)).coerceIn(0.1, 1.0)
@@ -64,8 +69,12 @@ open class SmallCannonShellEntity(type: EntityType<out SmallCannonShellEntity>, 
         this.discard()
     }
 
-    private fun causeExplode(vec3: Vec3, hitEntity: Boolean) {
-        CustomExplosion.Builder(this)
+    private fun causeExplode(
+        vec3: Vec3,
+        hitEntity: Boolean,
+    ) {
+        CustomExplosion
+            .Builder(this)
             .attacker(this.owner)
             .damage(explosionDamageValue)
             .radius(explosionRadiusValue)
@@ -93,12 +102,14 @@ open class SmallCannonShellEntity(type: EntityType<out SmallCannonShellEntity>, 
         if (this.level() is ServerLevel) {
             val frontBox = boundingBox.inflate(0.5).expandTowards(velocity)
 
-            val target = level().getEntities(
-                EntityTypeTest.forClass(Projectile::class.java),
-                frontBox,
-            ) { it !== this }
-                .filter { it !is SmallCannonShellEntity && (it.bbWidth >= 0.3 || it.bbHeight >= 0.3) }
-                .minByOrNull { it.position().distanceTo(this.position()) }
+            val target =
+                level()
+                    .getEntities(
+                        EntityTypeTest.forClass(Projectile::class.java),
+                        frontBox,
+                    ) { it !== this }
+                    .filter { it !is SmallCannonShellEntity && (it.bbWidth >= 0.3 || it.bbHeight >= 0.3) }
+                    .minByOrNull { it.position().distanceTo(this.position()) }
 
             if (target != null) {
                 causeExplode(target.position(), false)
@@ -112,14 +123,14 @@ open class SmallCannonShellEntity(type: EntityType<out SmallCannonShellEntity>, 
                                 ModSounds.INDICATION.get(),
                                 SoundSource.VOICE,
                                 1f,
-                                1f
+                                1f,
                             )
                             sendPacketTo(owner, ClientIndicatorMessage(0, 5))
                         }
                     }
                     target.forceHurt(
                         causeProjectileHitDamage(this.level().registryAccess(), this, owner),
-                        damageValue
+                        damageValue,
                     )
                 } else {
                     target.discard()
@@ -134,9 +145,7 @@ open class SmallCannonShellEntity(type: EntityType<out SmallCannonShellEntity>, 
         this.aa = antiAir
     }
 
-    override fun isFastMoving(): Boolean {
-        return false
-    }
+    override fun isFastMoving(): Boolean = false
 
     companion object {
         val MODEL = loc("models/bedrock/projectile/small_cannon_shell.geo.json")

@@ -31,8 +31,10 @@ import net.minecraft.world.phys.Vec3
 import org.joml.Math
 import java.util.*
 
-class TowEntity(type: EntityType<TowEntity>, world: Level) : VehicleEntity(type, world) {
-
+class TowEntity(
+    type: EntityType<TowEntity>,
+    world: Level,
+) : VehicleEntity(type, world) {
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
         super.defineSynchedData(builder)
 
@@ -57,7 +59,10 @@ class TowEntity(type: EntityType<TowEntity>, world: Level) : VehicleEntity(type,
         reloadCooldown = compound.getInt("ReloadCoolDown")
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         val gunData = getGunData(0) ?: return InteractionResult.SUCCESS
 
         val coolDown = Math.ceil(20f / (vehicleWeaponRpm(0).toFloat() / 60)).toInt()
@@ -84,15 +89,17 @@ class TowEntity(type: EntityType<TowEntity>, world: Level) : VehicleEntity(type,
                     ModSounds.TYPE_63_RELOAD.get(),
                     SoundSource.PLAYERS,
                     1f,
-                    random.nextFloat() * 0.1f + 0.9f
+                    random.nextFloat() * 0.1f + 0.9f,
                 )
             } else {
                 player.displayClientMessage(
                     Component.literal(
-                        format1DZ((coolDown - reloadCooldown).toDouble() / 20) + " / " + format1DZ(
-                            coolDown.toDouble() / 20
-                        )
-                    ), true
+                        format1DZ((coolDown - reloadCooldown).toDouble() / 20) + " / " +
+                            format1DZ(
+                                coolDown.toDouble() / 20,
+                            ),
+                    ),
+                    true,
                 )
             }
         } else {
@@ -108,7 +115,11 @@ class TowEntity(type: EntityType<TowEntity>, world: Level) : VehicleEntity(type,
         }
     }
 
-    override fun vehicleShoot(living: LivingEntity?, uuid: UUID?, targetPos: Vec3?) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        uuid: UUID?,
+        targetPos: Vec3?,
+    ) {
         super.vehicleShoot(living, uuid, targetPos)
 
         val barrelVector = getBarrelVector(1f)
@@ -118,14 +129,15 @@ class TowEntity(type: EntityType<TowEntity>, world: Level) : VehicleEntity(type,
         reloadCooldown = coolDown
 
         // 尾焰伤害
-        for (entity in level().getEntities(
+        for (
+        entity in level().getEntities(
             EntityTypeTest.forClass(Entity::class.java),
-            ab
+            ab,
         ) { target -> target !== this && target !== getFirstPassenger() && target.vehicle == null }
         ) {
             entity.hurt(
                 ModDamageTypes.causeBurnDamage(entity.level().registryAccess(), living),
-                30 - 2 * entity.distanceTo(this)
+                30 - 2 * entity.distanceTo(this),
             )
             val force = 4 - 0.7 * entity.distanceTo(this)
             entity.push(-force * barrelVector.x, -force * barrelVector.y, -force * barrelVector.z)

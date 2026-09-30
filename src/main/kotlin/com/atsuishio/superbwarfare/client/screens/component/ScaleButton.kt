@@ -5,9 +5,20 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
 import net.minecraft.network.chat.Component
 
-class ScaleButton(x: Int, y: Int, private val uOffset: Int, private val vOffset: Int, onPress: OnPress) :
-    Button(x, y, 9, 9, Component.empty(), onPress, DEFAULT_NARRATION), AccessoriesButtonStub {
-    override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+class ScaleButton(
+    x: Int,
+    y: Int,
+    private val uOffset: Int,
+    private val vOffset: Int,
+    onPress: OnPress,
+) : Button(x, y, 9, 9, Component.empty(), onPress, DEFAULT_NARRATION),
+    AccessoriesButtonStub {
+    override fun renderWidget(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         if (this.isHovered()) {
             pGuiGraphics.blit(
                 VehicleAssemblingScreen.TEXTURE,
@@ -18,7 +29,7 @@ class ScaleButton(x: Int, y: Int, private val uOffset: Int, private val vOffset:
                 this.width,
                 this.height,
                 VehicleAssemblingScreen.IMAGE_SIZE,
-                VehicleAssemblingScreen.IMAGE_SIZE
+                VehicleAssemblingScreen.IMAGE_SIZE,
             )
         } else {
             pGuiGraphics.blit(
@@ -30,7 +41,7 @@ class ScaleButton(x: Int, y: Int, private val uOffset: Int, private val vOffset:
                 this.width,
                 this.height,
                 VehicleAssemblingScreen.IMAGE_SIZE,
-                VehicleAssemblingScreen.IMAGE_SIZE
+                VehicleAssemblingScreen.IMAGE_SIZE,
             )
         }
     }

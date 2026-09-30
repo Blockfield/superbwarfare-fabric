@@ -16,12 +16,11 @@ import org.mozillaa.javascript.ScriptableObject
  * 所以 [CustomScript] 只持有编译后的脚本和作用域，每次执行时动态 enter 一个 Context。
  */
 object ScriptManager {
-
     @JvmRecord
     data class CustomScript(
         val name: String,
         val scope: ScriptableObject,
-        val script: Script
+        val script: Script,
     ) {
         /**
          * 执行脚本，在调用线程上自动管理 Context 生命周期。
@@ -38,14 +37,20 @@ object ScriptManager {
         /**
          * 向脚本作用域注入属性。
          */
-        fun putProperty(name: String, value: Any) {
+        fun putProperty(
+            name: String,
+            value: Any,
+        ) {
             ScriptableObject.putProperty(scope, name, value)
         }
 
         /**
          * 向脚本作用域注入常量。
          */
-        fun putConstant(name: String, value: Any) {
+        fun putConstant(
+            name: String,
+            value: Any,
+        ) {
             ScriptableObject.putConstProperty(scope, name, value)
         }
 
@@ -54,7 +59,10 @@ object ScriptManager {
          *
          * 若函数不存在或返回值非 Number，返回 null。
          */
-        fun callFunction(functionName: String, vararg args: Any): Any? {
+        fun callFunction(
+            functionName: String,
+            vararg args: Any,
+        ): Any? {
             val cx = Context.enter()
             try {
                 val func = scope.get(functionName, scope) as? Function ?: return null
@@ -68,7 +76,10 @@ object ScriptManager {
     /**
      * 创建安全脚本（不允许 Java 互操作）。
      */
-    fun createSafeScript(name: String, source: String): CustomScript? {
+    fun createSafeScript(
+        name: String,
+        source: String,
+    ): CustomScript? {
         val cx = Context.enter()
         try {
             if (!cx.stringIsCompilableUnit(source)) return null
@@ -83,7 +94,10 @@ object ScriptManager {
     /**
      * 创建标准脚本（允许 Java 互操作）。
      */
-    fun createScript(name: String, source: String): CustomScript? {
+    fun createScript(
+        name: String,
+        source: String,
+    ): CustomScript? {
         val cx = Context.enter()
         try {
             if (!cx.stringIsCompilableUnit(source)) return null

@@ -15,8 +15,11 @@ import net.minecraft.world.item.ItemStack
  * 开火按键按下/松开时的处理
  */
 @Serializable
-data class FireKeyMessage(val type: Int, val power: Double, val zoom: Boolean) : ServerPacketPayload() {
-
+data class FireKeyMessage(
+    val type: Int,
+    val power: Double,
+    val zoom: Boolean,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         val player = sender()
         if (player.isSpectator) return
@@ -36,15 +39,18 @@ data class FireKeyMessage(val type: Int, val power: Double, val zoom: Boolean) :
         data.save()
     }
 
-    private fun handleGunBolt(player: Player, stack: ItemStack) {
+    private fun handleGunBolt(
+        player: Player,
+        stack: ItemStack,
+    ) {
         if (stack.item !is GunItem) return
         val data = from(stack)
 
-        if (data.get(GunProp.BOLT_ACTION_TIME) > 0
-            && data.hasEnoughAmmoToShoot(player)
-            && data.bolt.actionTimer.get() == 0
-            && !data.reloading()
-            && !data.charging()
+        if (data.get(GunProp.BOLT_ACTION_TIME) > 0 &&
+            data.hasEnoughAmmoToShoot(player) &&
+            data.bolt.actionTimer.get() == 0 &&
+            !data.reloading() &&
+            !data.charging()
         ) {
             if (!player.cooldowns.isOnCooldown(stack.item) && data.bolt.needed.get()) {
                 data.startBolt()

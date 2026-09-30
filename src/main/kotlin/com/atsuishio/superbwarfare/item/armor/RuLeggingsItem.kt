@@ -4,6 +4,7 @@ import com.atsuishio.superbwarfare.Mod
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.init.ModAttributes
 import com.atsuishio.superbwarfare.init.ModItems
+import com.atsuishio.superbwarfare.item.StackAttributeItem
 import com.atsuishio.superbwarfare.resource.model.ArmorModelReloadListener
 import com.atsuishio.superbwarfare.tiers.ModArmorMaterial
 import com.github.mcmodderanchor.simplebedrockmodel.v2.client.renderer.GeoArmorRendererV2
@@ -18,18 +19,19 @@ import net.minecraft.world.item.ArmorItem
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import kotlin.math.max
-import com.atsuishio.superbwarfare.item.StackAttributeItem
 
 /**
  * Поножи «6Б»: защита 6 берётся из материала, а прочность 600 и вязкость 3.0 — как в старом
  * fracturepoint (WARBORN_ARMOR: множитель 40 при базе LEGGINGS 15, toughness 3.0). Вязкость
  * материала (4.0) поэтому заменяется своим модификатором.
  */
-class RuLeggingsItem : ArmorItem(
-    ModArmorMaterial.CEMENTED_CARBIDE,
-    Type.LEGGINGS,
-    Properties().durability(600)
-), StackAttributeItem {
+class RuLeggingsItem :
+    ArmorItem(
+        ModArmorMaterial.CEMENTED_CARBIDE,
+        Type.LEGGINGS,
+        Properties().durability(600),
+    ),
+    StackAttributeItem {
     companion object {
         const val TOUGHNESS = 3.0
 
@@ -44,11 +46,12 @@ class RuLeggingsItem : ArmorItem(
 
             ArmorRenderer.register({ poseStack, buffer, stack, entity, slot, light, contextModel ->
                 if (renderer == null) {
-                    renderer = GeoArmorRendererV2(
-                        ArmorModelReloadListener.getModel(MODEL),
-                        slot,
-                        TEXTURE
-                    )
+                    renderer =
+                        GeoArmorRendererV2(
+                            ArmorModelReloadListener.getModel(MODEL),
+                            slot,
+                            TEXTURE,
+                        )
                 }
 
                 renderer!!.preparePose(entity, stack, slot, contextModel)
@@ -59,25 +62,27 @@ class RuLeggingsItem : ArmorItem(
 
     override fun getDefaultAttributeModifiers(stack: ItemStack): ItemAttributeModifiers {
         val slotGroup = EquipmentSlotGroup.bySlot(this.type.slot)
-        val list = ArrayList<ItemAttributeModifiers.Entry>(
-            baseAttributeModifiers(stack).modifiers().filter { it.attribute() != Attributes.ARMOR_TOUGHNESS }
-        )
+        val list =
+            ArrayList<ItemAttributeModifiers.Entry>(
+                baseAttributeModifiers(stack).modifiers().filter { it.attribute() != Attributes.ARMOR_TOUGHNESS },
+            )
         list.add(
             ItemAttributeModifiers.Entry(
                 Attributes.ARMOR_TOUGHNESS,
                 AttributeModifier(TOUGHNESS_ID, TOUGHNESS, AttributeModifier.Operation.ADD_VALUE),
-                slotGroup
-            )
+                slotGroup,
+            ),
         )
         list.add(
             ItemAttributeModifiers.Entry(
-                ModAttributes.BULLET_RESISTANCE, AttributeModifier(
+                ModAttributes.BULLET_RESISTANCE,
+                AttributeModifier(
                     Mod.ATTRIBUTE_MODIFIER,
                     0.1 * max(0.0, 1 - stack.damageValue.toDouble() / stack.maxDamage),
-                    AttributeModifier.Operation.ADD_VALUE
+                    AttributeModifier.Operation.ADD_VALUE,
                 ),
-                slotGroup
-            )
+                slotGroup,
+            ),
         )
         return ItemAttributeModifiers(list, true)
     }

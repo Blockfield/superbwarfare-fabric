@@ -8,9 +8,13 @@ import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.util.GeckoLibUtil
 
 @Deprecated("Geckolib will be removed since 0.8.10, use Simple Bedrock Model instead")
-abstract class GeckoArtilleryEntity(pEntityType: EntityType<*>, pLevel: Level) : ArtilleryEntity(pEntityType, pLevel),
+abstract class GeckoArtilleryEntity(
+    pEntityType: EntityType<*>,
+    pLevel: Level,
+) : ArtilleryEntity(pEntityType, pLevel),
     GeoEntity {
     private val cache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
+
     override fun getAnimatableInstanceCache() = this.cache
 
     override fun registerControllers(data: AnimatableManager.ControllerRegistrar) {}

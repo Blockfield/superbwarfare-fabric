@@ -9,9 +9,8 @@ import net.minecraft.world.item.ItemStack
 class ItemStackValue(
     private val tag: CompoundTag,
     private val name: String,
-    defaultValue: ItemStack = ItemStack.EMPTY
+    defaultValue: ItemStack = ItemStack.EMPTY,
 ) : TagValue<ItemStack> {
-
     override val defaultValue: ItemStack = defaultValue.copy()
 
     private var cache: ItemStack

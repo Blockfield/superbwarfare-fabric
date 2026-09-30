@@ -7,17 +7,22 @@ object ScriptMath {
 
     const val RAD_TO_DEG: Double = 180.0 / Math.PI
 
-    fun lerp(delta: Double, start: Double, end: Double): Double {
-        return start + (end - start) * delta
-    }
+    fun lerp(
+        delta: Double,
+        start: Double,
+        end: Double,
+    ): Double = start + (end - start) * delta
 
-    fun clamp(value: Double, min: Double, max: Double): Double {
-        return when {
+    fun clamp(
+        value: Double,
+        min: Double,
+        max: Double,
+    ): Double =
+        when {
             value < min -> min
             value > max -> max
             else -> value
         }
-    }
 
     @JvmField
     val Axis = AxisHolder
@@ -25,19 +30,21 @@ object ScriptMath {
     object AxisHolder {
         @JvmField
         val XP = AxisRotation(1f, 0f, 0f)
+
         @JvmField
         val YP = AxisRotation(0f, 1f, 0f)
+
         @JvmField
         val ZP = AxisRotation(0f, 0f, 1f)
     }
 
-    class AxisRotation(private val axisX: Float, private val axisY: Float, private val axisZ: Float) {
-        fun rotation(angle: Double): Quaternionf {
-            return Quaternionf().rotateAxis(angle.toFloat(), axisX, axisY, axisZ)
-        }
+    class AxisRotation(
+        private val axisX: Float,
+        private val axisY: Float,
+        private val axisZ: Float,
+    ) {
+        fun rotation(angle: Double): Quaternionf = Quaternionf().rotateAxis(angle.toFloat(), axisX, axisY, axisZ)
 
-        fun rotationDegrees(angle: Double): Quaternionf {
-            return rotation(Math.toRadians(angle))
-        }
+        fun rotationDegrees(angle: Double): Quaternionf = rotation(Math.toRadians(angle))
     }
 }

@@ -19,12 +19,16 @@ import com.atsuishio.superbwarfare.entity.mixin.ICustomKnockback
 import com.atsuishio.superbwarfare.entity.projectile.*
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.event.ClientEventHandler
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.IEnergyStorage
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModPerks
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.EnergyStorageItem
 import com.atsuishio.superbwarfare.item.ItemScreenProvider
+import com.atsuishio.superbwarfare.item.StackAttributeItem
 import com.atsuishio.superbwarfare.network.message.receive.ClientIndicatorMessage
 import com.atsuishio.superbwarfare.perk.Perk
 import com.atsuishio.superbwarfare.resource.gun.GunResource
@@ -32,6 +36,10 @@ import com.atsuishio.superbwarfare.tools.*
 import com.atsuishio.superbwarfare.tools.VectorTool.isInLiquid
 import com.atsuishio.superbwarfare.tools.VectorTool.randomSpreadVec
 import com.atsuishio.superbwarfare.world.phys.EntityResult
+import io.github.fabricators_of_create.porting_lib.item.extensions.CustomSupportsEnchantItem
+import io.github.fabricators_of_create.porting_lib.item.extensions.ReequipAnimationItem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Holder
@@ -56,42 +64,33 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.item.enchantment.Enchantment
-import com.atsuishio.superbwarfare.item.StackAttributeItem
-import io.github.fabricators_of_create.porting_lib.item.extensions.CustomSupportsEnchantItem
-import io.github.fabricators_of_create.porting_lib.item.extensions.ReequipAnimationItem
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
-import com.atsuishio.superbwarfare.fabric.IEnergyStorage
 import org.joml.Math
 import software.bernie.geckolib.animatable.GeoItem
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 
-abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), ItemScreenProvider,
-    EnergyStorageItem, PropertyModifier<GunData, DefaultGunData>, StackAttributeItem, ReequipAnimationItem,
+abstract class GunItem(
+    properties: Properties,
+) : Item(properties.stacksTo(1)),
+    ItemScreenProvider,
+    EnergyStorageItem,
+    PropertyModifier<GunData, DefaultGunData>,
+    StackAttributeItem,
+    ReequipAnimationItem,
     CustomSupportsEnchantItem {
-
     protected val random: RandomSource = RandomSource.create()
 
-    override fun getMaxEnergy(stack: ItemStack): Int {
-        return if (stack.item is GunItem) GunData.get(stack, GunProp.MAX_ENERGY) else 0
-    }
+    override fun getMaxEnergy(stack: ItemStack): Int = if (stack.item is GunItem) GunData.get(stack, GunProp.MAX_ENERGY) else 0
 
-    override fun getMaxReceiveEnergy(stack: ItemStack): Int {
-        return if (stack.item is GunItem) GunData.get(stack, GunProp.MAX_RECEIVE_ENERGY) else -1
-    }
+    override fun getMaxReceiveEnergy(stack: ItemStack): Int = if (stack.item is GunItem) GunData.get(stack, GunProp.MAX_RECEIVE_ENERGY) else -1
 
-    override fun getMaxExtractEnergy(stack: ItemStack): Int {
-        return if (stack.item is GunItem) GunData.get(stack, GunProp.MAX_EXTRACT_ENERGY) else -1
-    }
+    override fun getMaxExtractEnergy(stack: ItemStack): Int = if (stack.item is GunItem) GunData.get(stack, GunProp.MAX_EXTRACT_ENERGY) else -1
 
     @JvmField
     val reloadTimeBehaviors = mutableMapOf<Int, Consumer<GunData>?>()
@@ -104,20 +103,21 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         addBoltTimeBehavior(this.boltTimeBehaviors)
     }
 
-    override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) = with(GunProp) {
-        val data = modifier.data
+    override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) =
+        with(GunProp) {
+            val data = modifier.data
 
-        modifier[DAMAGE] += getCustomDamage(data)
-        modifier[HEADSHOT] += getCustomHeadshot(data)
-        modifier[BYPASSES_ARMOR] += getCustomBypassArmor(data)
-        modifier[MAGAZINE] += getCustomMagazine(data)
-        modifier[DEFAULT_ZOOM] += getCustomZoom(data)
-        modifier[RPM] += getCustomRPM(data)
-        modifier[WEIGHT] += getCustomWeight(data)
-        modifier[VELOCITY] += getCustomVelocity(data)
-        modifier[SOUND_RADIUS] += getCustomSoundRadius(data)
-        modifier[BOLT_ACTION_TIME] += getCustomBoltActionTime(data)
-    }
+            modifier[DAMAGE] += getCustomDamage(data)
+            modifier[HEADSHOT] += getCustomHeadshot(data)
+            modifier[BYPASSES_ARMOR] += getCustomBypassArmor(data)
+            modifier[MAGAZINE] += getCustomMagazine(data)
+            modifier[DEFAULT_ZOOM] += getCustomZoom(data)
+            modifier[RPM] += getCustomRPM(data)
+            modifier[WEIGHT] += getCustomWeight(data)
+            modifier[VELOCITY] += getCustomVelocity(data)
+            modifier[SOUND_RADIUS] += getCustomSoundRadius(data)
+            modifier[BOLT_ACTION_TIME] += getCustomBoltActionTime(data)
+        }
 
     override fun isBarVisible(stack: ItemStack): Boolean {
         val data = from(stack)
@@ -155,9 +155,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         return super.getBarColor(stack)
     }
 
-    open fun getEnergyBarColor(resource: GunResource): Int {
-        return resource.compute().energyBarColor.get()
-    }
+    open fun getEnergyBarColor(resource: GunResource): Int = resource.compute().energyBarColor.get()
 
     open fun init(data: GunData) {
         if (isInitialized(data)) return
@@ -167,9 +165,20 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
 
     open fun isInitialized(data: GunData) = data.gunDataTag.hasUUID("UUID")
 
-    override fun canAttackBlock(pState: BlockState, pLevel: Level, pPos: BlockPos, pPlayer: Player) = false
+    override fun canAttackBlock(
+        pState: BlockState,
+        pLevel: Level,
+        pPos: BlockPos,
+        pPlayer: Player,
+    ) = false
 
-    override fun inventoryTick(stack: ItemStack, level: Level, entity: Entity, slot: Int, selected: Boolean) {
+    override fun inventoryTick(
+        stack: ItemStack,
+        level: Level,
+        entity: Entity,
+        slot: Int,
+        selected: Boolean,
+    ) {
         if (stack.item !is GunItem || level.isClientSide) return
 
         if (level is ServerLevel) {
@@ -192,7 +201,11 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
     // «весь стек» и «один предмет» совпадают. Единственная разница -- апстрим пропускал
     // setRemoteSlot, что игроку не видно. Миксин понадобится только если стволы станут стакаться.
 
-    override fun shouldCauseReequipAnimation(oldStack: ItemStack, newStack: ItemStack, slotChanged: Boolean) = false
+    override fun shouldCauseReequipAnimation(
+        oldStack: ItemStack,
+        newStack: ItemStack,
+        slotChanged: Boolean,
+    ) = false
 
     override fun getDefaultAttributeModifiers(stack: ItemStack): ItemAttributeModifiers {
         val list = ArrayList<ItemAttributeModifiers.Entry?>(baseAttributeModifiers(stack).modifiers())
@@ -205,10 +218,10 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
                 AttributeModifier(
                     SPEED_ID,
                     -0.01f - 0.005f * data.get(GunProp.WEIGHT),
-                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE,
                 ),
-                EquipmentSlotGroup.MAINHAND
-            )
+                EquipmentSlotGroup.MAINHAND,
+            ),
         )
 
         // 近战伤害
@@ -219,19 +232,17 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
                     AttributeModifier(
                         BASE_ATTACK_DAMAGE_ID,
                         data.get(GunProp.MELEE_DAMAGE),
-                        AttributeModifier.Operation.ADD_VALUE
+                        AttributeModifier.Operation.ADD_VALUE,
                     ),
-                    EquipmentSlotGroup.MAINHAND
-                )
+                    EquipmentSlotGroup.MAINHAND,
+                ),
             )
         }
 
         return ItemAttributeModifiers(list, true)
     }
 
-    override fun getTooltipImage(pStack: ItemStack): Optional<TooltipComponent> {
-        return Optional.of(GunImageComponent(pStack))
-    }
+    override fun getTooltipImage(pStack: ItemStack): Optional<TooltipComponent> = Optional.of(GunImageComponent(pStack))
 
     open fun getGunIcon(stack: ItemStack) = getGunIcon(from(stack))
 
@@ -241,7 +252,10 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
 
     override fun isEnchantable(stack: ItemStack) = false
 
-    override fun supportsEnchantment(stack: ItemStack, enchantment: Holder<Enchantment>) = false
+    override fun supportsEnchantment(
+        stack: ItemStack,
+        enchantment: Holder<Enchantment>,
+    ) = false
 
     /**
      * Замена IItemExtension#getMaxDamage(ItemStack): ваниль берёт прочность из компонентов, поэтому
@@ -362,36 +376,41 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
     open fun getCustomWeight(data: GunData): Double {
         val attachment = data.attachment
 
-        val scopeWeight = when (attachment.get(AttachmentType.SCOPE)) {
-            1 -> 0.5
-            2 -> 1.0
-            3 -> 1.5
-            else -> 0.0
-        }
+        val scopeWeight =
+            when (attachment.get(AttachmentType.SCOPE)) {
+                1 -> 0.5
+                2 -> 1.0
+                3 -> 1.5
+                else -> 0.0
+            }
 
-        val barrelWeight = when (attachment.get(AttachmentType.BARREL)) {
-            1 -> 0.5
-            2 -> 1.0
-            else -> 0.0
-        }
+        val barrelWeight =
+            when (attachment.get(AttachmentType.BARREL)) {
+                1 -> 0.5
+                2 -> 1.0
+                else -> 0.0
+            }
 
-        val magazineWeight = when (attachment.get(AttachmentType.MAGAZINE)) {
-            1 -> 1.0
-            2 -> 2.0
-            else -> 0.0
-        }
+        val magazineWeight =
+            when (attachment.get(AttachmentType.MAGAZINE)) {
+                1 -> 1.0
+                2 -> 2.0
+                else -> 0.0
+            }
 
-        val stockWeight = when (attachment.get(AttachmentType.STOCK)) {
-            1 -> -2.0
-            2 -> 1.5
-            else -> 0.0
-        }
+        val stockWeight =
+            when (attachment.get(AttachmentType.STOCK)) {
+                1 -> -2.0
+                2 -> 1.5
+                else -> 0.0
+            }
 
-        val gripWeight = when (attachment.get(AttachmentType.GRIP)) {
-            1, 2 -> 0.25
-            3 -> 1.0
-            else -> 0.0
-        }
+        val gripWeight =
+            when (attachment.get(AttachmentType.GRIP)) {
+                1, 2 -> 0.25
+                3 -> 1.0
+                else -> 0.0
+            }
 
         return scopeWeight + barrelWeight + magazineWeight + stockWeight + gripWeight
     }
@@ -429,18 +448,22 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
     /**
      * 判断武器能否开火
      */
-    open fun canShoot(data: GunData, shooter: Entity?): Boolean {
-        return data.get(GunProp.PROJECTILE_AMOUNT) > 0
-                && !data.overHeat.get()
-                && data.get(GunProp.HEAT_PER_SHOOT) <= (100 + data.get(GunProp.HEAT_PER_SHOOT) - data.heat.get())
-                && !data.reloading()
-                && !data.charging()
-                && !data.bolt.needed.get()
-                && data.hasEnoughAmmoToShoot(shooter)
-    }
+    open fun canShoot(
+        data: GunData,
+        shooter: Entity?,
+    ): Boolean =
+        data.get(GunProp.PROJECTILE_AMOUNT) > 0 &&
+            !data.overHeat.get() &&
+            data.get(GunProp.HEAT_PER_SHOOT) <= (100 + data.get(GunProp.HEAT_PER_SHOOT) - data.heat.get()) &&
+            !data.reloading() &&
+            !data.charging() &&
+            !data.bolt.needed.get() &&
+            data.hasEnoughAmmoToShoot(shooter)
 
     open fun useSpecialFireProcedure(data: GunData) = false
+
     open fun hideBulletChainBelowShots() = -1
+
     open fun whenNoAmmo(data: GunData) {}
 
     /**
@@ -471,7 +494,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         shootDirection: Vec3,
         data: GunData,
         spread: Double,
-        zoom: Boolean
+        zoom: Boolean,
     ) {
     }
 
@@ -505,7 +528,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
                 stack.hurtAndBreak(
                     data.get(GunProp.DURABILITY_PER_SHOOT),
                     level,
-                    null as ServerPlayer?
+                    null as ServerPlayer?,
                 ) { }
             }
         }
@@ -540,7 +563,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         data: GunData,
         spread: Double,
         zoom: Boolean,
-        uuid: UUID?
+        uuid: UUID?,
     ) {
     }
 
@@ -551,12 +574,18 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         data: GunData,
         spread: Double,
         zoom: Boolean,
-        uuid: UUID?
+        uuid: UUID?,
     ) {
         shoot(ShootParameters(null, null, level, shootPosition, shootDirection, data, spread, zoom, uuid, null))
     }
 
-    fun shoot(data: GunData, shooter: Entity, spread: Double, zoom: Boolean, uuid: UUID?) {
+    fun shoot(
+        data: GunData,
+        shooter: Entity,
+        spread: Double,
+        zoom: Boolean,
+        uuid: UUID?,
+    ) {
         val server = shooter.level() as? ServerLevel ?: return
 
         shoot(
@@ -570,12 +599,19 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
                 spread,
                 zoom,
                 uuid,
-                null
-            )
+                null,
+            ),
         )
     }
 
-    fun shoot(data: GunData, shooter: Entity, spread: Double, zoom: Boolean, uuid: UUID?, pos: Vec3?) {
+    fun shoot(
+        data: GunData,
+        shooter: Entity,
+        spread: Double,
+        zoom: Boolean,
+        uuid: UUID?,
+        pos: Vec3?,
+    ) {
         val server = shooter.level() as? ServerLevel ?: return
 
         shoot(
@@ -589,8 +625,8 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
                 spread,
                 zoom,
                 uuid,
-                pos
-            )
+                pos,
+            ),
         )
     }
 
@@ -659,14 +695,18 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         data: GunData,
         spread: Double,
         zoom: Boolean,
-        uuid: UUID?
+        uuid: UUID?,
     ) {
     }
 
     /**
      * 播放开火音效
      */
-    open fun playFireSounds(data: GunData, shooter: Entity?, zoom: Boolean) {
+    open fun playFireSounds(
+        data: GunData,
+        shooter: Entity?,
+        zoom: Boolean,
+    ) {
         if (shooter == null) return
 
         val pitch = if (data.heat.get() <= 75) 1f else (1 - 0.02 * Math.abs(75 - data.heat.get())).toFloat()
@@ -699,7 +739,11 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
     /**
      * 服务端处理按下开火按键时的额外行为
      */
-    fun onFireKeyPress(data: GunData, player: Player, zoom: Boolean) {
+    fun onFireKeyPress(
+        data: GunData,
+        player: Player,
+        zoom: Boolean,
+    ) {
         if (data.reload.prepareTimer.get() == 0 && data.reloading() && data.hasEnoughAmmoToShoot(player)) {
             data.forceStop.set(true)
         }
@@ -711,7 +755,12 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
     /**
      * 服务端处理松开开火按键时的额外行为
      */
-    open fun onFireKeyRelease(data: GunData, player: Player, power: Double, zoom: Boolean) {
+    open fun onFireKeyRelease(
+        data: GunData,
+        player: Player,
+        power: Double,
+        zoom: Boolean,
+    ) {
         if (player is ServerPlayer && data.get(GunProp.SEEK_TYPE) == SeekType.HOLD_FIRE) {
             val stack = data.stack
             val origin = stack.item.descriptionId
@@ -867,16 +916,17 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
 
             // 填充其他自定义NBT数据
             if (projectileInfo.data != null) {
-                val tag = LaunchableEntityTool.getModifiedTag(
-                    projectileInfo,
-                    ShootData(
-                        shooter?.getUUID(),
-                        damage,
-                        data.get(GunProp.EXPLOSION_DAMAGE),
-                        data.get(GunProp.EXPLOSION_RADIUS),
-                        data.get(GunProp.SPREAD)
+                val tag =
+                    LaunchableEntityTool.getModifiedTag(
+                        projectileInfo,
+                        ShootData(
+                            shooter?.getUUID(),
+                            damage,
+                            data.get(GunProp.EXPLOSION_DAMAGE),
+                            data.get(GunProp.EXPLOSION_RADIUS),
+                            data.get(GunProp.SPREAD),
+                        ),
                     )
-                )
                 if (tag != null) {
                     entity.load(tag)
                 }
@@ -885,16 +935,17 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
                 newInfo.data = CustomData.LAUNCHABLE_ENTITY[projectileType]!!.data
                 newInfo.itemId = projectileType
 
-                val tag = LaunchableEntityTool.getModifiedTag(
-                    newInfo,
-                    ShootData(
-                        shooter?.uuid,
-                        damage,
-                        data.get(GunProp.EXPLOSION_DAMAGE),
-                        data.get(GunProp.EXPLOSION_RADIUS),
-                        data.get(GunProp.SPREAD)
+                val tag =
+                    LaunchableEntityTool.getModifiedTag(
+                        newInfo,
+                        ShootData(
+                            shooter?.uuid,
+                            damage,
+                            data.get(GunProp.EXPLOSION_DAMAGE),
+                            data.get(GunProp.EXPLOSION_RADIUS),
+                            data.get(GunProp.SPREAD),
+                        ),
                     )
-                )
                 if (tag != null) {
                     entity.load(tag)
                 }
@@ -928,21 +979,21 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         entity.setPos(
             shootPosition.x,
             shootPosition.y,
-            shootPosition.z
+            shootPosition.z,
         )
 
         if (entity is Projectile) {
             entity.shoot(x, y, z, velocity, spread.toFloat())
         } else {
             val random = RandomSource.create()
-            val vec3 = Vec3(x, y, z)
-                .normalize()
-                .add(
-                    random.triangle(0.0, 0.0172275 * spread),
-                    random.triangle(0.0, 0.0172275 * spread),
-                    random.triangle(0.0, 0.0172275 * spread)
-                )
-                .scale(velocity.toDouble())
+            val vec3 =
+                Vec3(x, y, z)
+                    .normalize()
+                    .add(
+                        random.triangle(0.0, 0.0172275 * spread),
+                        random.triangle(0.0, 0.0172275 * spread),
+                        random.triangle(0.0, 0.0172275 * spread),
+                    ).scale(velocity.toDouble())
 
             entity.deltaMovement = vec3
             entity.hasImpulse = true
@@ -967,10 +1018,8 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         data: GunData,
         spread: Double,
         zoom: Boolean,
-        uuid: UUID?
-    ): Boolean {
-        return false
-    }
+        uuid: UUID?,
+    ): Boolean = false
 
     open fun shootRay(parameters: ShootParameters): Boolean {
         val shooter = parameters.shooter
@@ -989,12 +1038,16 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
 
         val distance = (range * range).toDouble()
 
-        val blockHitResult = shooter.level().clip(
-            ClipContext(
-                shootPosition, shootPosition.add(shootDirection.scale(range.toDouble())),
-                ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, shooter
+        val blockHitResult =
+            shooter.level().clip(
+                ClipContext(
+                    shootPosition,
+                    shootPosition.add(shootDirection.scale(range.toDouble())),
+                    ClipContext.Block.VISUAL,
+                    ClipContext.Fluid.NONE,
+                    shooter,
+                ),
             )
-        )
 
         val blockPos = blockHitResult.blockPos
         val state = level.getBlockState(blockPos)
@@ -1007,14 +1060,15 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
 
         val toVec = shootPosition.add(shootDirection.x * range, shootDirection.y * range, shootDirection.z * range)
         val aabb = shooter.boundingBox.expandTowards(shootDirection.scale(range.toDouble())).inflate(1.0)
-        val entityHitResult = ProjectileUtil.getEntityHitResult(
-            shooter,
-            shootPosition,
-            toVec,
-            aabb,
-            { p -> !p.isSpectator && p.isAlive && p != shooter && p != shooter.vehicle },
-            distance
-        )
+        val entityHitResult =
+            ProjectileUtil.getEntityHitResult(
+                shooter,
+                shootPosition,
+                toVec,
+                aabb,
+                { p -> !p.isSpectator && p.isAlive && p != shooter && p != shooter.vehicle },
+                distance,
+            )
 
         var hitPos: Vec3? = null
 
@@ -1058,7 +1112,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         data: GunData,
         hitPos: Vec3,
         shootPosition: Vec3?,
-        shootDirection: Vec3?
+        shootDirection: Vec3?,
     ) {
         if (target != null && target.isAlive) {
             val hitBoxPos = hitPos.subtract(target.position())
@@ -1074,7 +1128,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         data: GunData,
         shootDirection: Vec3?,
         result: BlockHitResult,
-        pos: Vec3
+        pos: Vec3,
     ) {
         val blockPos = result.blockPos
         if (target == null) {
@@ -1090,7 +1144,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
                 0.0,
                 0.0,
                 0.0,
-                true
+                true,
             )
         }
         level.playSound(
@@ -1101,7 +1155,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
             this.getRayHitBlockSound(data),
             SoundSource.BLOCKS,
             0.7f,
-            ((2 * Math.random() - 1) * 0.05f + 1.0f).toFloat()
+            ((2 * Math.random() - 1) * 0.05f + 1.0f).toFloat(),
         )
     }
 
@@ -1115,7 +1169,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
         data: GunData,
         result: EntityResult,
         shootPosition: Vec3?,
-        shootDirection: Vec3?
+        shootDirection: Vec3?,
     ) {
         val target = result.entity
 
@@ -1131,18 +1185,18 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
             if (result.headshot) {
                 target.forceHurt(
                     ModDamageTypes.causeLaserHeadshotDamage(level.registryAccess(), null, shooter),
-                    damage * headshot
+                    damage * headshot,
                 )
                 type = 1
             } else if (result.legShot) {
                 target.forceHurt(
                     ModDamageTypes.causeLaserDamage(level.registryAccess(), null, shooter),
-                    damage * 0.5f
+                    damage * 0.5f,
                 )
             } else {
                 target.forceHurt(
                     ModDamageTypes.causeLaserDamage(level.registryAccess(), null, shooter),
-                    damage
+                    damage,
                 )
             }
 
@@ -1153,18 +1207,18 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
             if (result.headshot) {
                 target.forceHurt(
                     ModDamageTypes.causeLaserHeadshotDamage(level.registryAccess(), null, shooter),
-                    damage * headshot
+                    damage * headshot,
                 )
                 type = 1
             } else if (result.legShot) {
                 target.forceHurt(
                     ModDamageTypes.causeLaserDamage(level.registryAccess(), null, shooter),
-                    damage * 0.5f
+                    damage * 0.5f,
                 )
             } else {
                 target.forceHurt(
                     ModDamageTypes.causeLaserDamage(level.registryAccess(), null, shooter),
-                    damage
+                    damage,
                 )
             }
 
@@ -1180,7 +1234,7 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
                 if (result.headshot) ModSounds.HEADSHOT.get() else ModSounds.INDICATION.get(),
                 SoundSource.VOICE,
                 0.1f,
-                1f
+                1f,
             )
             shooter.sendPacket(ClientIndicatorMessage(type, 5))
         }
@@ -1193,12 +1247,14 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
             this.getRayHitEntitySound(data),
             SoundSource.PLAYERS,
             0.7f,
-            ((2 * Math.random() - 1) * 0.05f + 1.0f).toFloat()
+            ((2 * Math.random() - 1) * 0.05f + 1.0f).toFloat(),
         )
     }
 
-    protected fun randomVec(vec3: Vec3, spread: Double): Vec3 =
-        randomSpreadVec(this.random, vec3, spread)
+    protected fun randomVec(
+        vec3: Vec3,
+        spread: Double,
+    ): Vec3 = randomSpreadVec(this.random, vec3, spread)
 
     open fun canEditAttachments(data: GunData) = data.get(GunProp.AMMO_CONSUMER).size > 1
 
@@ -1207,35 +1263,51 @@ abstract class GunItem(properties: Properties) : Item(properties.stacksTo(1)), I
     /**
      * 在切枪之后触发
      */
-    open fun onChangeSlot(data: GunData, ammoSupplier: Entity) {
+    open fun onChangeSlot(
+        data: GunData,
+        ammoSupplier: Entity,
+    ) {
         if (data.get(GunProp.WITHDRAW_AMMO_WHEN_CHANGE_SLOT)) {
             data.withdrawAmmo(ammoSupplier)
         }
     }
 
     @Environment(EnvType.CLIENT)
-    override fun getItemScreen(stack: ItemStack, player: Player, hand: InteractionHand): Screen? {
-        if (ClientEventHandler.canOpenEditScreen(stack, hand)
-            && stack.item is GunItem
-            && canEditAttachments(from(stack))
+    override fun getItemScreen(
+        stack: ItemStack,
+        player: Player,
+        hand: InteractionHand,
+    ): Screen? {
+        if (ClientEventHandler.canOpenEditScreen(stack, hand) &&
+            stack.item is GunItem &&
+            canEditAttachments(from(stack))
         ) {
             return WeaponEditScreen(stack)
         }
         return null
     }
 
-    open fun tick(shooter: Entity?, data: GunData, inMainHand: Boolean) {}
+    open fun tick(
+        shooter: Entity?,
+        data: GunData,
+        inMainHand: Boolean,
+    ) {}
 
     open fun getDefaultData(data: GunData) = getDefault(data.id)
 
-    open fun getEnergyProvider(data: GunData, ammoSupplier: Entity?): IEnergyStorage? {
-        return data.stack.getCapability(Capabilities.EnergyStorage.ITEM)
-    }
+    open fun getEnergyProvider(
+        data: GunData,
+        ammoSupplier: Entity?,
+    ): IEnergyStorage? = data.stack.getCapability(Capabilities.EnergyStorage.ITEM)
 
     companion object {
         private val SPEED_ID = loc("gun_movement_speed")
 
-        protected fun getEntityResult(target: Entity, hitBoxPos: Vec3, hitPos: Vec3): EntityResult {
+        protected fun getEntityResult(
+            target: Entity,
+            hitBoxPos: Vec3,
+            hitPos: Vec3,
+        ): EntityResult {
             var headshot = false
             var legShot = false
             val eyeHeight = target.eyeHeight

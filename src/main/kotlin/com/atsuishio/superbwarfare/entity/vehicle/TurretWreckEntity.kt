@@ -1,6 +1,5 @@
 package com.atsuishio.superbwarfare.entity.vehicle
 
-import com.atsuishio.superbwarfare.fabric.LevelLifecycleListener
 import com.atsuishio.superbwarfare.client.lighting.VehicleLightingHandler
 import com.atsuishio.superbwarfare.client.particle.CustomCloudOption
 import com.atsuishio.superbwarfare.config.server.VehicleConfig
@@ -11,6 +10,7 @@ import com.atsuishio.superbwarfare.entity.setValue
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier.Companion.createDefaultModifier
 import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils
+import com.atsuishio.superbwarfare.fabric.LevelLifecycleListener
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModMobEffects
 import com.atsuishio.superbwarfare.init.ModParticleTypes
@@ -51,7 +51,10 @@ import org.joml.Quaterniond
 import org.joml.Quaternionf
 import kotlin.random.Random
 
-open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) : Entity(type, level),
+open class TurretWreckEntity(
+    type: EntityType<TurretWreckEntity>,
+    level: Level,
+) : Entity(type, level),
     LevelLifecycleListener {
     companion object {
         @JvmField
@@ -66,11 +69,12 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
         val HEALTH: EntityDataAccessor<Float> =
             SynchedEntityData.defineId(TurretWreckEntity::class.java, EntityDataSerializers.FLOAT)
 
-        private val DAMAGE_MODIFIER = createDefaultModifier()
-            .multiply(0.02f, ModDamageTypes.CUSTOM_EXPLOSION)
-            .multiply(0.02f, ModDamageTypes.MINE)
-            .multiply(0.02f, ModDamageTypes.PROJECTILE_EXPLOSION)
-            .multiply(0.02f, DamageTypes.EXPLOSION)
+        private val DAMAGE_MODIFIER =
+            createDefaultModifier()
+                .multiply(0.02f, ModDamageTypes.CUSTOM_EXPLOSION)
+                .multiply(0.02f, ModDamageTypes.MINE)
+                .multiply(0.02f, ModDamageTypes.PROJECTILE_EXPLOSION)
+                .multiply(0.02f, DamageTypes.EXPLOSION)
     }
 
     open var quaternion by QUATERNION
@@ -94,19 +98,16 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
         }
     open var lastDamageStamp: Long = 0
 
-    override fun canBeCollidedWith(): Boolean {
-        return true
-    }
+    override fun canBeCollidedWith(): Boolean = true
 
-    override fun canCollideWith(pEntity: Entity): Boolean {
-        return true
-    }
+    override fun canCollideWith(pEntity: Entity): Boolean = true
 
-    override fun isPickable(): Boolean {
-        return !this.isRemoved
-    }
+    override fun isPickable(): Boolean = !this.isRemoved
 
-    override fun hurt(source: DamageSource, amount: Float): Boolean {
+    override fun hurt(
+        source: DamageSource,
+        amount: Float,
+    ): Boolean {
         var computedAmount = amount
         computedAmount = DAMAGE_MODIFIER.compute(this, source, computedAmount)
         entityData.set(HEALTH, entityData.get(HEALTH) - computedAmount)
@@ -118,7 +119,7 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                 ModSounds.HIT.get(),
                 SoundSource.PLAYERS,
                 1f,
-                1f
+                1f,
             )
             ParticleTool.sendParticle(
                 serverLevel,
@@ -131,7 +132,7 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                 0.0,
                 0.0,
                 0.2,
-                false
+                false,
             )
             ParticleTool.sendParticle(
                 serverLevel,
@@ -144,7 +145,7 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                 0.0,
                 0.0,
                 0.01,
-                false
+                false,
             )
 
             this.lastDamageSource = source
@@ -168,8 +169,8 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                 compound.getFloat("Qx"),
                 compound.getFloat("Qy"),
                 compound.getFloat("Qz"),
-                compound.getFloat("Qw")
-            )
+                compound.getFloat("Qw"),
+            ),
         )
         entityData.set(VEHICLE_NAME, compound.getString("VehicleName"))
         entityData.set(HEALTH, compound.getFloat("Health"))
@@ -229,7 +230,7 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                 0.35f * this.bbWidth,
                 level(),
                 0.01f,
-                1
+                1,
             )
             addRandomParticle(
                 ParticleTypes.CAMPFIRE_COSY_SMOKE,
@@ -237,7 +238,7 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                 0.35f * this.bbWidth,
                 level(),
                 0.005f,
-                1
+                1,
             )
             addRandomParticle(
                 CustomCloudOption(
@@ -248,13 +249,13 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                     2.5f + 0.5f * random,
                     -0.07f,
                     cooldown = true,
-                    light = true
+                    light = true,
                 ),
                 Vec3(this.x, this.y + 0.85f * bbHeight, this.z),
                 0.35f * this.bbWidth,
                 level(),
                 0.01f,
-                1
+                1,
             )
             addRandomParticle(
                 CustomCloudOption(
@@ -265,13 +266,13 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                     1.5f + 0.5f * random,
                     -0.07f,
                     cooldown = false,
-                    light = true
+                    light = true,
                 ),
                 Vec3(this.x, this.y + 0.85f * bbHeight, this.z),
                 0.3f * this.bbWidth,
                 level(),
                 0.01f,
-                1
+                1,
             )
         }
         if (this.tickCount % 15 == 0) {
@@ -284,10 +285,13 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
         if (health <= 0) {
             this.discard()
 
-            CustomExplosion.Builder(this).attacker(null)
+            CustomExplosion
+                .Builder(this)
+                .attacker(null)
                 .radius(4f)
                 .damage(1f)
-                .keepBlock().explode()
+                .keepBlock()
+                .explode()
 
             this.generateWreckageLoot()
         }
@@ -316,11 +320,12 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
             repeat(pool.rolls) {
                 entries.forEach { entry ->
                     val random = Random.nextDouble()
-                    val chance = if (type == WreckageLootData.Pool.Type.DEFAULT) {
-                        entry.chance * VehicleConfig.TURRET_WRECKAGE_LOOT_RATE.get()
-                    } else {
-                        entry.chance
-                    }
+                    val chance =
+                        if (type == WreckageLootData.Pool.Type.DEFAULT) {
+                            entry.chance * VehicleConfig.TURRET_WRECKAGE_LOOT_RATE.get()
+                        } else {
+                            entry.chance
+                        }
                     if (random > chance) return@forEach
 
                     val name = entry.name
@@ -340,7 +345,7 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
         randomPos: Float,
         level: Level,
         speed: Float,
-        count: Int
+        count: Int,
     ) {
         val randomX = 2 * (this.random.nextFloat() - 0.5f)
         val randomY = 2 * (this.random.nextFloat() - 0.5f)
@@ -354,12 +359,15 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                 pos.z + randomPos * randomZ,
                 (randomX * speed).toDouble(),
                 (randomY * speed).toDouble(),
-                (randomZ * speed).toDouble()
+                (randomZ * speed).toDouble(),
             )
         }
     }
 
-    private fun lerpRotationToTarget(targetRotation: Quaternionf, lerpFactor: Float) {
+    private fun lerpRotationToTarget(
+        targetRotation: Quaternionf,
+        lerpFactor: Float,
+    ) {
         val currentRotation: Quaternionf = this.getQuaternion(1f)
         currentRotation.slerp(targetRotation, lerpFactor)
         this.setQuaternion(Quaterniond(currentRotation))
@@ -377,12 +385,13 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
             Quaternionf(quaternion.x.toFloat(), quaternion.y.toFloat(), quaternion.z.toFloat(), quaternion.w.toFloat())
     }
 
-    open fun getQuaternion(tickDelta: Float) = Quaternionf(
-        Mth.lerp(tickDelta, qxO, quaternion.x()),
-        Mth.lerp(tickDelta, qyO, quaternion.y()),
-        Mth.lerp(tickDelta, qzO, quaternion.z()),
-        Mth.lerp(tickDelta, qwO, quaternion.w())
-    )
+    open fun getQuaternion(tickDelta: Float) =
+        Quaternionf(
+            Mth.lerp(tickDelta, qxO, quaternion.x()),
+            Mth.lerp(tickDelta, qyO, quaternion.y()),
+            Mth.lerp(tickDelta, qzO, quaternion.z()),
+            Mth.lerp(tickDelta, qwO, quaternion.w()),
+        )
 
     open fun getUpVec(ticks: Float) = VehicleVecUtils.getUpVec(getQuaternion(ticks))
 
@@ -390,7 +399,10 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
 
     open fun getRightVec(ticks: Float) = VehicleVecUtils.getRightVec(getQuaternion(ticks))
 
-    override fun move(movementType: MoverType, movement: Vec3) {
+    override fun move(
+        movementType: MoverType,
+        movement: Vec3,
+    ) {
         super.move(movementType, movement)
 
         if (lastTickSpeed < 0.3 || collisionCoolDown > 0) return
@@ -401,22 +413,24 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                     this.level().playSound(null, this, ModSounds.VEHICLE_STRIKE.get(), this.soundSource, 1f, 1f)
                 }
                 this.bounceVertical(
-                    Direction.getNearest(
-                        this.deltaMovement.x(),
-                        this.deltaMovement.y(),
-                        this.deltaMovement.z()
-                    ).opposite
+                    Direction
+                        .getNearest(
+                            this.deltaMovement.x(),
+                            this.deltaMovement.y(),
+                            this.deltaMovement.z(),
+                        ).opposite,
                 )
             }
         }
 
         if (this.horizontalCollision) {
             this.bounceHorizontal(
-                Direction.getNearest(
-                    this.deltaMovement.x(),
-                    this.deltaMovement.y(),
-                    this.deltaMovement.z()
-                ).opposite
+                Direction
+                    .getNearest(
+                        this.deltaMovement.x(),
+                        this.deltaMovement.y(),
+                        this.deltaMovement.z(),
+                    ).opposite,
             )
             if (!this.level().isClientSide) {
                 this.level().playSound(null, this, ModSounds.VEHICLE_STRIKE.get(), this.soundSource, 1f, 1f)
@@ -426,8 +440,14 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
 
     fun bounceHorizontal(direction: Direction) {
         when (direction.axis) {
-            Direction.Axis.X -> deltaMovement = deltaMovement.multiply(0.8, 0.99, 0.99)
-            Direction.Axis.Z -> deltaMovement = deltaMovement.multiply(0.99, 0.99, 0.8)
+            Direction.Axis.X -> {
+                deltaMovement = deltaMovement.multiply(0.8, 0.99, 0.99)
+            }
+
+            Direction.Axis.Z -> {
+                deltaMovement = deltaMovement.multiply(0.99, 0.99, 0.8)
+            }
+
             else -> {}
         }
     }
@@ -446,20 +466,25 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
         val entities: List<Entity>?
 
         val frontBox = this.boundingBox.move(vec3)
-        entities = this.level().getEntities(
-            EntityTypeTest.forClass(Entity::class.java),
-            frontBox
-        ) { entity -> entity !== this && entity!!.vehicle == null }
-            .filter { entity ->
-                if (entity.isAlive) {
-                    val type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)
-                    return@filter (entity is VehicleEntity || entity is Boat || entity is Minecart || (entity is TurretWreckEntity && entity.tickCount > 5)
-                            || (entity is LivingEntity && !(entity is Player && entity.isSpectator)))
-                            || VehicleConfig.COLLISION_ENTITY_WHITELIST.get().contains(type.toString())
-                }
-                false
-            }
-            .toList()
+        entities =
+            this
+                .level()
+                .getEntities(
+                    EntityTypeTest.forClass(Entity::class.java),
+                    frontBox,
+                ) { entity -> entity !== this && entity!!.vehicle == null }
+                .filter { entity ->
+                    if (entity.isAlive) {
+                        val type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)
+                        return@filter (
+                            entity is VehicleEntity || entity is Boat || entity is Minecart ||
+                                (entity is TurretWreckEntity && entity.tickCount > 5) ||
+                                (entity is LivingEntity && !(entity is Player && entity.isSpectator))
+                        ) ||
+                            VehicleConfig.COLLISION_ENTITY_WHITELIST.get().contains(type.toString())
+                    }
+                    false
+                }.toList()
 
         for (entity in entities) {
             val entitySize = entity.boundingBox.size
@@ -496,9 +521,10 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
                 entity.hurt(
                     ModDamageTypes.causeVehicleStrikeDamage(
                         this.level().registryAccess(),
-                        this, this
+                        this,
+                        this,
                     ),
-                    (f1 * 80 * (Mth.abs(length) - 0.3) * (Mth.abs(length) - 0.3)).toFloat()
+                    (f1 * 80 * (Mth.abs(length) - 0.3) * (Mth.abs(length) - 0.3)).toFloat(),
                 )
             }
 
@@ -514,7 +540,11 @@ open class TurretWreckEntity(type: EntityType<TurretWreckEntity>, level: Level) 
         }
     }
 
-    open fun pushNew(pX: Double, pY: Double, pZ: Double) {
+    open fun pushNew(
+        pX: Double,
+        pY: Double,
+        pZ: Double,
+    ) {
         this.deltaMovement = this.deltaMovement.add(pX, pY, pZ)
     }
 

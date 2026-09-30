@@ -8,7 +8,7 @@ import java.util.function.Function
  */
 open class AnimationTimer(
     private val forwardDuration: Long,
-    private val backwardDuration: Long = forwardDuration
+    private val backwardDuration: Long = forwardDuration,
 ) {
     private var startTime: Long = 0
     private var forwardDirection: Boolean = true
@@ -25,24 +25,27 @@ open class AnimationTimer(
     /**
      * 设置正向和反向计时时采用的动画曲线
      */
-    fun animation(animationCurve: Function<Double, Double>) = apply {
-        forwardAnimationCurve = animationCurve
-        backwardAnimationCurve = animationCurve
-    }
+    fun animation(animationCurve: Function<Double, Double>) =
+        apply {
+            forwardAnimationCurve = animationCurve
+            backwardAnimationCurve = animationCurve
+        }
 
     /**
      * 设置正向计时时采用的动画曲线
      */
-    fun forwardAnimation(animationCurve: Function<Double, Double>) = apply {
-        forwardAnimationCurve = animationCurve
-    }
+    fun forwardAnimation(animationCurve: Function<Double, Double>) =
+        apply {
+            forwardAnimationCurve = animationCurve
+        }
 
     /**
      * 设置反向计时时采用的动画曲线
      */
-    fun backwardAnimation(animationCurve: Function<Double, Double>) = apply {
-        backwardAnimationCurve = animationCurve
-    }
+    fun backwardAnimation(animationCurve: Function<Double, Double>) =
+        apply {
+            backwardAnimationCurve = animationCurve
+        }
 
     /**
      * 当前计时方向是否为正向
@@ -54,20 +57,30 @@ open class AnimationTimer(
      *
      * @return 进度值，范围在0到1之间
      */
-    fun getProgress(currentTime: Long): Float {
-        return if (forwardDirection) {
-            forwardAnimationCurve.apply(
-                Mth.clamp(getElapsedTime(currentTime) / forwardDuration.toDouble(), 0.0, 1.0)
-            ).toFloat()
+    fun getProgress(currentTime: Long): Float =
+        if (forwardDirection) {
+            forwardAnimationCurve
+                .apply(
+                    Mth.clamp(getElapsedTime(currentTime) / forwardDuration.toDouble(), 0.0, 1.0),
+                ).toFloat()
         } else {
-            1 - backwardAnimationCurve.apply(
-                Mth.clamp(1 - getElapsedTime(currentTime) / backwardDuration.toDouble(), 0.0, 1.0)
-            ).toFloat()
+            1 -
+                backwardAnimationCurve
+                    .apply(
+                        Mth.clamp(1 - getElapsedTime(currentTime) / backwardDuration.toDouble(), 0.0, 1.0),
+                    ).toFloat()
         }
-    }
 
     private fun getElapsedTime(currentTime: Long): Long {
-        if (!initialized) return if (playFromStart) 0 else if (forwardDirection) forwardDuration else backwardDuration
+        if (!initialized) {
+            return if (playFromStart) {
+                0
+            } else if (forwardDirection) {
+                forwardDuration
+            } else {
+                backwardDuration
+            }
+        }
 
         return if (forwardDirection) {
             minOf(forwardDuration, currentTime - startTime)
@@ -79,9 +92,7 @@ open class AnimationTimer(
     /**
      * 当前动画是否已经结束
      */
-    fun finished(currentTime: Long): Boolean {
-        return getElapsedTime(currentTime) >= if (forwardDirection) forwardDuration else backwardDuration
-    }
+    fun finished(currentTime: Long): Boolean = getElapsedTime(currentTime) >= if (forwardDirection) forwardDuration else backwardDuration
 
     /**
      * 将计时器设置为开始状态
@@ -159,9 +170,11 @@ open class AnimationTimer(
         backward(currentTime)
     }
 
-    fun lerp(start: Float, end: Float, currentTime: Long): Float {
-        return Mth.lerp(getProgress(currentTime), start, end)
-    }
+    fun lerp(
+        start: Float,
+        end: Float,
+        currentTime: Long,
+    ): Float = Mth.lerp(getProgress(currentTime), start, end)
 
     companion object {
         /**
@@ -171,9 +184,10 @@ open class AnimationTimer(
          * @param duration 动画持续时间，单位为毫秒
          */
         @JvmStatic
-        fun createTimers(size: Int, duration: Long): Array<AnimationTimer> {
-            return createTimers(size, duration, AnimationCurves.LINEAR)
-        }
+        fun createTimers(
+            size: Int,
+            duration: Long,
+        ): Array<AnimationTimer> = createTimers(size, duration, AnimationCurves.LINEAR)
 
         /**
          * 创建多个动画计时器
@@ -183,9 +197,11 @@ open class AnimationTimer(
          * @param animationCurve 动画曲线函数
          */
         @JvmStatic
-        fun createTimers(size: Int, duration: Long, animationCurve: Function<Double, Double>): Array<AnimationTimer> {
-            return createTimers(size, duration, animationCurve, animationCurve)
-        }
+        fun createTimers(
+            size: Int,
+            duration: Long,
+            animationCurve: Function<Double, Double>,
+        ): Array<AnimationTimer> = createTimers(size, duration, animationCurve, animationCurve)
 
         /**
          * 创建多个动画计时器
@@ -200,10 +216,8 @@ open class AnimationTimer(
             size: Int,
             duration: Long,
             forwardAnimationCurve: Function<Double, Double>,
-            backwardAnimationCurve: Function<Double, Double>
-        ): Array<AnimationTimer> {
-            return createTimers(size, duration, duration, forwardAnimationCurve, backwardAnimationCurve)
-        }
+            backwardAnimationCurve: Function<Double, Double>,
+        ): Array<AnimationTimer> = createTimers(size, duration, duration, forwardAnimationCurve, backwardAnimationCurve)
 
         /**
          * 创建多个动画计时器
@@ -220,14 +234,15 @@ open class AnimationTimer(
             forwardDuration: Long,
             backwardDuration: Long,
             forwardAnimationCurve: Function<Double, Double>,
-            backwardAnimationCurve: Function<Double, Double>
+            backwardAnimationCurve: Function<Double, Double>,
         ): Array<AnimationTimer> {
             val timers = arrayOfNulls<AnimationTimer>(size)
             val currentTime = System.currentTimeMillis()
             for (i in 0 until size) {
-                timers[i] = AnimationTimer(forwardDuration, backwardDuration)
-                    .forwardAnimation(forwardAnimationCurve)
-                    .backwardAnimation(backwardAnimationCurve)
+                timers[i] =
+                    AnimationTimer(forwardDuration, backwardDuration)
+                        .forwardAnimation(forwardAnimationCurve)
+                        .backwardAnimation(backwardAnimationCurve)
                 timers[i]!!.endBackward(currentTime)
             }
             @Suppress("UNCHECKED_CAST")

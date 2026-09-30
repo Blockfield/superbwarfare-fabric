@@ -20,26 +20,23 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
 
-open class BasicProjectileRenderer<T>(manager: EntityRendererProvider.Context) :
-    EntityRenderer<T>(manager) where T : Entity, T : BasicGeoProjectileEntity {
+open class BasicProjectileRenderer<T>(
+    manager: EntityRendererProvider.Context,
+) : EntityRenderer<T>(manager) where T : Entity, T : BasicGeoProjectileEntity {
     override fun getTextureLocation(entity: T): ResourceLocation {
         val (_, namespace, id) = entity.type.descriptionId.split(".")
         return ResourceLocation.fromNamespaceAndPath(namespace, "textures/bedrock/projectile/$id.png")
     }
 
-    override fun shouldShowName(pEntity: T): Boolean {
-        return false
-    }
+    override fun shouldShowName(pEntity: T): Boolean = false
 
     override fun shouldRender(
         pLivingEntity: T,
         pCamera: Frustum,
         pCamX: Double,
         pCamY: Double,
-        pCamZ: Double
-    ): Boolean {
-        return true
-    }
+        pCamZ: Double,
+    ): Boolean = true
 
     override fun render(
         entity: T,
@@ -47,7 +44,7 @@ open class BasicProjectileRenderer<T>(manager: EntityRendererProvider.Context) :
         partialTick: Float,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         if (entity is FastThrowableProjectile) {
             if (entity.syncedTick <= entity.getHiddenTicks()) return
@@ -85,7 +82,7 @@ open class BasicProjectileRenderer<T>(manager: EntityRendererProvider.Context) :
             RenderType.entityCutout(getTextureLocation(entity)),
             BedrockModelRenderTypes.polyMeshCutout(getTextureLocation(entity)),
             packedLight,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         val texture = entity.getEmissiveTexture()
@@ -96,15 +93,16 @@ open class BasicProjectileRenderer<T>(manager: EntityRendererProvider.Context) :
                 RenderType.entityCutout(getTextureLocation(entity)),
                 BedrockModelRenderTypes.polyMeshCutout(getTextureLocation(entity)),
                 packedLight,
-                OverlayTexture.NO_OVERLAY
+                OverlayTexture.NO_OVERLAY,
             )
         }
 
-        val flag2 = if (entity is FastThrowableProjectile) {
-            entity.syncedTick > entity.getFlareHiddenTicks()
-        } else {
-            entity.tickCount > entity.getFlareHiddenTicks()
-        }
+        val flag2 =
+            if (entity is FastThrowableProjectile) {
+                entity.syncedTick > entity.getFlareHiddenTicks()
+            } else {
+                entity.tickCount > entity.getFlareHiddenTicks()
+            }
 
         if (flag && flag2) {
             flare.visible = true
@@ -118,9 +116,12 @@ open class BasicProjectileRenderer<T>(manager: EntityRendererProvider.Context) :
                 buffer.getBuffer(RenderType.eyes(FLARE_TEXTURE)),
                 packedLight,
                 OverlayTexture.NO_OVERLAY,
-                1f, 1f, 1f, 1f,
+                1f,
+                1f,
+                1f,
+                1f,
                 true,
-                false
+                false,
             )
         }
 

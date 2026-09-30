@@ -25,6 +25,7 @@ Minecraft 1.21.1, те же маппинги (officialMojangMappings + parchment
 ## Шимы, которые уже есть (используй, не изобретай заново)
 
 `src/main/kotlin/com/atsuishio/superbwarfare/fabric/`:
+
 - `DeferredRegister.kt` — `DeferredRegister`/`DeferredHolder` поверх ванильного Registry.
   Форма вызова сохранена: `ModItems.ITEMS.register("name") { ... }` работает как в Forge.
 - `ModEventBus.kt` — собственная шина для событий **самого SBW** + `open class CancellableEvent`.
@@ -38,11 +39,11 @@ Minecraft 1.21.1, те же маппинги (officialMojangMappings + parchment
 
 ## Три вида событий — не путай
 
-| Что | Где живёт | Как портируется |
-|---|---|---|
-| События **самого SBW** (`ReloadEvent`, `RegisterContainersEvent` и т.п.) | код мода | `ModEventBus`: `postEvent(...)` + `subscribe<T>` |
-| События **Fabric API** (`ServerTickEvents`, `ClientTickEvents`, `HudRenderCallback`, `WorldRenderEvents`, `CommandRegistrationCallback`, `ServerPlayConnectionEvents`, `LootTableEvents`, ...) | fabric-api | регистрируешь колбэк в `init()` |
-| События **Porting Lib** (форджевой формы: `LivingHurtEvent` и др.) | `io.github.fabricators_of_create.porting_lib.*` | оставляешь как есть, меняется только импорт |
+| Что                                                                                                                                                                                            | Где живёт                                       | Как портируется                                  |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ |
+| События **самого SBW** (`ReloadEvent`, `RegisterContainersEvent` и т.п.)                                                                                                                       | код мода                                        | `ModEventBus`: `postEvent(...)` + `subscribe<T>` |
+| События **Fabric API** (`ServerTickEvents`, `ClientTickEvents`, `HudRenderCallback`, `WorldRenderEvents`, `CommandRegistrationCallback`, `ServerPlayConnectionEvents`, `LootTableEvents`, ...) | fabric-api                                      | регистрируешь колбэк в `init()`                  |
+| События **Porting Lib** (форджевой формы: `LivingHurtEvent` и др.)                                                                                                                             | `io.github.fabricators_of_create.porting_lib.*` | оставляешь как есть, меняется только импорт      |
 
 Событий, которых нет ни там ни там (AnvilUpdateEvent, ExplosionEvent.Detonate,
 RenderGuiLayerEvent, RenderNameTagEvent, LivingHealEvent, ItemEntityPickupEvent и др.),

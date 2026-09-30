@@ -42,9 +42,7 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
 
     private val LOGGER = ResourceOnceLogger()
 
-    override fun getAnimationResource(vehicle: T): ResourceLocation? {
-        return getDefault(vehicle).getModel().animation
-    }
+    override fun getAnimationResource(vehicle: T): ResourceLocation? = getDefault(vehicle).getModel().animation
 
     protected var modelCache: ResourceLocation? = null
 
@@ -121,7 +119,11 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
     }
 
     fun interface TransformContext<T> where T : VehicleEntity, T : GeoAnimatable {
-        fun transform(bone: GeoBone, vehicle: T, animationState: AnimationState<T>)
+        fun transform(
+            bone: GeoBone,
+            vehicle: T,
+            animationState: AnimationState<T>,
+        )
     }
 
     protected var init = false
@@ -146,33 +148,36 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
         if (boneName == "laser") {
             return TransformContext { bone, vehicle, state ->
                 bone.scaleZ = 10 * vehicle.laserLength
-                val scale = Mth.lerp(
-                    state.partialTick,
-                    vehicle.laserScaleO,
-                    vehicle.laserScale
-                ).coerceAtMost(1.2f)
+                val scale =
+                    Mth
+                        .lerp(
+                            state.partialTick,
+                            vehicle.laserScaleO,
+                            vehicle.laserScale,
+                        ).coerceAtMost(1.2f)
 
                 bone.scaleX = scale
                 bone.scaleY = scale
             }
         }
 
-        //射击时带来的车体摇晃视觉效果
+        // 射击时带来的车体摇晃视觉效果
         when (boneName) {
             "base" -> {
                 return TransformContext { bone, vehicle, _ ->
                     val a = vehicle.yawWhileShoot
                     val r = (Mth.abs(a) - 90f) / 90f
 
-                    val r2 = if (Mth.abs(a) <= 90f) {
-                        a / 90f
-                    } else {
-                        if (a < 0) {
-                            -(180f + a) / 90f
+                    val r2 =
+                        if (Mth.abs(a) <= 90f) {
+                            a / 90f
                         } else {
-                            (180f - a) / 90f
+                            if (a < 0) {
+                                -(180f + a) / 90f
+                            } else {
+                                (180f - a) / 90f
+                            }
                         }
-                    }
 
                     bone.posX = r2 * recoilShake * 0.5f
                     bone.posZ = r * recoilShake * 1f
@@ -196,7 +201,7 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
                     bone.rotX = Mth.clamp(
                         -turretXRot,
                         vehicle.turretMinPitch,
-                        vehicle.turretMaxPitch
+                        vehicle.turretMaxPitch,
                     ) * Mth.DEG_TO_RAD
 
                     val barrelLaser = animationProcessor.getBone("barrelLaser")
@@ -209,7 +214,7 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
                     bone.rotY = Mth.lerp(
                         state.partialTick,
                         vehicle.gunYRotO,
-                        vehicle.gunYRot
+                        vehicle.gunYRot,
                     ) * Mth.DEG_TO_RAD - turretYRot * Mth.DEG_TO_RAD
                 }
             }
@@ -217,15 +222,16 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
             "passengerWeaponStationPitch" -> {
                 return TransformContext { bone, vehicle, state ->
 
-                    bone.rotX = Mth.clamp(
-                        -Mth.lerp(
-                            state.partialTick,
-                            vehicle.gunXRotO,
-                            vehicle.gunXRot
-                        ) * Mth.DEG_TO_RAD,
-                        vehicle.passengerWeaponMinPitch * Mth.DEG_TO_RAD,
-                        vehicle.passengerWeaponMaxPitch * Mth.DEG_TO_RAD
-                    )
+                    bone.rotX =
+                        Mth.clamp(
+                            -Mth.lerp(
+                                state.partialTick,
+                                vehicle.gunXRotO,
+                                vehicle.gunXRot,
+                            ) * Mth.DEG_TO_RAD,
+                            vehicle.passengerWeaponMinPitch * Mth.DEG_TO_RAD,
+                            vehicle.passengerWeaponMaxPitch * Mth.DEG_TO_RAD,
+                        )
                 }
             }
         }
@@ -283,7 +289,11 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
         return null
     }
 
-    override fun setCustomAnimations(vehicle: T, instanceId: Long, animationState: AnimationState<T>) {
+    override fun setCustomAnimations(
+        vehicle: T,
+        instanceId: Long,
+        animationState: AnimationState<T>,
+    ) {
         if (!init) {
             animationProcessor.registeredBones.forEach { bone ->
                 val name = bone.name
@@ -321,7 +331,8 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
         hideForTurretControllerWhileZooming =
             ClientEventHandler.zoomVehicle && vehicle.getNthEntity(vehicle.turretControllerIndex) === Minecraft.getInstance().player
         hideForPassengerWeaponStationControllerWhileZooming =
-            ClientEventHandler.zoomVehicle && vehicle.getNthEntity(vehicle.passengerWeaponStationControllerIndex) === Minecraft.getInstance().player
+            ClientEventHandler.zoomVehicle &&
+            vehicle.getNthEntity(vehicle.passengerWeaponStationControllerIndex) === Minecraft.getInstance().player
 
         TRANSFORMS.forEach { pair ->
             val name = pair.getA()
@@ -336,20 +347,27 @@ open class VehicleModel<T> : GeoModel<T>() where T : VehicleEntity, T : GeoAnima
     open fun hideForTurretControllerWhileZooming() = false
 
     open fun getBoneRotX(t: Float) = t
+
     open fun getBoneMoveY(t: Float) = t
+
     open fun getBoneMoveZ(t: Float) = t
+
     open fun getTrackDistance() = 2f
 
-    protected fun wrap(value: Float, range: Int) = ((value % range) + range) % range
+    protected fun wrap(
+        value: Float,
+        range: Int,
+    ) = ((value % range) + range) % range
 
-    protected fun wrap(value: Float, vehicle: VehicleEntity) = wrap(value, getDefaultWrapRange(vehicle))
+    protected fun wrap(
+        value: Float,
+        vehicle: VehicleEntity,
+    ) = wrap(value, getDefaultWrapRange(vehicle))
 
     fun getDefaultWrapRange(vehicle: VehicleEntity) = vehicle.getTrackAnimationLength()
 
     companion object {
-        private fun <T> getDefault(vehicle: T): DefaultVehicleResource where T : VehicleEntity, T : GeoAnimatable {
-            return VehicleResource.getDefault(vehicle)
-        }
+        private fun <T> getDefault(vehicle: T): DefaultVehicleResource where T : VehicleEntity, T : GeoAnimatable = VehicleResource.getDefault(vehicle)
 
         val TRACK_PATTERN: Pattern = Pattern.compile("^track(?<type>Mov|Rot)(?<direction>[LR])(?<id>\\d+)$")
         val WHEEL_PATTERN: Pattern = Pattern.compile("^wheel(?<direction>[LR]).*$")

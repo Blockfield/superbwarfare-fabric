@@ -14,13 +14,18 @@ import net.minecraft.world.entity.EntityType
 import net.neoforged.neoforge.common.data.ExistingFileHelper
 import java.util.concurrent.CompletableFuture
 
-abstract class SbwWreckageLootProvider(val output: PackOutput, val existingFileHelper: ExistingFileHelper) :
-    DataProvider {
+abstract class SbwWreckageLootProvider(
+    val output: PackOutput,
+    val existingFileHelper: ExistingFileHelper,
+) : DataProvider {
     protected val lootData = mutableListOf<WreckageLootData>()
 
     abstract fun generate()
 
-    fun add(type: EntityType<out VehicleEntity>, builder: WreckageLootData.Builder) {
+    fun add(
+        type: EntityType<out VehicleEntity>,
+        builder: WreckageLootData.Builder,
+    ) {
         val id = BuiltInRegistries.ENTITY_TYPE.getKey(type)
         lootData.add(builder.build(id))
     }

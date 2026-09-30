@@ -12,13 +12,13 @@ class ShortcutPackItem : Item(Properties().rarity(Rarity.EPIC)) {
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.shortcut_pack_2").withStyle(ChatFormatting.AQUA)
+            Component.translatable("des.superbwarfare.shortcut_pack_2").withStyle(ChatFormatting.AQUA),
         )
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.shortcut_pack_1").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.shortcut_pack_1").withStyle(ChatFormatting.GRAY),
         )
     }
 }

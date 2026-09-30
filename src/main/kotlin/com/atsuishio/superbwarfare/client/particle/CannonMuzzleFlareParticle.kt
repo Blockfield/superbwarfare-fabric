@@ -1,10 +1,10 @@
 package com.atsuishio.superbwarfare.client.particle
 
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.*
 import net.minecraft.util.Mth
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
@@ -23,7 +23,7 @@ open class CannonMuzzleFlareParticle protected constructor(
     life: Int,
     fade: Float,
     animationSpeed: Int,
-    sizeAdd: Float
+    sizeAdd: Float,
 ) : TextureSheetParticle(world, x, y, z) {
     var fade: Float
     var animationSpeed: Int
@@ -31,7 +31,9 @@ open class CannonMuzzleFlareParticle protected constructor(
 
     @Environment(EnvType.CLIENT)
     @JvmRecord
-    data class Provider(val spriteSet: SpriteSet) : ParticleProvider<CannonMuzzleFlareOption> {
+    data class Provider(
+        val spriteSet: SpriteSet,
+    ) : ParticleProvider<CannonMuzzleFlareOption> {
         override fun createParticle(
             pType: CannonMuzzleFlareOption,
             pLevel: ClientLevel,
@@ -40,9 +42,9 @@ open class CannonMuzzleFlareParticle protected constructor(
             z: Double,
             xSpeed: Double,
             ySpeed: Double,
-            zSpeed: Double
-        ): Particle {
-            return CannonMuzzleFlareParticle(
+            zSpeed: Double,
+        ): Particle =
+            CannonMuzzleFlareParticle(
                 pLevel,
                 x,
                 y,
@@ -57,9 +59,8 @@ open class CannonMuzzleFlareParticle protected constructor(
                 pType.life,
                 pType.fade,
                 pType.animationSpeed,
-                pType.sizeAdd
+                pType.sizeAdd,
             )
-        }
     }
 
     init {
@@ -81,13 +82,9 @@ open class CannonMuzzleFlareParticle protected constructor(
         this.sizeAdd = sizeAdd
     }
 
-    public override fun getLightColor(partialTick: Float): Int {
-        return 15728880
-    }
+    public override fun getLightColor(partialTick: Float): Int = 15728880
 
-    override fun getRenderType(): ParticleRenderType {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-    }
+    override fun getRenderType(): ParticleRenderType = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
 
     override fun tick() {
         super.tick()

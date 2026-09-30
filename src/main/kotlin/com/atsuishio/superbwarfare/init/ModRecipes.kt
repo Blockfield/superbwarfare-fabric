@@ -1,6 +1,8 @@
 package com.atsuishio.superbwarfare.init
 
 import com.atsuishio.superbwarfare.Mod
+import com.atsuishio.superbwarfare.fabric.DeferredHolder
+import com.atsuishio.superbwarfare.fabric.DeferredRegister
 import com.atsuishio.superbwarfare.recipe.PotionMortarShellRecipe
 import com.atsuishio.superbwarfare.recipe.ResearchingRecipe
 import com.atsuishio.superbwarfare.recipe.SmokeDyeRecipe
@@ -12,8 +14,6 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.item.crafting.RecipeSerializer
 import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer
-import com.atsuishio.superbwarfare.fabric.DeferredHolder
-import com.atsuishio.superbwarfare.fabric.DeferredRegister
 
 object ModRecipes {
     @JvmField
@@ -26,7 +26,7 @@ object ModRecipes {
 
     private fun <T : RecipeSerializer<*>> register(
         name: String,
-        serializer: () -> T
+        serializer: () -> T,
     ): DeferredHolder<RecipeSerializer<*>, T> = RECIPE_SERIALIZERS.register(name, Supplier { serializer() })
 
     @JvmField
@@ -36,36 +36,44 @@ object ModRecipes {
         }
 
     @JvmField
-    val SMOKE_DYE_SERIALIZER = register("smoke_dye") {
-        SimpleCraftingRecipeSerializer(::SmokeDyeRecipe)
-    }
+    val SMOKE_DYE_SERIALIZER =
+        register("smoke_dye") {
+            SimpleCraftingRecipeSerializer(::SmokeDyeRecipe)
+        }
 
     @JvmField
     val VEHICLE_ASSEMBLING_SERIALIZER = register("vehicle_assembling") { VehicleAssemblingRecipeSerializer }
 
     @JvmField
-    val VEHICLE_RESET_SERIALIZER = register("vehicle_reset") {
-        SimpleCraftingRecipeSerializer(::VehicleResetRecipe)
-    }
+    val VEHICLE_RESET_SERIALIZER =
+        register("vehicle_reset") {
+            SimpleCraftingRecipeSerializer(::VehicleResetRecipe)
+        }
 
     @JvmField
     val RESEARCHING_SERIALIZER = register("researching") { ResearchingRecipe.Serializer }
 
     @JvmField
     val VEHICLE_ASSEMBLING_TYPE: DeferredHolder<RecipeType<*>, out RecipeType<VehicleAssemblingRecipe>> =
-        RECIPE_TYPES.register("vehicle_assembling", Supplier {
-            object : RecipeType<VehicleAssemblingRecipe> {
-                override fun toString() = Mod.MODID + ":vehicle_assembling"
-            }
-        })
+        RECIPE_TYPES.register(
+            "vehicle_assembling",
+            Supplier {
+                object : RecipeType<VehicleAssemblingRecipe> {
+                    override fun toString() = Mod.MODID + ":vehicle_assembling"
+                }
+            },
+        )
 
     @JvmField
     val RESEARCHING_TYPE: DeferredHolder<RecipeType<*>, out RecipeType<ResearchingRecipe>> =
-        RECIPE_TYPES.register("researching", Supplier {
-            object : RecipeType<ResearchingRecipe> {
-                override fun toString() = Mod.MODID + ":researching"
-            }
-        })
+        RECIPE_TYPES.register(
+            "researching",
+            Supplier {
+                object : RecipeType<ResearchingRecipe> {
+                    override fun toString() = Mod.MODID + ":researching"
+                }
+            },
+        )
 
     fun register(bus: Any?) {
         RECIPE_SERIALIZERS.register(bus)

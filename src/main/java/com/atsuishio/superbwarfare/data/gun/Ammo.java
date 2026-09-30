@@ -2,15 +2,16 @@ package com.atsuishio.superbwarfare.data.gun;
 
 import com.atsuishio.superbwarfare.capability.player.PlayerVariable;
 import com.atsuishio.superbwarfare.config.server.AmmoConfigKt;
+import com.atsuishio.superbwarfare.fabric.DeferredHolder;
 import com.atsuishio.superbwarfare.init.ModAttachments;
 import com.atsuishio.superbwarfare.init.ModItems;
 import com.atsuishio.superbwarfare.item.ammo.AmmoSupplierItem;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import com.atsuishio.superbwarfare.fabric.DeferredHolder;
 
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -25,27 +26,19 @@ public enum Ammo {
     SNIPER(ChatFormatting.GOLD, () -> ModItems.SNIPER_AMMO.get()),
     HEAVY(ChatFormatting.LIGHT_PURPLE, () -> ModItems.HEAVY_AMMO.get());
 
-    /**
-     * 翻译字段名称，如 item.superbwarfare.ammo.rifle
-     */
+    /** 翻译字段名称，如 item.superbwarfare.ammo.rifle */
     public final String translationKey;
-    /**
-     * 大驼峰格式命名的序列化字段名称，如 RifleAmmo
-     */
+
+    /** 大驼峰格式命名的序列化字段名称，如 RifleAmmo */
     public final String serializationName;
-    /**
-     * 下划线格式命名的小写名称，如 rifle
-     */
+
+    /** 下划线格式命名的小写名称，如 rifle */
     public final String name;
 
-    /**
-     * 大驼峰格式命名的显示名称，如 Rifle Ammo
-     */
+    /** 大驼峰格式命名的显示名称，如 Rifle Ammo */
     public final String displayName;
 
-    /**
-     * 该类型弹药默认的Item
-     */
+    /** 该类型弹药默认的Item */
     public final Supplier<AmmoSupplierItem> defaultItemSupplier;
 
     public final ChatFormatting color;
@@ -167,7 +160,6 @@ public enum Ammo {
         return set(variable, safeAdd(get(variable), count));
     }
 
-
     // Entity
     public int get(Entity entity) {
         return get(entity.getAttachedOrCreate(ModAttachments.PLAYER_VARIABLE));
@@ -187,7 +179,6 @@ public enum Ammo {
     public boolean add(Entity entity, int count) {
         return set(entity, safeAdd(get(entity), count));
     }
-
 
     private int safeAdd(int a, int b) {
         var newCount = (long) a + (long) b;

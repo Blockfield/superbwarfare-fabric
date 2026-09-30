@@ -9,13 +9,13 @@ import com.atsuishio.superbwarfare.perk.Perk
 import com.atsuishio.superbwarfare.perk.PerkInstance
 import com.atsuishio.superbwarfare.tools.FormatTool
 import com.atsuishio.superbwarfare.tools.playLocalSound
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
-import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 
 object BattleOfWits : Perk("battle_of_wits", Type.DAMAGE) {
     fun init() {
@@ -37,7 +37,7 @@ object BattleOfWits : Perk("battle_of_wits", Type.DAMAGE) {
         attacker: LivingEntity,
         data: GunData,
         instance: PerkInstance,
-        target: Entity
+        target: Entity,
     ) {
         val tag = data.perk.getTag(this) ?: return
         tag.remove("DamageRate")
@@ -47,7 +47,7 @@ object BattleOfWits : Perk("battle_of_wits", Type.DAMAGE) {
     override fun tick(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         super.tick(data, instance, entity)
         val tag = data.perk.getTag(this) ?: return
@@ -58,13 +58,16 @@ object BattleOfWits : Perk("battle_of_wits", Type.DAMAGE) {
         if (entity is ServerPlayer && tag.getInt("Cooldown") == 1) {
             entity.displayClientMessage(
                 Component.translatable("tips.superbwarfare.battle_of_wits.cooldown").withStyle(ChatFormatting.YELLOW),
-                true
+                true,
             )
             entity.playLocalSound(SoundEvents.ARROW_HIT_PLAYER)
         }
     }
 
-    private fun onChatEvent(player: ServerPlayer, text: String) {
+    private fun onChatEvent(
+        player: ServerPlayer,
+        text: String,
+    ) {
         val stack = player.mainHandItem
         if (stack.item !is GunItem) return
 
@@ -85,11 +88,12 @@ object BattleOfWits : Perk("battle_of_wits", Type.DAMAGE) {
         tag.putInt("Cooldown", 100)
 
         player.displayClientMessage(
-            Component.translatable(
-                "tips.superbwarfare.battle_of_wits.active",
-                "${FormatTool.format1DZ(rate * 100.0)}%"
-            ).withStyle(ChatFormatting.LIGHT_PURPLE),
-            false
+            Component
+                .translatable(
+                    "tips.superbwarfare.battle_of_wits.active",
+                    "${FormatTool.format1DZ(rate * 100.0)}%",
+                ).withStyle(ChatFormatting.LIGHT_PURPLE),
+            false,
         )
     }
 }

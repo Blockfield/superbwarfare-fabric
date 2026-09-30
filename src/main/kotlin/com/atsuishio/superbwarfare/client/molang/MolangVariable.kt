@@ -13,7 +13,10 @@ object MolangVariable {
         register(SBW_IS_EMPTY) { 0.0 }
     }
 
-    private fun register(name: String, supplier: DoubleSupplier) {
+    private fun register(
+        name: String,
+        supplier: DoubleSupplier,
+    ) {
         MathParser.registerVariable(Variable(name, supplier))
     }
 }

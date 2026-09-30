@@ -11,8 +11,9 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 
-class CatapultShuttleRenderer(renderManager: EntityRendererProvider.Context) :
-    EntityRenderer<CatapultShuttleEntity>(renderManager) {
+class CatapultShuttleRenderer(
+    renderManager: EntityRendererProvider.Context,
+) : EntityRenderer<CatapultShuttleEntity>(renderManager) {
     init {
         this.shadowRadius = 0f
     }
@@ -23,7 +24,7 @@ class CatapultShuttleRenderer(renderManager: EntityRendererProvider.Context) :
         partialTicks: Float,
         poseStack: PoseStack,
         bufferIn: MultiBufferSource,
-        packedLightIn: Int
+        packedLightIn: Int,
     ) {
         val instance = entityIn.modelInstance ?: return
 
@@ -37,19 +38,15 @@ class CatapultShuttleRenderer(renderManager: EntityRendererProvider.Context) :
             poseStack,
             vertexConsumer,
             packedLightIn,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
 
         poseStack.popPose()
     }
 
-    public override fun shouldShowName(animatable: CatapultShuttleEntity): Boolean {
-        return false
-    }
+    public override fun shouldShowName(animatable: CatapultShuttleEntity): Boolean = false
 
-    override fun getTextureLocation(pEntity: CatapultShuttleEntity): ResourceLocation {
-        return TEXTURE
-    }
+    override fun getTextureLocation(pEntity: CatapultShuttleEntity): ResourceLocation = TEXTURE
 
     companion object {
         val TEXTURE = loc("textures/bedrock/entity/catapult_shuttle.png")

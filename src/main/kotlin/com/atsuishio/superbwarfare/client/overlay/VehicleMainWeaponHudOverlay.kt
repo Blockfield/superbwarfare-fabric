@@ -3,6 +3,7 @@ package com.atsuishio.superbwarfare.client.overlay
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.client.ClientSyncedEntityHandler
 import com.atsuishio.superbwarfare.client.RenderHelper
+import com.atsuishio.superbwarfare.client.boundKey
 import com.atsuishio.superbwarfare.client.overlay.weapon.*
 import com.atsuishio.superbwarfare.config.server.MiscConfig
 import com.atsuishio.superbwarfare.data.gun.GunData
@@ -17,6 +18,9 @@ import com.atsuishio.superbwarfare.tools.RangeTool.calculateFiringSolution
 import com.atsuishio.superbwarfare.tools.VectorTool.lerpGetEntityBoundingBoxCenter
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.GameRenderer
@@ -25,10 +29,6 @@ import net.minecraft.util.Mth
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import com.atsuishio.superbwarfare.client.boundKey
 
 /**
  * 控制载具主武器的玩家显示的HUD
@@ -74,22 +74,23 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
         val cameraPos = camera.position
         val seekVec = vehicle.getSeekVec(player, 1f)
 
-        entities = SeekTool.Builder(player)
-            .withinRangeSeekWeapon(
-                seekInfo.seekRange,
-                seekInfo.maxGuidedRange,
-                seekInfo.affectedByStealthTarget,
-                seekInfo.canGuidedByRadar
-            )
-            .withinAngle(cameraPos, seekVec, seekInfo.seekAngle)
-            .baseFilter()
-            .heightRange(seekInfo.minTargetHeight, seekInfo.maxTargetHeight)
-            .sizeBiggerThan(seekInfo.minTargetSize)
-            .smokeFilter()
-            .noVehicle()
-            .noClip()
-            .notFriendly()
-            .buildSeekWeapon(seekInfo.canGuidedByRadar)
+        entities =
+            SeekTool
+                .Builder(player)
+                .withinRangeSeekWeapon(
+                    seekInfo.seekRange,
+                    seekInfo.maxGuidedRange,
+                    seekInfo.affectedByStealthTarget,
+                    seekInfo.canGuidedByRadar,
+                ).withinAngle(cameraPos, seekVec, seekInfo.seekAngle)
+                .baseFilter()
+                .heightRange(seekInfo.minTargetHeight, seekInfo.maxTargetHeight)
+                .sizeBiggerThan(seekInfo.minTargetSize)
+                .smokeFilter()
+                .noVehicle()
+                .noClip()
+                .notFriendly()
+                .buildSeekWeapon(seekInfo.canGuidedByRadar)
     }
 
     override fun RenderContext.render() {
@@ -116,64 +117,76 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
         when (type) {
-            LandVehicleHud.ID -> LandVehicleHud.render(
-                vehicle,
-                player,
-                guiGraphics,
-                partialTick,
-                screenWidth,
-                screenHeight
-            )
+            LandVehicleHud.ID -> {
+                LandVehicleHud.render(
+                    vehicle,
+                    player,
+                    guiGraphics,
+                    partialTick,
+                    screenWidth,
+                    screenHeight,
+                )
+            }
 
-            HelicopterHud.ID -> HelicopterHud.render(
-                vehicle,
-                player,
-                guiGraphics,
-                partialTick,
-                screenWidth,
-                screenHeight
-            )
+            HelicopterHud.ID -> {
+                HelicopterHud.render(
+                    vehicle,
+                    player,
+                    guiGraphics,
+                    partialTick,
+                    screenWidth,
+                    screenHeight,
+                )
+            }
 
-            ArtilleryHud.ID -> ArtilleryHud.render(
-                vehicle,
-                player,
-                guiGraphics,
-                partialTick,
-                screenWidth,
-                screenHeight
-            )
+            ArtilleryHud.ID -> {
+                ArtilleryHud.render(
+                    vehicle,
+                    player,
+                    guiGraphics,
+                    partialTick,
+                    screenWidth,
+                    screenHeight,
+                )
+            }
 
-            AircraftHud.ID -> AircraftHud.render(
-                vehicle,
-                player,
-                guiGraphics,
-                partialTick,
-                screenWidth,
-                screenHeight
-            )
+            AircraftHud.ID -> {
+                AircraftHud.render(
+                    vehicle,
+                    player,
+                    guiGraphics,
+                    partialTick,
+                    screenWidth,
+                    screenHeight,
+                )
+            }
 
-            OldAircraftHud.ID -> OldAircraftHud.render(
-                vehicle,
-                player,
-                guiGraphics,
-                partialTick,
-                screenWidth,
-                screenHeight
-            )
+            OldAircraftHud.ID -> {
+                OldAircraftHud.render(
+                    vehicle,
+                    player,
+                    guiGraphics,
+                    partialTick,
+                    screenWidth,
+                    screenHeight,
+                )
+            }
 
-            KirovHud.ID -> KirovHud.render(
-                vehicle,
-                player,
-                guiGraphics,
-                partialTick,
-                screenWidth,
-                screenHeight
-            )
+            KirovHud.ID -> {
+                KirovHud.render(
+                    vehicle,
+                    player,
+                    guiGraphics,
+                    partialTick,
+                    screenWidth,
+                    screenHeight,
+                )
+            }
         }
 
         val gunData = vehicle.getGunData(player)
@@ -190,7 +203,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -216,11 +229,14 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                 val e = level!!.getEntity(en.id) ?: en
                 if (e.type.`is`(ModTags.EntityTypes.DECOY)) continue
 
-                val pos3 = if (level.getEntity(e.id) != null)
-                    lerpGetEntityBoundingBoxCenter(e, partialTick)
-                else
-                    ClientSyncedEntityHandler.getExtrapolatedPos(level, e)
-                        .add(0.0, e.bbHeight / 2.0, 0.0)
+                val pos3 =
+                    if (level.getEntity(e.id) != null) {
+                        lerpGetEntityBoundingBoxCenter(e, partialTick)
+                    } else {
+                        ClientSyncedEntityHandler
+                            .getExtrapolatedPos(level, e)
+                            .add(0.0, e.bbHeight / 2.0, 0.0)
+                    }
 
                 val decoy = TraceTool.findLookDecoy(player, cameraPos, cameraPos.vectorTo(pos3).normalize(), seekInfo.seekRange)
 
@@ -228,7 +244,16 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                     val point = pos3.worldToScreen()
                     val lockOn = ClientEventHandler.lockOnVehicle && targetEntity != null && e.id == targetEntity.id
                     val nearest =
-                        e.id == (if (ClientEventHandler.seekingEntityVehicle == null) nearestEntity?.id else ClientEventHandler.seekingEntityVehicle?.id)
+                        e.id ==
+                            (
+                                if (ClientEventHandler.seekingEntityVehicle ==
+                                    null
+                                ) {
+                                    nearestEntity?.id
+                                } else {
+                                    ClientEventHandler.seekingEntityVehicle?.id
+                                }
+                            )
 
                     poseStack.pushPose()
                     val x = point.x.toFloat()
@@ -246,7 +271,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             -mc.font.width(str) / 2,
                             -20,
                             0xFFBD7F,
-                            false
+                            false,
                         )
                         poseStack.popPose()
 
@@ -261,24 +286,26 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             24f,
                             24f,
                             24f,
-                            -0x1f
+                            -0x1f,
                         )
                         nearestEntity = targetEntity
                         if (seekInfo.calculateTrajectory) {
-                            val shootVector = calculateFiringSolution(
-                                vehicle.getShootPos(player, partialTick),
-                                lerpGetEntityBoundingBoxCenter(targetEntity, partialTick),
-                                targetEntity.deltaMovement.scale(1.25),
-                                vehicle.getProjectileVelocity(player).toDouble(),
-                                vehicle.getProjectileGravity(player).toDouble()
-                            ).normalize()
-                            val shootPos: Vec3 = vehicle.getShootPos(player, partialTick).add(
-                                shootVector.scale(
-                                    vehicle.getShootPos(player, partialTick).distanceTo(
-                                        lerpGetEntityBoundingBoxCenter(targetEntity, partialTick)
-                                    )
+                            val shootVector =
+                                calculateFiringSolution(
+                                    vehicle.getShootPos(player, partialTick),
+                                    lerpGetEntityBoundingBoxCenter(targetEntity, partialTick),
+                                    targetEntity.deltaMovement.scale(1.25),
+                                    vehicle.getProjectileVelocity(player).toDouble(),
+                                    vehicle.getProjectileGravity(player).toDouble(),
+                                ).normalize()
+                            val shootPos: Vec3 =
+                                vehicle.getShootPos(player, partialTick).add(
+                                    shootVector.scale(
+                                        vehicle.getShootPos(player, partialTick).distanceTo(
+                                            lerpGetEntityBoundingBoxCenter(targetEntity, partialTick),
+                                        ),
+                                    ),
                                 )
-                            )
                             val point0 = shootPos.worldToScreen()
 
                             if (shootPos.canBeSeen()) {
@@ -300,7 +327,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                                     24f,
                                     24f,
                                     24f,
-                                    -0x1
+                                    -0x1,
                                 )
                                 poseStack.popPose()
 
@@ -320,7 +347,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                                         1f,
                                         1f,
                                         1f,
-                                        -0x1
+                                        -0x1,
                                     )
                                     i += 3.0
                                 }
@@ -341,7 +368,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                                 24f,
                                 24f,
                                 24f,
-                                -0x1
+                                -0x1,
                             )
                             RenderHelper.preciseBlitWithColor(
                                 guiGraphics,
@@ -354,7 +381,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                                 24f,
                                 24f,
                                 24f,
-                                -0x1
+                                -0x1,
                             )
                             RenderHelper.preciseBlitWithColor(
                                 guiGraphics,
@@ -367,7 +394,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                                 24f,
                                 24f,
                                 24f,
-                                -0x1
+                                -0x1,
                             )
                             RenderHelper.preciseBlitWithColor(
                                 guiGraphics,
@@ -380,7 +407,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                                 24f,
                                 24f,
                                 24f,
-                                -0x1
+                                -0x1,
                             )
                         }
 
@@ -395,7 +422,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                                 -width / 2,
                                 10,
                                 0xFFBD7F,
-                                false
+                                false,
                             )
                             poseStack.popPose()
                         }
@@ -409,7 +436,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             -mc.font.width(str) / 2,
                             -20,
                             0xFFBD7F,
-                            false
+                            false,
                         )
                         poseStack.popPose()
 
@@ -424,7 +451,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             24f,
                             24f,
                             24f,
-                            -0x1
+                            -0x1,
                         )
                     } else {
                         RenderHelper.preciseBlitWithColor(
@@ -438,7 +465,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             24f,
                             24f,
                             24f,
-                            -0x1
+                            -0x1,
                         )
                     }
                     poseStack.popPose()
@@ -467,7 +494,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             24f,
                             24f,
                             24f,
-                            -0x1
+                            -0x1,
                         )
                         RenderHelper.preciseBlitWithColor(
                             guiGraphics,
@@ -480,7 +507,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             24f,
                             24f,
                             24f,
-                            -0x1
+                            -0x1,
                         )
                         RenderHelper.preciseBlitWithColor(
                             guiGraphics,
@@ -493,7 +520,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             24f,
                             24f,
                             24f,
-                            -0x1
+                            -0x1,
                         )
                         RenderHelper.preciseBlitWithColor(
                             guiGraphics,
@@ -506,7 +533,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             24f,
                             24f,
                             24f,
-                            -0x1
+                            -0x1,
                         )
                     }
 
@@ -521,7 +548,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                             -width / 2,
                             10,
                             0xFFBD7F,
-                            false
+                            false,
                         )
                         poseStack.popPose()
                     }
@@ -537,7 +564,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                         24f,
                         24f,
                         24f,
-                        -0x1
+                        -0x1,
                     )
                     poseStack.popPose()
                 }
@@ -566,7 +593,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                     -width / 2,
                     10,
                     0xFFBD7F,
-                    false
+                    false,
                 )
                 poseStack.popPose()
             }
@@ -581,7 +608,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                 0,
                 -17,
                 color,
-                false
+                false,
             )
 
             val stringY = "Y: " + (ClientEventHandler.missileLockingPos?.y ?: "---")
@@ -591,7 +618,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                 0,
                 -8,
                 color,
-                false
+                false,
             )
 
             val stringZ = "Z: " + (ClientEventHandler.missileLockingPos?.z ?: "---")
@@ -601,20 +628,21 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                 0,
                 1,
                 color,
-                false
+                false,
             )
 
-            val string = Component.translatable(
-                "tips.superbwarfare.input_missile_target",
-                ModKeyMappings.EDIT_MODE.translatedKeyMessage
-            )
+            val string =
+                Component.translatable(
+                    "tips.superbwarfare.input_missile_target",
+                    ModKeyMappings.EDIT_MODE.translatedKeyMessage,
+                )
             guiGraphics.drawString(
                 mc.font,
                 string,
                 0,
                 10,
                 color,
-                false
+                false,
             )
             poseStack.popPose()
         }
@@ -631,7 +659,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
         guiGraphics: GuiGraphics,
         screenWidth: Int,
         screenHeight: Int,
-        font: Font
+        font: Font,
     ) {
         if (!vehicle.hasEnergyStorage()) return
 
@@ -642,7 +670,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                 screenWidth / 2 - 144,
                 screenHeight / 2 + 14,
                 -65536,
-                false
+                false,
             )
         } else if (vehicle.energy < 0.2 * vehicle.maxEnergy) {
             guiGraphics.drawString(
@@ -651,7 +679,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
                 screenWidth / 2 - 144,
                 screenHeight / 2 + 14,
                 0xFF6B00,
-                false
+                false,
             )
         }
     }
@@ -665,14 +693,18 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
         font: Font,
         screenWidth: Int,
         screenHeight: Int,
-        color: Int
+        color: Int,
     ) {
         val heat = vehicle.getWeaponHeat(player)
         val component = vehicle.firstPersonAmmoComponent(data, player)
 
         guiGraphics.drawString(
-            font, component, (screenWidth - font.width(component)) / 2, screenHeight - 65,
-            getGradientColor(color, 0xFF0000, heat, 2), false
+            font,
+            component,
+            (screenWidth - font.width(component)) / 2,
+            screenHeight - 65,
+            getGradientColor(color, 0xFF0000, heat, 2),
+            false,
         )
     }
 
@@ -682,7 +714,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
         vehicle: VehicleEntity,
         player: Player?,
         data: GunData,
-        font: Font
+        font: Font,
     ) {
         if (!vehicle.hasWeapon()) return
 
@@ -698,7 +730,7 @@ object VehicleMainWeaponHudOverlay : CommonOverlay("vehicle_main_weapon_hud") {
         vehicle: VehicleEntity,
         player: Player?,
         data: GunData,
-        font: Font
+        font: Font,
     ) {
         if (!vehicle.hasWeapon()) return
 

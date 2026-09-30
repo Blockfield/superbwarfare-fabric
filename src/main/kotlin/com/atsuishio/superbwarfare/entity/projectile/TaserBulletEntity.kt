@@ -25,9 +25,11 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.Vec3
 
-open class TaserBulletEntity(type: EntityType<out TaserBulletEntity>, level: Level) : AbstractArrow(type, level),
+open class TaserBulletEntity(
+    type: EntityType<out TaserBulletEntity>,
+    level: Level,
+) : AbstractArrow(type, level),
     BasicGeoProjectileEntity {
-
     private var initialPos: Vec3? = null
     var damage = 1f
     var volt: Int = 0
@@ -41,23 +43,20 @@ open class TaserBulletEntity(type: EntityType<out TaserBulletEntity>, level: Lev
     override fun playerTouch(pEntity: Player) {
     }
 
-    override fun getPickupItem(): ItemStack {
-        return ItemStack.EMPTY
-    }
+    override fun getPickupItem(): ItemStack = ItemStack.EMPTY
 
     // AbstractArrow сохраняет pickupItemStack через ItemStack.CODEC, а пустой стек тот не кодирует:
     // заспавненный /summon снаряд ронял сервер на автосейве. Подобрать стек всё равно нельзя —
     // pickup остаётся DISALLOWED, playerTouch пуст, getPickupItem возвращает EMPTY.
-    override fun getDefaultPickupItem(): ItemStack {
-        return ItemStack(Items.ARROW)
-    }
+    override fun getDefaultPickupItem(): ItemStack = ItemStack(Items.ARROW)
 
     override fun onHitEntity(result: EntityHitResult) {
         val entity = result.entity
         val owner = this.owner
         if (owner != null && owner.vehicle != null && entity == owner.vehicle) return
         if (owner is ServerPlayer) {
-            owner.level()
+            owner
+                .level()
                 .playSound(null, owner.blockPosition(), ModSounds.INDICATION.get(), SoundSource.VOICE, 1f, 1f)
             sendPacketTo(owner, ClientIndicatorMessage(0, 5))
         }
@@ -75,7 +74,7 @@ open class TaserBulletEntity(type: EntityType<out TaserBulletEntity>, level: Lev
                 } else {
                     entity.addEffect(
                         MobEffectInstance(ModMobEffects.SHOCK, 100 + volt * 30, volt),
-                        owner
+                        owner,
                     )
                 }
             }
@@ -110,4 +109,3 @@ open class TaserBulletEntity(type: EntityType<out TaserBulletEntity>, level: Lev
         }
     }
 }
-

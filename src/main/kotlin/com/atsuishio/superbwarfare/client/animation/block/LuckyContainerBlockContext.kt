@@ -15,7 +15,9 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundSource
 
-class LuckyContainerBlockContext(val entity: LuckyContainerBlockEntity) {
+class LuckyContainerBlockContext(
+    val entity: LuckyContainerBlockEntity,
+) {
     val animations = hashMapOf<String, BedrockAnimation>()
     var partialTick: Float = 0f
 
@@ -54,12 +56,15 @@ class LuckyContainerBlockContext(val entity: LuckyContainerBlockEntity) {
                 soundEvent,
                 SoundSource.BLOCKS,
                 1.0f,
-                1.0f
+                1.0f,
             )
         }
     }
 
-    fun playAnimation(animationName: String?, type: AnimationPlayType) {
+    fun playAnimation(
+        animationName: String?,
+        type: AnimationPlayType,
+    ) {
         val animation = animations[animationName]
         if (animation != null) {
             animationRunner = AnimationRunner(animation, AnimationContext(animation.specifiedEndTimeS))
@@ -67,13 +72,9 @@ class LuckyContainerBlockContext(val entity: LuckyContainerBlockEntity) {
         }
     }
 
-    fun getPose(): Pose {
-        return animationRunner?.evaluate() ?: DummyPose.INSTANCE
-    }
+    fun getPose(): Pose = animationRunner?.evaluate() ?: DummyPose.INSTANCE
 
-    fun isOpen(): Boolean {
-        return entity.blockState.getValue(LuckyContainerBlock.OPENED)
-    }
+    fun isOpen(): Boolean = entity.blockState.getValue(LuckyContainerBlock.OPENED)
 
     companion object {
         val ANIM = loc("animations/bedrock/block/lucky_container.animation.json")

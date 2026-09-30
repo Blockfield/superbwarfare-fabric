@@ -6,10 +6,12 @@ import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.item.gun.smg.VectorItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 
@@ -17,7 +19,8 @@ public class VectorItemModel extends CustomGunModel<VectorItem> {
     public static float rotXSight = 0f;
 
     @Override
-    public void setCustomAnimations(VectorItem animatable, long instanceId, AnimationState<VectorItem> animationState) {
+    public void setCustomAnimations(
+            VectorItem animatable, long instanceId, AnimationState<VectorItem> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
@@ -37,18 +40,26 @@ public class VectorItemModel extends CustomGunModel<VectorItem> {
             case AUTO -> kmj.setRotX(0);
         }
 
-        float times = 0.6f * (float) Math.min(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true), 0.8);
+        float times =
+                0.6f
+                        * (float)
+                                Math.min(
+                                        Minecraft.getInstance()
+                                                .getTimer()
+                                                .getGameTimeDeltaPartialTick(true),
+                                        0.8);
         double zt = ClientEventHandler.zoomTime;
         double zp = ClientEventHandler.zoomPos;
         double zpz = ClientEventHandler.zoomPosZ;
 
         int type = GunData.from(stack).attachment.get(AttachmentType.SCOPE);
 
-        float posY = switch (type) {
-            case 1 -> 0.74f;
-            case 2 -> 0.12f;
-            default -> 0.07f;
-        };
+        float posY =
+                switch (type) {
+                    case 1 -> 0.74f;
+                    case 2 -> 0.12f;
+                    default -> 0.07f;
+                };
 
         gun.setPosX(2.356f * (float) zp);
         gun.setPosY(posY * (float) zp - (float) (0.2f * zpz));
@@ -60,12 +71,13 @@ public class VectorItemModel extends CustomGunModel<VectorItem> {
         if (zt < 0.5) {
             shen = getAnimationProcessor().getBone("fireRootNormal");
         } else {
-            shen = switch (type) {
-                case 0 -> getAnimationProcessor().getBone("fireRoot0");
-                case 1 -> getAnimationProcessor().getBone("fireRoot1");
-                case 2 -> getAnimationProcessor().getBone("fireRoot2");
-                default -> getAnimationProcessor().getBone("fireRootNormal");
-            };
+            shen =
+                    switch (type) {
+                        case 0 -> getAnimationProcessor().getBone("fireRoot0");
+                        case 1 -> getAnimationProcessor().getBone("fireRoot1");
+                        case 2 -> getAnimationProcessor().getBone("fireRoot2");
+                        default -> getAnimationProcessor().getBone("fireRootNormal");
+                    };
         }
 
         ClientEventHandler.handleShootAnimation(shen, 1f, -0.75f, 1.2f, 0.3f, 1.6f, 1f, 0.5f, 0.7f);
@@ -85,7 +97,10 @@ public class VectorItemModel extends CustomGunModel<VectorItem> {
         float numP = (float) (1 - 0.88 * zt);
 
         AnimationHelper.handleReloadShakeAnimation(stack, main, camera, numR, numP);
-        ClientEventHandler.handleReloadShake(Mth.RAD_TO_DEG * camera.getRotX(), Mth.RAD_TO_DEG * camera.getRotY(), Mth.RAD_TO_DEG * camera.getRotZ());
+        ClientEventHandler.handleReloadShake(
+                Mth.RAD_TO_DEG * camera.getRotX(),
+                Mth.RAD_TO_DEG * camera.getRotY(),
+                Mth.RAD_TO_DEG * camera.getRotZ());
         AnimationHelper.handleShellsAnimation(getAnimationProcessor(), 1.2f, 0.45f);
     }
 }

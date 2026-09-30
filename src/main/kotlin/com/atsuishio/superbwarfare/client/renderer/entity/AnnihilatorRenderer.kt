@@ -13,7 +13,9 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.util.Mth
 
-class AnnihilatorRenderer(manager: EntityRendererProvider.Context) : BasicArtilleryRenderer(manager) {
+class AnnihilatorRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicArtilleryRenderer(manager) {
     companion object {
         val TEXTURE_GLOW = Mod.loc("textures/bedrock/vehicle/annihilator_glow.png")
         val TEXTURE_POWER = Mod.loc("textures/bedrock/vehicle/annihilator_power.png")
@@ -24,7 +26,7 @@ class AnnihilatorRenderer(manager: EntityRendererProvider.Context) : BasicArtill
         instance: VehicleModelInstance,
         poseStack: PoseStack,
         entityYaw: Float,
-        partialTicks: Float
+        partialTicks: Float,
     ) {
         super.transformCustomModelPart(entity, instance, poseStack, entityYaw, partialTicks)
 
@@ -51,15 +53,21 @@ class AnnihilatorRenderer(manager: EntityRendererProvider.Context) : BasicArtill
         }
     }
 
-    override fun customLaserLength(laserBones: List<BoneState>, entity: ArtilleryEntity, partialTicks: Float) {
+    override fun customLaserLength(
+        laserBones: List<BoneState>,
+        entity: ArtilleryEntity,
+        partialTicks: Float,
+    ) {
         for (laser in laserBones) {
             laser.visible = false
 
-            val scale = Mth.lerp(
-                partialTicks,
-                entity.laserScaleO,
-                entity.laserScale
-            ).coerceAtMost(1.2f)
+            val scale =
+                Mth
+                    .lerp(
+                        partialTicks,
+                        entity.laserScaleO,
+                        entity.laserScale,
+                    ).coerceAtMost(1.2f)
 
             laser.xScale = scale
             laser.yScale = scale
@@ -73,7 +81,7 @@ class AnnihilatorRenderer(manager: EntityRendererProvider.Context) : BasicArtill
         entityYaw: Float,
         partialTicks: Float,
         buffer: MultiBufferSource,
-        packedLight: Int
+        packedLight: Int,
     ) {
         super.renderCustomPart(entity, instance, poseStack, entityYaw, partialTicks, buffer, packedLight)
 
@@ -88,7 +96,11 @@ class AnnihilatorRenderer(manager: EntityRendererProvider.Context) : BasicArtill
             RenderType.entityTranslucent(TEXTURE_POWER),
             BedrockModelRenderTypes.polyMeshCutout(TEXTURE_POWER),
             packedLight,
-            OverlayTexture.NO_OVERLAY, red, green, 0f, 1f
+            OverlayTexture.NO_OVERLAY,
+            red,
+            green,
+            0f,
+            1f,
         )
 
         instance.renderToBuffer(
@@ -97,7 +109,11 @@ class AnnihilatorRenderer(manager: EntityRendererProvider.Context) : BasicArtill
             RenderType.eyes(TEXTURE_POWER),
             BedrockModelRenderTypes.polyMeshCutout(TEXTURE_POWER),
             packedLight,
-            OverlayTexture.NO_OVERLAY, red, green, 0f, 1f
+            OverlayTexture.NO_OVERLAY,
+            red,
+            green,
+            0f,
+            1f,
         )
 
         instance.renderToBuffer(
@@ -106,7 +122,7 @@ class AnnihilatorRenderer(manager: EntityRendererProvider.Context) : BasicArtill
             RenderType.eyes(TEXTURE_GLOW),
             BedrockModelRenderTypes.polyMeshCutout(TEXTURE_GLOW),
             packedLight,
-            OverlayTexture.NO_OVERLAY
+            OverlayTexture.NO_OVERLAY,
         )
     }
 }

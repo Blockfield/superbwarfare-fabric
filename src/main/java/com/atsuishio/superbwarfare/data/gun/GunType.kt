@@ -49,5 +49,5 @@ enum class GunType {
     // 特殊武器
     @SerializedName("Special")
     @SerialName("Special")
-    SPECIAL
+    SPECIAL,
 }

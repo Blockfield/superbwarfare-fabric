@@ -24,18 +24,26 @@ import java.lang.reflect.Type
  */
 @Serializable(OTLSerializer::class)
 @Suppress("DelegationToVarProperty")
-data class ObjectToList<T>(@JvmField var list: MutableList<T>) : List<T> by list {
+data class ObjectToList<T>(
+    @JvmField var list: MutableList<T>,
+) : List<T> by list {
     @SafeVarargs
     constructor(vararg objects: T) : this(mutableListOf(*objects))
 
-    internal class ListOrObjectAdapter<T>(type: Type, private val gson: Gson) : TypeAdapter<ObjectToList<T>>() {
+    internal class ListOrObjectAdapter<T>(
+        type: Type,
+        private val gson: Gson,
+    ) : TypeAdapter<ObjectToList<T>>() {
         /**
          * Type of T
          */
         private val type = (type as ParameterizedType).actualTypeArguments[0]
 
         @Throws(IOException::class)
-        override fun write(jsonWriter: JsonWriter, objectToList: ObjectToList<T>?) {
+        override fun write(
+            jsonWriter: JsonWriter,
+            objectToList: ObjectToList<T>?,
+        ) {
             val list = objectToList?.list
             if (objectToList == null || list == null) {
                 jsonWriter.beginArray().endArray()
@@ -48,7 +56,7 @@ data class ObjectToList<T>(@JvmField var list: MutableList<T>) : List<T> by list
                 gson.toJson(
                     objectToList.list,
                     TypeToken.getParameterized(MutableList::class.java, type).type,
-                    jsonWriter
+                    jsonWriter,
                 )
             }
         }
@@ -72,7 +80,10 @@ data class ObjectToList<T>(@JvmField var list: MutableList<T>) : List<T> by list
     }
 
     internal class AdapterFactory : TypeAdapterFactory {
-        override fun <T> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
+        override fun <T> create(
+            gson: Gson,
+            type: TypeToken<T>,
+        ): TypeAdapter<T>? {
             if (ObjectToList::class.java.isAssignableFrom(type.getRawType())) {
                 @Suppress("UNCHECKED_CAST")
                 return ListOrObjectAdapter<T>(type.type, gson) as TypeAdapter<T>
@@ -82,12 +93,14 @@ data class ObjectToList<T>(@JvmField var list: MutableList<T>) : List<T> by list
     }
 }
 
-class OTLSerializer<T>(val elementSerializer: KSerializer<T>) : KSerializer<ObjectToList<T>> {
+class OTLSerializer<T>(
+    val elementSerializer: KSerializer<T>,
+) : KSerializer<ObjectToList<T>> {
     override val descriptor = elementSerializer.descriptor
 
     override fun serialize(
         encoder: Encoder,
-        value: ObjectToList<T>
+        value: ObjectToList<T>,
     ) {
         encoder.encodeSerializableValue(ListSerializer(elementSerializer), value.list)
     }
@@ -102,5 +115,4 @@ class OTLSerializer<T>(val elementSerializer: KSerializer<T>) : KSerializer<Obje
             ObjectToList(listOf(decoder.json.decodeFromJsonElement(elementSerializer, element)).toMutableList())
         }
     }
-
 }

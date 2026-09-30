@@ -17,16 +17,16 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import kotlin.math.max
 
-open class Ru9m336MissileEntity(type: EntityType<out Ru9m336MissileEntity>, level: Level) :
-    MissileProjectile(type, level), BasicGeoProjectileEntity {
-
+open class Ru9m336MissileEntity(
+    type: EntityType<out Ru9m336MissileEntity>,
+    level: Level,
+) : MissileProjectile(type, level),
+    BasicGeoProjectileEntity {
     init {
         this.noCulling = true
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.MEDIUM_ANTI_AIR_MISSILE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.MEDIUM_ANTI_AIR_MISSILE.get()
 
     override fun tick() {
         super.tick()
@@ -35,8 +35,8 @@ open class Ru9m336MissileEntity(type: EntityType<out Ru9m336MissileEntity>, leve
 
         val entity = EntityFindUtil.findEntity(this.level(), this.getTargetUUID())
         if (entity != null && this.getTargetUUID() != "none") {
-            if ((entity.getPassengers().isNotEmpty() || entity is VehicleEntity)
-                && entity.tickCount % (max(0.04 * this.distanceTo(entity), 2.0).toInt()) == 0
+            if ((entity.getPassengers().isNotEmpty() || entity is VehicleEntity) &&
+                entity.tickCount % (max(0.04 * this.distanceTo(entity), 2.0).toInt()) == 0
             ) {
                 entity.level().playSound(
                     null,
@@ -44,22 +44,24 @@ open class Ru9m336MissileEntity(type: EntityType<out Ru9m336MissileEntity>, leve
                     if (entity is Pig) SoundEvents.PIG_HURT else ModSounds.MISSILE_WARNING.get(),
                     SoundSource.PLAYERS,
                     2f,
-                    1f
+                    1f,
                 )
             }
 
-            val targetPos = Vec3(
-                entity.x,
-                entity.y + 0.5f * entity.bbHeight + (if (entity is EnderDragon) -3 else 0),
-                entity.z
-            )
-            val toVec = calculateFiringSolution(
-                position(),
-                targetPos,
-                entity.deltaMovement,
-                deltaMovement.length(),
-                0.0
-            )
+            val targetPos =
+                Vec3(
+                    entity.x,
+                    entity.y + 0.5f * entity.bbHeight + (if (entity is EnderDragon) -3 else 0),
+                    entity.z,
+                )
+            val toVec =
+                calculateFiringSolution(
+                    position(),
+                    targetPos,
+                    entity.deltaMovement,
+                    deltaMovement.length(),
+                    0.0,
+                )
 
             if (this.tickCount > 1) {
                 setLostTarget(calculateAngle(deltaMovement, toVec) > 120 && !isLostTarget())
@@ -80,11 +82,7 @@ open class Ru9m336MissileEntity(type: EntityType<out Ru9m336MissileEntity>, leve
         }
     }
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
-    override fun getVolume(): Float {
-        return 0.4f
-    }
+    override fun getVolume(): Float = 0.4f
 }

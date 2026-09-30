@@ -6,8 +6,10 @@ import com.atsuishio.superbwarfare.data.gun.value.AttachmentType;
 import com.atsuishio.superbwarfare.item.gun.GunGeoItem;
 import com.atsuishio.superbwarfare.tools.GunsTool;
 import com.atsuishio.superbwarfare.tools.NBTTool;
+
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 import java.util.Map;

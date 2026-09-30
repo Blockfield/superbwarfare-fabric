@@ -22,7 +22,6 @@ data class BeyondVisualEntitySyncMessage(
     val dim: SerializedResourceLocation,
     val list: List<SyncedEntity>,
 ) : ClientPacketPayload() {
-
     override fun PayloadContext.handler() {
         ClientSyncedEntityHandler.syncWorldRender(dim, list)
     }

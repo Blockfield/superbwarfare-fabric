@@ -20,7 +20,10 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import java.util.function.Supplier
 
-open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : Perk(perkId, descriptor.perkType),
+open class JsPerk(
+    val perkId: String,
+    private val descriptor: PerkDescriptor,
+) : Perk(perkId, descriptor.perkType),
     IAmmoStat {
     override val damageRate: Double get() = descriptor.damageRate
 
@@ -49,7 +52,9 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
                 effects,
                 descriptor.hideParticle,
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private val script: ScriptManager.CustomScript? by lazy {
@@ -65,7 +70,10 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         val s = script ?: return
 
         val pmcProxy = PmcProxy(modifier)
-        val level = modifier.data.perk.getLevel(this).toInt()
+        val level =
+            modifier.data.perk
+                .getLevel(this)
+                .toInt()
         val tag = modifier.data.perk.getTag(this) ?: return
         val perkTag = PerkTagProxy(tag)
         val gunDataProxy = GunDataProxy(modifier.data)
@@ -73,7 +81,11 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         s.callFunction("modifyProperty", pmcProxy, level, perkTag, gunDataProxy)
     }
 
-    override fun modifyProjectile(data: GunData, instance: PerkInstance, entity: Entity) {
+    override fun modifyProjectile(
+        data: GunData,
+        instance: PerkInstance,
+        entity: Entity,
+    ) {
         val config = ammoConfig ?: return
         if (entity is IBulletProperties) {
             val r = config.rgb
@@ -81,9 +93,10 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
             if (config.mobEffects.isNotEmpty()) {
                 val amplifier = getEffectAmplifier(instance)
                 val duration = getEffectDuration(instance)
-                val instances = config.mobEffects.map {
-                    Supplier { MobEffectInstance(it, duration, amplifier, false, !config.hideParticle) }
-                }
+                val instances =
+                    config.mobEffects.map {
+                        Supplier { MobEffectInstance(it, duration, amplifier, false, !config.hideParticle) }
+                    }
                 entity.setEffects(instances.map { it.get() })
             }
         }
@@ -101,7 +114,7 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ): Float {
         val s = script ?: return damage
 
@@ -110,12 +123,17 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         val tag = data.perk.getTag(this) ?: return damage
         val perkTag = PerkTagProxy(tag)
         val sourceProxy = DamageSourceProxy(source)
-        val result = s.callFunction("getModifiedDamage", damage, targetInfo, level, perkTag, sourceProxy)
-            ?: return damage
+        val result =
+            s.callFunction("getModifiedDamage", damage, targetInfo, level, perkTag, sourceProxy)
+                ?: return damage
         return (result as? Number)?.toFloat() ?: damage
     }
 
-    override fun tick(data: GunData, instance: PerkInstance, entity: Entity?) {
+    override fun tick(
+        data: GunData,
+        instance: PerkInstance,
+        entity: Entity?,
+    ) {
         val s = script ?: return
 
         val tag = data.perk.getTag(this) ?: return
@@ -131,7 +149,7 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val s = script ?: return
 
@@ -145,7 +163,11 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         s.callFunction("onKill", perkTag, level, gunDataProxy, targetProxy, sourceProxy)
     }
 
-    override fun preReload(data: GunData, instance: PerkInstance, entity: Entity?) {
+    override fun preReload(
+        data: GunData,
+        instance: PerkInstance,
+        entity: Entity?,
+    ) {
         val s = script ?: return
 
         val tag = data.perk.getTag(this) ?: return
@@ -157,7 +179,11 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         s.callFunction("preReload", perkTag, level, gunDataProxy, entityProxy)
     }
 
-    override fun postReload(data: GunData, instance: PerkInstance, entity: Entity?) {
+    override fun postReload(
+        data: GunData,
+        instance: PerkInstance,
+        entity: Entity?,
+    ) {
         val s = script ?: return
 
         val tag = data.perk.getTag(this) ?: return
@@ -174,7 +200,7 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val s = script ?: return
 
@@ -188,7 +214,11 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         s.callFunction("onHurtEntity", damage, perkTag, level, gunDataProxy, targetProxy, sourceProxy)
     }
 
-    override fun getModifiedCustomRPM(rpm: Int, data: GunData, instance: PerkInstance): Int {
+    override fun getModifiedCustomRPM(
+        rpm: Int,
+        data: GunData,
+        instance: PerkInstance,
+    ): Int {
         val s = script ?: return rpm
 
         val gunDataProxy = GunDataProxy(data)
@@ -201,7 +231,7 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         data: GunData,
         instance: PerkInstance,
         target: Entity,
-        source: DamageSource
+        source: DamageSource,
     ) {
         val s = script ?: return
 
@@ -218,7 +248,7 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
     override fun onMeleeSwing(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity?
+        entity: Entity?,
     ) {
         val s = script ?: return
 
@@ -234,7 +264,7 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
     override fun onChangeSlot(
         data: GunData,
         instance: PerkInstance,
-        living: Entity?
+        living: Entity?,
     ) {
         val s = script ?: return
 
@@ -251,7 +281,7 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         attacker: LivingEntity,
         data: GunData,
         instance: PerkInstance,
-        target: Entity
+        target: Entity,
     ) {
         val s = script ?: return
 
@@ -297,7 +327,10 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
         return super.getModifiedDamageReduceMinDistance(reduce)
     }
 
-    private fun applyAmmoConfig(modifier: PMC<GunData, DefaultGunData>, config: AmmoConfig) {
+    private fun applyAmmoConfig(
+        modifier: PMC<GunData, DefaultGunData>,
+        config: AmmoConfig,
+    ) {
         val pmc = PmcProxy(modifier)
         pmc.add("BypassesArmor", config.bypassArmorRate)
         pmc.clampMin("BypassesArmor", 0.0)
@@ -316,7 +349,10 @@ open class JsPerk(val perkId: String, private val descriptor: PerkDescriptor) : 
     private fun loadScriptSource(location: ResourceLocation): String? {
         val path = "/data/${location.namespace}/${location.path}"
         return try {
-            JsPerk::class.java.getResourceAsStream(path)?.bufferedReader()?.use { it.readText() }
+            JsPerk::class.java
+                .getResourceAsStream(path)
+                ?.bufferedReader()
+                ?.use { it.readText() }
         } catch (e: Exception) {
             Mod.LOGGER.error("Failed to load perk script: $path", e)
             null

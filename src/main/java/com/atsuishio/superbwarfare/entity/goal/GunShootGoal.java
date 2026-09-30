@@ -6,6 +6,7 @@ import com.atsuishio.superbwarfare.data.gun.GunProp;
 import com.atsuishio.superbwarfare.data.mob_guns.MobGunData;
 import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.tools.MillisTimer;
+
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 
@@ -25,7 +26,8 @@ public class GunShootGoal<T extends Mob> extends Goal {
         return this.mob.getTarget() != null
                 && this.mob.getWeaponItem().getItem() instanceof GunItem
                 && this.data.getGunData() != null
-                && (this.data.getGunData().countBackupAmmo(mob) > 0 || this.data.getGunData().hasEnoughAmmoToShoot(this.mob));
+                && (this.data.getGunData().countBackupAmmo(mob) > 0
+                        || this.data.getGunData().hasEnoughAmmoToShoot(this.mob));
     }
 
     @Override
@@ -33,7 +35,8 @@ public class GunShootGoal<T extends Mob> extends Goal {
         return (this.canUse() || !this.mob.getNavigation().isDone())
                 && this.mob.getWeaponItem().getItem() instanceof GunItem
                 && this.data.getGunData() != null
-                && (this.data.getGunData().countBackupAmmo(mob) > 0 || this.data.getGunData().hasEnoughAmmoToShoot(this.mob));
+                && (this.data.getGunData().countBackupAmmo(mob) > 0
+                        || this.data.getGunData().hasEnoughAmmoToShoot(this.mob));
     }
 
     @Override
@@ -70,7 +73,7 @@ public class GunShootGoal<T extends Mob> extends Goal {
         }
 
         this.mob.lookAt(target, 30, 30);
-//            this.mob.getLookControl().setLookAt(target, 30F, 30F);
+        //            this.mob.getLookControl().setLookAt(target, 30F, 30F);
 
         if (distance > data.shootDistance()) {
             this.mob.getNavigation().moveTo(target, 1);
@@ -97,7 +100,8 @@ public class GunShootGoal<T extends Mob> extends Goal {
 
             var fireMode = gunData.selectedFireModeInfo().mode;
             // 半自动或连发开火时，添加额外的开火冷却时间
-            if (fireMode == FireMode.SEMI || fireMode == FireMode.BURST && gunData.burstAmount.get() == 0) {
+            if (fireMode == FireMode.SEMI
+                    || fireMode == FireMode.BURST && gunData.burstAmount.get() == 0) {
                 cooldown += data.semiFireInterval();
             }
 
@@ -121,6 +125,5 @@ public class GunShootGoal<T extends Mob> extends Goal {
         } else {
             shootTimer.stop();
         }
-
     }
 }

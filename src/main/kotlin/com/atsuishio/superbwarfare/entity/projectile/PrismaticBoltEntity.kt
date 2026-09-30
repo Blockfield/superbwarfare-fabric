@@ -37,10 +37,11 @@ open class PrismaticBoltEntity : Entity {
         }
     }
 
-    fun getLerpTick(tickDelta: Float): Float {
-        return Mth.lerp(tickDelta, tickO.toFloat(), tick.toFloat())
-    }
+    fun getLerpTick(tickDelta: Float): Float = Mth.lerp(tickDelta, tickO.toFloat(), tick.toFloat())
 
-    override fun move(pType: MoverType, pPos: Vec3) {
+    override fun move(
+        pType: MoverType,
+        pPos: Vec3,
+    ) {
     }
 }

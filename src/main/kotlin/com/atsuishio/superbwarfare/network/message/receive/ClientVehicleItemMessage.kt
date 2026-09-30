@@ -11,7 +11,7 @@ import net.minecraft.nbt.CompoundTag
 @Serializable
 data class ClientVehicleItemMessage(
     val id: Int,
-    val tag: SerializedTag
+    val tag: SerializedTag,
 ) : ClientPacketPayload() {
     override fun PayloadContext.handler() {
         val entity = clientLevel?.getEntity(id) as? VehicleEntity ?: return

@@ -7,7 +7,7 @@ import java.util.*
 
 /**
  * 开火参数
- * 
+ *
  * @param ammoSupplier   弹药提供者
  * @param shooter        射击者
  * @param level          ServerLevel
@@ -30,5 +30,5 @@ data class ShootParameters(
     @JvmField val spread: Double,
     @JvmField val zoom: Boolean,
     @JvmField val targetEntityUUID: UUID?,
-    @JvmField val targetPos: Vec3?
+    @JvmField val targetPos: Vec3?,
 )

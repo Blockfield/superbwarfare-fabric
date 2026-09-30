@@ -1,9 +1,12 @@
 package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.Mod.loc
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.item.misc.firingParameters
 import com.atsuishio.superbwarfare.network.message.send.FiringParametersEditMessage
 import com.atsuishio.superbwarfare.tools.sendPacketToServer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
@@ -13,14 +16,13 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.ItemStack
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import kotlin.math.max
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 @Environment(EnvType.CLIENT)
-open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val hand: InteractionHand) :
-    Screen(Component.translatable("item.superbwarfare.artillery_indicator")) {
+open class ArtilleryIndicatorScreen(
+    private val stack: ItemStack,
+    private val hand: InteractionHand,
+) : Screen(Component.translatable("item.superbwarfare.artillery_indicator")) {
     lateinit var posX: EditBox
     lateinit var posY: EditBox
     lateinit var posZ: EditBox
@@ -54,11 +56,14 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
         }
     }
 
-    override fun isPauseScreen(): Boolean {
-        return false
-    }
+    override fun isPauseScreen(): Boolean = false
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderBlurredBackground(pPartialTick)
         this.renderBg(pGuiGraphics, pMouseX, pMouseY)
         this.renderPositions(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
@@ -69,11 +74,16 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
         guiGraphics: GuiGraphics,
         mouseX: Int,
         mouseY: Int,
-        partialTick: Float
+        partialTick: Float,
     ) {
     }
 
-    protected fun renderPositions(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    protected fun renderPositions(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         val poseStack = pGuiGraphics.pose()
 
         poseStack.pushPose()
@@ -86,7 +96,11 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
         poseStack.popPose()
     }
 
-    protected fun renderBg(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int) {
+    protected fun renderBg(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+    ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
         pGuiGraphics.blit(TEXTURE, i, j, 0f, 0f, this.imageWidth, this.imageHeight, 256, 256)
@@ -94,10 +108,17 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
         if (pMouseX >= i + 98 && pMouseX <= i + 162 && pMouseY >= j + 19 && pMouseY <= j + 49) {
             pGuiGraphics.renderTooltip(
                 this.font,
-                if (this.isDepressed) Component.translatable("tips.superbwarfare.mortar.target_pos.depressed_trajectory")
-                    .withStyle(ChatFormatting.WHITE) else Component.translatable("tips.superbwarfare.mortar.target_pos.lofted_trajectory")
-                    .withStyle(ChatFormatting.WHITE),
-                pMouseX, pMouseY
+                if (this.isDepressed) {
+                    Component
+                        .translatable("tips.superbwarfare.mortar.target_pos.depressed_trajectory")
+                        .withStyle(ChatFormatting.WHITE)
+                } else {
+                    Component
+                        .translatable("tips.superbwarfare.mortar.target_pos.lofted_trajectory")
+                        .withStyle(ChatFormatting.WHITE)
+                },
+                pMouseX,
+                pMouseY,
             )
         }
 
@@ -149,13 +170,23 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class ModeButton(pX: Int, pY: Int, pWidth: Int, pHeight: Int) :
-        AbstractButton(pX, pY, pWidth, pHeight, Component.empty()), AccessoriesButtonStub {
+    internal inner class ModeButton(
+        pX: Int,
+        pY: Int,
+        pWidth: Int,
+        pHeight: Int,
+    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             this@ArtilleryIndicatorScreen.isDepressed = !this@ArtilleryIndicatorScreen.isDepressed
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             val isDepressed = this@ArtilleryIndicatorScreen.isDepressed
             pGuiGraphics.blit(
                 TEXTURE,
@@ -166,7 +197,7 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
                 61,
                 if (isDepressed) 14 else 28,
                 256,
-                256
+                256,
             )
         }
 
@@ -175,8 +206,13 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class DoneButton(pX: Int, pY: Int, pWidth: Int, pHeight: Int) :
-        AbstractButton(pX, pY, pWidth, pHeight, Component.empty()), AccessoriesButtonStub {
+    internal inner class DoneButton(
+        pX: Int,
+        pY: Int,
+        pWidth: Int,
+        pHeight: Int,
+    ) : AbstractButton(pX, pY, pWidth, pHeight, Component.empty()),
+        AccessoriesButtonStub {
         override fun onPress() {
             if (!this@ArtilleryIndicatorScreen.init) return
             if (this@ArtilleryIndicatorScreen.minecraft != null) {
@@ -189,12 +225,17 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
                     getEditBoxValue(this@ArtilleryIndicatorScreen.posZ.value),
                     max(0, getEditBoxValue(this@ArtilleryIndicatorScreen.radius.value)),
                     this@ArtilleryIndicatorScreen.isDepressed,
-                    this@ArtilleryIndicatorScreen.hand == InteractionHand.MAIN_HAND
-                )
+                    this@ArtilleryIndicatorScreen.hand == InteractionHand.MAIN_HAND,
+                ),
             )
         }
 
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
             pGuiGraphics.blit(
                 TEXTURE,
                 this.x,
@@ -204,7 +245,7 @@ open class ArtilleryIndicatorScreen(private val stack: ItemStack, private val ha
                 48,
                 15,
                 256,
-                256
+                256,
             )
         }
 

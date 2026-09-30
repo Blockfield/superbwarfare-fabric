@@ -8,15 +8,15 @@ import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.tools.localPlayer
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.level.levelgen.Heightmap
 import net.minecraft.world.phys.HitResult
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import kotlin.math.max
 
 /**
@@ -28,9 +28,8 @@ import kotlin.math.max
  */
 @Environment(EnvType.CLIENT)
 object GPWSOverlay : CommonOverlay("gpws") {
-
     /** 起飞后警告抑制时间 (tick) */
-    private const val TAKEOFF_GRACE_TICKS = 100  // 5 秒
+    private const val TAKEOFF_GRACE_TICKS = 100 // 5 秒
 
     /** 前方地形检测距离 */
     private const val FORWARD_LOOK_DISTANCE = 120.0
@@ -44,14 +43,17 @@ object GPWSOverlay : CommonOverlay("gpws") {
     /**
      * GPWS 警告类型，按严重程度排序（priority 越高越严重）
      */
-    enum class GPWSWarning(val priority: Int, val text: String) {
+    enum class GPWSWarning(
+        val priority: Int,
+        val text: String,
+    ) {
         NONE(0, ""),
         TOO_LOW_TERRAIN(1, "TOO LOW\nTERRAIN"),
         TOO_LOW_GEAR(2, "TOO LOW\nGEAR"),
         TERRAIN(3, "TERRAIN"),
         TERRAIN_AHEAD(4, "TERRAIN\nAHEAD"),
         SINK_RATE(5, "SINK RATE"),
-        PULL_UP(6, "PULL UP")
+        PULL_UP(6, "PULL UP"),
     }
 
     // 闪烁计时器
@@ -132,7 +134,7 @@ object GPWSOverlay : CommonOverlay("gpws") {
         val vehicle = player.vehicle
         if (vehicle !is VehicleEntity) return
         if (!isAircraft(vehicle)) return
-        if (vehicle.onGround()) return  // 地面不渲染
+        if (vehicle.onGround()) return // 地面不渲染
 
         val warning = evaluateWarning(vehicle, forwardCollisionDistance)
         if (warning == GPWSWarning.NONE) return
@@ -148,7 +150,7 @@ object GPWSOverlay : CommonOverlay("gpws") {
             GlStateManager.SourceFactor.SRC_ALPHA,
             GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
             GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ZERO
+            GlStateManager.DestFactor.ZERO,
         )
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
 
@@ -156,21 +158,31 @@ object GPWSOverlay : CommonOverlay("gpws") {
         val centerY = screenHeight / 2f
 
         // 闪烁效果：高级别警告间歇显示
-        val shouldRender = when (warning) {
-            GPWSWarning.PULL_UP -> blinkTick % 8 < 6     // 75% 时间显示
-            GPWSWarning.SINK_RATE -> blinkTick % 10 < 7  // 70% 时间显示
-            GPWSWarning.TERRAIN_AHEAD -> blinkTick % 12 < 9 // 75% 时间显示
-            GPWSWarning.TERRAIN -> blinkTick % 20 < 15   // 75% 时间显示
-            else -> true
-        }
+        val shouldRender =
+            when (warning) {
+                GPWSWarning.PULL_UP -> blinkTick % 8 < 6
+
+                // 75% 时间显示
+                GPWSWarning.SINK_RATE -> blinkTick % 10 < 7
+
+                // 70% 时间显示
+                GPWSWarning.TERRAIN_AHEAD -> blinkTick % 12 < 9
+
+                // 75% 时间显示
+                GPWSWarning.TERRAIN -> blinkTick % 20 < 15
+
+                // 75% 时间显示
+                else -> true
+            }
 
         if (shouldRender) {
-            val textColor = when (warning) {
-                GPWSWarning.PULL_UP -> if (blinkTick % 8 < 4) 0xFFFF0000.toInt() else 0xFFAA0000.toInt()
-                GPWSWarning.SINK_RATE -> if (blinkTick % 10 < 5) 0xFFFF0000.toInt() else 0xFFCC0000.toInt()
-                GPWSWarning.TERRAIN_AHEAD -> if (blinkTick % 12 < 6) 0xFFFF6600.toInt() else 0xFFFF0000.toInt()
-                else -> 0xFFFF0000.toInt()
-            }
+            val textColor =
+                when (warning) {
+                    GPWSWarning.PULL_UP -> if (blinkTick % 8 < 4) 0xFFFF0000.toInt() else 0xFFAA0000.toInt()
+                    GPWSWarning.SINK_RATE -> if (blinkTick % 10 < 5) 0xFFFF0000.toInt() else 0xFFCC0000.toInt()
+                    GPWSWarning.TERRAIN_AHEAD -> if (blinkTick % 12 < 6) 0xFFFF6600.toInt() else 0xFFFF0000.toInt()
+                    else -> 0xFFFF0000.toInt()
+                }
 
             // 渲染警告文字（支持多行）
             val lines = warning.text.split("\n")
@@ -194,7 +206,7 @@ object GPWSOverlay : CommonOverlay("gpws") {
                     scaledX.toInt(),
                     scaledY.toInt(),
                     textColor,
-                    false
+                    false,
                 )
             }
 
@@ -251,7 +263,7 @@ object GPWSOverlay : CommonOverlay("gpws") {
     private fun checkForwardTerrainCollision(vehicle: VehicleEntity): Double {
         val velocity = vehicle.deltaMovement
         val speed = velocity.length()
-        if (speed < 2.0) return -1.0  // 速度太低时不检测（如悬停）
+        if (speed < 2.0) return -1.0 // 速度太低时不检测（如悬停）
 
         val direction = velocity.normalize()
         // 如果飞行器在爬升，降低灵敏度（通常能飞越地形）
@@ -260,12 +272,14 @@ object GPWSOverlay : CommonOverlay("gpws") {
         val startPos = vehicle.position().add(0.0, vehicle.eyeHeight * 0.5, 0.0)
         val endPos = startPos.add(direction.scale(FORWARD_LOOK_DISTANCE))
 
-        val clipContext = ClipContext(
-            startPos, endPos,
-            ClipContext.Block.COLLIDER,
-            ClipContext.Fluid.NONE,
-            vehicle
-        )
+        val clipContext =
+            ClipContext(
+                startPos,
+                endPos,
+                ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE,
+                vehicle,
+            )
         val hitResult = vehicle.level().clip(clipContext)
 
         if (hitResult.type == HitResult.Type.BLOCK) {
@@ -275,12 +289,12 @@ object GPWSOverlay : CommonOverlay("gpws") {
             // 忽略正下方的地面（障碍物必须大致在飞行器同高度或上方）
             val hitRelativeY = hitPos.y - vehicle.y
             if (hitRelativeY < -FORWARD_VERTICAL_TOLERANCE) {
-                return -1.0  // 障碍物太低，是地面，不警告
+                return -1.0 // 障碍物太低，是地面，不警告
             }
 
             // 爬升时，仅警告明显高于飞行器的障碍物
             if (isClimbing && hitRelativeY < 2.0) {
-                return -1.0  // 爬升中足以飞越
+                return -1.0 // 爬升中足以飞越
             }
 
             return distance
@@ -292,17 +306,20 @@ object GPWSOverlay : CommonOverlay("gpws") {
     /**
      * 评估当前应触发的警告
      */
-    fun evaluateWarning(vehicle: VehicleEntity, forwardDist: Double = -1.0): GPWSWarning {
+    fun evaluateWarning(
+        vehicle: VehicleEntity,
+        forwardDist: Double = -1.0,
+    ): GPWSWarning {
         val onGround = vehicle.onGround()
         if (onGround) return GPWSWarning.NONE
 
         val agl = getHeightAboveGround(vehicle)
-        if (agl > 200) return GPWSWarning.NONE  // 安全高度
+        if (agl > 200) return GPWSWarning.NONE // 安全高度
 
         // 起落架放下且姿态稳定（俯仰、滚转均 ≤15°）时不显示任何警告
         if (isStableLandingApproach(vehicle)) return GPWSWarning.NONE
 
-        val verticalSpeed = vehicle.deltaMovement.y  // 负值 = 下降
+        val verticalSpeed = vehicle.deltaMovement.y // 负值 = 下降
         val isDescending = verticalSpeed < -0.5
         val isClimbing = verticalSpeed > 0.2
         val isLandingConfig = isInLandingConfig(vehicle)
@@ -351,13 +368,12 @@ object GPWSOverlay : CommonOverlay("gpws") {
      * - 固定翼：起落架已放下 (gearUp == false)
      * - 直升机：悬停模式开启 (hoverMode == true)
      */
-    fun isInLandingConfig(vehicle: VehicleEntity): Boolean {
-        return when (vehicle.computed().engineType) {
+    fun isInLandingConfig(vehicle: VehicleEntity): Boolean =
+        when (vehicle.computed().engineType) {
             EngineType.AIRCRAFT -> !vehicle.gearUp
             EngineType.HELICOPTER -> vehicle.hoverMode
             else -> true
         }
-    }
 
     /**
      * 判断是否处于稳定进近状态（起落架放下 + 姿态稳定），
@@ -382,14 +398,17 @@ object GPWSOverlay : CommonOverlay("gpws") {
     /**
      * 触发警告音效
      */
-    private fun triggerWarningSound(player: Player, warning: GPWSWarning) {
+    private fun triggerWarningSound(
+        player: Player,
+        warning: GPWSWarning,
+    ) {
         val cooldown = soundCooldowns[warning] ?: 0
         if (cooldown > 0) return
 
         when (warning) {
             GPWSWarning.PULL_UP -> {
                 playPullUpSound(player)
-                soundCooldowns[warning] = 30  // 1.5秒冷却
+                soundCooldowns[warning] = 30 // 1.5秒冷却
             }
 
             GPWSWarning.SINK_RATE -> {

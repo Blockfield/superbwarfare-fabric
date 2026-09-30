@@ -1,6 +1,9 @@
 package com.atsuishio.superbwarfare.block.entity
 
 import com.atsuishio.superbwarfare.entity.living.SenpaiEntity
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.IEnergyStorage
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.init.ModBlockEntities
 import com.atsuishio.superbwarfare.init.ModTags
 import net.minecraft.core.BlockPos
@@ -14,12 +17,11 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
-import com.atsuishio.superbwarfare.fabric.IEnergyStorage
 
-open class BiogasGeneratorBlockEntity(pos: BlockPos, state: BlockState) :
-    BlockEntity(ModBlockEntities.BIOGAS_GENERATOR.get(), pos, state) {
+open class BiogasGeneratorBlockEntity(
+    pos: BlockPos,
+    state: BlockState,
+) : BlockEntity(ModBlockEntities.BIOGAS_GENERATOR.get(), pos, state) {
     var power: Float = 0f
 
     fun checkAndGetPowerLevel(): Float {
@@ -27,9 +29,10 @@ open class BiogasGeneratorBlockEntity(pos: BlockPos, state: BlockState) :
         val above = blockPos.above()
         val state = this.level!!.getBlockState(above)
         if (!state.`is`(Blocks.COMPOSTER)) return 0F
-        val list = this.level!!.getEntities(null, AABB(above)) {
-            it.isAlive && (it is Animal || it.type.`is`(ModTags.EntityTypes.BIOGAS_GENERATOR_WHITELIST))
-        }
+        val list =
+            this.level!!.getEntities(null, AABB(above)) {
+                it.isAlive && (it is Animal || it.type.`is`(ModTags.EntityTypes.BIOGAS_GENERATOR_WHITELIST))
+            }
         if (list.isEmpty()) return 0F
         var count = 0f
         list.forEach {
@@ -53,7 +56,7 @@ open class BiogasGeneratorBlockEntity(pos: BlockPos, state: BlockState) :
 
     override fun saveAdditional(
         tag: CompoundTag,
-        registries: HolderLookup.Provider
+        registries: HolderLookup.Provider,
     ) {
         super.saveAdditional(tag, registries)
         tag.putFloat("Power", this.power)
@@ -61,7 +64,7 @@ open class BiogasGeneratorBlockEntity(pos: BlockPos, state: BlockState) :
 
     override fun loadAdditional(
         tag: CompoundTag,
-        registries: HolderLookup.Provider
+        registries: HolderLookup.Provider,
     ) {
         super.loadAdditional(tag, registries)
         this.power = tag.getFloat("Power")
@@ -70,7 +73,12 @@ open class BiogasGeneratorBlockEntity(pos: BlockPos, state: BlockState) :
     companion object {
         const val ENERGY_RATE: Int = 64
 
-        fun serverTick(level: Level, pos: BlockPos, state: BlockState, entity: BiogasGeneratorBlockEntity) {
+        fun serverTick(
+            level: Level,
+            pos: BlockPos,
+            state: BlockState,
+            entity: BiogasGeneratorBlockEntity,
+        ) {
             if (level.gameTime % 20 == 0L) {
                 entity.power = entity.checkAndGetPowerLevel()
                 entity.setChanged()

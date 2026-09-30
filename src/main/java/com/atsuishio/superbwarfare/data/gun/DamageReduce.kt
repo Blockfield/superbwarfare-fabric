@@ -30,9 +30,7 @@ class DamageReduce {
         this.minDistance = minDistance
     }
 
-    fun getDamageRate(): Double {
-        return if (this.type == null) this.rate else this.type!!.rate
-    }
+    fun getDamageRate(): Double = if (this.type == null) this.rate else this.type!!.rate
 
 //    fun setDamageRate(rate: Double) {
 //        this.rate = rate
@@ -47,7 +45,11 @@ class DamageReduce {
 //    }
 
     @Serializable
-    enum class ReduceType(val typeName: String, val rate: Double, val minDistance: Double) {
+    enum class ReduceType(
+        val typeName: String,
+        val rate: Double,
+        val minDistance: Double,
+    ) {
         @SerializedName("Shotgun")
         @SerialName("Shotgun")
         SHOTGUN("Shotgun", 0.05, 15.0),

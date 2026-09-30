@@ -17,7 +17,7 @@ class DoubleValue(
     private val tag: CompoundTag,
     private val name: String,
     var defaultValue: Double = 0.0,
-    private val onSet: (() -> Unit)? = null
+    private val onSet: (() -> Unit)? = null,
 ) {
     /** Returns the stored value, or [defaultValue] if the key is absent. */
     fun get(): Double = if (tag.contains(name)) tag.getDouble(name) else defaultValue
@@ -29,7 +29,7 @@ class DoubleValue(
      */
     fun set(value: Double) {
         val current = if (tag.contains(name)) tag.getDouble(name) else defaultValue
-        if (current == value) return                          // no-op: value unchanged
+        if (current == value) return // no-op: value unchanged
         if (value == defaultValue) tag.remove(name) else tag.putDouble(name, value)
         onSet?.invoke()
     }

@@ -10,5 +10,11 @@ import net.minecraft.world.item.ItemStack
  * ClientRenderHandler.itemDecorators, зовёт их GuiGraphicsMixin.
  */
 interface ItemDecorator {
-    fun render(guiGraphics: GuiGraphics, font: Font, stack: ItemStack, xOffset: Int, yOffset: Int): Boolean
+    fun render(
+        guiGraphics: GuiGraphics,
+        font: Font,
+        stack: ItemStack,
+        xOffset: Int,
+        yOffset: Int,
+    ): Boolean
 }

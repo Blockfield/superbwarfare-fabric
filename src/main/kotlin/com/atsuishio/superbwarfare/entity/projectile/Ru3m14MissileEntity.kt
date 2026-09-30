@@ -16,15 +16,15 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 
-open class Ru3m14MissileEntity(type: EntityType<out Ru3m14MissileEntity>, level: Level) :
-    MissileProjectile(type, level),
+open class Ru3m14MissileEntity(
+    type: EntityType<out Ru3m14MissileEntity>,
+    level: Level,
+) : MissileProjectile(type, level),
     BasicGeoProjectileEntity {
     val anim: BasicProjectileAnimationInstance<*>? =
         if (this.level().isClientSide) BasicProjectileAnimationInstance(this) else null
 
-    override fun getAnimationInstance(): BasicProjectileAnimationInstance<*>? {
-        return this.anim
-    }
+    override fun getAnimationInstance(): BasicProjectileAnimationInstance<*>? = this.anim
 
     var distance: Double = 0.0
 
@@ -34,9 +34,7 @@ open class Ru3m14MissileEntity(type: EntityType<out Ru3m14MissileEntity>, level:
         this.explosionRadiusValue = 36f
     }
 
-    override fun getDefaultItem(): Item {
-        return ModItems.EXTRA_LARGE_ANTI_GROUND_MISSILE.get()
-    }
+    override fun getDefaultItem(): Item = ModItems.EXTRA_LARGE_ANTI_GROUND_MISSILE.get()
 
     override fun tick() {
         super.tick()
@@ -52,19 +50,26 @@ open class Ru3m14MissileEntity(type: EntityType<out Ru3m14MissileEntity>, level:
                 distance = position().vectorTo(targetPos).horizontalDistance()
             }
 
-            toVec = if (tickCount <= 10) {
-                // 点火阶段：先水平对准目标方向
-                position().vectorTo(targetPos)
-            } else if (d < 1400) {
-                // 末端冲刺段：水平距离目标小于 1400m，径直飞向目标
-                position().vectorTo(targetPos)
-            } else if (y < 1024) {
-                // 爬升段：点火后尽可能爬高到 1024m 高度
-                position().vectorTo(targetPos).multiply(1.0, 0.0, 1.0).normalize().scale((d * 0.1).coerceAtMost(4096.0)).add(position().vectorTo(Vec3(x, 1024.0, z)))
-            } else {
-                // 巡航段：在 1024m 高空平飞逼近目标
-                position().vectorTo(Vec3(targetPos.x, 1024.0, targetPos.z))
-            }
+            toVec =
+                if (tickCount <= 10) {
+                    // 点火阶段：先水平对准目标方向
+                    position().vectorTo(targetPos)
+                } else if (d < 1400) {
+                    // 末端冲刺段：水平距离目标小于 1400m，径直飞向目标
+                    position().vectorTo(targetPos)
+                } else if (y < 1024) {
+                    // 爬升段：点火后尽可能爬高到 1024m 高度
+                    position()
+                        .vectorTo(
+                            targetPos,
+                        ).multiply(1.0, 0.0, 1.0)
+                        .normalize()
+                        .scale((d * 0.1).coerceAtMost(4096.0))
+                        .add(position().vectorTo(Vec3(x, 1024.0, z)))
+                } else {
+                    // 巡航段：在 1024m 高空平飞逼近目标
+                    position().vectorTo(Vec3(targetPos.x, 1024.0, targetPos.z))
+                }
         }
 
         if (getTargetPos() == null && tickCount > 200 && level() is ServerLevel) {
@@ -88,11 +93,12 @@ open class Ru3m14MissileEntity(type: EntityType<out Ru3m14MissileEntity>, level:
                 this.deltaMovement = this.deltaMovement.multiply(f, f, f)
 
                 if (!lostTarget) {
-                    val d = if (getTargetPos() != null) {
-                        getTargetPos()!!.vectorTo(position()).horizontalDistance()
-                    } else {
-                        Double.MAX_VALUE
-                    }
+                    val d =
+                        if (getTargetPos() != null) {
+                            getTargetPos()!!.vectorTo(position()).horizontalDistance()
+                        } else {
+                            Double.MAX_VALUE
+                        }
 
                     if (getTargetPos() != null) {
                         if (d < 1024 && distance > 2048) {
@@ -109,7 +115,6 @@ open class Ru3m14MissileEntity(type: EntityType<out Ru3m14MissileEntity>, level:
                     }
 
                     turn(toVec, ((tickCount - 10) * 0.15f).coerceIn(0f, 36f))
-
                 } else {
                     lostTargetTick++
                 }
@@ -126,7 +131,7 @@ open class Ru3m14MissileEntity(type: EntityType<out Ru3m14MissileEntity>, level:
                 ModSounds.MISSILE_START.get(),
                 SoundSource.PLAYERS,
                 4f,
-                1f
+                1f,
             )
             if (level is ServerLevel) {
                 ParticleTool.sendParticle(
@@ -140,7 +145,7 @@ open class Ru3m14MissileEntity(type: EntityType<out Ru3m14MissileEntity>, level:
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
                 ParticleTool.sendParticle(
                     level,
@@ -153,28 +158,20 @@ open class Ru3m14MissileEntity(type: EntityType<out Ru3m14MissileEntity>, level:
                     0.8,
                     0.8,
                     0.01,
-                    true
+                    true,
                 )
             }
         }
     }
 
-    override fun getCustomGravity(): Float {
-        return if (tickCount < 8) 0.1f else super.getCustomGravity()
-    }
+    override fun getCustomGravity(): Float = if (tickCount < 8) 0.1f else super.getCustomGravity()
 
-    override fun getSound(): SoundEvent {
-        return ModSounds.ROCKET_FLY.get()
-    }
+    override fun getSound(): SoundEvent = ModSounds.ROCKET_FLY.get()
 
     override val maxHealth: Float
         get() = 200f
 
-    override fun getFlareHiddenTicks(): Int {
-        return 9
-    }
+    override fun getFlareHiddenTicks(): Int = 9
 
-    override fun getNoHitTicks(): Int {
-        return 9
-    }
+    override fun getNoHitTicks(): Int = 9
 }

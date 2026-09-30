@@ -6,6 +6,9 @@ import com.atsuishio.superbwarfare.data.gun.GunData
 import com.atsuishio.superbwarfare.data.gun.GunProp
 import com.atsuishio.superbwarfare.entity.vehicle.PrismTankEntity
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
+import com.atsuishio.superbwarfare.fabric.Capabilities
+import com.atsuishio.superbwarfare.fabric.IEnergyStorage
+import com.atsuishio.superbwarfare.fabric.getCapability
 import com.atsuishio.superbwarfare.item.gun.GunItem
 import com.atsuishio.superbwarfare.world.phys.EntityResult
 import net.minecraft.ChatFormatting
@@ -17,9 +20,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.Vec3
-import com.atsuishio.superbwarfare.fabric.Capabilities
-import com.atsuishio.superbwarfare.fabric.getCapability
-import com.atsuishio.superbwarfare.fabric.IEnergyStorage
 
 open class VehicleGunItem : GunItem(Properties()) {
     override fun modifyProperty(modifier: PMC<GunData, DefaultGunData>) {
@@ -37,31 +37,36 @@ open class VehicleGunItem : GunItem(Properties()) {
 
     override fun enableShootTimer() = true
 
-    override fun canShoot(data: GunData, shooter: Entity?): Boolean {
+    override fun canShoot(
+        data: GunData,
+        shooter: Entity?,
+    ): Boolean {
         if (shooter !is VehicleEntity) return false
 
-        return data.get(GunProp.PROJECTILE_AMOUNT) > 0
-                && !data.overHeat.get()
-                && data.get(GunProp.HEAT_PER_SHOOT) <= (100 + data.get(GunProp.HEAT_PER_SHOOT) - data.heat.get())
-                && !data.reloading()
-                && !data.charging()
-                && !data.bolt.needed.get()
-                && shooter.getAmmo(data) >= data.get(GunProp.AMMO_COST_PER_SHOOT)
+        return data.get(GunProp.PROJECTILE_AMOUNT) > 0 &&
+            !data.overHeat.get() &&
+            data.get(GunProp.HEAT_PER_SHOOT) <= (100 + data.get(GunProp.HEAT_PER_SHOOT) - data.heat.get()) &&
+            !data.reloading() &&
+            !data.charging() &&
+            !data.bolt.needed.get() &&
+            shooter.getAmmo(data) >= data.get(GunProp.AMMO_COST_PER_SHOOT)
     }
 
-    override fun getEnergyProvider(data: GunData, ammoSupplier: Entity?): IEnergyStorage? {
-        return if (ammoSupplier != null) {
+    override fun getEnergyProvider(
+        data: GunData,
+        ammoSupplier: Entity?,
+    ): IEnergyStorage? =
+        if (ammoSupplier != null) {
             ammoSupplier.getCapability(Capabilities.EnergyStorage.ENTITY, Direction.UP)
         } else {
             super.getEnergyProvider(data, null)
         }
-    }
 
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(Component.translatable("des.superbwarfare.vehicle_gun").withStyle(ChatFormatting.RED))
     }
@@ -73,7 +78,7 @@ open class VehicleGunItem : GunItem(Properties()) {
         data: GunData,
         result: EntityResult,
         shootPosition: Vec3?,
-        shootDirection: Vec3?
+        shootDirection: Vec3?,
     ) {
         super.onRayHitEntity(shooter, level, data, result, shootPosition, shootDirection)
 
@@ -92,7 +97,7 @@ open class VehicleGunItem : GunItem(Properties()) {
         data: GunData,
         shootDirection: Vec3?,
         result: BlockHitResult,
-        pos: Vec3
+        pos: Vec3,
     ) {
         super.onRayHitBlock(shooter, level, target, data, shootDirection, result, pos)
 
@@ -104,6 +109,10 @@ open class VehicleGunItem : GunItem(Properties()) {
         prismTank.hitBlock(result.getLocation(), data, shooter)
     }
 
-    override fun playFireSounds(data: GunData, shooter: Entity?, zoom: Boolean) {
+    override fun playFireSounds(
+        data: GunData,
+        shooter: Entity?,
+        zoom: Boolean,
+    ) {
     }
 }

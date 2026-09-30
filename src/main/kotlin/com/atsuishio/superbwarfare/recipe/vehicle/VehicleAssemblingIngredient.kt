@@ -58,30 +58,35 @@ class VehicleAssemblingIngredient : DeserializeFromString {
         }
 
         val id = matcher.group("id")
-        ingredientObject = if (matcher.group("prefix") == "#") {
-            Ingredient.of(TagKey.create(Registries.ITEM, ResourceLocation.parse(id)))
-        } else {
-            Ingredient.of(BuiltInRegistries.ITEM.get(ResourceLocation.parse(id)))
-        }
+        ingredientObject =
+            if (matcher.group("prefix") == "#") {
+                Ingredient.of(TagKey.create(Registries.ITEM, ResourceLocation.parse(id)))
+            } else {
+                Ingredient.of(BuiltInRegistries.ITEM.get(ResourceLocation.parse(id)))
+            }
     }
 
     companion object {
         val CODEC: Codec<VehicleAssemblingIngredient> =
-            RecordCodecBuilder.mapCodec { builder: RecordCodecBuilder.Instance<VehicleAssemblingIngredient> ->
-                builder.group(
-                    Codec.STRING.fieldOf("ingredient").forGetter { it.ingredientString },
-                    Codec.INT.fieldOf("count").forGetter { it.count }
-                ).apply(
-                    builder,
-                    ::VehicleAssemblingIngredient
-                )
-            }.codec()
+            RecordCodecBuilder
+                .mapCodec { builder: RecordCodecBuilder.Instance<VehicleAssemblingIngredient> ->
+                    builder
+                        .group(
+                            Codec.STRING.fieldOf("ingredient").forGetter { it.ingredientString },
+                            Codec.INT.fieldOf("count").forGetter { it.count },
+                        ).apply(
+                            builder,
+                            ::VehicleAssemblingIngredient,
+                        )
+                }.codec()
 
         val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, VehicleAssemblingIngredient> =
             StreamCodec.composite(
-                ByteBufCodecs.STRING_UTF8, { it.ingredientString },
-                ByteBufCodecs.VAR_INT, { it.count },
-                ::VehicleAssemblingIngredient
+                ByteBufCodecs.STRING_UTF8,
+                { it.ingredientString },
+                ByteBufCodecs.VAR_INT,
+                { it.count },
+                ::VehicleAssemblingIngredient,
             )
 
         private val INGREDIENT_PATTERN: Pattern =

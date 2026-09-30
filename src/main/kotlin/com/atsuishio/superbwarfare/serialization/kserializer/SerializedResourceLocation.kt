@@ -8,16 +8,19 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.minecraft.resources.ResourceLocation
 
-typealias SerializedResourceLocation = @Serializable(ResourceLocationSerializer::class) ResourceLocation
+typealias SerializedResourceLocation =
+    @Serializable(ResourceLocationSerializer::class)
+    ResourceLocation
 
 object ResourceLocationSerializer : KSerializer<ResourceLocation> {
     override val descriptor = PrimitiveSerialDescriptor("ResourceLocation", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: ResourceLocation) {
+    override fun serialize(
+        encoder: Encoder,
+        value: ResourceLocation,
+    ) {
         encoder.encodeString(value.toString())
     }
 
-    override fun deserialize(decoder: Decoder): ResourceLocation {
-        return ResourceLocation.parse(decoder.decodeString())
-    }
+    override fun deserialize(decoder: Decoder): ResourceLocation = ResourceLocation.parse(decoder.decodeString())
 }

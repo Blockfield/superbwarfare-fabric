@@ -3,14 +3,12 @@ package com.atsuishio.superbwarfare.client.renderer.entity
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
 
-class T90aRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRenderer(manager) {
-    override fun hideForTurretControllerWhileZooming(): Boolean {
-        return true
-    }
+class T90aRenderer(
+    manager: EntityRendererProvider.Context,
+) : BasicVehicleRenderer(manager) {
+    override fun hideForTurretControllerWhileZooming(): Boolean = true
 
-    override fun renderScale(): Float {
-        return 1.1f
-    }
+    override fun renderScale(): Float = 1.1f
 
     override fun getBoneRotX(t: Float): Float {
         if (t <= 42.3333) return -1.25F
@@ -83,7 +81,5 @@ class T90aRenderer(manager: EntityRendererProvider.Context) : BasicVehicleRender
         return Mth.lerp(t - 99F, -4.99F, -3F)
     }
 
-    override fun getTrackDistance(): Float {
-        return 2.25f
-    }
+    override fun getTrackDistance(): Float = 2.25f
 }

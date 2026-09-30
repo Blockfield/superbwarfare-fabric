@@ -25,38 +25,49 @@ import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-open class DragonTeethBlock : Block(
-    Properties.of().instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE)
-        .strength(25f, 500f)
-        .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK).noOcclusion()
-        .isRedstoneConductor { _, _, _ -> false }
-) {
+open class DragonTeethBlock :
+    Block(
+        Properties
+            .of()
+            .instrument(NoteBlockInstrument.BASEDRUM)
+            .sound(SoundType.STONE)
+            .strength(25f, 500f)
+            .requiresCorrectToolForDrops()
+            .pushReaction(PushReaction.BLOCK)
+            .noOcclusion()
+            .isRedstoneConductor { _, _, _ -> false },
+    ) {
     init {
         this.registerDefaultState(this.stateDefinition.any().setValue(WATERLOGGED, false))
         // Аналог IBlockExtension.getAdjacentBlockPathType из NeoForge: мобы обходят зубы как лаву.
         LandPathNodeTypesRegistry.register(this, null, PathType.LAVA)
     }
 
-    override fun propagatesSkylightDown(state: BlockState, reader: BlockGetter, pos: BlockPos): Boolean {
-        return true
-    }
+    override fun propagatesSkylightDown(
+        state: BlockState,
+        reader: BlockGetter,
+        pos: BlockPos,
+    ): Boolean = true
 
-    override fun getLightBlock(state: BlockState, worldIn: BlockGetter, pos: BlockPos): Int {
-        return 0
-    }
+    override fun getLightBlock(
+        state: BlockState,
+        worldIn: BlockGetter,
+        pos: BlockPos,
+    ): Int = 0
 
     override fun getVisualShape(
         state: BlockState,
         world: BlockGetter,
         pos: BlockPos,
-        context: CollisionContext
-    ): VoxelShape {
-        return Shapes.empty()
-    }
+        context: CollisionContext,
+    ): VoxelShape = Shapes.empty()
 
-    override fun getShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
-        return Shapes.or(box(2.0, 0.0, 2.0, 14.0, 25.0, 14.0))
-    }
+    override fun getShape(
+        state: BlockState,
+        world: BlockGetter,
+        pos: BlockPos,
+        context: CollisionContext,
+    ): VoxelShape = Shapes.or(box(2.0, 0.0, 2.0, 14.0, 25.0, 14.0))
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block?, BlockState?>) {
         builder.add(WATERLOGGED)
@@ -67,9 +78,7 @@ open class DragonTeethBlock : Block(
         return this.defaultBlockState().setValue(WATERLOGGED, flag)
     }
 
-    override fun getFluidState(state: BlockState): FluidState {
-        return if (state.getValue(WATERLOGGED)) Fluids.WATER.getSource(false) else super.getFluidState(state)
-    }
+    override fun getFluidState(state: BlockState): FluidState = if (state.getValue(WATERLOGGED)) Fluids.WATER.getSource(false) else super.getFluidState(state)
 
     override fun updateShape(
         state: BlockState,
@@ -77,7 +86,7 @@ open class DragonTeethBlock : Block(
         facingState: BlockState,
         world: LevelAccessor,
         currentPos: BlockPos,
-        facingPos: BlockPos
+        facingPos: BlockPos,
     ): BlockState {
         if (state.getValue(WATERLOGGED)) {
             world.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
@@ -85,7 +94,12 @@ open class DragonTeethBlock : Block(
         return super.updateShape(state, facing, facingState, world, currentPos, facingPos)
     }
 
-    override fun stepOn(pLevel: Level, pPos: BlockPos, pState: BlockState, pEntity: Entity) {
+    override fun stepOn(
+        pLevel: Level,
+        pPos: BlockPos,
+        pState: BlockState,
+        pEntity: Entity,
+    ) {
         super.stepOn(pLevel, pPos, pState, pEntity)
 
         if (pEntity is VehicleEntity) {
@@ -98,4 +112,3 @@ open class DragonTeethBlock : Block(
         val WATERLOGGED: BooleanProperty = BlockStateProperties.WATERLOGGED
     }
 }
-

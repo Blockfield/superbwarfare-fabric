@@ -2,29 +2,37 @@ package com.atsuishio.superbwarfare.client.screens
 
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.block.entity.ChargingStationBlockEntity
+import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 import com.atsuishio.superbwarfare.inventory.menu.ChargingStationMenu
 import com.atsuishio.superbwarfare.network.message.send.ShowChargingRangeMessage
 import com.atsuishio.superbwarfare.tools.sendPacketToServer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractButton
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Inventory
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import java.util.*
-import com.atsuishio.superbwarfare.client.screens.component.AccessoriesButtonStub
 
 @Environment(EnvType.CLIENT)
-class ChargingStationScreen(pMenu: ChargingStationMenu, pPlayerInventory: Inventory, pTitle: Component) :
-    AbstractContainerScreen<ChargingStationMenu>(pMenu, pPlayerInventory, pTitle) {
+class ChargingStationScreen(
+    pMenu: ChargingStationMenu,
+    pPlayerInventory: Inventory,
+    pTitle: Component,
+) : AbstractContainerScreen<ChargingStationMenu>(pMenu, pPlayerInventory, pTitle) {
     init {
         imageWidth = 176
         imageHeight = 166
     }
 
-    override fun renderBg(pGuiGraphics: GuiGraphics, pPartialTick: Float, pMouseX: Int, pMouseY: Int) {
+    override fun renderBg(
+        pGuiGraphics: GuiGraphics,
+        pPartialTick: Float,
+        pMouseX: Int,
+        pMouseY: Int,
+    ) {
         val i = (this.width - this.imageWidth) / 2
         val j = (this.height - this.imageHeight) / 2
         pGuiGraphics.blit(TEXTURE, i, j, 0, 0, this.imageWidth, this.imageHeight)
@@ -46,24 +54,38 @@ class ChargingStationScreen(pMenu: ChargingStationMenu, pPlayerInventory: Invent
             177,
             14 - (13 * fuelRate).toInt(),
             13,
-            (13 * fuelRate).toInt()
+            (13 * fuelRate).toInt(),
         )
 
         // Energy
         val energyRate = energy.toFloat() / ChargingStationBlockEntity.MAX_ENERGY.toFloat()
         pGuiGraphics.blit(
-            TEXTURE, i + 80, j + 70 - (54 * energyRate).toInt(),
-            177, 17, 16, (54 * energyRate).toInt()
+            TEXTURE,
+            i + 80,
+            j + 70 - (54 * energyRate).toInt(),
+            177,
+            17,
+            16,
+            (54 * energyRate).toInt(),
         )
     }
 
-    override fun render(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
+    override fun render(
+        pGuiGraphics: GuiGraphics,
+        pMouseX: Int,
+        pMouseY: Int,
+        pPartialTick: Float,
+    ) {
         this.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
         this.renderTooltip(pGuiGraphics, pMouseX, pMouseY)
     }
 
-    override fun renderTooltip(pGuiGraphics: GuiGraphics, pX: Int, pY: Int) {
+    override fun renderTooltip(
+        pGuiGraphics: GuiGraphics,
+        pX: Int,
+        pY: Int,
+    ) {
         super.renderTooltip(pGuiGraphics, pX, pY)
 
         val i = (this.width - this.imageWidth) / 2
@@ -72,9 +94,10 @@ class ChargingStationScreen(pMenu: ChargingStationMenu, pPlayerInventory: Invent
         val tooltip: MutableList<Component> = arrayListOf()
         tooltip.add(
             Component.translatable(
-                "des.superbwarfare.charging_station.energy", this.menu.energy,
-                ChargingStationBlockEntity.MAX_ENERGY
-            )
+                "des.superbwarfare.charging_station.energy",
+                this.menu.energy,
+                ChargingStationBlockEntity.MAX_ENERGY,
+            ),
         )
 
         if (pX - i in 80..96 && pY - j in 16..70) {
@@ -83,17 +106,29 @@ class ChargingStationScreen(pMenu: ChargingStationMenu, pPlayerInventory: Invent
     }
 
     @Environment(EnvType.CLIENT)
-    internal inner class ShowRangeButton(pX: Int, pY: Int) : AbstractButton(
-        pX + 7,
-        pY + 55,
-        33,
-        14,
-        Component.translatable("container.superbwarfare.charging_station.show_range")
-    ), AccessoriesButtonStub {
-        override fun renderWidget(pGuiGraphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTick: Float) {
-            this.message = if (this@ChargingStationScreen.menu.showRange())
-                Component.translatable("container.superbwarfare.charging_station.hide_range")
-            else Component.translatable("container.superbwarfare.charging_station.show_range")
+    internal inner class ShowRangeButton(
+        pX: Int,
+        pY: Int,
+    ) : AbstractButton(
+            pX + 7,
+            pY + 55,
+            33,
+            14,
+            Component.translatable("container.superbwarfare.charging_station.show_range"),
+        ),
+        AccessoriesButtonStub {
+        override fun renderWidget(
+            pGuiGraphics: GuiGraphics,
+            pMouseX: Int,
+            pMouseY: Int,
+            pPartialTick: Float,
+        ) {
+            this.message =
+                if (this@ChargingStationScreen.menu.showRange()) {
+                    Component.translatable("container.superbwarfare.charging_station.hide_range")
+                } else {
+                    Component.translatable("container.superbwarfare.charging_station.show_range")
+                }
             super.renderWidget(pGuiGraphics, pMouseX, pMouseY, pPartialTick)
         }
 

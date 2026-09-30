@@ -8,7 +8,6 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.world.phys.Vec3
 
 object DoubleJumpMessage : ServerPacketPayload() {
-
     override fun PayloadContext.handler() {
         val player = sender()
 

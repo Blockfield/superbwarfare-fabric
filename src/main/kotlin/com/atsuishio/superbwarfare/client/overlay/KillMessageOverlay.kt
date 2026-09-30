@@ -2,6 +2,7 @@ package com.atsuishio.superbwarfare.client.overlay
 
 import com.atsuishio.superbwarfare.Mod.loc
 import com.atsuishio.superbwarfare.client.RenderHelper
+import com.atsuishio.superbwarfare.client.drawString
 import com.atsuishio.superbwarfare.client.screens.DogTagEditorScreen
 import com.atsuishio.superbwarfare.client.tooltip.ClientDogTagImageTooltip
 import com.atsuishio.superbwarfare.config.client.DisplayConfig
@@ -9,6 +10,7 @@ import com.atsuishio.superbwarfare.config.client.KillMessageConfig
 import com.atsuishio.superbwarfare.config.client.KillMessageConfig.KillMessagePosition
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.event.KillMessageHandler
+import com.atsuishio.superbwarfare.fabric.findFirstEquipped
 import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.item.curio.DogTagItem
@@ -18,6 +20,8 @@ import com.atsuishio.superbwarfare.tools.DamageTypeTool
 import com.atsuishio.superbwarfare.tools.LivingKillRecord
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.renderer.RenderType
@@ -27,11 +31,7 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.OwnableEntity
 import net.minecraft.world.entity.player.Player
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import com.atsuishio.superbwarfare.fabric.findFirstEquipped
 import kotlin.math.pow
-import com.atsuishio.superbwarfare.client.drawString
 
 @Environment(EnvType.CLIENT)
 object KillMessageOverlay : CommonOverlay("kill_message") {
@@ -50,9 +50,10 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
     private val LASER = loc("textures/overlay/damage_types/laser.png")
     private val VEHICLE = loc("textures/overlay/damage_types/vehicle_strike.png")
 
-    override fun shouldRender() = super.shouldRender()
-            && KillMessageConfig.SHOW_KILL_MESSAGE.get()
-            && !KillMessageHandler.QUEUE.isEmpty()
+    override fun shouldRender() =
+        super.shouldRender() &&
+            KillMessageConfig.SHOW_KILL_MESSAGE.get() &&
+            !KillMessageHandler.QUEUE.isEmpty()
 
     override fun RenderContext.render() {
         val pos = KillMessageConfig.KILL_MESSAGE_POSITION.get()
@@ -107,18 +108,18 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
         }
 
         for (r in KillMessageHandler.QUEUE) {
-            posY = renderKillMessages(
-                r,
-                guiGraphics,
-                deltaTracker.getGameTimeDeltaPartialTick(true),
-                posX,
-                posY,
-                left,
-                bottom
-            )
+            posY =
+                renderKillMessages(
+                    r,
+                    guiGraphics,
+                    deltaTracker.getGameTimeDeltaPartialTick(true),
+                    posX,
+                    posY,
+                    left,
+                    bottom,
+                )
         }
     }
-
 
     private fun renderKillMessages(
         record: LivingKillRecord,
@@ -127,7 +128,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
         width: Int,
         baseTop: Float,
         left: Boolean,
-        bottom: Boolean
+        bottom: Boolean,
     ): Float {
         var baseTop = baseTop
         val top = baseTop
@@ -144,8 +145,10 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
         RenderSystem.depthMask(false)
         RenderSystem.enableBlend()
         RenderSystem.blendFuncSeparate(
-            GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE,
-            GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE
+            GlStateManager.SourceFactor.ONE,
+            GlStateManager.DestFactor.ONE,
+            GlStateManager.SourceFactor.ONE,
+            GlStateManager.DestFactor.ONE,
         )
 
         // 入场效果
@@ -175,7 +178,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                 currentPosX,
                 top,
                 target.getTeamColor(),
-                false
+                false,
             )
 
             // 渲染狗牌图标
@@ -198,7 +201,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                     12f,
                     12f,
                     12f,
-                    12f
+                    12f,
                 )
             }
 
@@ -216,7 +219,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                     32f,
                     8f,
                     -32f,
-                    8f
+                    8f,
                 )
             }
 
@@ -230,7 +233,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                 currentPosX,
                 top,
                 record.attacker.getTeamColor(),
-                false
+                false,
             )
 
             // 渲染狗牌图标
@@ -255,7 +258,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                 currentPosX,
                 top,
                 record.attacker.getTeamColor(),
-                false
+                false,
             )
 
             currentPosX += (font.width(attackerName) + 6).toFloat()
@@ -273,7 +276,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                     32f,
                     8f,
                     -32f,
-                    8f
+                    8f,
                 )
                 currentPosX += 36f
             }
@@ -291,7 +294,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                     12f,
                     12f,
                     12f,
-                    12f
+                    12f,
                 )
                 currentPosX += 18f
             }
@@ -309,7 +312,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                 currentPosX,
                 top,
                 target.getTeamColor(),
-                false
+                false,
             )
         }
 
@@ -331,8 +334,8 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
             icon = HEADSHOT
         } else {
             val item = record.attacker.mainHandItem
-            if (DamageTypeTool.isCompatGunDamage(record.damageType, record.target.level().registryAccess())
-                && (item.item is GunItem || item.descriptionId == "tacz:modern_kinetic_gun")
+            if (DamageTypeTool.isCompatGunDamage(record.damageType, record.target.level().registryAccess()) &&
+                (item.item is GunItem || item.descriptionId == "tacz:modern_kinetic_gun")
             ) {
                 icon = null
                 if (record.damageType === ModDamageTypes.PROJECTILE_HIT) {
@@ -342,19 +345,22 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                 }
             } else {
                 // 如果是其他伤害，则渲染对应图标
-                if (record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION
-                    || record.damageType === ModDamageTypes.PROJECTILE_EXPLOSION || record.damageType === DamageTypes.FIREWORKS
-                    || record.damageType === ModDamageTypes.CUSTOM_EXPLOSION
+                if (record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION ||
+                    record.damageType === ModDamageTypes.PROJECTILE_EXPLOSION || record.damageType === DamageTypes.FIREWORKS ||
+                    record.damageType === ModDamageTypes.CUSTOM_EXPLOSION
                 ) {
                     // Blockfield: the explosion alone does not say what blew up, the attacker's hand does.
                     // Drone bombs are flown from the monitor; a vanilla explosion is a thrown grenade (LR Tactical).
                     // Launcher rockets never get here: gun damage out of a gun shows the weapon silhouette instead.
-                    icon = when {
-                        item.item is MonitorItem -> DRONE
-                        record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION -> GRENADE
-                        else -> EXPLOSION
-                    }
-                } else if (record.attacker is Player && (record.damageType === DamageTypes.IN_FIRE || record.damageType === DamageTypes.ON_FIRE)) {
+                    icon =
+                        when {
+                            item.item is MonitorItem -> DRONE
+                            record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION -> GRENADE
+                            else -> EXPLOSION
+                        }
+                } else if (record.attacker is Player &&
+                    (record.damageType === DamageTypes.IN_FIRE || record.damageType === DamageTypes.ON_FIRE)
+                ) {
                     // Blockfield: world fire has no killer, so an attributed fire kill is a molotov.
                     icon = MOLOTOV
                 } else if (DamageTypeTool.isKnifeDamage(record.damageType)) {
@@ -365,7 +371,10 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                     icon = CLAYMORE
                 } else if (record.damageType === ModDamageTypes.SHOCK) {
                     icon = SHOCK
-                } else if (record.damageType === ModDamageTypes.BURN || record.damageType === DamageTypes.IN_FIRE || record.damageType === DamageTypes.ON_FIRE || record.damageType === DamageTypes.LAVA) {
+                } else if (record.damageType === ModDamageTypes.BURN || record.damageType === DamageTypes.IN_FIRE ||
+                    record.damageType === DamageTypes.ON_FIRE ||
+                    record.damageType === DamageTypes.LAVA
+                ) {
                     icon = BURN
                 } else if (record.damageType === ModDamageTypes.DRONE_HIT) {
                     icon = DRONE
@@ -444,7 +453,12 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
         return ClientDogTagImageTooltip.shouldRenderIcon(equipped.stack()) && DisplayConfig.DOG_TAG_ICON_VISIBLE.get()
     }
 
-    fun renderDogTagIcon(guiGraphics: GuiGraphics, living: LivingEntity?, x: Float, y: Float) {
+    fun renderDogTagIcon(
+        guiGraphics: GuiGraphics,
+        living: LivingEntity?,
+        x: Float,
+        y: Float,
+    ) {
         findFirstEquipped(living, ModItems.DOG_TAG.get())?.let { s ->
             val stack = s.stack()
             val icon = DogTagItem.getColors(stack)
@@ -455,9 +469,14 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                 for (j in 0..15) {
                     if (icon[i][j].toInt() == -1) continue
                     RenderHelper.fill(
-                        guiGraphics, RenderType.gui(),
-                        x + i * 0.6f, y + j * 0.6f, x + (i + 1) * 0.6f, y + (j + 1) * 0.6f,
-                        0f, DogTagEditorScreen.getColorByNum(icon[i][j])
+                        guiGraphics,
+                        RenderType.gui(),
+                        x + i * 0.6f,
+                        y + j * 0.6f,
+                        x + (i + 1) * 0.6f,
+                        y + (j + 1) * 0.6f,
+                        0f,
+                        DogTagEditorScreen.getColorByNum(icon[i][j]),
                     )
                 }
             }

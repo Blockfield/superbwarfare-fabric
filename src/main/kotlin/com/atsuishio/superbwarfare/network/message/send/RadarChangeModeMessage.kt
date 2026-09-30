@@ -6,7 +6,9 @@ import com.atsuishio.superbwarfare.network.ServerPacketPayload
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RadarChangeModeMessage(val mode: Byte) : ServerPacketPayload() {
+data class RadarChangeModeMessage(
+    val mode: Byte,
+) : ServerPacketPayload() {
     override fun PayloadContext.handler() {
         if (mode !in 1..4) return
         val player = sender()

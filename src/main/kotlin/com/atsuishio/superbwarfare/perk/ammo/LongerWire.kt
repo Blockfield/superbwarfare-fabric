@@ -10,7 +10,7 @@ object LongerWire : AmmoPerk("longer_wire", Type.AMMO) {
     override fun modifyProjectile(
         data: GunData,
         instance: PerkInstance,
-        entity: Entity
+        entity: Entity,
     ) {
         if (entity is TaserBulletEntity) {
             entity.wireLength = instance.level.toInt()

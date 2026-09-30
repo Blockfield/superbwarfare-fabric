@@ -13,7 +13,12 @@ object TrajectoryCalculator {
      * @param g 重力加速度（正数，方块/刻²）
      * @return 包含发射方向的列表，按飞行时间排序[低伸, 高抛]
      */
-    fun calculateShootVectors(start: Vec3, target: Vec3, v: Double, g: Double): MutableList<Vec3> {
+    fun calculateShootVectors(
+        start: Vec3,
+        target: Vec3,
+        v: Double,
+        g: Double,
+    ): MutableList<Vec3> {
         val directions = arrayListOf<Vec3>()
 
         // 计算位移
@@ -71,7 +76,12 @@ object TrajectoryCalculator {
     /**
      * 获取低伸弹道发射向量（如果存在）
      */
-    fun getFlatTrajectory(start: Vec3, target: Vec3, v: Double, g: Double): Vec3? {
+    fun getFlatTrajectory(
+        start: Vec3,
+        target: Vec3,
+        v: Double,
+        g: Double,
+    ): Vec3? {
         val trajectories = calculateShootVectors(start, target, v, g)
         return if (trajectories.isEmpty()) null else trajectories[0]
     }
@@ -79,9 +89,20 @@ object TrajectoryCalculator {
     /**
      * 获取高抛弹道发射向量（如果存在）
      */
-    fun getHighTrajectory(start: Vec3, target: Vec3, v: Double, g: Double): Vec3? {
+    fun getHighTrajectory(
+        start: Vec3,
+        target: Vec3,
+        v: Double,
+        g: Double,
+    ): Vec3? {
         val trajectories = calculateShootVectors(start, target, v, g)
-        return if (trajectories.size >= 2) trajectories[1] else if (trajectories.size == 1) trajectories[0] else null
+        return if (trajectories.size >= 2) {
+            trajectories[1]
+        } else if (trajectories.size == 1) {
+            trajectories[0]
+        } else {
+            null
+        }
     }
 
     @JvmStatic
@@ -90,8 +111,6 @@ object TrajectoryCalculator {
         target: Vec3,
         v: Double,
         g: Double,
-        isDepressed: Boolean
-    ): Vec3? {
-        return if (isDepressed) getFlatTrajectory(start, target, v, g) else getHighTrajectory(start, target, v, g)
-    }
+        isDepressed: Boolean,
+    ): Vec3? = if (isDepressed) getFlatTrajectory(start, target, v, g) else getHighTrajectory(start, target, v, g)
 }

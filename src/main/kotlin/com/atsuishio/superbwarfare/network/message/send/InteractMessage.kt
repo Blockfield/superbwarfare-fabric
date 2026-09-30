@@ -18,35 +18,42 @@ object InteractMessage : ServerPacketPayload() {
         val stack = player.mainHandItem
         if (player.cooldowns.isOnCooldown(stack.item)) return
         val drone = DroneControlAccess.resolve(player) ?: return
-        val looking = Vec3.atLowerCornerOf(
-            player.level().clip(
-                ClipContext(
-                    drone.eyePosition,
-                    drone.eyePosition.add(drone.lookAngle.scale(2.0)),
-                    ClipContext.Block.OUTLINE,
-                    ClipContext.Fluid.NONE,
-                    player
-                )
-            ).blockPos
-        )
-        val blockPos = BlockPos.containing(looking.x(), looking.y(), looking.z())
-        val result = player.level().getBlockState(blockPos).useItemOn(
-            player.mainHandItem,
-            player.level(),
-            player,
-            InteractionHand.MAIN_HAND,
-            BlockHitResult.miss(
-                Vec3(blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble()),
-                Direction.UP, blockPos
+        val looking =
+            Vec3.atLowerCornerOf(
+                player
+                    .level()
+                    .clip(
+                        ClipContext(
+                            drone.eyePosition,
+                            drone.eyePosition.add(drone.lookAngle.scale(2.0)),
+                            ClipContext.Block.OUTLINE,
+                            ClipContext.Fluid.NONE,
+                            player,
+                        ),
+                    ).blockPos,
             )
-        )
-        if (result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
-            player.level().getBlockState(blockPos).useWithoutItem(
-                player.level(), player,
+        val blockPos = BlockPos.containing(looking.x(), looking.y(), looking.z())
+        val result =
+            player.level().getBlockState(blockPos).useItemOn(
+                player.mainHandItem,
+                player.level(),
+                player,
+                InteractionHand.MAIN_HAND,
                 BlockHitResult.miss(
                     Vec3(blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble()),
-                    Direction.UP, blockPos
-                )
+                    Direction.UP,
+                    blockPos,
+                ),
+            )
+        if (result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            player.level().getBlockState(blockPos).useWithoutItem(
+                player.level(),
+                player,
+                BlockHitResult.miss(
+                    Vec3(blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble()),
+                    Direction.UP,
+                    blockPos,
+                ),
             )
         }
         val lookingEntity = TraceTool.findLookingEntity(drone, 2.0) ?: return

@@ -38,8 +38,9 @@ class HandsomeGogglesItem :
     ArmorItem(
         ModArmorMaterial.STEEL,
         Type.HELMET,
-        Properties().rarity(Rarity.EPIC).fireResistant().component(DataComponents.UNBREAKABLE, Unbreakable(false))
-    ), DamageableItem {
+        Properties().rarity(Rarity.EPIC).fireResistant().component(DataComponents.UNBREAKABLE, Unbreakable(false)),
+    ),
+    DamageableItem {
     override fun isDamageable(stack: ItemStack) = false
 
     companion object {
@@ -66,7 +67,11 @@ class HandsomeGogglesItem :
         }
     }
 
-    override fun use(pLevel: Level, pPlayer: Player, pUsedHand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(
+        pLevel: Level,
+        pPlayer: Player,
+        pUsedHand: InteractionHand,
+    ): InteractionResultHolder<ItemStack> {
         val stack = pPlayer.getItemInHand(pUsedHand)
         if (findGhastInSight(pPlayer) != null) {
             pPlayer.startUsingItem(pUsedHand)
@@ -75,7 +80,12 @@ class HandsomeGogglesItem :
         return InteractionResultHolder.pass(stack)
     }
 
-    override fun onUseTick(pLevel: Level, pLivingEntity: LivingEntity, pStack: ItemStack, pRemainingUseDuration: Int) {
+    override fun onUseTick(
+        pLevel: Level,
+        pLivingEntity: LivingEntity,
+        pStack: ItemStack,
+        pRemainingUseDuration: Int,
+    ) {
         if (pLivingEntity !is Player) return
         val target = findGhastInSight(pLivingEntity)
         if (target == null) {
@@ -90,7 +100,7 @@ class HandsomeGogglesItem :
             val remainingSeconds = ((requiredTicks - useTick).coerceAtLeast(0)) / 20.0
             pLivingEntity.displayClientMessage(
                 Component.literal("%.1fs".format(remainingSeconds)).withStyle(ChatFormatting.GREEN),
-                true
+                true,
             )
         }
 
@@ -99,9 +109,12 @@ class HandsomeGogglesItem :
             val pos = target.position()
 
             pLevel.playSound(
-                null, target.blockPosition(),
-                ModSounds.DPS_GENERATOR_EVOLVE.get(), SoundSource.PLAYERS,
-                1.5f, 1.2f
+                null,
+                target.blockPosition(),
+                ModSounds.DPS_GENERATOR_EVOLVE.get(),
+                SoundSource.PLAYERS,
+                1.5f,
+                1.2f,
             )
 
             repeat(49) {
@@ -111,22 +124,46 @@ class HandsomeGogglesItem :
                 val dz = sin(angle) * radius
                 val dy = (Math.random() - 0.5) * 5.0
                 ParticleTool.sendParticle(
-                    pLevel, ParticleTypes.REVERSE_PORTAL,
-                    pos.x + dx, pos.y + dy + 2.0, pos.z + dz,
-                    0, 0.0, 0.0, 0.0, 0.3, true
+                    pLevel,
+                    ParticleTypes.REVERSE_PORTAL,
+                    pos.x + dx,
+                    pos.y + dy + 2.0,
+                    pos.z + dz,
+                    0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.3,
+                    true,
                 )
             }
 
             ParticleTool.sendParticle(
-                pLevel, ParticleTypes.FLASH,
-                pos.x, pos.y + 2.0, pos.z,
-                3, 0.2, 0.2, 0.2, 1.0, true
+                pLevel,
+                ParticleTypes.FLASH,
+                pos.x,
+                pos.y + 2.0,
+                pos.z,
+                3,
+                0.2,
+                0.2,
+                0.2,
+                1.0,
+                true,
             )
 
             ParticleTool.sendParticle(
-                pLevel, ParticleTypes.END_ROD,
-                pos.x, pos.y + 1.5, pos.z,
-                40, 1.5, 2.5, 1.5, 0.15, true
+                pLevel,
+                ParticleTypes.END_ROD,
+                pos.x,
+                pos.y + 1.5,
+                pos.z,
+                40,
+                1.5,
+                2.5,
+                1.5,
+                0.15,
+                true,
             )
 
             val happiestGhast = ModEntities.HAPPIEST_GHAST.get().create(pLevel) ?: return
@@ -142,22 +179,20 @@ class HandsomeGogglesItem :
 
     override fun getUseDuration(
         stack: ItemStack,
-        entity: LivingEntity
-    ): Int {
-        return 72000
-    }
+        entity: LivingEntity,
+    ): Int = 72000
 
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.handsome_goggles").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.handsome_goggles").withStyle(ChatFormatting.GRAY),
         )
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.handsome_goggles.warn").withStyle(ChatFormatting.RED)
+            Component.translatable("des.superbwarfare.handsome_goggles.warn").withStyle(ChatFormatting.RED),
         )
     }
 }

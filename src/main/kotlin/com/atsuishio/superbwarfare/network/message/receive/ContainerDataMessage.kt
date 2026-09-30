@@ -17,10 +17,15 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable
 data class ContainerDataMessage(
     val containerId: Int,
-    val data: List<@Serializable(ContainerDataPairSerializer::class) Pair>
+    val data: List<
+        @Serializable(ContainerDataPairSerializer::class)
+        Pair,
+    >,
 ) : ClientPacketPayload() {
-
-    class Pair(val id: Int, val data: Long)
+    class Pair(
+        val id: Int,
+        val data: Long,
+    )
 
     override fun PayloadContext.handler() {
         val localPlayer = localPlayer ?: return
@@ -28,22 +33,22 @@ data class ContainerDataMessage(
             data.forEach { p -> (localPlayer.containerMenu as EnergyMenu).setData(p.id, p.data.toInt()) }
         }
     }
-
 }
 
-
 private object ContainerDataPairSerializer : KSerializer<ContainerDataMessage.Pair> {
-    override val descriptor = buildClassSerialDescriptor("ContainerDataPair") {
-        element<Int>("id")
-        element<Long>("data")
-    }
+    override val descriptor =
+        buildClassSerialDescriptor("ContainerDataPair") {
+            element<Int>("id")
+            element<Long>("data")
+        }
 
-    override fun serialize(encoder: Encoder, value: ContainerDataMessage.Pair) {
+    override fun serialize(
+        encoder: Encoder,
+        value: ContainerDataMessage.Pair,
+    ) {
         encoder.encodeInt(value.id)
         encoder.encodeLong(value.data)
     }
 
-    override fun deserialize(decoder: Decoder): ContainerDataMessage.Pair {
-        return ContainerDataMessage.Pair(decoder.decodeInt(), decoder.decodeLong())
-    }
+    override fun deserialize(decoder: Decoder): ContainerDataMessage.Pair = ContainerDataMessage.Pair(decoder.decodeInt(), decoder.decodeLong())
 }

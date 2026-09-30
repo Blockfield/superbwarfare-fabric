@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap
  * 线程安全，可被多个实体类同时注册。
  */
 object BvrSyncExclusion {
-
     /** 实体类 → 需从超视距同步 NBT 中移除的 key 集合 */
     private val exclusions: MutableMap<Class<out Entity>, MutableSet<String>> = ConcurrentHashMap()
 
@@ -62,7 +61,10 @@ object BvrSyncExclusion {
      * - NBT key 没有对应的 EntityDataAccessor（如 "Inventory"）
      * - 单个 EntityDataAccessor 对应多个 NBT key（如 Loiter 的 X/Y/Z/R）
      */
-    fun registerDirectKeys(entityClass: Class<out Entity>, vararg keys: String) {
+    fun registerDirectKeys(
+        entityClass: Class<out Entity>,
+        vararg keys: String,
+    ) {
         exclusions.getOrPut(entityClass) { ConcurrentHashMap.newKeySet() }.addAll(keys)
     }
 
@@ -70,7 +72,10 @@ object BvrSyncExclusion {
      * 从 CompoundTag 中移除所有已注册的排除 key。
      * 原地修改 tag，同时返回同一个实例以便链式调用。
      */
-    fun stripExcludedKeys(tag: CompoundTag, entityClass: Class<out Entity>): CompoundTag {
+    fun stripExcludedKeys(
+        tag: CompoundTag,
+        entityClass: Class<out Entity>,
+    ): CompoundTag {
         val excludedKeys = getExcludedKeys(entityClass)
         for (key in excludedKeys) {
             tag.remove(key)

@@ -53,7 +53,10 @@ abstract class BounceProjectile : FastThrowableProjectile {
         }
 
         when (direction.axis) {
-            Direction.Axis.X -> this.deltaMovement = this.deltaMovement.multiply(-0.6, 0.8, 0.8)
+            Direction.Axis.X -> {
+                this.deltaMovement = this.deltaMovement.multiply(-0.6, 0.8, 0.8)
+            }
+
             Direction.Axis.Y -> {
                 this.deltaMovement = this.deltaMovement.multiply(0.8, -0.5, 0.8)
                 if (this.deltaMovement.y() < this.getCustomGravity()) {
@@ -61,7 +64,9 @@ abstract class BounceProjectile : FastThrowableProjectile {
                 }
             }
 
-            Direction.Axis.Z -> this.deltaMovement = this.deltaMovement.multiply(0.8, 0.8, -0.6)
+            Direction.Axis.Z -> {
+                this.deltaMovement = this.deltaMovement.multiply(0.8, 0.8, -0.6)
+            }
         }
     }
 }

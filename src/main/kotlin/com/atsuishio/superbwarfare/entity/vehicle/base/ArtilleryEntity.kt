@@ -1,9 +1,9 @@
 package com.atsuishio.superbwarfare.entity.vehicle.base
 
-import com.atsuishio.superbwarfare.fabric.LevelLifecycleListener
 import com.atsuishio.superbwarfare.entity.getValue
 import com.atsuishio.superbwarfare.entity.setValue
 import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils.getXRotFromVector
+import com.atsuishio.superbwarfare.fabric.LevelLifecycleListener
 import com.atsuishio.superbwarfare.item.IVehicleInteract
 import com.atsuishio.superbwarfare.item.misc.firingParameters
 import com.atsuishio.superbwarfare.tools.FormatTool.format0D
@@ -30,8 +30,11 @@ import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
 import java.util.*
 
-open class ArtilleryEntity(type: EntityType<*>, world: Level) : VehicleEntity(type, world), LevelLifecycleListener {
-
+open class ArtilleryEntity(
+    type: EntityType<*>,
+    world: Level,
+) : VehicleEntity(type, world),
+    LevelLifecycleListener {
     open var shootVec by SHOOT_VEC
     open var depressed by DEPRESSED
     open var targetPos by TARGET_POS
@@ -39,7 +42,10 @@ open class ArtilleryEntity(type: EntityType<*>, world: Level) : VehicleEntity(ty
     open var radius by RADIUS
     open var lockTurret by LOCK_TURRET
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    override fun interact(
+        player: Player,
+        hand: InteractionHand,
+    ): InteractionResult {
         if (getGunData("Main") == null) return InteractionResult.SUCCESS
 
         val offStack = player.offhandItem
@@ -55,7 +61,7 @@ open class ArtilleryEntity(type: EntityType<*>, world: Level) : VehicleEntity(ty
     override fun onCrowbarInteract(
         stack: ItemStack,
         player: Player,
-        hand: InteractionHand
+        hand: InteractionHand,
     ): InteractionResult? {
         val res = super.onCrowbarInteract(stack, player, hand)
         val gunData = getGunData("Main") ?: return res
@@ -121,7 +127,11 @@ open class ArtilleryEntity(type: EntityType<*>, world: Level) : VehicleEntity(ty
         }
     }
 
-    open fun setTarget(stack: ItemStack, entity: Entity?, weaponName: String) {
+    open fun setTarget(
+        stack: ItemStack,
+        entity: Entity?,
+        weaponName: String,
+    ) {
         if (this.isWreck) return
         val parameters = stack.firingParameters
         var canAim = true
@@ -131,27 +141,30 @@ open class ArtilleryEntity(type: EntityType<*>, world: Level) : VehicleEntity(ty
         radius = parameters.radius
         val distance = targetPos.center.distanceTo(getShootPos(weaponName, 1f))
         val randomPos = targetPos.center.randomPos(radius).add(0.0, -0.5 - 0.0015 * distance, 0.0)
-        val launchVector = calculateLaunchVector(
-            getShootPos(weaponName, 1f),
-            randomPos,
-            getProjectileVelocity(weaponName).toDouble(),
-            getProjectileGravity(weaponName).toDouble(),
-            depressed
-        )
-        val launchVector2 = calculateLaunchVector(
-            getShootPos(weaponName, 1f),
-            randomPos,
-            getProjectileVelocity(weaponName).toDouble(),
-            getProjectileGravity(weaponName).toDouble(),
-            !depressed
-        )
+        val launchVector =
+            calculateLaunchVector(
+                getShootPos(weaponName, 1f),
+                randomPos,
+                getProjectileVelocity(weaponName).toDouble(),
+                getProjectileGravity(weaponName).toDouble(),
+                depressed,
+            )
+        val launchVector2 =
+            calculateLaunchVector(
+                getShootPos(weaponName, 1f),
+                randomPos,
+                getProjectileVelocity(weaponName).toDouble(),
+                getProjectileGravity(weaponName).toDouble(),
+                !depressed,
+            )
 
         var component = Component.literal("")
-        val location = Component.translatable(
-            "tips.superbwarfare.mortar.position",
-            this.displayName,
-            "[${format0D(x)}, ${format0D(y)}, ${format0D(z)}]"
-        )
+        val location =
+            Component.translatable(
+                "tips.superbwarfare.mortar.position",
+                this.displayName,
+                "[${format0D(x)}, ${format0D(y)}, ${format0D(z)}]",
+            )
 
         if (launchVector == null) {
             canAim = false
@@ -167,7 +180,7 @@ open class ArtilleryEntity(type: EntityType<*>, world: Level) : VehicleEntity(ty
                     if (entity is Player) {
                         entity.displayClientMessage(
                             location.copy().append(component).withStyle(ChatFormatting.RED),
-                            false
+                            false,
                         )
                     }
                     return
@@ -192,20 +205,20 @@ open class ArtilleryEntity(type: EntityType<*>, world: Level) : VehicleEntity(ty
         if (this.isWreck) return
         val distance = targetPos.center.distanceTo(getShootPos(weaponName, 1f))
         val randomPos = targetPos.center.randomPos(radius).add(0.0, -0.5 - 0.0015 * distance, 0.0)
-        val launchVector = calculateLaunchVector(
-            getShootPos(weaponName, 1f),
-            randomPos,
-            getProjectileVelocity(weaponName).toDouble(),
-            getProjectileGravity(weaponName).toDouble(),
-            depressed
-        ) ?: return
+        val launchVector =
+            calculateLaunchVector(
+                getShootPos(weaponName, 1f),
+                randomPos,
+                getProjectileVelocity(weaponName).toDouble(),
+                getProjectileGravity(weaponName).toDouble(),
+                depressed,
+            ) ?: return
 
         val angle = -getXRotFromVector(launchVector).toFloat()
         if (angle > -turretMaxPitch && angle < -turretMinPitch) {
             shootVec = launchVector.toVector3f()
         }
     }
-
 
     override fun baseTick() {
         super.baseTick()
@@ -224,17 +237,28 @@ open class ArtilleryEntity(type: EntityType<*>, world: Level) : VehicleEntity(ty
         }
     }
 
-    override fun vehicleShoot(living: LivingEntity?, weaponName: String, targetPos: Vec3?) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        weaponName: String,
+        targetPos: Vec3?,
+    ) {
         beforeShoot(living, weaponName)
         super.vehicleShoot(living, weaponName, targetPos)
     }
 
-    override fun vehicleShoot(living: LivingEntity?, uuid: UUID?, targetPos: Vec3?) {
+    override fun vehicleShoot(
+        living: LivingEntity?,
+        uuid: UUID?,
+        targetPos: Vec3?,
+    ) {
         beforeShoot(living, getGunName(getSeatIndex(living)))
         super.vehicleShoot(living, uuid, targetPos)
     }
 
-    open fun beforeShoot(living: LivingEntity?, weaponName: String? = null) {
+    open fun beforeShoot(
+        living: LivingEntity?,
+        weaponName: String? = null,
+    ) {
         val level = living?.level()
         if (level is ServerLevel) {
             ParticleTool.spawnBigCannonMuzzleParticles(getShootVec("Main", 1f), getShootPos("Main", 1f), level, this)

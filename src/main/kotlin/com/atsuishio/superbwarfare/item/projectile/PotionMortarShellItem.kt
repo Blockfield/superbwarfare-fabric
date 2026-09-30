@@ -5,12 +5,12 @@ import com.atsuishio.superbwarfare.init.ModEntities
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.DispenserLaunchable
-import net.minecraft.core.Position
-import net.minecraft.core.component.DataComponents
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry
 import net.minecraft.client.color.item.ItemColor
+import net.minecraft.core.Position
+import net.minecraft.core.component.DataComponents
 import net.minecraft.core.dispenser.BlockSource
 import net.minecraft.core.dispenser.DispenseItemBehavior
 import net.minecraft.network.chat.Component
@@ -23,7 +23,9 @@ import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.item.alchemy.Potions
 import net.minecraft.world.level.Level
 
-class PotionMortarShellItem : MortarShellItem(), DispenserLaunchable {
+class PotionMortarShellItem :
+    MortarShellItem(),
+    DispenserLaunchable {
     override fun getDefaultInstance(): ItemStack {
         val stack = super.getDefaultInstance()
         stack.set(DataComponents.POTION_CONTENTS, PotionContents(Potions.POISON))
@@ -34,30 +36,33 @@ class PotionMortarShellItem : MortarShellItem(), DispenserLaunchable {
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         stack.get(DataComponents.POTION_CONTENTS)?.addPotionTooltip(
             { e -> tooltipComponents.add(e) },
             0.125f,
-            context.tickRate()
+            context.tickRate(),
         )
     }
 
     override fun getLaunchBehavior(): DispenseItemBehavior {
         return object : AbstractProjectileDispenseBehavior() {
-            override fun getPower(): Float {
-                return 0.5f
-            }
+            override fun getPower(): Float = 0.5f
 
-            override fun getProjectile(level: Level, position: Position, stack: ItemStack): Projectile {
-                val shell = MortarShellEntity(
-                    ModEntities.MORTAR_SHELL.get(),
-                    position.x(),
-                    position.y(),
-                    position.z(),
-                    level,
-                    0.13f
-                )
+            override fun getProjectile(
+                level: Level,
+                position: Position,
+                stack: ItemStack,
+            ): Projectile {
+                val shell =
+                    MortarShellEntity(
+                        ModEntities.MORTAR_SHELL.get(),
+                        position.x(),
+                        position.y(),
+                        position.z(),
+                        level,
+                        0.13f,
+                    )
                 shell.setEffectsFromItem(stack)
                 return shell
             }
@@ -75,11 +80,15 @@ class PotionMortarShellItem : MortarShellItem(), DispenserLaunchable {
         fun init() {
             ColorProviderRegistry.ITEM.register(
                 ItemColor { stack, layer ->
-                    if (layer == 1) FastColor.ARGB32.opaque(
-                        stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).color
-                    ) else -1
+                    if (layer == 1) {
+                        FastColor.ARGB32.opaque(
+                            stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).color,
+                        )
+                    } else {
+                        -1
+                    }
                 },
-                ModItems.POTION_MORTAR_SHELL.get()
+                ModItems.POTION_MORTAR_SHELL.get(),
             )
         }
     }

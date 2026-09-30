@@ -11,6 +11,7 @@ UV — box-раскладка Bedrock (1 юнит модели = 1 пиксел�
 
     python3 tools/gen_scout_drone.py
 """
+
 import json
 import math
 import os
@@ -23,22 +24,29 @@ random.seed(20260905)
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 ASSETS = os.path.join(ROOT, "src/main/resources/assets/superbwarfare")
 
-TEX = 128          # размер PNG
-UV = 64            # система координат UV в geo (texture_width/height)
+TEX = 128  # размер PNG
+UV = 64  # система координат UV в geo (texture_width/height)
 SCALE = TEX // UV  # 1 юнит модели = SCALE пикселей текстуры
 
 # Материалы: (базовый цвет, разброс шума)
 MAT = {
-    "shell":       ((198, 202, 207), 5),   # серый пластик корпуса
-    "shell_light": ((228, 231, 234), 4),   # белая верхняя крышка
-    "dark":        ((88, 93, 100), 5),     # мотор/шасси/аккумулятор
-    "prop":        ((58, 62, 68), 3),      # лопасти
-    "lens":        ((26, 30, 38), 2),      # объектив
-    "led":         ((196, 60, 52), 2),     # проблесковый маяк
+    "shell": ((198, 202, 207), 5),  # серый пластик корпуса
+    "shell_light": ((228, 231, 234), 4),  # белая верхняя крышка
+    "dark": ((88, 93, 100), 5),  # мотор/шасси/аккумулятор
+    "prop": ((58, 62, 68), 3),  # лопасти
+    "lens": ((26, 30, 38), 2),  # объектив
+    "led": ((196, 60, 52), 2),  # проблесковый маяк
 }
 
 # Затенение граней, чтобы кубы читались объёмными без ручной отрисовки.
-FACE_SHADE = {"up": 1.0, "down": 0.55, "north": 0.86, "south": 0.78, "east": 0.70, "west": 0.70}
+FACE_SHADE = {
+    "up": 1.0,
+    "down": 0.55,
+    "north": 0.86,
+    "south": 0.78,
+    "east": 0.70,
+    "west": 0.70,
+}
 
 
 def mirror_x(origin, size):
@@ -67,16 +75,16 @@ ROTOR_FRONT = (4.9, -3.0)
 ROTOR_BACK = (4.2, 3.9)
 
 BODY_CUBES = [
-    ("shell",       [-1.6, 2.4, -3.4], [3.2, 1.2, 6.6]),    # фюзеляж
-    ("shell_light", [-1.3, 3.6, -2.8], [2.6, 0.9, 4.4]),    # верхняя крышка
-    ("shell",       [-1.0, 2.7, -4.4], [2.0, 0.9, 1.0]),    # нос
-    ("dark",        [-1.2, 2.6, 3.2],  [2.4, 1.1, 1.5]),    # аккумулятор
-    ("dark",        [1.0, 1.3, -0.9],  [0.5, 1.1, 2.2]),    # стойка шасси L
-    ("dark",        [-1.5, 1.3, -0.9], [0.5, 1.1, 2.2]),    # стойка шасси R
-    ("shell",       [0.85, 1.15, -1.0], [0.8, 0.25, 2.4]),  # пятка L
-    ("shell",       [-1.65, 1.15, -1.0], [0.8, 0.25, 2.4]), # пятка R
-    ("dark",        [-0.15, 4.5, 2.2], [0.3, 1.2, 0.3]),    # антенна
-    ("led",         [-0.3, 2.25, 1.4], [0.6, 0.2, 0.6]),    # маяк
+    ("shell", [-1.6, 2.4, -3.4], [3.2, 1.2, 6.6]),  # фюзеляж
+    ("shell_light", [-1.3, 3.6, -2.8], [2.6, 0.9, 4.4]),  # верхняя крышка
+    ("shell", [-1.0, 2.7, -4.4], [2.0, 0.9, 1.0]),  # нос
+    ("dark", [-1.2, 2.6, 3.2], [2.4, 1.1, 1.5]),  # аккумулятор
+    ("dark", [1.0, 1.3, -0.9], [0.5, 1.1, 2.2]),  # стойка шасси L
+    ("dark", [-1.5, 1.3, -0.9], [0.5, 1.1, 2.2]),  # стойка шасси R
+    ("shell", [0.85, 1.15, -1.0], [0.8, 0.25, 2.4]),  # пятка L
+    ("shell", [-1.65, 1.15, -1.0], [0.8, 0.25, 2.4]),  # пятка R
+    ("dark", [-0.15, 4.5, 2.2], [0.3, 1.2, 0.3]),  # антенна
+    ("led", [-0.3, 2.25, 1.4], [0.6, 0.2, 0.6]),  # маяк
 ]
 
 for _x, _z, _z0, _len, _lat in (
@@ -88,7 +96,7 @@ for _x, _z, _z0, _len, _lat in (
         BODY_CUBES.append((mat,) + tuple(mirror_x(origin, size)))
 
 CAMERA_CUBES = [
-    ("dark", [-0.9, 2.2, -4.6],   [1.8, 0.6, 0.9]),
+    ("dark", [-0.9, 2.2, -4.6], [1.8, 0.6, 0.9]),
     ("dark", [-0.85, 1.1, -4.75], [1.7, 1.2, 1.5]),
     ("lens", [-0.6, 1.35, -5.05], [1.2, 0.8, 0.35]),
 ]
@@ -97,7 +105,12 @@ BONES = [
     {"name": "bone", "pivot": [0, 0, 0], "cubes": []},
     {"name": "0", "parent": "bone", "pivot": [0, 2.2, 0], "cubes": []},
     {"name": "body", "parent": "0", "pivot": [0, 3, 0], "cubes": BODY_CUBES},
-    {"name": "camera", "parent": "body", "pivot": [0, 2.2, -4.2], "cubes": CAMERA_CUBES},
+    {
+        "name": "camera",
+        "parent": "body",
+        "pivot": [0, 2.2, -4.2],
+        "cubes": CAMERA_CUBES,
+    },
 ]
 
 # Имена winglet-костей обязаны совпадать с DroneModel.collectTransform — оттуда идёт
@@ -108,7 +121,9 @@ for name, (rx, rz) in (
     ("wingBL", (ROTOR_BACK[0], ROTOR_BACK[1])),
     ("wingBR", (-ROTOR_BACK[0], ROTOR_BACK[1])),
 ):
-    BONES.append({"name": name, "parent": "0", "pivot": [rx, 4.05, rz], "cubes": prop(rx, rz)})
+    BONES.append(
+        {"name": name, "parent": "0", "pivot": [rx, 4.05, rz], "cubes": prop(rx, rz)}
+    )
 
 
 def box_uv_size(size):
@@ -119,11 +134,11 @@ def box_uv_size(size):
 def face_rects(u, v, size):
     sx, sy, sz = size
     return {
-        "up":    (u + sz, v, sx, sz),
-        "down":  (u + sz + sx, v, sx, sz),
-        "east":  (u, v + sz, sz, sy),
+        "up": (u + sz, v, sx, sz),
+        "down": (u + sz + sx, v, sx, sz),
+        "east": (u, v + sz, sz, sy),
         "north": (u + sz, v + sz, sx, sy),
-        "west":  (u + sz + sx, v + sz, sz, sy),
+        "west": (u + sz + sx, v + sz, sz, sy),
         "south": (u + 2 * sz + sx, v + sz, sx, sy),
     }
 
@@ -169,9 +184,11 @@ def write_geo(placed):
     by_bone = {}
     for (mat, origin, size, u, v), (bone_name, cube_index) in zip(placed, CUBE_INDEX):
         by_bone.setdefault(bone_name, []).append(
-            {"origin": [round(c, 4) for c in origin],
-             "size": [round(c, 4) for c in size],
-             "uv": [round(u, 2), round(v, 2)]}
+            {
+                "origin": [round(c, 4) for c in origin],
+                "size": [round(c, 4) for c in size],
+                "uv": [round(u, 2), round(v, 2)],
+            }
         )
 
     bones = []
@@ -186,17 +203,19 @@ def write_geo(placed):
 
     geo = {
         "format_version": "1.12.0",
-        "minecraft:geometry": [{
-            "description": {
-                "identifier": "geometry.scout_drone",
-                "texture_width": UV,
-                "texture_height": UV,
-                "visible_bounds_width": 2,
-                "visible_bounds_height": 1.5,
-                "visible_bounds_offset": [0, 0.25, 0],
-            },
-            "bones": bones,
-        }],
+        "minecraft:geometry": [
+            {
+                "description": {
+                    "identifier": "geometry.scout_drone",
+                    "texture_width": UV,
+                    "texture_height": UV,
+                    "visible_bounds_width": 2,
+                    "visible_bounds_height": 1.5,
+                    "visible_bounds_offset": [0, 0.25, 0],
+                },
+                "bones": bones,
+            }
+        ],
     }
     path = os.path.join(ASSETS, "geo/scout_drone.geo.json")
     with open(path, "w") as f:

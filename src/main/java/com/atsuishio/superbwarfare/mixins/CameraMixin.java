@@ -8,6 +8,7 @@ import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.tools.EntityFindUtil;
 import com.atsuishio.superbwarfare.tools.NBTTool;
 import com.mojang.math.Axis;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+
 import org.joml.Math;
 import org.joml.Matrix4d;
 import org.joml.Vector4d;
@@ -38,10 +40,21 @@ public abstract class CameraMixin {
     protected abstract void setPosition(double x, double y, double z);
 
     // Ваниль зовёт двухаргументный setRotation; трёхаргументный (с креном) добавляет NeoForge.
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setRotation(FF)V", ordinal = 0),
+    @Inject(
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/client/Camera;setRotation(FF)V",
+                            ordinal = 0),
             method = "setup",
             cancellable = true)
-    private void onSetup(BlockGetter level, Entity entity, boolean detached, boolean thirdPersonReverse, float partialTicks, CallbackInfo info) {
+    private void onSetup(
+            BlockGetter level,
+            Entity entity,
+            boolean detached,
+            boolean thirdPersonReverse,
+            float partialTicks,
+            CallbackInfo info) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null) return;
@@ -49,10 +62,16 @@ public abstract class CameraMixin {
         ItemStack stack = player.getMainHandItem();
         var tag = NBTTool.getTag(stack);
 
-        if (stack.is(ModItems.MONITOR.get()) && tag.getBoolean("Using") && tag.getBoolean("Linked")) {
-            DroneEntity drone = EntityFindUtil.findDrone(player.level(), tag.getString("LinkedDrone"));
+        if (stack.is(ModItems.MONITOR.get())
+                && tag.getBoolean("Using")
+                && tag.getBoolean("Linked")) {
+            DroneEntity drone =
+                    EntityFindUtil.findDrone(player.level(), tag.getString("LinkedDrone"));
             if (drone != null) {
-                boolean firstPerson = Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON || Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_BACK;
+                boolean firstPerson =
+                        Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON
+                                || Minecraft.getInstance().options.getCameraType()
+                                        == CameraType.THIRD_PERSON_BACK;
                 if (firstPerson) {
                     Matrix4d transform = superbWarfare$getDroneTransform(drone, partialTicks);
                     double x0 = 0;
@@ -83,11 +102,23 @@ public abstract class CameraMixin {
         }
 
         if (player.getVehicle() instanceof VehicleEntity vehicle) {
-            var rotation = vehicle.getCameraRotation(partialTicks, player, ClientEventHandler.zoomVehicle, Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON);
+            var rotation =
+                    vehicle.getCameraRotation(
+                            partialTicks,
+                            player,
+                            ClientEventHandler.zoomVehicle,
+                            Minecraft.getInstance().options.getCameraType()
+                                    == CameraType.FIRST_PERSON);
             if (rotation != null) {
                 setRotation(rotation.x, rotation.y);
             }
-            var position = vehicle.getCameraPosition(partialTicks, player, ClientEventHandler.zoomVehicle, Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON);
+            var position =
+                    vehicle.getCameraPosition(
+                            partialTicks,
+                            player,
+                            ClientEventHandler.zoomVehicle,
+                            Minecraft.getInstance().options.getCameraType()
+                                    == CameraType.FIRST_PERSON);
             if (position != null) {
                 setPosition(position.x, position.y, position.z);
             }
@@ -95,14 +126,16 @@ public abstract class CameraMixin {
             if (rotation != null || position != null) {
                 info.cancel();
             }
-
         }
     }
 
     @Unique
     private static Matrix4d superbWarfare$getDroneTransform(DroneEntity vehicle, float ticks) {
         Matrix4d transform = new Matrix4d();
-        transform.translate(Mth.lerp(ticks, vehicle.xo, vehicle.getX()), Mth.lerp(ticks, vehicle.yo, vehicle.getY()), Mth.lerp(ticks, vehicle.zo, vehicle.getZ()));
+        transform.translate(
+                Mth.lerp(ticks, vehicle.xo, vehicle.getX()),
+                Mth.lerp(ticks, vehicle.yo, vehicle.getY()),
+                Mth.lerp(ticks, vehicle.zo, vehicle.getZ()));
         transform.rotate(Axis.YP.rotationDegrees(-vehicle.getYaw(ticks)));
         transform.rotate(Axis.XP.rotationDegrees(vehicle.getBodyPitch(ticks)));
         transform.rotate(Axis.ZP.rotationDegrees(vehicle.getRoll(ticks)));
@@ -110,25 +143,46 @@ public abstract class CameraMixin {
     }
 
     @Unique
-    private static Vector4d superbWarfare$transformPosition(Matrix4d transform, double x, double y, double z) {
+    private static Vector4d superbWarfare$transformPosition(
+            Matrix4d transform, double x, double y, double z) {
         return transform.transform(new Vector4d(x, y, z, 1));
     }
 
     @Inject(method = "setup", at = @At("TAIL"))
-    public void superbWarfare$setup(BlockGetter area, Entity entity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci) {
+    public void superbWarfare$setup(
+            BlockGetter area,
+            Entity entity,
+            boolean thirdPerson,
+            boolean inverseView,
+            float tickDelta,
+            CallbackInfo ci) {
         if (Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_BACK
                 && entity instanceof Player player
                 && player.getMainHandItem().getItem() instanceof GunItem
-                && Math.max(ClientEventHandler.bowPullPos, ClientEventHandler.zoomPos) > 0
-        ) {
-            move(-getMaxZoom((float) (-2.9 * Math.max(ClientEventHandler.bowPullPos, ClientEventHandler.zoomPos))), 0F, (float) (-ClientEventHandler.cameraLocation * Math.max(ClientEventHandler.bowPullPos, ClientEventHandler.zoomPos)));
+                && Math.max(ClientEventHandler.bowPullPos, ClientEventHandler.zoomPos) > 0) {
+            move(
+                    -getMaxZoom(
+                            (float)
+                                    (-2.9
+                                            * Math.max(
+                                                    ClientEventHandler.bowPullPos,
+                                                    ClientEventHandler.zoomPos))),
+                    0F,
+                    (float)
+                            (-ClientEventHandler.cameraLocation
+                                    * Math.max(
+                                            ClientEventHandler.bowPullPos,
+                                            ClientEventHandler.zoomPos)));
             return;
         }
 
         if (!thirdPerson || !(entity.getVehicle() instanceof VehicleEntity vehicle)) return;
 
         var cameraPosition = vehicle.getThirdPersonCameraPosition();
-        move(-getMaxZoom((float) cameraPosition.x()), (float) cameraPosition.y(), (float) cameraPosition.z());
+        move(
+                -getMaxZoom((float) cameraPosition.x()),
+                (float) cameraPosition.y(),
+                (float) cameraPosition.z());
     }
 
     @Shadow

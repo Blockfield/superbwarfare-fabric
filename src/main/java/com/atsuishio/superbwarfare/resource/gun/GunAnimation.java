@@ -17,15 +17,19 @@ public class GunAnimation {
     // Reload > ReloadNormal | ReloadEmpty
     @SerializedName("Reload")
     public String reload;
+
     @SerializedName("ReloadNormal")
     public String reloadNormal;
+
     @SerializedName("ReloadEmpty")
     public String reloadEmpty;
 
     @SerializedName("Prepare")
     public String prepare;
+
     @SerializedName("Iterative")
     public String iterative;
+
     @SerializedName("Finish")
     public String finish;
 

@@ -36,28 +36,35 @@ import net.minecraft.world.level.pathfinder.PathComputationType
 import net.minecraft.world.phys.BlockHitResult
 
 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-open class SuperbItemInterfaceBlock : BaseEntityBlock(
-    Properties.of().mapColor(MapColor.STONE).requiresCorrectToolForDrops()
-        .strength(3f, 4.8f).sound(SoundType.METAL)
-) {
+open class SuperbItemInterfaceBlock :
+    BaseEntityBlock(
+        Properties
+            .of()
+            .mapColor(MapColor.STONE)
+            .requiresCorrectToolForDrops()
+            .strength(3f, 4.8f)
+            .sound(SoundType.METAL),
+    ) {
     init {
         this.registerDefaultState(
-            this.stateDefinition.any()
+            this.stateDefinition
+                .any()
                 .setValue(ENABLED, true)
-                .setValue(FACING, Direction.DOWN)
+                .setValue(FACING, Direction.DOWN),
         )
     }
 
-    override fun newBlockEntity(pPos: BlockPos, pState: BlockState): BlockEntity {
-        return SuperbItemInterfaceBlockEntity(ModBlockEntities.SUPERB_ITEM_INTERFACE.get(), pPos, pState)
-    }
+    override fun newBlockEntity(
+        pPos: BlockPos,
+        pState: BlockState,
+    ): BlockEntity = SuperbItemInterfaceBlockEntity(ModBlockEntities.SUPERB_ITEM_INTERFACE.get(), pPos, pState)
 
     override fun useWithoutItem(
         state: BlockState,
         level: Level,
         pos: BlockPos,
         player: Player,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): InteractionResult {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS
@@ -74,23 +81,33 @@ open class SuperbItemInterfaceBlock : BaseEntityBlock(
     override fun <T : BlockEntity> getTicker(
         pLevel: Level,
         pState: BlockState,
-        pBlockEntityType: BlockEntityType<T>
-    ): BlockEntityTicker<T>? {
-        return if (pLevel.isClientSide) null else createTickerHelper<SuperbItemInterfaceBlockEntity, T>(
-            pBlockEntityType,
-            ModBlockEntities.SUPERB_ITEM_INTERFACE.get(),
-            SuperbItemInterfaceBlockEntity::serverTick
-        )
-    }
+        pBlockEntityType: BlockEntityType<T>,
+    ): BlockEntityTicker<T>? =
+        if (pLevel.isClientSide) {
+            null
+        } else {
+            createTickerHelper<SuperbItemInterfaceBlockEntity, T>(
+                pBlockEntityType,
+                ModBlockEntities.SUPERB_ITEM_INTERFACE.get(),
+                SuperbItemInterfaceBlockEntity::serverTick,
+            )
+        }
 
     override fun getStateForPlacement(context: BlockPlaceContext): BlockState? {
         val direction = context.clickedFace.opposite
-        return this.defaultBlockState()
+        return this
+            .defaultBlockState()
             .setValue(FACING, direction)
             .setValue(ENABLED, true)
     }
 
-    override fun onPlace(pState: BlockState, pLevel: Level, pPos: BlockPos, pOldState: BlockState, pIsMoving: Boolean) {
+    override fun onPlace(
+        pState: BlockState,
+        pLevel: Level,
+        pPos: BlockPos,
+        pOldState: BlockState,
+        pIsMoving: Boolean,
+    ) {
         if (!pOldState.`is`(pState.block)) {
             this.checkPoweredState(pLevel, pPos, pState, 2)
         }
@@ -103,7 +120,7 @@ open class SuperbItemInterfaceBlock : BaseEntityBlock(
         pos: BlockPos,
         player: Player,
         hand: InteractionHand,
-        hitResult: BlockHitResult
+        hitResult: BlockHitResult,
     ): ItemInteractionResult {
         if (stack.`is`(ModTags.Items.TOOLS_CROWBAR) || stack.`is`(ModTags.Items.WRENCHES) || stack.`is`(ModTags.Items.TOOLS_WRENCH)) {
             var facing = hitResult.direction
@@ -122,12 +139,17 @@ open class SuperbItemInterfaceBlock : BaseEntityBlock(
         pPos: BlockPos,
         pBlock: Block,
         pFromPos: BlockPos,
-        pIsMoving: Boolean
+        pIsMoving: Boolean,
     ) {
         this.checkPoweredState(pLevel, pPos, pState, 4)
     }
 
-    private fun checkPoweredState(pLevel: Level, pPos: BlockPos, pState: BlockState, pFlags: Int) {
+    private fun checkPoweredState(
+        pLevel: Level,
+        pPos: BlockPos,
+        pState: BlockState,
+        pFlags: Int,
+    ) {
         val flag = !pLevel.hasNeighborSignal(pPos)
         if (flag != pState.getValue(ENABLED)) {
             pLevel.setBlock(pPos, pState.setValue(ENABLED, flag), pFlags)
@@ -139,7 +161,7 @@ open class SuperbItemInterfaceBlock : BaseEntityBlock(
         pLevel: Level,
         pPos: BlockPos,
         pNewState: BlockState,
-        pIsMoving: Boolean
+        pIsMoving: Boolean,
     ) {
         if (!pState.`is`(pNewState.block)) {
             val blockEntity = pLevel.getBlockEntity(pPos)
@@ -152,34 +174,33 @@ open class SuperbItemInterfaceBlock : BaseEntityBlock(
         }
     }
 
-    override fun getRenderShape(pState: BlockState): RenderShape {
-        return RenderShape.MODEL
-    }
+    override fun getRenderShape(pState: BlockState): RenderShape = RenderShape.MODEL
 
-    override fun hasAnalogOutputSignal(pState: BlockState): Boolean {
-        return true
-    }
+    override fun hasAnalogOutputSignal(pState: BlockState): Boolean = true
 
-    override fun getAnalogOutputSignal(pBlockState: BlockState, pLevel: Level, pPos: BlockPos): Int {
-        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(pLevel.getBlockEntity(pPos))
-    }
+    override fun getAnalogOutputSignal(
+        pBlockState: BlockState,
+        pLevel: Level,
+        pPos: BlockPos,
+    ): Int = AbstractContainerMenu.getRedstoneSignalFromBlockEntity(pLevel.getBlockEntity(pPos))
 
     override fun createBlockStateDefinition(pBuilder: StateDefinition.Builder<Block?, BlockState?>) {
         pBuilder.add(ENABLED).add(FACING)
     }
 
-    override fun isPathfindable(state: BlockState, pathComputationType: PathComputationType): Boolean {
-        return false
-    }
+    override fun isPathfindable(
+        state: BlockState,
+        pathComputationType: PathComputationType,
+    ): Boolean = false
 
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(
-            Component.translatable("des.superbwarfare.superb_item_interface").withStyle(ChatFormatting.GRAY)
+            Component.translatable("des.superbwarfare.superb_item_interface").withStyle(ChatFormatting.GRAY),
         )
     }
 

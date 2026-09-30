@@ -8,16 +8,20 @@ import com.atsuishio.superbwarfare.init.ModDamageTypes
 import com.atsuishio.superbwarfare.init.ModRarities
 import com.atsuishio.superbwarfare.init.ModSounds
 import com.atsuishio.superbwarfare.item.CustomDamageProperty
+import com.atsuishio.superbwarfare.item.DamageFilterItem
 import com.atsuishio.superbwarfare.network.message.receive.ClientIndicatorMessage
 import com.atsuishio.superbwarfare.network.message.receive.LivingGunKillMessage
 import com.atsuishio.superbwarfare.tools.TraceTool
 import com.atsuishio.superbwarfare.tools.sendPacket
 import com.atsuishio.superbwarfare.tools.sendPacketToAll
-import net.minecraft.core.registries.BuiltInRegistries
+import io.github.fabricators_of_create.porting_lib.item.extensions.DamageableItem
+import io.github.fabricators_of_create.porting_lib.item.extensions.EntitySwingListenerItem
+import io.github.fabricators_of_create.porting_lib.item.extensions.ShieldBlockItem
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Holder
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.particles.SimpleParticleType
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundSoundPacket
 import net.minecraft.server.level.ServerLevel
@@ -32,39 +36,45 @@ import net.minecraft.world.item.SwordItem
 import net.minecraft.world.item.Tiers
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.gameevent.GameEvent
-import com.atsuishio.superbwarfare.item.DamageFilterItem
-import io.github.fabricators_of_create.porting_lib.item.extensions.DamageableItem
-import io.github.fabricators_of_create.porting_lib.item.extensions.EntitySwingListenerItem
-import io.github.fabricators_of_create.porting_lib.item.extensions.ShieldBlockItem
 import javax.annotation.ParametersAreNonnullByDefault
 
-open class BeastItem : SwordItem(
-    Tiers.NETHERITE, CustomDamageProperty(false)
-        .stacksTo(1)
-        .rarity(ModRarities.LEGENDARY)
-), DamageableItem, DamageFilterItem, EntitySwingListenerItem, ShieldBlockItem {
+open class BeastItem :
+    SwordItem(
+        Tiers.NETHERITE,
+        CustomDamageProperty(false)
+            .stacksTo(1)
+            .rarity(ModRarities.LEGENDARY),
+    ),
+    DamageableItem,
+    DamageFilterItem,
+    EntitySwingListenerItem,
+    ShieldBlockItem {
     // setNoRepair() из NeoForge-овских Properties выброшен: предмет и так UNBREAKABLE, чинить нечего.
-    override fun isDamageable(stack: ItemStack): Boolean {
-        return false
-    }
+    override fun isDamageable(stack: ItemStack): Boolean = false
 
-    override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
+    override fun hurtEnemy(
+        stack: ItemStack,
+        target: LivingEntity,
+        attacker: LivingEntity,
+    ): Boolean {
         beastKill(attacker, target)
         return true
     }
 
     // getSweepHitBox (+3 блока к размаху) живёт в PlayerMixin.sbw$beastSweepHitBox.
 
-    override fun canBeHurtBy(stack: ItemStack, source: DamageSource): Boolean {
-        return false
-    }
+    override fun canBeHurtBy(
+        stack: ItemStack,
+        source: DamageSource,
+    ): Boolean = false
 
-    override fun isEnchantable(stack: ItemStack): Boolean {
-        return false
-    }
+    override fun isEnchantable(stack: ItemStack): Boolean = false
 
     @ParametersAreNonnullByDefault
-    override fun onEntitySwing(stack: ItemStack, entity: LivingEntity): Boolean {
+    override fun onEntitySwing(
+        stack: ItemStack,
+        entity: LivingEntity,
+    ): Boolean {
         val target = TraceTool.findMeleeEntity(entity, 51.4)
         if (target != null) {
             beastKill(entity, target)
@@ -72,7 +82,11 @@ open class BeastItem : SwordItem(
         return false
     }
 
-    override fun onLeftClickEntity(stack: ItemStack, player: Player, entity: Entity): Boolean {
+    override fun onLeftClickEntity(
+        stack: ItemStack,
+        player: Player,
+        entity: Entity,
+    ): Boolean {
         beastKill(player, entity)
         return super.onLeftClickEntity(stack, player, entity)
     }
@@ -81,30 +95,31 @@ open class BeastItem : SwordItem(
         stack: ItemStack,
         shield: ItemStack,
         entity: LivingEntity,
-        attacker: LivingEntity
-    ): Boolean {
-        return true
-    }
+        attacker: LivingEntity,
+    ): Boolean = true
 
     @ParametersAreNonnullByDefault
     override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltipComponents: MutableList<Component>,
-        tooltipFlag: TooltipFlag
+        tooltipFlag: TooltipFlag,
     ) {
         tooltipComponents.add(Component.translatable("des.superbwarfare.beast").withColor(0xa56855))
     }
 
     companion object {
         @JvmStatic
-        fun beastKill(attacker: Entity?, target: Entity) {
+        fun beastKill(
+            attacker: Entity?,
+            target: Entity,
+        ) {
             if (target.level().isClientSide) return
 
             if (target is TargetEntity) {
                 target.hurt(
                     ModDamageTypes.causeBeastDamage(target.level().registryAccess(), attacker, attacker),
-                    114514F
+                    114514F,
                 )
                 return
             }
@@ -112,7 +127,7 @@ open class BeastItem : SwordItem(
             if (target is DPSGeneratorEntity) {
                 target.hurt(
                     ModDamageTypes.causeBeastDamage(target.level().registryAccess(), attacker, attacker),
-                    114514F
+                    114514F,
                 )
                 target.beastCharge()
                 return
@@ -130,17 +145,21 @@ open class BeastItem : SwordItem(
                         attacker.z,
                         1f,
                         1f,
-                        attacker.level().random.nextLong()
-                    )
+                        attacker.level().random.nextLong(),
+                    ),
                 )
 
                 val box = target.boundingBox
                 (attacker.level() as ServerLevel).sendParticles<SimpleParticleType?>(
                     ParticleTypes.DAMAGE_INDICATOR,
-                    target.x, target.y + .5, target.z,
+                    target.x,
+                    target.y + .5,
+                    target.z,
                     1000,
-                    box.xsize / 2.5, box.ysize / 3, box.zsize / 2.5,
-                    0.0
+                    box.xsize / 2.5,
+                    box.ysize / 3,
+                    box.zsize / 2.5,
+                    0.0,
                 )
 
                 if (MiscConfig.SEND_KILL_FEEDBACK.get()) {
@@ -152,8 +171,8 @@ open class BeastItem : SwordItem(
                             ModDamageTypes.BEAST,
                             attacker.uuid,
                             target.uuid,
-                            BuiltInRegistries.ITEM.getKey(attacker.mainHandItem.item)
-                        )
+                            BuiltInRegistries.ITEM.getKey(attacker.mainHandItem.item),
+                        ),
                     )
                 }
             }
@@ -165,8 +184,8 @@ open class BeastItem : SwordItem(
                         Component.translatable(
                             "death.attack.beast_gun",
                             target.getDisplayName(),
-                            if (attacker != null) attacker.displayName else ""
-                        )
+                            if (attacker != null) attacker.displayName else "",
+                        ),
                     )
                 }
             } else {
@@ -189,7 +208,7 @@ open class BeastItem : SwordItem(
                 ModSounds.OUCH.get(),
                 SoundSource.PLAYERS,
                 2f,
-                1f
+                1f,
             )
         }
     }
