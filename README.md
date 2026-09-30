@@ -1,10 +1,8 @@
-> **Blockfield:** этот форк попадает в пак так: закоммитить в `main`, затем в `blockfield-modpack` выполнить `scripts/bump-fork.sh superbwarfare`. Скрипт сам ставит тег `bfN`, ждёт сборку и закрепляет релиз. Версию руками не менять.
-
 # Superb Warfare — Fabric 1.21.1 port
 
 Unofficial port of [Superb Warfare](https://github.com/Mercurows/SuperbWarfare) (NeoForge 1.21.1,
 by Atsuishio, Roki27, Light_Quanta and contributors) to **Fabric 1.21.1**, maintained by
-[Blockfield](https://github.com/Blockfield) for the Blockfield server modpack.
+[Blockfield](https://github.com/Blockfield) for the Blockfield builds.
 Not affiliated with or endorsed by the upstream authors.
 
 Upstream READMEs: [中文](./README-zh.md) | [English](./README-en.md) (they describe the original
@@ -38,6 +36,14 @@ The mod jar is written to `build/libs/superbwarfare-<version>-mc1.21.1.jar`. Rel
 attached to [GitHub Releases](https://github.com/Blockfield/superbwarfare-fabric/releases) and
 named after the release tag.
 
+## Releases
+
+After committing to `main`, run `scripts/bump-fork.sh superbwarfare` from
+[blockfield-client](https://github.com/Blockfield/blockfield-client). It creates a
+`bfN` tag, waits for the build and pins the released JAR. Passing an existing `bfN`
+as the second argument only updates the pin. Update the server pin as well and
+use a coordinated server/client release. `just format` applies source formatting.
+
 ## License
 
 Code is licensed under the **GNU LGPL-3.0-only** ([COPYING.LESSER](./COPYING.LESSER), which
@@ -49,15 +55,3 @@ by the Superb Warfare team; they are included here exactly as published in the u
 repository and remain the property of their authors.
 
 Port changes are © Blockfield and contributors, under the same license.
-
-## Developer checks
-
-Install Python 3.12+, Node.js 22 and Just 1.57.0, native JDK 21 (`JAVA_HOME`) on Linux or Windows. Quality tools stay in the project cache.
-
-```sh
-just setup
-just check
-just format
-```
-
-`just --list` lists supported build and application commands.
