@@ -59,7 +59,7 @@ open class DeferredRegister<T> protected constructor(
     fun <U : T> register(
         name: String,
         factory: (ResourceLocation) -> U,
-    ): DeferredHolder<T, U> = register(name) { factory(ResourceLocation.fromNamespaceAndPath(namespace, name)) }
+    ): DeferredHolder<T, U> = register(name, Supplier { factory(ResourceLocation.fromNamespaceAndPath(namespace, name)) })
 
     /** Совместимость с апстримом: на Fabric регистрировать уже нечего, объект инициализирован. */
     fun register(bus: Any?) = Unit

@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.damagesource.DamageTypes
 
 fun main() {
+    deferredRegisterChecks()
     TaczHeadshotCompat.recordHit(10, true)
     check(TaczHeadshotCompat.isHeadshot(10))
     check(!TaczHeadshotCompat.isHeadshot(11))
@@ -22,5 +23,5 @@ fun main() {
     check(!DamageTypeTool.isKnifeDamage(DamageTypes.ARROW))
     check(!DamageTypeTool.isKnifeDamage(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse("tacz:bullet"))))
     meleeReachChecks()
-    println("Kill feed and melee reach checks passed")
+    println("Kill feed, melee reach and deferred registration checks passed")
 }
