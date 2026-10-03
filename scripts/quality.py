@@ -105,6 +105,8 @@ def lint(files):
     each(["ruff", "check"], [f for f in files if f.endswith(".py")])
     each(["shellcheck", "--severity=error"], [f for f in files if f.endswith(".sh")])
     kotlin([f for f in files if f.endswith((".kt", ".kts"))])
+    for script in (f for f in files if f.endswith(".js")):
+        run("node", "--check", script)
     if (ROOT / "go.mod").is_file():
         run("go", "vet", "-p", "1", "./...")
     if (ROOT / "Cargo.toml").is_file():
@@ -157,6 +159,15 @@ def formatting(files, write=False):
     if (ROOT / "package.json").is_file():
         manager = "pnpm" if (ROOT / "pnpm-lock.yaml").is_file() else "npm"
         run(manager, "run", "format" if write else "format:check")
+    each(
+        [
+            "prettier",
+            "--trailing-comma",
+            "none",
+            "--write" if write else "--check",
+        ],
+        [f for f in files if f.endswith(".js")],
+    )
     docs = [
         f
         for f in files

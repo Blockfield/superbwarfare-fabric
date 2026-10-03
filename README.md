@@ -38,6 +38,8 @@ named after the release tag.
 
 `just test` runs the JVM regression checks; `just check` and `just build` also run Java compiler lint.
 CI verifies lint and formatting in Code standards, and JVM lint and regression checks in Build.
+Resource JavaScript is syntax-checked by Node.js, formatted by Prettier, and compiled by the same
+pinned Rhino engine as the game; `scriptCheck` also tests safe scopes and context cleanup across threads.
 
 ## Releases
 

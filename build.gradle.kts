@@ -237,5 +237,14 @@ tasks.named("check") { dependsOn("lintJava") }
 
 tasks.register("regressionCheck") {
     group = "verification"
-    dependsOn("killFeedCheck")
+    dependsOn("killFeedCheck", "scriptCheck")
 }
+
+tasks.register<JavaExec>("scriptCheck") {
+    group = "verification"
+    dependsOn(tasks.testClasses)
+    classpath = sourceSets.test.get().runtimeClasspath + sourceSets.main.get().compileClasspath
+    mainClass.set("com.atsuishio.superbwarfare.ScriptChecks")
+    maxHeapSize = "256m"
+}
+tasks.named("check") { dependsOn("scriptCheck") }
