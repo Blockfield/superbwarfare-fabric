@@ -36,6 +36,9 @@ The mod jar is written to `build/libs/superbwarfare-<version>-mc1.21.1.jar`. Rel
 attached to [GitHub Releases](https://github.com/Blockfield/superbwarfare-fabric/releases) and
 named after the release tag.
 
+`just test` runs the JVM regression checks; `just check` and `just build` also run Java compiler lint.
+CI verifies lint and formatting in Code standards, and JVM lint and regression checks in Build.
+
 ## Releases
 
 After committing to `main`, run `scripts/bump-fork.sh superbwarfare` from

@@ -220,6 +220,7 @@ tasks.register<JavaExec>("killFeedCheck") {
     dependsOn(tasks.testClasses)
     classpath = sourceSets.test.get().runtimeClasspath + sourceSets.main.get().compileClasspath
     mainClass.set("com.atsuishio.superbwarfare.KillFeedChecksKt")
+    maxHeapSize = "256m"
 }
 
 tasks.named("check") { dependsOn("killFeedCheck") }
@@ -233,3 +234,8 @@ tasks.register<org.gradle.api.tasks.compile.JavaCompile>("lintJava") {
     options.compilerArgs.addAll(listOf("-proc:none", "-Xlint:divzero,empty,fallthrough,finally,-removal", "-Werror"))
 }
 tasks.named("check") { dependsOn("lintJava") }
+
+tasks.register("regressionCheck") {
+    group = "verification"
+    dependsOn("killFeedCheck")
+}
