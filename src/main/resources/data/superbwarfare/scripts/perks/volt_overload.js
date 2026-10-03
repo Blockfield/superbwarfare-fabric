@@ -1,3 +1,3 @@
 function modifyProjectile(projectile, level, isShotgun) {
-    projectile.setVolt(level)
+  projectile.setVolt(level);
 }
