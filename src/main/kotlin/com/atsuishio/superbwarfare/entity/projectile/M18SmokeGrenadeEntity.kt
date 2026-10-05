@@ -204,10 +204,16 @@ open class M18SmokeGrenadeEntity :
 
     private fun replayCloudToNewcomers(level: ServerLevel) {
         if (emitStart < 0) emitStart = tickCount
+        // Respawn keeps the entity id, so a player who left for the respawn room must be forgotten here;
+        // otherwise the returning player is never served again.
+        val present = level.players().mapTo(HashSet()) { it.id }
+        served.retainAll(present)
         for (player in level.players()) {
-            // A respawned player is a new entity with a new id, which is exactly who needs the replay.
             if (player.distanceToSqr(this) > 256.0 * 256.0 || !served.add(player.id)) continue
-            if (tickCount <= EMIT_TICKS) continue
+            // A newcomer during emission gets the puffs emitted so far; the live ones follow. Players present
+            // when the smoke starts see it all live.
+            val emitted = minOf(tickCount, EMIT_TICKS) - emitStart
+            if (emitted <= 0) continue
             val decoyAge = 2 * (tickCount - decoyPuffTick)
             if (decoyAge < MAX_PARTICLE_AGE) {
                 val drift = 0.5 + 1.0 * decoyAge / MAX_PARTICLE_AGE
@@ -227,7 +233,6 @@ open class M18SmokeGrenadeEntity :
                     )
                 }
             }
-            val emitted = EMIT_TICKS - emitStart
             for (batch in 0 until REPLAY_BATCHES) {
                 val born = emitStart + emitted * batch / REPLAY_BATCHES
                 val age = 2 * (tickCount - born)
