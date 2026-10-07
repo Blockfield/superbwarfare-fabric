@@ -145,6 +145,8 @@ open class M18SmokeGrenadeEntity :
     }
 
     override fun tick() {
+        // The base tick checks lifeValue directly; reload and gun spawns can replace it with a shorter Life.
+        lifeValue = smokeProducerLife(lifeValue)
         super.tick()
         --this.fuse
 
@@ -171,19 +173,21 @@ open class M18SmokeGrenadeEntity :
 
         if (level is ServerLevel) {
             cloud.tick(level)
-            ParticleTool.sendParticle(
-                level,
-                ParticleTypes.SMOKE,
-                this.xo,
-                this.yo,
-                this.zo,
-                1,
-                0.0,
-                0.0,
-                0.0,
-                0.01,
-                true,
-            )
+            if (tickCount <= TRAIL_TICKS) {
+                ParticleTool.sendParticle(
+                    level,
+                    ParticleTypes.SMOKE,
+                    this.xo,
+                    this.yo,
+                    this.zo,
+                    1,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.01,
+                    true,
+                )
+            }
         }
     }
 
@@ -218,10 +222,15 @@ open class M18SmokeGrenadeEntity :
 /** Upstream lifetime: a burst of 8 puffs is emitted every 2 ticks until this tick. */
 private const val EMIT_TICKS = 200
 
+/** Keep the old base-lifetime trail; retaining its cloud must not create more particles. */
+private const val TRAIL_TICKS = 400
+
 /** Emission plus the longest particle life in ticks: after that nobody has any smoke left to replay. */
 private const val CLOUD_TICKS = EMIT_TICKS + MAX_SMOKE_AGE / 2
 
 // File-level so the JVM regression checks run without bootstrapping Minecraft entities.
+internal fun smokeProducerLife(life: Int) = life.coerceAtLeast(CLOUD_TICKS)
+
 internal fun emits(tick: Int) = tick <= EMIT_TICKS && tick % 2 == 0
 
 /** Every client unfolds the same puffs from this, and so does a replay of the same burst. */

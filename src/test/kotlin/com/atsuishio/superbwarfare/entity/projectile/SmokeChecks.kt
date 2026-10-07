@@ -64,6 +64,18 @@ fun smokeChecks() {
     restored.expire(502)
     check(restored.bursts.isEmpty())
 
+    // Legacy Life=400 must not let the base tick discard the producer while its last burst is replayable.
+    val lastBurst = SmokeCloud().apply { emit(200, Vec3.ZERO, burst(seed)) }
+    val savedLastBurst = CompoundTag().also { lastBurst.save(it) }
+    val replayTail = SmokeCloud().apply { load(savedLastBurst) }
+    val producerLife = smokeProducerLife(400)
+    for (tick in listOf(401, 599)) {
+        replayTail.expire(tick.toLong())
+        check(tick <= producerLife && replayTail.bursts.isNotEmpty() && !emits(tick))
+    }
+    replayTail.expire(600)
+    check(replayTail.bursts.isEmpty() && 601 > producerLife)
+
     // A reloaded producer cannot double a burst already present, but a rebuilt client world can replay it.
     val tracked = SmokeBurstTracker()
     check(tracked.accept(seed, 0, 100))
