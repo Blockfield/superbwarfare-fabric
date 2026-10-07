@@ -1,6 +1,7 @@
 package com.atsuishio.superbwarfare
 
 import com.atsuishio.superbwarfare.compat.tacz.TaczHeadshotCompat
+import com.atsuishio.superbwarfare.entity.projectile.smokeChecks
 import com.atsuishio.superbwarfare.tools.DamageTypeTool
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
@@ -23,5 +24,6 @@ fun main() {
     check(!DamageTypeTool.isKnifeDamage(DamageTypes.ARROW))
     check(!DamageTypeTool.isKnifeDamage(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse("tacz:bullet"))))
     meleeReachChecks()
-    println("Kill feed, melee reach and deferred registration checks passed")
+    smokeChecks()
+    println("Kill feed, melee reach, smoke and deferred registration checks passed")
 }

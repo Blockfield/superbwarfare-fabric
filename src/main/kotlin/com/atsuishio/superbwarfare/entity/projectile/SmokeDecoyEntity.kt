@@ -19,9 +19,6 @@ import net.minecraft.world.phys.Vec3
 open class SmokeDecoyEntity : Entity {
     var life: Int = 400
     var igniteTime: Int = 4
-
-    /** Blockfield: lets the M18 remember where its cloud actually opened, to replay it to returning players. */
-    var onPuff: ((Vec3) -> Unit)? = null
     var releaseSmoke: Boolean = true
     var red: Float = 1.0f
         private set
@@ -57,12 +54,16 @@ open class SmokeDecoyEntity : Entity {
         if (compoundTag.contains("BColor")) {
             this.blue = compoundTag.getFloat("BColor")
         }
+        this.tickCount = compoundTag.getInt("Age")
     }
 
     override fun addAdditionalSaveData(compoundTag: CompoundTag) {
         compoundTag.putInt("IgniteTime", igniteTime)
         compoundTag.putInt("Life", life)
-        compoundTag.putBoolean("Release", this.releaseSmoke)
+        // Blockfield: saved under the key it is read from, and with its age: a decoy reloaded with its chunk used to
+        // restart at tick 0 and burst again, M18 decoys too.
+        compoundTag.putBoolean("ReleaseSmoke", this.releaseSmoke)
+        compoundTag.putInt("Age", this.tickCount)
         compoundTag.putFloat("RColor", this.red)
         compoundTag.putFloat("GColor", this.green)
         compoundTag.putFloat("BColor", this.blue)
@@ -88,18 +89,17 @@ open class SmokeDecoyEntity : Entity {
             if (releaseSmoke) {
                 val level = this.level()
                 if (level is ServerLevel) {
-                    onPuff?.invoke(Vec3(this.xo, this.yo, this.zo))
                     ParticleTool.sendParticle(
                         level,
-                        CustomSmokeOption(this.red, this.green, this.blue, 0),
+                        CustomSmokeOption(this.red, this.green, this.blue, 0, uuid.leastSignificantBits, 50, 0f, 0.07f),
                         this.xo,
                         this.yo,
                         this.zo,
-                        50,
+                        0,
                         0.0,
                         0.0,
                         0.0,
-                        0.07,
+                        0.0,
                         true,
                     )
                     ParticleTool.sendParticle(
