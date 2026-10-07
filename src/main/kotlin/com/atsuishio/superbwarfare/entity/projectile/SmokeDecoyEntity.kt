@@ -17,6 +17,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 
 open class SmokeDecoyEntity : Entity {
+    private val cloud = SmokeCloud()
     var life: Int = 400
     var igniteTime: Int = 4
     var releaseSmoke: Boolean = true
@@ -44,6 +45,8 @@ open class SmokeDecoyEntity : Entity {
         }
         if (compoundTag.contains("ReleaseSmoke")) {
             this.releaseSmoke = compoundTag.getBoolean("ReleaseSmoke")
+        } else if (compoundTag.contains("Release")) {
+            this.releaseSmoke = compoundTag.getBoolean("Release")
         }
         if (compoundTag.contains("RColor")) {
             this.red = compoundTag.getFloat("RColor")
@@ -55,6 +58,7 @@ open class SmokeDecoyEntity : Entity {
             this.blue = compoundTag.getFloat("BColor")
         }
         this.tickCount = compoundTag.getInt("Age")
+        cloud.load(compoundTag)
     }
 
     override fun addAdditionalSaveData(compoundTag: CompoundTag) {
@@ -67,6 +71,7 @@ open class SmokeDecoyEntity : Entity {
         compoundTag.putFloat("RColor", this.red)
         compoundTag.putFloat("GColor", this.green)
         compoundTag.putFloat("BColor", this.blue)
+        cloud.save(compoundTag)
     }
 
     fun setColor(
@@ -89,18 +94,10 @@ open class SmokeDecoyEntity : Entity {
             if (releaseSmoke) {
                 val level = this.level()
                 if (level is ServerLevel) {
-                    ParticleTool.sendParticle(
-                        level,
+                    cloud.emit(
+                        level.gameTime,
+                        Vec3(this.xo, this.yo, this.zo),
                         CustomSmokeOption(this.red, this.green, this.blue, 0, uuid.leastSignificantBits, 50, 0f, 0.07f),
-                        this.xo,
-                        this.yo,
-                        this.zo,
-                        0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        true,
                     )
                     ParticleTool.sendParticle(
                         level,
@@ -141,7 +138,9 @@ open class SmokeDecoyEntity : Entity {
             this.deltaMovement = Vec3.ZERO
         }
 
-        if (this.tickCount > this.life) {
+        val level = level()
+        if (level is ServerLevel) cloud.tick(level)
+        if (this.tickCount > this.life && cloud.bursts.isEmpty()) {
             this.discard()
         }
     }

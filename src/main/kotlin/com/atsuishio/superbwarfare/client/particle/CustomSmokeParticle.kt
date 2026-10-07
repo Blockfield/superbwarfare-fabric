@@ -5,8 +5,8 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.particle.*
+import java.util.WeakHashMap
 import kotlin.math.min
-import kotlin.math.pow
 
 @Environment(EnvType.CLIENT)
 open class CustomSmokeParticle protected constructor(
@@ -34,19 +34,10 @@ open class CustomSmokeParticle protected constructor(
         this.rCol = rCol
         this.gCol = gCol
         this.bCol = bCol
-        // Blockfield: a cloud replayed to a returning player must fade together with the original one.
-        this.age = startAge
-        val fading = startAge - (this.lifetime - 60)
-        if (fading > 0) this.alpha = maxOf(0.02f, 1f - 0.015f * (fading / 2))
-        // ...and sit where the original puff has drifted by now: velocity decays by friction every tick, and one
-        // move() stops the whole drift at the floor and walls.
-        if (startAge > 0) {
-            val decay = this.friction.toDouble().pow(startAge / 2)
-            val drift = (1 - decay) / (1 - this.friction)
-            this.move(this.xd * drift, this.yd * drift, this.zd * drift)
-            this.xd *= decay
-            this.yd *= decay
-            this.zd *= decay
+        // Replay native gravity, friction, collisions and fading; a single drift move is not equivalent.
+        // This uses the client's loaded terrain, not a historical snapshot of blocks.
+        repeat(startAge.coerceIn(0, 800) / 2) {
+            if (!this.removed) tick()
         }
     }
 
@@ -54,6 +45,8 @@ open class CustomSmokeParticle protected constructor(
     class Provider(
         private val spriteSet: SpriteSet,
     ) : ParticleProvider<CustomSmokeOption> {
+        private val replayed = WeakHashMap<ClientLevel, SmokeBurstTracker>()
+
         override fun createParticle(
             pType: CustomSmokeOption,
             pLevel: ClientLevel,
@@ -64,11 +57,12 @@ open class CustomSmokeParticle protected constructor(
             ySpeed: Double,
             zSpeed: Double,
         ): Particle? {
+            if (!replayed.getOrPut(pLevel) { SmokeBurstTracker() }.accept(pType.seed, pType.age, pLevel.gameTime)) return null
             val engine = Minecraft.getInstance().particleEngine
             for (puff in pType.puffs()) {
-                engine.add(
-                    CustomSmokeParticle(pLevel, x, y, z, puff, this.spriteSet, pType.red, pType.green, pType.blue, pType.age),
-                )
+                if (pType.age >= puff.lifetime) continue
+                val particle = CustomSmokeParticle(pLevel, x, y, z, puff, this.spriteSet, pType.red, pType.green, pType.blue, pType.age)
+                if (particle.isAlive) engine.add(particle)
             }
             return null
         }

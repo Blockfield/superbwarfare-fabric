@@ -115,7 +115,6 @@ object ModEntities {
             misc(::SmokeDecoyEntity)
                 .clientTrackingRange(64)
                 .updateInterval(1)
-                .noSave()
                 .sized(5.5f, 5.5f),
         )
 
