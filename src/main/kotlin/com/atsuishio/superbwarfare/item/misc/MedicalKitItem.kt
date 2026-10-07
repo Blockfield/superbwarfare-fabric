@@ -62,7 +62,6 @@ open class MedicalKitItem : Item(Properties().stacksTo(16)) {
                 stack.shrink(1)
             }
 
-            player.cooldowns.addCooldown(this, 25)
             return InteractionResultHolder.success(stack)
         } else if (player.health < player.maxHealth) {
             player.startUsingItem(handIn)
@@ -93,10 +92,6 @@ open class MedicalKitItem : Item(Properties().stacksTo(16)) {
                 )
             }
 
-            if (pLivingEntity is Player) {
-                pLivingEntity.cooldowns.addCooldown(pStack.item, 25)
-            }
-
             if (pLivingEntity !is Player || !pLivingEntity.isCreative) {
                 pStack.shrink(1)
             }
@@ -108,7 +103,7 @@ open class MedicalKitItem : Item(Properties().stacksTo(16)) {
     override fun getUseDuration(
         stack: ItemStack,
         entity: LivingEntity,
-    ): Int = 40
+    ): Int = 20
 
     open fun treat(living: LivingEntity) {
         val value =
