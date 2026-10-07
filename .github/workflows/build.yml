@@ -51,7 +51,7 @@ jobs:
           retention-days: 1
       - name: Release text
         if: startsWith(github.ref, 'refs/tags/bf')
-        uses: Blockfield/blockfield-workspace/.github/actions/release-text@bab74332b5ad961125911c9426be30b4dbc0240f
+        uses: ./.github/actions/release-text
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           RELEASE_TEXT_MODEL: ${{ vars.RELEASE_TEXT_MODEL }}
