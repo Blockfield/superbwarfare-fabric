@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  pull-requests: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -48,18 +49,33 @@ jobs:
           # Tags publish the jar as a release; branch builds only need it briefly, and Actions
           # storage over the free 0.5 GB stops GitHub-hosted runners.
           retention-days: 1
+      - name: Release text
+        if: startsWith(github.ref, 'refs/tags/bf')
+        uses: ./.github/actions/release-text
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          RELEASE_TEXT_MODEL: ${{ vars.RELEASE_TEXT_MODEL }}
+        with:
+          mode: release
+          version: ${{ github.ref_name }}
+          kind: mod
+          out-dir: dist
       - name: Release the jar under the tag
         if: startsWith(github.ref, 'refs/tags/bf')
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          set -eu
+          set -euo pipefail
           jars=$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' ! -name '*-javadoc.jar')
           [ "$(printf '%s\n' "$jars" | wc -l)" -eq 1 ] || { echo "ожидался один jar, есть: $jars"; exit 1; }
           out="${jars%.jar}-$GITHUB_REF_NAME.jar"
           mv "$jars" "$out"
-          test -f "release-notes/$GITHUB_REF_NAME.md" || { echo "missing release-notes/$GITHUB_REF_NAME.md: prepare it in the release PR"; exit 1; }
-          just python scripts/release-notes-tool.py "release-notes/$GITHUB_REF_NAME.md" \
-            --repository Blockfield/superbwarfare-fabric --version "$GITHUB_REF_NAME"
-          cp "release-notes/$GITHUB_REF_NAME.md" release-notes.md
-          gh release create "$GITHUB_REF_NAME" "$out" release-notes.md --title "$(basename "$out" .jar)" --notes-file release-notes.md
+          files=("$out" dist/release-notes.md)
+          [ -f dist/announcement.json ] && files+=(dist/announcement.json)
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" "${files[@]}" --title "$(basename "$out" .jar)" --notes-file dist/release-notes.md
+          else
+            gh release upload "$GITHUB_REF_NAME" "${files[@]}" --clobber
+            gh release edit "$GITHUB_REF_NAME" --title "$(basename "$out" .jar)" --notes-file dist/release-notes.md
+          fi
