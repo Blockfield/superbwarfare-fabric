@@ -788,10 +788,9 @@ open class DroneEntity(
                 if (data != null) {
                     if (data.isKamikaze) {
                         EntityType.byString(attachedEntity).ifPresent {
-                            val bomb: Entity? = it.create(this.level())
                             doDamage(
                                 target,
-                                causeCustomExplosionDamage(this.level().registryAccess(), bomb, player),
+                                causeCustomExplosionDamage(this.level().registryAccess(), this, player),
                                 data.hitDamage,
                             )
                             target.invulnerableTime = 0
@@ -925,8 +924,8 @@ open class DroneEntity(
     }
 
     private fun kamikazeExplosion() {
-        val attacker = findEntity(this.level(), lastAttackerUUID)
-        if (getController() == null) return
+        val controller = getController() ?: return
+        val attacker = findEntity(this.level(), lastAttackerUUID) ?: controller
 
         // 挂载实体的数据
         val attachedEntity = this.entityData.get<String>(DISPLAY_ENTITY)
@@ -943,7 +942,8 @@ open class DroneEntity(
         val radius = data.explosionRadius
 
         createCustomExplosion()
-            .source(bomb)
+            // A shot-down warhead belongs to its shooter, not to the drone's operator.
+            .source(if (attacker === controller) this else bomb)
             .attacker(attacker)
             .damage(data.explosionDamage)
             .radius(radius)
