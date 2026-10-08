@@ -128,16 +128,21 @@ SECTIONS = {
     "known_issues": "Неизвестны.",
 }
 ANNOUNCEMENT = {
-    "title": "🚀 Blockfield v2.61.0",
-    "summary": "Новый HUD.",
-    "player_changes": "• **HUD:** перерисован",
+    "title": "🚀 Blockfield v2.61.0 — новый интерфейс",
+    "summary": "Нижняя панель боя перерисована и стала крупнее.",
+    "player_changes": "• **Новый интерфейс.** Панель с оружием и здоровьем стала крупнее.",
     "bug_fixes": "",
-    "color_hex": "5865f2",
+    "creators": "",
+    "compatibility": "",
 }
 
 
-def reply(sections=SECTIONS, announcement=ANNOUNCEMENT):
-    return json.dumps({"release_notes": sections, "announcement": announcement})
+def reply(sections=SECTIONS):
+    return json.dumps({"release_notes": sections})
+
+
+def ann_reply(**over):
+    return json.dumps(ANNOUNCEMENT | over)
 
 
 class Versions(unittest.TestCase):
@@ -247,41 +252,98 @@ class Validate(unittest.TestCase):
         return rt.validate_release(rt.parse_json_object(raw), f or facts())
 
     def test_good_reply_and_fenced_json(self):
-        text, announcement, errors = self.run_validate(reply())
+        text, errors = self.run_validate(reply())
         self.assertEqual(errors, [])
-        self.assertEqual(announcement["color_hex"], "5865F2")
-        self.assertEqual(
-            set(announcement),
-            {"title", "summary", "player_changes", "bug_fixes", "color_hex"},
-        )
         self.assertIn("backfilled: false", text)
-        self.assertEqual(self.run_validate("```json\n" + reply() + "\n```")[2], [])
+        self.assertEqual(self.run_validate("```json\n" + reply() + "\n```")[1], [])
 
     def test_rejections(self):
-        bad_section = dict(SECTIONS, brief="")
-        no_check = dict(SECTIONS, players="TODO")
-        leaks = dict(ANNOUNCEMENT, summary="Скачайте с https://example.org")
-        long_title = dict(ANNOUNCEMENT, title="x" * 300)
-        bad_color = dict(ANNOUNCEMENT, color_hex="nope")
         cases = {
-            "empty section": reply(bad_section),
-            "check": reply(no_check),
-            "host": reply(announcement=leaks),
-            "title length": reply(announcement=long_title),
-            "color": reply(announcement=bad_color),
-            "missing announcement": json.dumps({"release_notes": SECTIONS}),
+            "empty section": reply(dict(SECTIONS, brief="")),
+            "check": reply(dict(SECTIONS, players="TODO")),
+            "host": reply(dict(SECTIONS, brief="Скачайте с https://example.org")),
+            "missing notes": json.dumps({"announcement": ANNOUNCEMENT}),
         }
         for name, raw in cases.items():
             with self.subTest(name):
-                self.assertTrue(self.run_validate(raw)[2])
+                self.assertTrue(self.run_validate(raw)[1])
 
     def test_every_changed_pin_must_appear(self):
         f = facts(
             pins=[{"name": "Gun", "change": "added", "text": "", "component_notes": []}]
         )
-        self.assertTrue(self.run_validate(reply(), f)[2])
+        self.assertTrue(self.run_validate(reply(), f)[1])
         ok = dict(SECTIONS, components="- Gun: добавлен")
-        self.assertEqual(self.run_validate(reply(ok), f)[2], [])
+        self.assertEqual(self.run_validate(reply(ok), f)[1], [])
+
+
+class Announcement(unittest.TestCase):
+    def errors(self, final=False, f=None, **over):
+        obj = rt.parse_json_object(ann_reply(**over))
+        with mock.patch.object(rt, "warn") as warn:
+            got, errors = rt.validate_announcement(obj, f or facts(), final)
+        return got, errors, warn
+
+    def test_good_reply_gets_the_colour_of_its_version(self):
+        got, errors, _ = self.errors()
+        self.assertEqual(errors, [])
+        self.assertEqual(set(got), {*rt.ANNOUNCEMENT_LIMITS, "color_hex"})
+        self.assertEqual(got["color_hex"], rt.COLOR_RELEASE)
+        patch = facts(version="v2.61.1")
+        got, errors, _ = self.errors(f=patch, title="🔧 Blockfield v2.61.1 — патч")
+        self.assertEqual((errors, got["color_hex"]), ([], rt.COLOR_PATCH))
+
+    def test_missing_optional_fields_are_empty(self):
+        obj = {
+            "title": ANNOUNCEMENT["title"],
+            "summary": "Сводка.",
+            "bug_fixes": "• **Чат.** Виден.",
+        }
+        got, errors = rt.validate_announcement(obj, facts())
+        self.assertEqual((errors, got["creators"], got["compatibility"]), ([], "", ""))
+
+    def test_hard_rejections_hold_even_on_the_last_attempt(self):
+        cases = {
+            "host": {"summary": "Скачайте с https://example.org"},
+            "title length": {"title": "v2.61.0 " + "x" * 200},
+            "empty summary": {"summary": ""},
+            "bump": {"player_changes": "• **Мод.** Обновлён с v1.0.0 до v1.1.0."},
+            "not a string": {"bug_fixes": ["• a"]},
+            "nothing listed": {"player_changes": ""},
+        }
+        for name, over in cases.items():
+            with self.subTest(name):
+                self.assertTrue(self.errors(final=True, **over)[1])
+
+    def test_style_is_retried_then_published_with_a_warning(self):
+        cases = {
+            "code id": {"player_changes": "• **Аптечка.** Новая модель medical_kit."},
+            "jargon": {
+                "bug_fixes": "• **Высадка.** Нет появления в незагруженных чанках."
+            },
+            "greeting": {"summary": "Сообщество Blockfield, вышел выпуск."},
+            "no version": {"title": "🚀 Новый интерфейс"},
+            "telegraph": {"player_changes": "Новый интерфейс, панели, значки"},
+        }
+        for name, over in cases.items():
+            with self.subTest(name):
+                self.assertTrue(self.errors(**over)[1])
+                got, errors, warn = self.errors(final=True, **over)
+                self.assertEqual(errors, [])
+                warn.assert_called()
+
+    def test_creators_and_actions_have_their_own_words(self):
+        creators = "• **Ревью карт.** Ветка карты видна в Workshop."
+        self.assertEqual(self.errors(creators=creators)[1], [])
+        self.assertTrue(self.errors(creators="• **Карты.** Правка awp_ice.")[1])
+        action = "Рекомендуем обновить лаунчер: старый больше не подключается."
+        self.assertEqual(self.errors(compatibility=action)[1], [])
+        self.assertTrue(self.errors(summary="Рекомендуется обновиться.")[1])
+
+    def test_request_names_the_release_kind(self):
+        self.assertIn("v2.61.0 (крупный выпуск)", rt.announcement_request(facts()))
+        self.assertIn("(патч)", rt.announcement_request(facts(version="v2.61.1")))
+        self.assertFalse(rt.is_patch("bf9"))
 
 
 class Release(unittest.TestCase):
@@ -297,6 +359,7 @@ class Release(unittest.TestCase):
             build_json=None,
             date="2026-10-02",
             model="m",
+            announcement_model="",
             fresh=False,
         )
         patches = [
@@ -312,6 +375,7 @@ class Release(unittest.TestCase):
             ),
             mock.patch.dict("os.environ", {"OPENROUTER_API_KEY": "k"}),
             mock.patch.object(rt.time, "sleep"),
+            mock.patch.object(rt, "server_pin", return_value=None),
         ]
         for p in patches:
             p.start()
@@ -326,9 +390,9 @@ class Release(unittest.TestCase):
         return chat
 
     def test_model_reply_writes_both_files(self):
-        chat = self.run_release(reply())
+        chat = self.run_release(reply(), ann_reply())
         self.assertEqual(self.files(), ["announcement.json", "release-notes.md"])
-        self.assertEqual(chat.call_count, 1)
+        self.assertEqual(chat.call_count, 2)
         self.assertEqual(
             rn.check(
                 self.out / "release-notes.md",
@@ -338,32 +402,54 @@ class Release(unittest.TestCase):
             ),
             [],
         )
-        self.assertEqual(
-            json.loads((self.out / "announcement.json").read_text("utf-8"))["title"],
-            "🚀 Blockfield v2.61.0",
-        )
-        sent = chat.call_args.args[1]
-        self.assertIn("Новый HUD", sent)
-        self.assertIn('"previous_version": "v2.60.0"', sent)
+        published = json.loads((self.out / "announcement.json").read_text("utf-8"))
+        self.assertEqual(published, ANNOUNCEMENT | {"color_hex": rt.COLOR_RELEASE})
+        notes_call, announcement_call = chat.call_args_list
+        self.assertIn("Новый HUD", notes_call.args[1])
+        self.assertIn('"previous_version": "v2.60.0"', notes_call.args[1])
+        self.assertIn("Словарь проекта", announcement_call.args[0])
+        self.assertIn("Выпуск v2.61.0 (крупный выпуск)", announcement_call.args[1])
+        self.assertIn("Новый HUD", announcement_call.args[1])
+        self.assertEqual(announcement_call.args[4], 0.5)
 
     def test_retry_gets_errors_and_can_succeed(self):
-        chat = self.run_release("не JSON", reply())
-        self.assertEqual(chat.call_count, 2)
+        chat = self.run_release("не JSON", reply(), ann_reply())
+        self.assertEqual(chat.call_count, 3)
         self.assertIn("отклонён", chat.call_args_list[1].args[1])
         self.assertEqual(self.files(), ["announcement.json", "release-notes.md"])
 
-    def test_two_bad_replies_give_facts_only(self):
-        leaks = dict(ANNOUNCEMENT, summary="https://example.org")
-        chat = self.run_release(reply(announcement=leaks), reply(announcement=leaks))
-        self.assertEqual(chat.call_count, 2)
-        self.assertEqual(self.files(), ["release-notes.md"])
+    def test_two_bad_replies_give_facts_only_notes_and_still_an_announcement(self):
+        bad = reply(dict(SECTIONS, brief="https://example.org"))
+        chat = self.run_release(bad, bad, ann_reply())
+        self.assertEqual(chat.call_count, 3)
+        self.assertEqual(self.files(), ["announcement.json", "release-notes.md"])
+        notes = (self.out / "release-notes.md").read_text(encoding="utf-8")
+        self.assertIn("Текст собран без модели", notes)
         self.assertEqual(
             rn.check(self.out / "release-notes.md", version="v2.61.0", kind="client"),
             [],
         )
 
+    def test_rejected_announcement_leaves_it_to_the_bot(self):
+        leak = ann_reply(summary="https://example.org")
+        chat = self.run_release(reply(), leak, leak, leak)
+        self.assertEqual(chat.call_count, 2 - 1 + rt.ANNOUNCEMENT_ATTEMPTS)
+        self.assertEqual(self.files(), ["release-notes.md"])
+
+    def test_only_client_releases_are_announced(self):
+        self.args.kind = "mod"
+        self.args.repository = "Blockfield/blockfield-mod"
+        chat = self.run_release(reply())
+        self.assertEqual(chat.call_count, 1)
+        self.assertEqual(self.files(), ["release-notes.md"])
+
+    def test_announcement_model_is_separate(self):
+        self.args.announcement_model = "big"
+        chat = self.run_release(reply(), ann_reply())
+        self.assertEqual([c.args[2] for c in chat.call_args_list], ["m", "big"])
+
     def test_llm_exception_gives_facts_only(self):
-        self.run_release(OSError("network"), OSError("network"))
+        self.run_release(*[OSError("network")] * (2 + rt.ANNOUNCEMENT_ATTEMPTS))
         self.assertEqual(self.files(), ["release-notes.md"])
 
     def test_no_key_or_model_skips_the_call(self):
@@ -425,8 +511,8 @@ class Release(unittest.TestCase):
             players="- Значки HUD перерисованы.",
             components="- X: v1.41.0 → v1.42.0, новые значки HUD.",
         )
-        chat = self.run_release(reply(filler), reply(good))
-        self.assertEqual(chat.call_count, 2)
+        chat = self.run_release(reply(filler), reply(good), ann_reply())
+        self.assertEqual(chat.call_count, 3)
         self.assertIn("Обновлён X с v1.41.0", chat.call_args_list[1].args[1])
         self.assertIn("Значки HUD", chat.call_args_list[0].args[1])
         self.assertEqual(self.files(), ["announcement.json", "release-notes.md"])
@@ -443,9 +529,9 @@ class Release(unittest.TestCase):
             brief="Рекомендуется обновиться.",
             components="- X: v1.41.0 → v1.42.0.",
         )
-        chat = self.run_release(reply(filler), reply(filler))
-        self.assertEqual(chat.call_count, 2)
-        self.assertEqual(self.files(), ["release-notes.md"])
+        chat = self.run_release(reply(filler), reply(filler), ann_reply())
+        self.assertEqual(chat.call_count, 3)
+        self.assertEqual(self.files(), ["announcement.json", "release-notes.md"])
         notes = (self.out / "release-notes.md").read_text(encoding="utf-8")
         self.assertIn("- Значки HUD", notes)
 
@@ -483,7 +569,7 @@ class Substance(unittest.TestCase):
 
     def run_validate(self, f=None, **sections):
         obj = json.loads(reply(dict(SECTIONS, **sections)))
-        return rt.validate_release(obj, f or facts())[2]
+        return rt.validate_release(obj, f or facts())[1]
 
     def test_filler_is_rejected_with_a_reason(self):
         bump = "- Обновлён blockfield-client с v1.41.0 до v1.42.0 в составе сборки."
@@ -505,15 +591,6 @@ class Substance(unittest.TestCase):
                 errors = self.run_validate(**sections)
                 self.assertTrue(errors, name)
                 self.assertTrue(any("«" in e for e in errors))
-
-    def test_announcement_filler_is_rejected(self):
-        bad = dict(
-            ANNOUNCEMENT, player_changes="• **Мод:** обновлён с v1.0.0 до v1.1.0"
-        )
-        errors = rt.validate_release(
-            rt.parse_json_object(reply(announcement=bad)), facts()
-        )[2]
-        self.assertTrue(any("announcement.player_changes" in e for e in errors))
 
     def test_versions_are_fine_in_technical_sections(self):
         self.assertEqual(
@@ -574,45 +651,33 @@ class Substance(unittest.TestCase):
 
 
 class Server(unittest.TestCase):
-    RELEASES = [
-        release("v2.64.0", published="2026-10-02T20:24:33Z"),
-        release("world-seed-v13", published="2026-10-02T20:30:00Z"),
-        release("v2.63.0", published="2026-10-02T19:42:36Z"),
-        release("v2.62.0", published="2026-10-02T18:05:15Z"),
-    ]
+    PREVIOUS = {"published_at": "2026-10-02T20:17:39Z"}
 
-    def test_range_starts_at_the_server_live_when_the_last_client_shipped(self):
-        self.assertEqual(
-            rt.server_range(self.RELEASES, "2026-10-02T20:17:39Z"),
-            ("v2.63.0", "v2.64.0"),
-        )
-
-    def test_no_server_before_the_last_client_has_no_start(self):
-        self.assertEqual(
-            rt.server_range(self.RELEASES, "2026-09-01T00:00:00Z"), (None, "v2.64.0")
-        )
-
-    def test_client_release_carries_server_changes_as_a_pin(self):
-        prs = [{"number": 63, "title": "Инженер: две ракеты", "body": ""}]
+    def server_pin(self, prs):
         gaps = []
+        commits = json.dumps([{"sha": "abc1234def"}])
         with (
-            mock.patch.object(rt, "published_releases", return_value=self.RELEASES),
+            mock.patch.object(rt, "gh", return_value=commits) as gh,
             mock.patch.object(rn, "component_notes") as notes,
             mock.patch.object(rt, "merged_prs", return_value=prs) as fetch,
         ):
-            got = rt.server_pin({"published_at": "2026-10-02T20:17:39Z"}, gaps)
-        self.assertEqual(got["name"], "blockfield-server")
-        self.assertEqual(got["pull_requests"], prs)
-        self.assertEqual(
-            fetch.call_args.args[:3], (rt.SERVER_REPOSITORY, "v2.63.0", "v2.64.0")
-        )
-        self.assertEqual((got["component_notes"], gaps), ([], []))
+            got = rt.server_pin(self.PREVIOUS, gaps)
         notes.assert_not_called()  # server notes retell the mod the client pin covers
+        return got, gaps, gh, fetch
 
-    def test_unchanged_server_adds_nothing(self):
-        gaps = []
-        with mock.patch.object(rt, "published_releases", return_value=self.RELEASES):
-            got = rt.server_pin({"published_at": "2026-10-03T00:00:00Z"}, gaps)
+    def test_server_prs_since_the_last_client_release_become_a_pin(self):
+        prs = [{"number": 63, "title": "Инженер: две ракеты", "body": ""}]
+        got, gaps, gh, fetch = self.server_pin(prs)
+        self.assertIn("until=2026-10-02T20:17:39Z", gh.call_args.args[1])
+        self.assertEqual(
+            fetch.call_args.args[:3], (rt.SERVER_REPOSITORY, "abc1234def", "main")
+        )
+        self.assertEqual(
+            (got["name"], got["pull_requests"], gaps), ("blockfield-server", prs, [])
+        )
+
+    def test_no_server_prs_add_nothing(self):
+        got, gaps, _, _ = self.server_pin([])
         self.assertEqual((got, gaps), (None, []))
 
 
@@ -634,11 +699,11 @@ class PinEvidence(unittest.TestCase):
             result = rt.pin_evidence(change, self.OLD, self.NEW, gaps)
         return result, gaps, fetch
 
-    def test_real_notes_do_not_fetch_prs(self):
+    def test_real_notes_come_with_the_prs_they_retell(self):
         notes = ["    - v1.42.0 — Для игроков: Новые значки"]
         (got, prs), gaps, fetch = self.evidence(notes)
-        self.assertEqual((got, prs, gaps), (notes, [], []))
-        fetch.assert_not_called()
+        self.assertEqual((got, prs, gaps), (notes, self.PRS, []))
+        fetch.assert_called_once()
 
     def test_missing_notes_are_replaced_by_prs_between_the_tags(self):
         (notes, prs), gaps, fetch = self.evidence(
@@ -698,9 +763,18 @@ class MergedPrs(unittest.TestCase):
                 raise subprocess.CalledProcessError(1, ["gh"], stderr=b"HTTP 403")
             return json.dumps(bodies[number])
 
+        pr_commits = [
+            commit("fix: reset battle tab on transfers\n\nbody"),
+            commit("Merge branch 'main' into fix"),
+            commit("fix: reset battle tab on transfers"),
+        ]
+
+        def pages(path):
+            return [pr_commits] if "/pulls/" in path else [{"commits": commits}]
+
         gaps = []
         with (
-            mock.patch.object(rt, "gh_pages", return_value=[{"commits": commits}]),
+            mock.patch.object(rt, "gh_pages", side_effect=pages),
             mock.patch.object(rt, "gh", side_effect=api),
         ):
             prs = rt.merged_prs("o/r", "v1", "v2", gaps)
@@ -711,6 +785,7 @@ class MergedPrs(unittest.TestCase):
                     "number": 1,
                     "title": "HUD",
                     "body": "Новые значки",
+                    "commits": ["fix: reset battle tab on transfers"],
                     "changed_lines": 12,
                 }
             ],
@@ -878,11 +953,49 @@ class PullRequest(unittest.TestCase):
             ("Сам", "<!-- codesmith:footer -->\nf"),
         )
 
-    def test_existing_body_is_left_alone(self):
-        with self.gh("Описал сам"), mock.patch.object(rt, "chat") as chat:
+    def test_body_with_a_players_line_is_left_alone(self):
+        with (
+            self.gh("Описал сам\n\nДля игроков: нет"),
+            mock.patch.object(rt, "chat") as chat,
+        ):
             rt.run_pr(self.args)
         chat.assert_not_called()
         self.assertFalse([c for c in self.calls if "-X" in c])
+
+    def test_author_body_gets_the_players_line_appended(self):
+        line = "Для игроков: прицел точнее."
+        with (
+            self.gh("Описал сам"),
+            mock.patch.object(rt, "chat", return_value=line) as chat,
+            mock.patch.object(rt.tempfile, "TemporaryDirectory") as tmp,
+        ):
+            tmp.return_value.__enter__.return_value = self.tmp
+            rt.run_pr(self.args)
+        self.assertIn("Описание автора:\nОписал сам", chat.call_args.args[1])
+        self.assertEqual(
+            Path(self.tmp, "body.md").read_text(encoding="utf-8"),
+            f"Описал сам\n\n{line}",
+        )
+
+    def test_author_edit_during_generation_wins(self):
+        bodies = iter(["Описал сам", "Описал сам и дополнил"])
+
+        def call(*args, **_):
+            self.calls.append(args)
+            return json.dumps({"title": "Fix aim", "body": next(bodies)})
+
+        with (
+            mock.patch.object(rt, "gh", side_effect=call),
+            mock.patch.object(rt, "chat", return_value="Для игроков: нет"),
+        ):
+            rt.run_pr(self.args)
+        self.assertFalse([c for c in self.calls if "-X" in c])
+
+    def test_validate_players_line(self):
+        self.assertEqual(rt.validate_players_line("Для игроков: нет")[1], [])
+        for bad in ("Прицел точнее.", "Для игроков:", "Для игроков: a\n\nb"):
+            with self.subTest(bad):
+                self.assertTrue(rt.validate_players_line(bad)[1])
 
     def test_missing_players_line_retries_then_gives_up(self):
         with (

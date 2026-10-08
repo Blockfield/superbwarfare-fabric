@@ -1,12 +1,14 @@
 """Тексты релизов и PR в CI.
 
 `release`: факты выпуска собираются без модели (предыдущий релиз, сверка пинов,
-выдержки компонентов, слитые PR, отпечаток клиента), затем одна модель
-(OpenRouter) пишет release-notes.md и announcement.json. Любой сбой даёт
-release-notes.md только из фактов без announcement.json; выход всегда 0, чтобы
-выпуск и деплой не зависели от генерации текста.
+выдержки компонентов, слитые PR с заголовками коммитов, отпечаток клиента), затем
+модель (OpenRouter) пишет release-notes.md, а для клиентского выпуска отдельным
+запросом - announcement.json для Discord. Сбой даёт release-notes.md только из
+фактов и выпуск без announcement.json; выход всегда 0, чтобы выпуск и деплой не
+зависели от генерации текста.
 
-`pr`: если у PR пустое описание, оно пишется по diff и коммитам.
+`pr`: пустое описание PR пишется по diff и коммитам; описанию автора без строки
+«Для игроков: …» эта строка дописывается.
 """
 
 import argparse
@@ -42,19 +44,27 @@ SECTIONS = (
     ("compatibility", "Совместимость и необходимые действия"),
     ("known_issues", "Известные проблемы"),
 )
+# Поля списков ограничены полем embed Discord (1024), сводка - здравым смыслом.
 ANNOUNCEMENT_LIMITS = {
-    "title": 256,
-    "summary": 4000,
+    "title": 150,
+    "summary": 600,
     "player_changes": 1024,
     "bug_fixes": 1024,
+    "creators": 1024,
+    "compatibility": 400,
 }
+ANNOUNCEMENT_LISTS = ("player_changes", "bug_fixes", "creators")
+ANNOUNCEMENT_ATTEMPTS = 3
+COLOR_RELEASE, COLOR_PATCH = "5865F2", "2ECC71"
 # Бот анонсирует только клиентские релизы, поэтому клиентский выпуск несёт и сервер.
+ANNOUNCED_KINDS = ("client",)
 SERVER_REPOSITORY = "Blockfield/blockfield-server"
 SERVER_NAME = "blockfield-server"
 MAX_PRS = 80
 PR_BODY_CHARS = 2500
 PIN_MAX_PRS = 30
 PIN_PR_BODY_CHARS = 1200
+PR_COMMITS = 15
 FACTS_BUDGET = 60000
 PATCH_FILE_CHARS = 4000
 PATCH_EXCERPT_CHARS = 8000
@@ -100,6 +110,15 @@ NO_CHANGE_SENTENCE = (
     "Видимых для игроков изменений по доступным источникам установить не удалось."
 )
 NO_CHANGE_RE = re.compile(r"(?i)установить\s+не\s+удалось|не\s+удалось\s+установить")
+PLAYERS_LINE_RE = re.compile(r"(?m)^Для игроков:\s*\S")
+
+# Стиль анонса. Игрок видит «аптечку», а не medical_kit; пути и адреса не в счёт.
+CODE_ID_RE = re.compile(r"(?<![\w/.-])[a-z][a-z0-9]*(?:_[a-z0-9]+)+(?![\w/-]|\.\w)")
+JARGON_RE = re.compile(
+    r"(?i)\b(?:чанк\w*|кеш\w*|кэш\w*|буфер\w*|миксин\w*|рендер\w*|запеч[её]н\w*|displays?"
+    r"|raknet|tcp|udp|протокол\w*|пин(?:ы|ов|а|ам)?|коммит\w*|репозитор\w*|деплой\w*|ревью)\b"
+)
+GREETING_RE = re.compile(r"(?i)^\W*(?:сообщество|дорогие|друзья|привет)")
 
 
 def annotate(message, title="release-text"):
@@ -201,6 +220,23 @@ def split_footer(body):
     return author.strip(), found.group(0) if found else ""
 
 
+def pr_commits(source, number, gaps):
+    """Заголовки коммитов PR: в них часть сути, которую описание PR не называет."""
+    try:
+        commits = flatten(
+            gh_pages(f"repos/{source}/pulls/{number}/commits?per_page=100")
+        )
+    except Exception as exc:
+        gaps.append(f"коммиты PR #{number} не получены ({describe(exc)})")
+        return []
+    heads = []
+    for c in commits:
+        head = c["commit"]["message"].split("\n", 1)[0].strip()
+        if head and not head.startswith("Merge ") and head not in heads:
+            heads.append(head)
+    return heads[:PR_COMMITS]
+
+
 def merged_prs(
     source, previous, version, gaps, limit=MAX_PRS, body_chars=PR_BODY_CHARS
 ):
@@ -226,6 +262,7 @@ def merged_prs(
                 "number": number,
                 "title": pr["title"].strip(),
                 "body": split_footer(pr.get("body"))[0][:body_chars],
+                "commits": pr_commits(source, number, gaps),
                 "changed_lines": pr.get("additions", 0) + pr.get("deletions", 0),
             }
         )
@@ -257,16 +294,19 @@ def weak_notes(lines):
 def pin_evidence(change, old, new, gaps):
     """(выдержки release-notes, слитые PR) компонента за промежуток пина.
 
-    Когда release-notes компонента пусты или «не восстановлены», смысл берётся из
-    его слитых PR между тегами; при откате это PR снятых изменений.
+    PR между тегами берутся всегда: выдержки - уже пересказ, и анонс по пересказу
+    пересказа теряет смысл. При откате это PR снятых изменений. «Не восстановлено»
+    в выдержках отбрасывается.
     """
     notes, missing = [], []
     try:
         notes, missing = rn.component_notes(old, new)
     except Exception as exc:
         missing.append(f"{new['name']}: release-notes не получены ({describe(exc)})")
-    prs, weak = [], weak_notes(notes)
-    if weak and new["repo"] and new["repo"] == old["repo"]:
+    if weak_notes(notes):
+        notes = []
+    prs = []
+    if new["repo"] and new["repo"] == old["repo"]:
         lo, hi = (old, new) if change == "update" else (new, old)
         found = []
         try:
@@ -282,9 +322,8 @@ def pin_evidence(change, old, new, gaps):
             found.append(f"слитые PR не получены ({describe(exc)})")
         gaps.extend(f"{new['name']}: {gap}" for gap in found)
     if prs:
-        return [], prs
-    if weak:
-        notes = []
+        return notes, prs
+    if not notes:
         missing.append(
             f"{new['name']}: что изменилось между {old['tag']} и {new['tag']}, источников нет"
         )
@@ -292,46 +331,33 @@ def pin_evidence(change, old, new, gaps):
     return notes, []
 
 
-def server_range(server_releases, since):
-    """(серверный тег на момент since, последний серверный тег); since — published_at прошлого анонса."""
-    line = [
-        (rn.version_key(r["tag_name"]), r)
-        for r in server_releases
-        if rn.comparable(rn.version_key(r["tag_name"]), ("v", ()))
-    ]
-    if not line:
-        return None, None
-    before = [(k, r["tag_name"]) for k, r in line if r["published_at"] <= since]
-    newest = max(line, key=lambda kr: kr[0])[1]["tag_name"]
-    return (max(before)[1] if before else None), newest
-
-
 def server_pin(previous_release, gaps):
-    """Изменения сервера, вышедшие после прошлого клиентского релиза, как пин `blockfield-server`."""
+    """PR сервера, слитые в main после прошлого клиентского релиза, как пин `blockfield-server`.
+
+    База - коммит main на момент того релиза, а не серверный тег: в парном выпуске тег клиента
+    ставится раньше серверного, и изменения сервера уже лежат в main.
+    """
+    since = previous_release["published_at"]
+    # Только PR самого сервера: его release-notes пересказывают мод, который клиент уже описал своим пином.
     try:
-        old, new = server_range(
-            published_releases(SERVER_REPOSITORY), previous_release["published_at"]
+        base = json.loads(
+            gh(
+                "api",
+                f"repos/{SERVER_REPOSITORY}/commits?sha=main&until={since}&per_page=1",
+            )
+        )[0]["sha"]
+        prs = merged_prs(
+            SERVER_REPOSITORY, base, "main", gaps, PIN_MAX_PRS, PIN_PR_BODY_CHARS
         )
     except Exception as exc:
         gaps.append(f"изменения сервера не собраны ({describe(exc)})")
         return None
-    if not old or not new:
-        gaps.append("изменения сервера не собраны: нет серверного релиза до прошлого")
+    if not prs:
         return None
-    if old == new:
-        return None
-    # Только PR самого сервера: его release-notes пересказывают мод, который клиент уже описал своим пином.
-    try:
-        prs = merged_prs(
-            SERVER_REPOSITORY, old, new, gaps, PIN_MAX_PRS, PIN_PR_BODY_CHARS
-        )
-    except Exception as exc:
-        gaps.append(f"{SERVER_NAME}: слитые PR не получены ({describe(exc)})")
-        prs = []
     return {
         "name": SERVER_NAME,
         "change": "update",
-        "text": f"{SERVER_NAME}: {old} → {new}",
+        "text": f"{SERVER_NAME}: main {base[:7]} → main",
         "component_notes": [],
         "pull_requests": prs,
     }
@@ -459,7 +485,8 @@ def clean_prs(prs):
             dropped += 1
             continue
         lines = [line for line in pr["body"].split("\n") if not denied(line)]
-        kept.append(dict(pr, body="\n".join(lines)))
+        commits = [c for c in pr.get("commits", []) if not denied(c)]
+        kept.append(dict(pr, body="\n".join(lines), commits=commits))
     return kept, dropped
 
 
@@ -584,19 +611,21 @@ FILLER_RULES = (
 )
 
 
-def player_errors(sections, announcement, facts):
-    """Игровые разделы и анонс не должны быть заглушками вместо описания изменений."""
-    fields = {
-        "«Кратко»": sections["brief"],
-        "«Для игроков»": sections["players"],
-        **{f"announcement.{k}": announcement[k] for k in ANNOUNCEMENT_LIMITS},
-    }
+def filler_errors(fields, rules=FILLER_RULES):
     errors = []
     for name, text in fields.items():
-        for rx, what in FILLER_RULES:
+        for rx, what in rules:
             found = rx.search(text)
             if found:
                 errors.append(f"{name}: «{found.group(0)[:80]}» - {what}")
+    return errors
+
+
+def player_errors(sections, facts):
+    """Игровые разделы не должны быть заглушками вместо описания изменений."""
+    errors = filler_errors(
+        {"«Кратко»": sections["brief"], "«Для игроков»": sections["players"]}
+    )
     if (
         not has_evidence(facts)
         and facts["no_client_changes"] is not True
@@ -610,47 +639,19 @@ def player_errors(sections, announcement, facts):
 
 
 def validate_release(obj, facts):
-    """(release-notes.md, announcement, ошибки) по ответу модели."""
-    errors = []
-    if not isinstance(obj, dict) or not all(
-        isinstance(obj.get(k), dict) for k in ("release_notes", "announcement")
-    ):
-        return (
-            None,
-            None,
-            ["ответ должен содержать объекты release_notes и announcement"],
-        )
-    sections = {}
+    """(release-notes.md, ошибки) по ответу модели."""
+    if not isinstance(obj, dict) or not isinstance(obj.get("release_notes"), dict):
+        return None, ["ответ должен содержать объект release_notes"]
+    errors, sections = [], {}
     for key, title in SECTIONS:
         value = obj["release_notes"].get(key)
         if isinstance(value, str) and value.strip():
             sections[key] = value
         else:
             errors.append(f"release_notes.{key} ({title}) пуст или не строка")
-    announcement = {}
-    for key in (*ANNOUNCEMENT_LIMITS, "color_hex"):
-        value = obj["announcement"].get(key)
-        if not isinstance(value, str):
-            errors.append(f"announcement.{key} должен быть строкой")
-            continue
-        announcement[key] = value.strip()
-    for key, limit in ANNOUNCEMENT_LIMITS.items():
-        value = announcement.get(key)
-        if value is not None and len(value) > limit:
-            errors.append(f"announcement.{key} длиннее {limit} символов")
-    if announcement.get("title") == "" or announcement.get("summary") == "":
-        errors.append(
-            "announcement.title и announcement.summary не должны быть пустыми"
-        )
-    color = announcement.get("color_hex", "").lstrip("#")
-    if "color_hex" in announcement:
-        if re.fullmatch(r"[0-9A-Fa-f]{6}", color):
-            announcement["color_hex"] = color.upper()
-        else:
-            errors.append("announcement.color_hex должен быть шестью hex-цифрами")
     if errors:
-        return None, None, errors
-    errors += player_errors(sections, announcement, facts)
+        return None, errors
+    errors += player_errors(sections, facts)
     text = assemble(facts, sections, by_model=True)
     errors += check_text(text, facts)
     components = sections["components"].lower()
@@ -659,18 +660,116 @@ def validate_release(obj, facts):
         for pin in facts["pins"]
         if pin["name"].lower() not in components
     ]
-    everything = text + "\n" + "\n".join(announcement.values())
+    errors += [f"запрещено публиковать: {item}" for item in sorted(set(denied(text)))]
+    return text, errors
+
+
+def is_patch(version):
+    key = rn.version_key(version)
+    return bool(key and key[0] == "v" and len(key[1]) == 3 and key[1][2] > 0)
+
+
+def style_errors(announcement, version):
+    """Что делает анонс непонятным игроку; на последней попытке это лишь предупреждения."""
+    errors = []
+    for key, text in announcement.items():
+        found = sorted(set(CODE_ID_RE.findall(text)))
+        if found:
+            errors.append(
+                f"announcement.{key}: идентификаторы из кода {', '.join(found[:5])} - "
+                "назови по-игровому (словарь проекта)"
+            )
+        if key == "creators":
+            continue
+        found = sorted({m.group(0) for m in JARGON_RE.finditer(text)})
+        if found:
+            errors.append(
+                f"announcement.{key}: служебные слова {', '.join(found[:5])} - "
+                "напиши, что игрок видит в игре"
+            )
+    if GREETING_RE.search(announcement["summary"]):
+        errors.append(
+            "announcement.summary: не обращайся к сообществу, начни с главного изменения"
+        )
+    if version not in announcement["title"]:
+        errors.append(f"announcement.title: нет номера {version}")
+    for key in ANNOUNCEMENT_LISTS:
+        bad = [
+            line
+            for line in announcement[key].split("\n")
+            if line.strip() and not line.startswith("• ")
+        ]
+        if bad:
+            errors.append(
+                f"announcement.{key}: каждый пункт - отдельная строка, начинается с «• » "
+                f"(«{bad[0][:40]}»)"
+            )
+    return errors
+
+
+def validate_announcement(obj, facts, final=False):
+    """(announcement, ошибки). Стиль на последней попытке только предупреждает:
+    живой анонс с одним служебным словом лучше разбора release-notes.md ботом."""
+    if not isinstance(obj, dict):
+        return None, ["ответ должен быть JSON-объектом анонса"]
+    errors, announcement = [], {}
+    for key in ANNOUNCEMENT_LIMITS:
+        value = obj.get(key, "")
+        if not isinstance(value, str):
+            errors.append(f"announcement.{key} должен быть строкой")
+            continue
+        announcement[key] = value.strip()
+        if len(announcement[key]) > ANNOUNCEMENT_LIMITS[key]:
+            errors.append(
+                f"announcement.{key} длиннее {ANNOUNCEMENT_LIMITS[key]} символов"
+            )
+    if errors:
+        return None, errors
+    if not announcement["title"] or not announcement["summary"]:
+        errors.append(
+            "announcement.title и announcement.summary не должны быть пустыми"
+        )
+    if has_evidence(facts) and not any(announcement[k] for k in ANNOUNCEMENT_LISTS):
+        errors.append("списки изменений пусты, хотя в фактах есть изменения")
+    errors += filler_errors(
+        {
+            f"announcement.{k}": v
+            for k, v in announcement.items()
+            if k != "compatibility"
+        }
+    )
+    errors += filler_errors(
+        {"announcement.compatibility": announcement["compatibility"]}, FILLER_RULES[:2]
+    )
+    everything = "\n".join(announcement.values())
     errors += [
         f"запрещено публиковать: {item}" for item in sorted(set(denied(everything)))
     ]
-    return text, announcement, errors
+    style = style_errors(announcement, facts["version"])
+    if final and not errors:
+        for error in style:
+            warn(f"анонс опубликован с замечанием: {error}")
+        style = []
+    announcement["color_hex"] = (
+        COLOR_PATCH if is_patch(facts["version"]) else COLOR_RELEASE
+    )
+    return announcement, errors + style
 
 
-def chat(system, user, model, key):
+def announcement_request(facts):
+    kind = "патч" if is_patch(facts["version"]) else "крупный выпуск"
+    previous = facts["previous_version"] or "нет"
+    return (
+        f"Выпуск {facts['version']} ({kind}), предыдущий выпуск {previous}.\n"
+        "Факты (JSON):\n" + fit_facts(facts)
+    )
+
+
+def chat(system, user, model, key, temperature=0.2):
     body = json.dumps(
         {
             "model": model,
-            "temperature": 0.2,
+            "temperature": temperature,
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
@@ -686,12 +785,16 @@ def chat(system, user, model, key):
         return json.load(resp)["choices"][0]["message"]["content"]
 
 
-def ask(system, user, validate, model, key):
-    """Две попытки; вторая получает ошибки первой. Возвращает результат validate или None."""
+def ask(system, user, validate, model, key, attempts=ATTEMPTS, temperature=0.2):
+    """Повторы получают ошибки предыдущего ответа. validate(ответ, последняя_попытка)
+    возвращает кортеж с ошибками в конце; итог - этот кортеж или None."""
     retry = ""
-    for attempt in range(ATTEMPTS):
+    for attempt in range(attempts):
+        final = attempt + 1 == attempts
         try:
-            result = validate(chat(system, user + retry, model, key))
+            result = validate(
+                chat(system, user + retry, model, key, temperature), final
+            )
             errors = result[-1]
         except urllib.error.HTTPError as exc:
             errors = [f"HTTP {exc.code}"]
@@ -704,7 +807,7 @@ def ask(system, user, validate, model, key):
             "\n\nПредыдущий ответ отклонён проверкой. Исправь и верни ответ целиком:\n- "
             + "\n- ".join(errors[:10])
         )
-        if attempt + 1 < ATTEMPTS:
+        if not final:
             time.sleep(2)
     return None
 
@@ -763,6 +866,22 @@ def report(gaps, outcome, version):
         fh.write("\n".join(lines) + "\n\n")
 
 
+def system_prompt(name):
+    """Промпт с общим словарём проекта: идентификаторы из кода → слова игрока."""
+    return "\n\n".join(
+        (HERE / "prompts" / f).read_text(encoding="utf-8")
+        for f in (f"{name}.md", "glossary.md")
+    )
+
+
+def write_json(path, value):
+    path.write_text(
+        json.dumps(value, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
 def run_release(a):
     out = Path(a.out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -774,36 +893,47 @@ def run_release(a):
         return
     collected = collect_facts(a, releases)
     facts = clean(collected)
-    key, model = os.environ.get("OPENROUTER_API_KEY"), a.model
-    result = None
-    if key and model:
-        system = (HERE / "prompts" / "release.md").read_text(encoding="utf-8")
-        user = "Факты выпуска (JSON):\n" + fit_facts(facts)
-        result = ask(
-            system,
-            user,
-            lambda raw: validate_release(parse_json_object(raw), facts),
-            model,
+    key = os.environ.get("OPENROUTER_API_KEY")
+    notes = None
+    if key and a.model:
+        notes = ask(
+            system_prompt("release"),
+            "Факты выпуска (JSON):\n" + fit_facts(facts),
+            lambda raw, _final: validate_release(parse_json_object(raw), facts),
+            a.model,
             key,
         )
-        outcome = "только из фактов: ответы модели отклонены проверкой"
+        outcome = (
+            "написан моделью и прошёл проверку"
+            if notes
+            else "только из фактов: ответы модели отклонены проверкой"
+        )
     else:
         warn("нет OPENROUTER_API_KEY или RELEASE_TEXT_MODEL: текст только из фактов")
         outcome = "только из фактов: нет ключа или модели"
-    if result:
-        report(collected["gaps"], "написан моделью и прошёл проверку", a.version)
-        notes, announcement, _ = result
-        (out / "release-notes.md").write_text(notes, encoding="utf-8", newline="\n")
-        (out / "announcement.json").write_text(
-            json.dumps(announcement, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
-        return
-    report(collected["gaps"], outcome, a.version)
     (out / "release-notes.md").write_text(
-        facts_only_notes(facts), encoding="utf-8", newline="\n"
+        notes[0] if notes else facts_only_notes(facts), encoding="utf-8", newline="\n"
     )
+    model = a.announcement_model or a.model
+    if a.kind in ANNOUNCED_KINDS and key and model:
+        announcement = ask(
+            system_prompt("announcement"),
+            announcement_request(facts),
+            lambda raw, final: validate_announcement(
+                parse_json_object(raw), facts, final
+            ),
+            model,
+            key,
+            ANNOUNCEMENT_ATTEMPTS,
+            temperature=0.5,
+        )
+        if announcement:
+            write_json(out / "announcement.json", announcement[0])
+            outcome += "; анонс написан"
+        else:
+            warn("анонс не прошёл проверку: бот соберёт его из release-notes.md")
+            outcome += "; анонса нет, бот соберёт его из release-notes.md"
+    report(collected["gaps"], outcome, a.version)
 
 
 def pr_prompt(pr, commits, files):
@@ -834,51 +964,80 @@ def pr_prompt(pr, commits, files):
     return "\n".join(parts)
 
 
-def validate_pr(text):
+def unfence(text):
     text = text.strip()
     fenced = re.fullmatch(r"(?s)```(?:markdown|md)?\s*(.*?)\s*```", text)
-    text = fenced.group(1).strip() if fenced else text
+    return fenced.group(1).strip() if fenced else text
+
+
+def validate_pr(text):
+    text = unfence(text)
     errors = []
     if not text:
         errors.append("пустое описание")
     if len(text) > PR_BODY_LIMIT:
         errors.append(f"описание длиннее {PR_BODY_LIMIT} символов")
-    if not re.search(r"(?m)^Для игроков:\s*\S", text):
+    if not PLAYERS_LINE_RE.search(text):
         errors.append("нет строки «Для игроков: …» или «Для игроков: нет»")
     errors += [f"запрещено публиковать: {i}" for i in sorted(set(denied(text)))]
     return text, errors
 
 
+def validate_players_line(text):
+    text = unfence(text)
+    errors = []
+    if not text.startswith("Для игроков:") or not PLAYERS_LINE_RE.search(text):
+        errors.append("ответ должен начинаться с «Для игроков:» и содержать суть")
+    if "\n\n" in text or len(text) > 1500:
+        errors.append("нужен один абзац «Для игроков: …» до 1500 символов")
+    errors += [f"запрещено публиковать: {i}" for i in sorted(set(denied(text)))]
+    return text, errors
+
+
 def run_pr(a):
+    """Пустое описание пишется целиком, описанию автора дописывается строка для игроков."""
     key = os.environ.get("OPENROUTER_API_KEY")
     if not (key and a.model):
         warn("нет OPENROUTER_API_KEY или RELEASE_TEXT_MODEL: описание PR не создаётся")
         return
     repo, number = a.repository, a.pr_number
     pr = json.loads(gh("api", f"repos/{repo}/pulls/{number}"))
-    if split_footer(pr.get("body"))[0]:
+    author = split_footer(pr.get("body"))[0]
+    if PLAYERS_LINE_RE.search(author):
         return
     commits = flatten(gh_pages(f"repos/{repo}/pulls/{number}/commits?per_page=100"))
     files = flatten(gh_pages(f"repos/{repo}/pulls/{number}/files?per_page=100"))
-    result = ask(
-        (HERE / "prompts" / "pr.md").read_text(encoding="utf-8"),
-        pr_prompt(pr, commits, files),
-        validate_pr,
-        a.model,
-        key,
-    )
-    if not result:
+    request = pr_prompt(pr, commits, files)
+    if author:
+        result = ask(
+            system_prompt("pr-players"),
+            f"{request}\n\nОписание автора:\n{author}",
+            lambda raw, _final: validate_players_line(raw),
+            a.model,
+            key,
+        )
+        body = result and f"{author}\n\n{result[0]}"
+    else:
+        result = ask(
+            system_prompt("pr"),
+            request,
+            lambda raw, _final: validate_pr(raw),
+            a.model,
+            key,
+        )
+        body = result and result[0]
+    if not body:
         return
-    # Автор мог заполнить описание, пока шла генерация.
+    # Автор мог изменить описание, пока шла генерация: тогда его текст важнее.
     current, footer = split_footer(
         json.loads(gh("api", f"repos/{repo}/pulls/{number}")).get("body")
     )
-    if current:
+    if current != author:
         return
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp, "body.md")
         path.write_text(
-            result[0] + (f"\n\n{footer}" if footer else ""),
+            body + (f"\n\n{footer}" if footer else ""),
             encoding="utf-8",
             newline="\n",
         )
@@ -904,6 +1063,11 @@ def main(argv=None):
         p.add_argument("--repository", required=True)
         p.add_argument("--model", default=os.environ.get("RELEASE_TEXT_MODEL", ""))
     r = sub.choices["release"]
+    r.add_argument(
+        "--announcement-model",
+        default=os.environ.get("ANNOUNCEMENT_MODEL", ""),
+        help="модель анонса; по умолчанию --model",
+    )
     r.add_argument("--version", required=True)
     r.add_argument("--kind", required=True, choices=sorted(FRONT_KIND))
     r.add_argument("--out-dir", required=True)
