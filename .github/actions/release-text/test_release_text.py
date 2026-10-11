@@ -739,7 +739,7 @@ class PinEvidence(unittest.TestCase):
 
 
 class FitFacts(unittest.TestCase):
-    def facts(self, prs):
+    def facts(self, prs, pins=()):
         return {
             "repository": "Blockfield/x",
             "version": "v1.0",
@@ -748,7 +748,7 @@ class FitFacts(unittest.TestCase):
             "date": "2026-10-11",
             "no_client_changes": False,
             "pins_checked": True,
-            "pins": [],
+            "pins": list(pins),
             "pull_requests": prs,
             "gaps": [],
         }
@@ -784,6 +784,34 @@ class FitFacts(unittest.TestCase):
         parsed = json.loads(text)
         self.assertLessEqual(len(text), rt.FACTS_BUDGET)
         self.assertLess(len(parsed["pull_requests"]), 40)
+        self.assertTrue(any("бюджет фактов" in g for g in parsed["gaps"]))
+
+    def test_overflowing_pin_prs_are_dropped_with_a_gap_note(self):
+        pins = [
+            {
+                "name": f"pin{i}",
+                "change": "update",
+                "text": "t",
+                "component_notes": [],
+                "pull_requests": [
+                    self.pr(
+                        n,
+                        "y" * 3000,
+                        [f"commit {c}" for c in range(15)],
+                        title="P" * 2000,
+                    )
+                    for n in range(30)
+                ],
+            }
+            for i in range(5)
+        ]
+        text = rt.fit_facts(self.facts([], pins))
+        parsed = json.loads(text)
+        self.assertLessEqual(len(text), rt.FACTS_BUDGET)
+        self.assertLess(
+            sum(len(p["pull_requests"]) for p in parsed["pins"]),
+            sum(len(p["pull_requests"]) for p in pins),
+        )
         self.assertTrue(any("бюджет фактов" in g for g in parsed["gaps"]))
 
 
