@@ -953,7 +953,7 @@ def fit_facts(facts):
         trimmed, _text = render(
             0, 0, 0, [0] * len(pin_counts), note_chars, text_chars, dropped_prs
         )
-        if note_chars not in (2000, 600) or notes_over(note_chars):
+        if text_chars is not None or notes_over(note_chars):
             trimmed["gaps"].append(note)
         text = json.dumps(trimmed, ensure_ascii=False, indent=1)
         if len(text) <= FACTS_BUDGET:
