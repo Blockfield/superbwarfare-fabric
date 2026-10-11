@@ -834,9 +834,7 @@ def fit_facts(facts):
 
     def render(body_limit, commits_limit, count, pin_counts=None):
         if pin_counts is None:
-            pin_counts = [
-                len(pin.get("pull_requests", [])) for pin in facts["pins"]
-            ]
+            pin_counts = [len(pin.get("pull_requests", [])) for pin in facts["pins"]]
         trimmed = dict(
             facts,
             gaps=list(facts["gaps"]),
