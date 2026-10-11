@@ -814,6 +814,25 @@ class FitFacts(unittest.TestCase):
         )
         self.assertTrue(any("бюджет фактов" in g for g in parsed["gaps"]))
 
+    def test_large_component_notes_are_trimmed_with_a_gap_note(self):
+        pins = [
+            {
+                "name": f"pin{i}",
+                "change": "update",
+                "text": f"pin{i}: bf1 → bf2",
+                "component_notes": [f"выдержка {n} " + "x" * 5000 for n in range(10)],
+                "pull_requests": [],
+            }
+            for i in range(5)
+        ]
+        text = rt.fit_facts(self.facts([], pins))
+        parsed = json.loads(text)
+        self.assertLessEqual(len(text), rt.FACTS_BUDGET)
+        self.assertTrue(any("бюджет фактов" in g for g in parsed["gaps"]))
+        self.assertTrue(
+            all(len(n) <= 600 for p in parsed["pins"] for n in p["component_notes"])
+        )
+
 
 class MergedPrs(unittest.TestCase):
     def test_bots_and_footers_are_skipped_and_failures_say_why(self):

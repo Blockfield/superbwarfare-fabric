@@ -832,18 +832,34 @@ def fit_facts(facts):
             for pr in prs
         ]
 
-    def render(body_limit, commits_limit, count, pin_counts=None):
+    def render(
+        body_limit,
+        commits_limit,
+        count,
+        pin_counts=None,
+        note_chars=None,
+        text_chars=None,
+        extra_gaps=(),
+    ):
         if pin_counts is None:
             pin_counts = [len(pin.get("pull_requests", [])) for pin in facts["pins"]]
         trimmed = dict(
             facts,
-            gaps=list(facts["gaps"]),
+            gaps=[*facts["gaps"], *extra_gaps],
             pull_requests=trim(
                 facts["pull_requests"][:count], body_limit, commits_limit
             ),
             pins=[
                 dict(
                     pin,
+                    text=pin.get("text", "")[:text_chars]
+                    if text_chars is not None
+                    else pin.get("text", ""),
+                    component_notes=[]
+                    if note_chars == 0
+                    else [n[:note_chars] for n in pin.get("component_notes", [])]
+                    if note_chars is not None
+                    else pin.get("component_notes", []),
                     pull_requests=trim(
                         pin.get("pull_requests", [])[:kept],
                         body_limit,
@@ -889,7 +905,67 @@ def fit_facts(facts):
             return text
     trimmed, _text = render(0, 0, 0, [0] * len(pin_counts))
     trimmed["gaps"].append("список PR не вошёл в бюджет фактов")
-    return json.dumps(trimmed, ensure_ascii=False, indent=1)
+    text = json.dumps(trimmed, ensure_ascii=False, indent=1)
+    if len(text) <= FACTS_BUDGET:
+        return text
+    # PR уже выброшены, а выдержки компонентов и текст пинов всё ещё без границ:
+    # урезать их с пометкой, иначе большой выпуск снова превысит бюджет.
+    dropped_prs = (
+        ["список PR не вошёл в бюджет фактов"]
+        if facts["pull_requests"]
+        or any(pin.get("pull_requests") for pin in facts["pins"])
+        else []
+    )
+    for note_chars, text_chars, note in (
+        (2000, None, "часть выдержек компонентов не вошла в бюджет фактов"),
+        (600, None, "часть выдержек компонентов не вошла в бюджет фактов"),
+        (0, None, "выдержки компонентов не вошли в бюджет фактов"),
+        (0, 500, "текст пинов урезан из-за бюджета фактов"),
+        (0, 0, "текст пинов не вошёл в бюджет фактов"),
+    ):
+        trimmed, _text = render(
+            0, 0, 0, [0] * len(pin_counts), note_chars, text_chars, dropped_prs
+        )
+        trimmed["gaps"].append(note)
+        text = json.dumps(trimmed, ensure_ascii=False, indent=1)
+        if len(text) <= FACTS_BUDGET:
+            return text
+    # Последнее средство: голые пины (имя и изменение), затем их хвост.
+    bare = [
+        {
+            "name": pin.get("name", ""),
+            "change": pin.get("change", ""),
+            "text": "",
+            "component_notes": [],
+            "pull_requests": [],
+        }
+        for pin in facts["pins"]
+    ]
+    for keep in range(len(bare), -1, -1):
+        trimmed = dict(
+            facts,
+            gaps=[
+                *facts["gaps"],
+                *dropped_prs,
+                "часть пинов не вошла в бюджет фактов",
+            ],
+            pull_requests=[],
+            pins=bare[:keep],
+        )
+        text = json.dumps(trimmed, ensure_ascii=False, indent=1)
+        if len(text) <= FACTS_BUDGET:
+            return text
+    # Даже голые пины не влезли: минимальный валидный JSON, gaps — что влезет.
+    base = dict(facts, gaps=[], pull_requests=[], pins=[])
+    for gaps in (
+        [*facts["gaps"], "часть фактов опущена из-за бюджета"],
+        ["часть фактов опущена из-за бюджета"],
+        [],
+    ):
+        text = json.dumps(dict(base, gaps=gaps), ensure_ascii=False, indent=1)
+        if len(text) <= FACTS_BUDGET:
+            return text
+    return json.dumps({"pins": [], "pull_requests": [], "gaps": []})
 
 
 def reuse_published(releases, a, out):
