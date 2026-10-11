@@ -832,7 +832,9 @@ def fit_facts(facts):
             for pr in prs
         ]
 
-    def render(body_limit, commits_limit, count):
+    def render(body_limit, commits_limit, count, pin_counts=None):
+        if pin_counts is None:
+            pin_counts = [len(pin.get("pull_requests", [])) for pin in facts["pins"]]
         trimmed = dict(
             facts,
             gaps=list(facts["gaps"]),
@@ -843,10 +845,12 @@ def fit_facts(facts):
                 dict(
                     pin,
                     pull_requests=trim(
-                        pin.get("pull_requests", []), body_limit, commits_limit
+                        pin.get("pull_requests", [])[:kept],
+                        body_limit,
+                        commits_limit,
                     ),
                 )
-                for pin in facts["pins"]
+                for pin, kept in zip(facts["pins"], pin_counts)
             ],
         )
         return trimmed, json.dumps(trimmed, ensure_ascii=False, indent=1)
@@ -862,7 +866,7 @@ def fit_facts(facts):
         if len(text) <= FACTS_BUDGET:
             return text
     # Коммиты уже убраны, а бюджет всё ещё превышен: опускать целые PR с хвоста с
-    # пометкой в gaps, а не резать JSON посередине.
+    # пометкой в gaps, а не резать JSON посередине. Затем так же урезать PR в пинах.
     while count > 0:
         count -= 1
         trimmed, text = render(0, 0, count)
@@ -872,7 +876,18 @@ def fit_facts(facts):
         text = json.dumps(trimmed, ensure_ascii=False, indent=1)
         if len(text) <= FACTS_BUDGET:
             return text
-    trimmed, _text = render(0, 0, 0)
+    pin_counts = [len(pin.get("pull_requests", [])) for pin in facts["pins"]]
+    while any(pin_counts):
+        for i in range(len(pin_counts) - 1, -1, -1):
+            if pin_counts[i]:
+                pin_counts[i] -= 1
+                break
+        trimmed, text = render(0, 0, 0, pin_counts)
+        trimmed["gaps"].append("часть PR в пинах не вошла в бюджет фактов")
+        text = json.dumps(trimmed, ensure_ascii=False, indent=1)
+        if len(text) <= FACTS_BUDGET:
+            return text
+    trimmed, _text = render(0, 0, 0, [0] * len(pin_counts))
     trimmed["gaps"].append("список PR не вошёл в бюджет фактов")
     return json.dumps(trimmed, ensure_ascii=False, indent=1)
 
