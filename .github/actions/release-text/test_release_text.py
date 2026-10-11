@@ -833,6 +833,61 @@ class FitFacts(unittest.TestCase):
             all(len(n) <= 600 for p in parsed["pins"] for n in p["component_notes"])
         )
 
+    def test_long_notes_do_not_push_out_prs(self):
+        prs = [self.pr(n, body=f"Тело {n}") for n in range(30)]
+        pins = [
+            {
+                "name": "X",
+                "change": "update",
+                "text": "X: обновление bf1 → bf2.",
+                "component_notes": ["выдержка " + "x" * 3000 for _ in range(30)],
+                "pull_requests": [],
+            }
+        ]
+        text = rt.fit_facts(self.facts(prs, pins))
+        parsed = json.loads(text)
+        self.assertLessEqual(len(text), rt.FACTS_BUDGET)
+        self.assertEqual(len(parsed["pull_requests"]), 30)
+        self.assertTrue(
+            all(len(n) <= 600 for p in parsed["pins"] for n in p["component_notes"])
+        )
+
+    def test_short_notes_cause_no_note_gap(self):
+        prs = [self.pr(n, body="x" * 3000) for n in range(80)]
+        pins = [
+            {
+                "name": "X",
+                "change": "update",
+                "text": "X: обновление bf1 → bf2.",
+                "component_notes": ["короткая выдержка"],
+                "pull_requests": [],
+            }
+        ]
+        text = rt.fit_facts(self.facts(prs, pins))
+        parsed = json.loads(text)
+        self.assertLessEqual(len(text), rt.FACTS_BUDGET)
+        self.assertFalse(
+            any("выдержек компонентов" in g for g in parsed["gaps"]),
+            parsed["gaps"],
+        )
+
+    def test_last_resort_keeps_a_truncation_note(self):
+        prs = [self.pr(n, body="x" * 5000) for n in range(80)]
+        pins = [
+            {
+                "name": "X",
+                "change": "update",
+                "text": "X: обновление bf1 → bf2.",
+                "component_notes": ["выдержка " + "x" * 5000 for _ in range(30)],
+                "pull_requests": [],
+            }
+        ]
+        with mock.patch.object(rt, "FACTS_BUDGET", 150):
+            text = rt.fit_facts(self.facts(prs, pins))
+        parsed = json.loads(text)
+        self.assertLessEqual(len(text), 150)
+        self.assertIn("часть фактов опущена из-за бюджета", parsed["gaps"])
+
 
 class MergedPrs(unittest.TestCase):
     def test_bots_and_footers_are_skipped_and_failures_say_why(self):
