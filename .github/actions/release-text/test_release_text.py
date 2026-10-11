@@ -518,7 +518,7 @@ class Release(unittest.TestCase):
         self.assertEqual(self.files(), ["announcement.json", "release-notes.md"])
         notes = (self.out / "release-notes.md").read_text(encoding="utf-8")
         self.assertIn("Значки HUD перерисованы", notes)
-        self.assertNotIn("нет release-notes.md", notes)
+        self.assertIn("Неполнота: m v1.42.0: нет release-notes.md.", notes)
 
     def test_filler_twice_gives_facts_only_with_pin_pr_titles(self):
         for p in self.pin_args():
@@ -709,7 +709,8 @@ class PinEvidence(unittest.TestCase):
         (notes, prs), gaps, fetch = self.evidence(
             [], missing=["Blockfield/m v1.42.0: нет release-notes.md"]
         )
-        self.assertEqual((notes, prs, gaps), ([], self.PRS, []))
+        self.assertEqual((notes, prs), ([], self.PRS))
+        self.assertEqual(gaps, ["Blockfield/m v1.42.0: нет release-notes.md"])
         self.assertEqual(
             fetch.call_args.args[:3], ("Blockfield/m", "v1.41.0", "v1.42.0")
         )
@@ -735,6 +736,55 @@ class PinEvidence(unittest.TestCase):
         error = subprocess.CalledProcessError(1, ["gh"], stderr=b"HTTP 403 forbidden")
         _, gaps, _ = self.evidence([], error=error)
         self.assertTrue(any("HTTP 403 forbidden" in g for g in gaps))
+
+
+class FitFacts(unittest.TestCase):
+    def facts(self, prs):
+        return {
+            "repository": "Blockfield/x",
+            "version": "v1.0",
+            "previous_version": "v0.9",
+            "kind": "client",
+            "date": "2026-10-11",
+            "no_client_changes": False,
+            "pins_checked": True,
+            "pins": [],
+            "pull_requests": prs,
+            "gaps": [],
+        }
+
+    def pr(self, number, body="b", commits=(), title=None):
+        return {
+            "number": number,
+            "title": title if title is not None else f"PR {number}",
+            "body": body,
+            "commits": list(commits),
+            "changed_lines": 3,
+        }
+
+    def test_small_facts_pass_through_untouched(self):
+        facts = self.facts([self.pr(1, "b", ["c"])])
+        parsed = json.loads(rt.fit_facts(facts))
+        self.assertEqual(parsed["pull_requests"], facts["pull_requests"])
+        self.assertEqual(parsed["gaps"], [])
+
+    def test_commit_lists_are_trimmed_before_the_json_is_cut(self):
+        prs = [
+            self.pr(n, "x" * 3000, [f"commit {i}" for i in range(15)])
+            for n in range(100)
+        ]
+        text = rt.fit_facts(self.facts(prs))
+        parsed = json.loads(text)
+        self.assertLessEqual(len(text), rt.FACTS_BUDGET)
+        self.assertEqual(len(parsed["pull_requests"][0]["commits"]), 5)
+
+    def test_an_overflowing_tail_is_dropped_with_a_gap_note(self):
+        prs = [self.pr(n, title="T" * 2000) for n in range(40)]
+        text = rt.fit_facts(self.facts(prs))
+        parsed = json.loads(text)
+        self.assertLessEqual(len(text), rt.FACTS_BUDGET)
+        self.assertLess(len(parsed["pull_requests"]), 40)
+        self.assertTrue(any("бюджет фактов" in g for g in parsed["gaps"]))
 
 
 class MergedPrs(unittest.TestCase):
@@ -975,6 +1025,21 @@ class PullRequest(unittest.TestCase):
         self.assertEqual(
             Path(self.tmp, "body.md").read_text(encoding="utf-8"),
             f"Описал сам\n\n{line}",
+        )
+
+    def test_rewrite_keeps_the_author_attribution_line(self):
+        line = "Для игроков: прицел точнее."
+        signature = "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+        with (
+            self.gh(f"Описал сам\n\n{signature}"),
+            mock.patch.object(rt, "chat", return_value=line),
+            mock.patch.object(rt.tempfile, "TemporaryDirectory") as tmp,
+        ):
+            tmp.return_value.__enter__.return_value = self.tmp
+            rt.run_pr(self.args)
+        self.assertEqual(
+            Path(self.tmp, "body.md").read_text(encoding="utf-8"),
+            f"Описал сам\n\n{line}\n\n{signature}",
         )
 
     def test_author_edit_during_generation_wins(self):

@@ -220,6 +220,12 @@ def split_footer(body):
     return author.strip(), found.group(0) if found else ""
 
 
+def attribution_line(body):
+    """The agent's signature line, preserved verbatim when the action rewrites a body."""
+    found = ATTRIBUTION.search(body or "")
+    return f"\n\n{found.group(0).strip()}" if found else ""
+
+
 def pr_commits(source, number, gaps):
     """Заголовки коммитов PR: в них часть сути, которую описание PR не называет."""
     try:
@@ -321,13 +327,14 @@ def pin_evidence(change, old, new, gaps):
         except Exception as exc:
             found.append(f"слитые PR не получены ({describe(exc)})")
         gaps.extend(f"{new['name']}: {gap}" for gap in found)
+    gaps.extend(missing)
     if prs:
         return notes, prs
     if not notes:
         missing.append(
             f"{new['name']}: что изменилось между {old['tag']} и {new['tag']}, источников нет"
         )
-    gaps.extend(missing)
+        gaps.extend(missing[-1:])
     return notes, []
 
 
@@ -813,24 +820,61 @@ def ask(system, user, validate, model, key, attempts=ATTEMPTS, temperature=0.2):
 
 
 def fit_facts(facts):
-    """Факты для модели в пределах бюджета: сначала сокращаются тела PR."""
+    """Факты для модели в пределах бюджета: сначала сокращаются тела PR и коммиты, затем хвост."""
 
-    def trim(prs, limit):
-        return [dict(pr, body=pr["body"][:limit]) for pr in prs]
+    def trim(prs, body_limit, commits_limit):
+        return [
+            dict(
+                pr,
+                body=pr["body"][:body_limit],
+                commits=pr.get("commits", [])[:commits_limit],
+            )
+            for pr in prs
+        ]
 
-    for limit in (PR_BODY_CHARS, 600, 0):
+    def render(body_limit, commits_limit, count):
         trimmed = dict(
             facts,
-            pull_requests=trim(facts["pull_requests"], limit),
+            gaps=list(facts["gaps"]),
+            pull_requests=trim(
+                facts["pull_requests"][:count], body_limit, commits_limit
+            ),
             pins=[
-                dict(pin, pull_requests=trim(pin.get("pull_requests", []), limit))
+                dict(
+                    pin,
+                    pull_requests=trim(
+                        pin.get("pull_requests", []), body_limit, commits_limit
+                    ),
+                )
                 for pin in facts["pins"]
             ],
         )
+        return trimmed, json.dumps(trimmed, ensure_ascii=False, indent=1)
+
+    count = len(facts["pull_requests"])
+    for body_limit, commits_limit in (
+        (PR_BODY_CHARS, PR_COMMITS),
+        (600, PR_COMMITS),
+        (0, 5),
+        (0, 0),
+    ):
+        _trimmed, text = render(body_limit, commits_limit, count)
+        if len(text) <= FACTS_BUDGET:
+            return text
+    # Коммиты уже убраны, а бюджет всё ещё превышен: опускать целые PR с хвоста с
+    # пометкой в gaps, а не резать JSON посередине.
+    while count > 0:
+        count -= 1
+        trimmed, text = render(0, 0, count)
+        trimmed["gaps"].append(
+            f"в бюджет фактов вошли первые {count} из {len(facts['pull_requests'])} PR"
+        )
         text = json.dumps(trimmed, ensure_ascii=False, indent=1)
         if len(text) <= FACTS_BUDGET:
-            break
-    return text[:FACTS_BUDGET]
+            return text
+    trimmed, _text = render(0, 0, 0)
+    trimmed["gaps"].append("список PR не вошёл в бюджет фактов")
+    return json.dumps(trimmed, ensure_ascii=False, indent=1)
 
 
 def reuse_published(releases, a, out):
@@ -1016,7 +1060,7 @@ def run_pr(a):
             a.model,
             key,
         )
-        body = result and f"{author}\n\n{result[0]}"
+        generated = result and result[0]
     else:
         result = ask(
             system_prompt("pr"),
@@ -1025,15 +1069,19 @@ def run_pr(a):
             a.model,
             key,
         )
-        body = result and result[0]
-    if not body:
+        generated = result and result[0]
+    if not generated:
         return
     # Автор мог изменить описание, пока шла генерация: тогда его текст важнее.
-    current, footer = split_footer(
-        json.loads(gh("api", f"repos/{repo}/pulls/{number}")).get("body")
-    )
+    latest = json.loads(gh("api", f"repos/{repo}/pulls/{number}")).get("body")
+    current, footer = split_footer(latest)
     if current != author:
         return
+    signature = attribution_line(latest)
+    if author:
+        body = f"{author}\n\n{generated}{signature}"
+    else:
+        body = f"{generated}{signature}"
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp, "body.md")
         path.write_text(
