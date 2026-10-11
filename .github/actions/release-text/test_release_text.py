@@ -852,6 +852,25 @@ class FitFacts(unittest.TestCase):
             all(len(n) <= 600 for p in parsed["pins"] for n in p["component_notes"])
         )
 
+    def test_short_notes_cause_no_note_gap(self):
+        prs = [self.pr(n, body="x" * 3000) for n in range(80)]
+        pins = [
+            {
+                "name": "X",
+                "change": "update",
+                "text": "X: обновление bf1 → bf2.",
+                "component_notes": ["короткая выдержка"],
+                "pull_requests": [],
+            }
+        ]
+        text = rt.fit_facts(self.facts(prs, pins))
+        parsed = json.loads(text)
+        self.assertLessEqual(len(text), rt.FACTS_BUDGET)
+        self.assertFalse(
+            any("выдержек компонентов" in g for g in parsed["gaps"]),
+            parsed["gaps"],
+        )
+
     def test_last_resort_keeps_a_truncation_note(self):
         prs = [self.pr(n, body="x" * 5000) for n in range(80)]
         pins = [
