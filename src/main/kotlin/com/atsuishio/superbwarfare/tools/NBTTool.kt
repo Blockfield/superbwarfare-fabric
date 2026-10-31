@@ -18,6 +18,14 @@ object NBTTool {
     }
 
     /**
+     * 只读 tag：返回 backing 实例，不拷贝。调用方不得修改返回值；
+     * 需要修改时用 [getTag]（拷贝）+ [saveTag]。
+     */
+    @JvmStatic
+    @Suppress("DEPRECATION")
+    fun peekTag(stack: ItemStack): CompoundTag = stack.get(DataComponents.CUSTOM_DATA)?.unsafe ?: CompoundTag()
+
+    /**
      * 警告：请勿使用该方法保存任何枪械NBT数据！请统一使用GunData.save()保存枪械数据
      */
     @JvmStatic
