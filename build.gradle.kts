@@ -237,7 +237,7 @@ tasks.named("check") { dependsOn("lintJava") }
 
 tasks.register("regressionCheck") {
     group = "verification"
-    dependsOn("killFeedCheck", "scriptCheck")
+    dependsOn("killFeedCheck", "scriptCheck", "passengerMountCheck")
 }
 
 tasks.register<JavaExec>("scriptCheck") {
@@ -248,3 +248,12 @@ tasks.register<JavaExec>("scriptCheck") {
     maxHeapSize = "256m"
 }
 tasks.named("check") { dependsOn("scriptCheck") }
+
+tasks.register<JavaExec>("passengerMountCheck") {
+    group = "verification"
+    dependsOn(tasks.testClasses)
+    classpath = sourceSets.test.get().runtimeClasspath + sourceSets.main.get().compileClasspath
+    mainClass.set("com.atsuishio.superbwarfare.PassengerMountChecks")
+    maxHeapSize = "256m"
+}
+tasks.named("check") { dependsOn("passengerMountCheck") }

@@ -4,6 +4,7 @@ import com.atsuishio.superbwarfare.client.renderer.curio.ParachuteRenderer;
 import com.atsuishio.superbwarfare.client.renderer.special.PhosphorusFireRenderer;
 import com.atsuishio.superbwarfare.data.vehicle.VehicleData;
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
+import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleMounts;
 import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,6 +17,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 import org.joml.Quaterniond;
@@ -77,8 +79,10 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             float partialTick,
             float scale,
             CallbackInfo ci) {
-        if (entity.getRootVehicle() != entity
-                && entity.getRootVehicle() instanceof VehicleEntity vehicle) {
+        // A passenger flag can outlive the native link (dropped SetPassengers, kill
+        // while mounted): resolve null-safely so a torn chain falls back to vanilla rotations.
+        Entity root = VehicleMounts.rootVehicleOrNull(entity);
+        if (root instanceof VehicleEntity vehicle) {
             var seats = VehicleData.compute(vehicle).seats();
             int index = vehicle.getSeatIndex(entity);
             if (index < 0 || index >= seats.size()) return;
@@ -106,7 +110,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
 
             if (Minecraft.getInstance().player != null
                     && ClientEventHandler.zoomVehicle
-                    && entity.getRootVehicle() == Minecraft.getInstance().player.getRootVehicle()) {
+                    && root == VehicleMounts.rootVehicleOrNull(Minecraft.getInstance().player)) {
                 renderScale = 0;
             }
 
