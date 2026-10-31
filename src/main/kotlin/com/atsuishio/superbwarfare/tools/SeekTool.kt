@@ -6,9 +6,10 @@ import com.atsuishio.superbwarfare.entity.vehicle.DroneEntity
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity
 import com.atsuishio.superbwarfare.init.ModItems
 import com.atsuishio.superbwarfare.init.ModTags
-import com.atsuishio.superbwarfare.tools.NBTTool.getTag
+import com.atsuishio.superbwarfare.tools.NBTTool
 import com.atsuishio.superbwarfare.world.saveddata.TDMSavedData
 import net.minecraft.core.BlockPos
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.tags.TagKey
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.decoration.HangingEntity
@@ -167,21 +168,26 @@ object SeekTool {
     @JvmField
     val IS_FRIENDLY_DRONE: BiPredicate<Entity?, Entity?> =
         BiPredicate { self, target ->
-            if (self !is Player || target == null) return@BiPredicate false
-            val stack = self.mainHandItem
+            // IffItem 每同步 tick 对每对玩家调用：先按类型 отсечь（玩家对玩家直接 false），
+            // NBT 只读持有 MONITOR 的那一份，且不拷贝（getTag 的全量 copyTag 是 tick 停顿来源之一）。
+            if (self !is Player || target !is DroneEntity) return@BiPredicate false
             var myDrone: DroneEntity? = null
-            val tag = getTag(stack)
-            if (stack.`is`(ModItems.MONITOR.get()) &&
-                tag.getBoolean("Using") &&
-                tag.getBoolean("Linked")
-            ) {
-                myDrone = EntityFindUtil.findDrone(self.level(), tag.getString("LinkedDrone"))
+            if (self.mainHandItem.`is`(ModItems.MONITOR.get())) {
+                linkedDroneId(NBTTool.peekTag(self.mainHandItem))?.let {
+                    myDrone = EntityFindUtil.findDrone(self.level(), it)
+                }
             }
-            target is DroneEntity &&
-                target !== myDrone &&
+            target !== myDrone &&
                 target.getController() != null &&
                 IN_SAME_TEAM.test(target, target.getController())
         }
+
+    /**
+     * MONITOR 配对的无人机 UUID：Using + Linked 同时为 true 才返回。只读 tag，
+     * 无拷贝；CompoundTag 是纯数据类，可在无游戏 bootstrap 的单元测试里直接构造。
+     */
+    @JvmStatic
+    fun linkedDroneId(tag: CompoundTag): String? = if (tag.getBoolean("Using") && tag.getBoolean("Linked")) tag.getString("LinkedDrone") else null
 
     /** 判断两个实体是否是友方关系 */
     @JvmField

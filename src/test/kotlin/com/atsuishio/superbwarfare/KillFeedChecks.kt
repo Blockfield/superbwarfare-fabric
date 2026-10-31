@@ -25,5 +25,6 @@ fun main() {
     check(!DamageTypeTool.isKnifeDamage(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse("tacz:bullet"))))
     meleeReachChecks()
     smokeChecks()
+    iffNbtChecks()
     println("Kill feed, melee reach, smoke and deferred registration checks passed")
 }
