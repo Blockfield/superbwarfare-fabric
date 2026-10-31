@@ -969,12 +969,11 @@ open class VehicleEntity(
 
         entity.persistentData.putInt(TAG_SEAT_INDEX, index)
 
-        // 在服务端运行时，向所有玩家同步载具座位信息
+        // Seat switches only reach clients tracking the vehicle: a global send also
+        // lands on clients that never saw it and bursts "unknown entity" warnings there.
         val level = this.level()
         if (level is ServerLevel) {
-            level
-                .getPlayers { true }
-                .forEach { p -> p!!.connection.send(ClientboundSetPassengersPacket(this)) }
+            level.chunkSource.broadcast(this, ClientboundSetPassengersPacket(this))
         }
 
         return true
