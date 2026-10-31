@@ -419,10 +419,13 @@ object ModEntities {
     @JvmField
     val TURRET_WRECK = register("turret_wreck", vehicle(::TurretWreckEntity).sized(2.4f, 1.2f))
 
+    // build() без id: ванильный build(name) дёргает DataFixer-lookup, который ERRORит на каждый
+    // модовый id (результат всё равно выбрасывается); Fabric пропускает lookup при null,
+    // а настоящий id типу выдаёт реестр в register() ниже.
     private fun <T : Entity> register(
         name: String,
         entityTypeBuilder: EntityType.Builder<T>,
-    ): DeferredHolder<EntityType<*>, EntityType<T>> = REGISTRY.register(name) { entityTypeBuilder.build(name) }
+    ): DeferredHolder<EntityType<*>, EntityType<T>> = REGISTRY.register(name) { entityTypeBuilder.build() }
 
     private fun <T : Entity> misc(entity: (EntityType<T>, Level) -> T): EntityType.Builder<T> = EntityType.Builder.of(entity, MobCategory.MISC)
 
