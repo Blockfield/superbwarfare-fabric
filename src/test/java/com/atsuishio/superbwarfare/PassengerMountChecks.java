@@ -79,7 +79,7 @@ public final class PassengerMountChecks {
         check(VehicleMounts.rootVehicleOrNull(null) == null, "null entity resolves to null");
         count++;
 
-        check(count == 8, "passenger mount checks must not be empty");
+        check(count == 9, "passenger mount checks must not be empty");
         System.out.println("PassengerMountChecks OK: " + count + " checks");
     }
 
