@@ -1,4 +1,4 @@
-package com.atsuishio.superbwarfare.mixins;
+package com.atsuishio.superbwarfare.entity.vehicle.utils;
 
 import net.minecraft.world.entity.Entity;
 

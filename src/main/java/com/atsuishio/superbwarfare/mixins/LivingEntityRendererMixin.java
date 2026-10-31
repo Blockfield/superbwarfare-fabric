@@ -4,6 +4,7 @@ import com.atsuishio.superbwarfare.client.renderer.curio.ParachuteRenderer;
 import com.atsuishio.superbwarfare.client.renderer.special.PhosphorusFireRenderer;
 import com.atsuishio.superbwarfare.data.vehicle.VehicleData;
 import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
+import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleMounts;
 import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleVecUtils;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.mojang.blaze3d.vertex.PoseStack;

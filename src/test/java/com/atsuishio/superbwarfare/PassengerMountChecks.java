@@ -1,6 +1,6 @@
 package com.atsuishio.superbwarfare;
 
-import com.atsuishio.superbwarfare.mixins.VehicleMounts;
+import com.atsuishio.superbwarfare.entity.vehicle.utils.VehicleMounts;
 
 /**
  * Contract checks for {@link VehicleMounts}: intact chains resolve to their root, half-torn-down
