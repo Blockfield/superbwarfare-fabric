@@ -28,7 +28,11 @@ permissions:
   contents: read
   pull-requests: read # bot-gate reads blockfield-review-bot verdicts on the head SHA
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Keyed by head SHA, not ref: review runs for different heads must never
+  # cancel each other (a queued approval run for the approved head must
+  # survive a later review event for another head). Same-head duplicates
+  # still collapse in queue; in-progress runs are never cancelled.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}
   # A review must never cancel the run it gates.
   cancel-in-progress: false
 jobs:
