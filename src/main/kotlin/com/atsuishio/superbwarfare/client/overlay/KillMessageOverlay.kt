@@ -17,6 +17,7 @@ import com.atsuishio.superbwarfare.item.curio.DogTagItem
 import com.atsuishio.superbwarfare.item.gun.GunItem
 import com.atsuishio.superbwarfare.item.misc.MonitorItem
 import com.atsuishio.superbwarfare.tools.DamageTypeTool
+import com.atsuishio.superbwarfare.tools.KillFeedLayout
 import com.atsuishio.superbwarfare.tools.LivingKillRecord
 import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
@@ -189,8 +190,8 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
 
             // 渲染伤害类型图标
             val damageTypeIcon: ResourceLocation? = getDamageTypeIcon(record)
+            currentPosX -= KillFeedLayout.damageAdvancePx(damageTypeIcon != null)
             if (damageTypeIcon != null) {
-                currentPosX -= 18f
                 RenderHelper.preciseBlit(
                     guiGraphics,
                     damageTypeIcon,
@@ -207,8 +208,8 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
 
             // 渲染武器图标
             val currentWeaponIcon: ResourceLocation? = getWeaponIcon(record)
+            currentPosX -= KillFeedLayout.weaponAdvancePx(currentWeaponIcon != null)
             if (currentWeaponIcon != null) {
-                currentPosX -= 36f
                 RenderHelper.preciseBlit(
                     guiGraphics,
                     currentWeaponIcon,
@@ -278,8 +279,8 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                     -32f,
                     8f,
                 )
-                currentPosX += 36f
             }
+            currentPosX += KillFeedLayout.weaponAdvancePx(currentWeaponIcon != null)
 
             // 渲染伤害类型图标
             val damageTypeIcon: ResourceLocation? = getDamageTypeIcon(record)
@@ -296,8 +297,8 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                     12f,
                     12f,
                 )
-                currentPosX += 18f
             }
+            currentPosX += KillFeedLayout.damageAdvancePx(damageTypeIcon != null)
 
             // 渲染狗牌图标
             if (target is LivingEntity && shouldRenderDogTagIcon(target)) {
@@ -333,9 +334,11 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
         if (record.headshot) {
             icon = HEADSHOT
         } else {
-            val item = record.attacker.mainHandItem
+            // Blockfield: gun-vs-other disambiguation follows the firing weapon from
+            // the packet; the hand-item heuristics below keep their old source.
+            val stack = record.stack
             if (DamageTypeTool.isCompatGunDamage(record.damageType, record.target.level().registryAccess()) &&
-                (item.item is GunItem || item.descriptionId == "tacz:modern_kinetic_gun")
+                KillFeedLayout.isCompatGunStack(stack.descriptionId, stack.item is GunItem)
             ) {
                 icon = null
                 if (record.damageType === ModDamageTypes.PROJECTILE_HIT) {
@@ -345,6 +348,7 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                 }
             } else {
                 // 如果是其他伤害，则渲染对应图标
+                val item = record.attacker.mainHandItem
                 if (record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION ||
                     record.damageType === ModDamageTypes.PROJECTILE_EXPLOSION || record.damageType === DamageTypes.FIREWORKS ||
                     record.damageType === ModDamageTypes.CUSTOM_EXPLOSION

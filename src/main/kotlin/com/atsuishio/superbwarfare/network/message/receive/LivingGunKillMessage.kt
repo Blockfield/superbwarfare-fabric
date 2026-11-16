@@ -22,6 +22,7 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.OwnableEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 
 @Serializable
 data class LivingGunKillMessage(
@@ -55,11 +56,16 @@ data class LivingGunKillMessage(
             KillMessageHandler.QUEUE.poll()
         }
 
+        // Blockfield: the icon follows the firing weapon from the packet, not the
+        // current hand item (the attacker may have switched weapons since the kill).
+        val weaponItem = BuiltInRegistries.ITEM.get(weapon)
+        val stack = if (weaponItem == Items.AIR) attacker.mainHandItem else ItemStack(weaponItem)
+
         KillMessageHandler.QUEUE.offer(
             LivingKillRecord(
                 attacker,
                 target,
-                attacker.mainHandItem,
+                stack,
                 headshot,
                 damageType,
             ),

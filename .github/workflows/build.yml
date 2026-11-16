@@ -108,7 +108,7 @@ jobs:
     # on a gate permit for the exact head SHA.
     needs: [bot-gate]
     if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (needs.bot-gate.outputs.verdict == 'permit' && needs.bot-gate.outputs.sha_match == 'true'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
