@@ -3,6 +3,7 @@ package com.atsuishio.superbwarfare
 import com.atsuishio.superbwarfare.compat.tacz.TaczHeadshotCompat
 import com.atsuishio.superbwarfare.entity.projectile.smokeChecks
 import com.atsuishio.superbwarfare.tools.DamageTypeTool
+import com.atsuishio.superbwarfare.tools.KillFeedLayout
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
@@ -23,6 +24,15 @@ fun main() {
     check(DamageTypeTool.isKnifeDamage(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse("blockfield:knife"))))
     check(!DamageTypeTool.isKnifeDamage(DamageTypes.ARROW))
     check(!DamageTypeTool.isKnifeDamage(ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.parse("tacz:bullet"))))
+    check(KillFeedLayout.isCompatGunStack("item.tacz.modern_kinetic_gun", false))
+    check(KillFeedLayout.isCompatGunStack("item.tacz.modern_kinetic_gun", true))
+    check(KillFeedLayout.isCompatGunStack("item.superbwarfare.sentinel", true))
+    check(!KillFeedLayout.isCompatGunStack("item.minecraft.iron_sword", false))
+    check(!KillFeedLayout.isCompatGunStack("tacz:modern_kinetic_gun", false))
+    check(KillFeedLayout.weaponAdvancePx(true) == 36f)
+    check(KillFeedLayout.weaponAdvancePx(false) == 0f)
+    check(KillFeedLayout.damageAdvancePx(true) == 18f)
+    check(KillFeedLayout.damageAdvancePx(false) == 0f)
     meleeReachChecks()
     smokeChecks()
     iffNbtChecks()
