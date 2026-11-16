@@ -7,7 +7,8 @@ import net.minecraft.world.damagesource.DamageSource
  * в одиночной игре клиентские события не должны перезаписывать состояние серверного потока.
  * Класс грузится только под isModLoaded("tacz"). */
 object TaczHeadshotCompat {
-    private var headshotBulletId = -1
+    private const val MAX_TRACKED = 256
+    private val headshotByBullet = LinkedHashMap<Int, Boolean>()
 
     fun init() {
         EntityHurtByGunEvent.PRE.register { event ->
@@ -19,11 +20,15 @@ object TaczHeadshotCompat {
         bulletId: Int,
         headshot: Boolean,
     ) {
-        // Одна пробивающая пуля может после головы попасть в тело другой цели.
-        headshotBulletId = if (headshot) bulletId else -1
+        // Одна запись на пулю: чужой огонь и второй хит той же пули по другой цели
+        // больше не стирают чужой хедшот. Переполнение сбрасывает старейшие.
+        headshotByBullet[bulletId] = headshot
+        while (headshotByBullet.size > MAX_TRACKED) {
+            headshotByBullet.remove(headshotByBullet.keys.first())
+        }
     }
 
-    internal fun isHeadshot(bulletId: Int?) = headshotBulletId != -1 && bulletId == headshotBulletId
+    internal fun isHeadshot(bulletId: Int?) = bulletId != null && headshotByBullet[bulletId] == true
 
     fun isHeadshot(source: DamageSource) = isHeadshot(source.directEntity?.id)
 }

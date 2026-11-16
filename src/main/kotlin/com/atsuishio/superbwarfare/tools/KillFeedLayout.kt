@@ -20,4 +20,9 @@ object KillFeedLayout {
     fun weaponAdvancePx(hasWeaponIcon: Boolean): Float = if (hasWeaponIcon) WEAPON_ICON_ADVANCE_PX else 0f
 
     fun damageAdvancePx(hasDamageIcon: Boolean): Float = if (hasDamageIcon) DAMAGE_ICON_ADVANCE_PX else 0f
+
+    // The headshot marker and the compat-gun item sprite share the 12px icon box.
+    fun headshotAdvancePx(hasHeadshotIcon: Boolean): Float = damageAdvancePx(hasHeadshotIcon)
+
+    fun compatWeaponAdvancePx(hasCompatWeapon: Boolean): Float = damageAdvancePx(hasCompatWeapon)
 }

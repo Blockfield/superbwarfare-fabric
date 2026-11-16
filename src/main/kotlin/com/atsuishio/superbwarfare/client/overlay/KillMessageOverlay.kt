@@ -32,6 +32,7 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.OwnableEntity
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import kotlin.math.pow
 
 @Environment(EnvType.CLIENT)
@@ -223,6 +224,32 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
                     8f,
                 )
             }
+            // Blockfield: compat guns (TaCZ) have no GunItem silhouette, so draw
+            // the gun item itself from the packet weapon stack.
+            val compatWeapon = if (currentWeaponIcon == null) getCompatWeaponStack(record) else null
+            currentPosX -= KillFeedLayout.compatWeaponAdvancePx(compatWeapon != null)
+            if (compatWeapon != null) {
+                renderCompatWeapon(guiGraphics, compatWeapon, currentPosX, top - 2f)
+            }
+
+            // Blockfield: headshot marker is its own element next to the weapon icon,
+            // independent of the damage-type slot.
+            val headshotIcon: ResourceLocation? = getHeadshotIcon(record)
+            currentPosX -= KillFeedLayout.headshotAdvancePx(headshotIcon != null)
+            if (headshotIcon != null) {
+                RenderHelper.preciseBlit(
+                    guiGraphics,
+                    headshotIcon,
+                    currentPosX,
+                    top - 2,
+                    0f,
+                    0f,
+                    12f,
+                    12f,
+                    12f,
+                    12f,
+                )
+            }
 
             // 渲染击杀者名称
             val attackerName: String = getEntityName(record.attacker)
@@ -282,6 +309,33 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
             }
             currentPosX += KillFeedLayout.weaponAdvancePx(currentWeaponIcon != null)
 
+            // Blockfield: compat guns (TaCZ) have no GunItem silhouette, so draw
+            // the gun item itself from the packet weapon stack.
+            val compatWeapon = if (currentWeaponIcon == null) getCompatWeaponStack(record) else null
+            if (compatWeapon != null) {
+                renderCompatWeapon(guiGraphics, compatWeapon, currentPosX, top - 2f)
+            }
+            currentPosX += KillFeedLayout.compatWeaponAdvancePx(compatWeapon != null)
+
+            // Blockfield: headshot marker is its own element next to the weapon icon,
+            // independent of the damage-type slot.
+            val headshotIcon: ResourceLocation? = getHeadshotIcon(record)
+            if (headshotIcon != null) {
+                RenderHelper.preciseBlit(
+                    guiGraphics,
+                    headshotIcon,
+                    currentPosX,
+                    top - 2,
+                    0f,
+                    0f,
+                    12f,
+                    12f,
+                    12f,
+                    12f,
+                )
+            }
+            currentPosX += KillFeedLayout.headshotAdvancePx(headshotIcon != null)
+
             // 渲染伤害类型图标
             val damageTypeIcon: ResourceLocation? = getDamageTypeIcon(record)
             if (damageTypeIcon != null) {
@@ -330,65 +384,62 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
 
     private fun getDamageTypeIcon(record: LivingKillRecord): ResourceLocation? {
         var icon: ResourceLocation?
-        // 渲染爆头图标
-        if (record.headshot) {
-            icon = HEADSHOT
+        // Blockfield: headshot marker lives in its own slot (getHeadshotIcon);
+        // the damage slot always shows the damage kind.
+        // Blockfield: gun-vs-other disambiguation follows the firing weapon from
+        // the packet; the hand-item heuristics below keep their old source.
+        val stack = record.stack
+        if (DamageTypeTool.isCompatGunDamage(record.damageType, record.target.level().registryAccess()) &&
+            KillFeedLayout.isCompatGunStack(stack.descriptionId, stack.item is GunItem)
+        ) {
+            icon = null
+            if (record.damageType === ModDamageTypes.PROJECTILE_HIT) {
+                icon = GENERIC
+            } else if (record.damageType === ModDamageTypes.LASER || record.damageType === ModDamageTypes.LASER_HEADSHOT) {
+                icon = LASER
+            }
         } else {
-            // Blockfield: gun-vs-other disambiguation follows the firing weapon from
-            // the packet; the hand-item heuristics below keep their old source.
-            val stack = record.stack
-            if (DamageTypeTool.isCompatGunDamage(record.damageType, record.target.level().registryAccess()) &&
-                KillFeedLayout.isCompatGunStack(stack.descriptionId, stack.item is GunItem)
+            // 如果是其他伤害，则渲染对应图标
+            val item = record.attacker.mainHandItem
+            if (record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION ||
+                record.damageType === ModDamageTypes.PROJECTILE_EXPLOSION || record.damageType === DamageTypes.FIREWORKS ||
+                record.damageType === ModDamageTypes.CUSTOM_EXPLOSION
             ) {
-                icon = null
-                if (record.damageType === ModDamageTypes.PROJECTILE_HIT) {
-                    icon = GENERIC
-                } else if (record.damageType === ModDamageTypes.LASER || record.damageType === ModDamageTypes.LASER_HEADSHOT) {
-                    icon = LASER
-                }
+                // Blockfield: the explosion alone does not say what blew up, the attacker's hand does.
+                // Drone bombs are flown from the monitor; a vanilla explosion is a thrown grenade (LR Tactical).
+                // Launcher rockets never get here: gun damage out of a gun shows the weapon silhouette instead.
+                icon =
+                    when {
+                        item.item is MonitorItem -> DRONE
+                        record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION -> GRENADE
+                        else -> EXPLOSION
+                    }
+            } else if (record.attacker is Player &&
+                (record.damageType === DamageTypes.IN_FIRE || record.damageType === DamageTypes.ON_FIRE)
+            ) {
+                // Blockfield: world fire has no killer, so an attributed fire kill is a molotov.
+                icon = MOLOTOV
+            } else if (DamageTypeTool.isKnifeDamage(record.damageType)) {
+                icon = KNIFE
+            } else if (record.damageType === ModDamageTypes.BEAST) {
+                icon = BEAST
+            } else if (record.damageType === ModDamageTypes.MINE) {
+                icon = CLAYMORE
+            } else if (record.damageType === ModDamageTypes.SHOCK) {
+                icon = SHOCK
+            } else if (record.damageType === ModDamageTypes.BURN || record.damageType === DamageTypes.IN_FIRE ||
+                record.damageType === DamageTypes.ON_FIRE ||
+                record.damageType === DamageTypes.LAVA
+            ) {
+                icon = BURN
+            } else if (record.damageType === ModDamageTypes.DRONE_HIT) {
+                icon = DRONE
+            } else if (record.damageType === ModDamageTypes.LASER_STATIC) {
+                icon = LASER
+            } else if (record.damageType === ModDamageTypes.VEHICLE_STRIKE) {
+                icon = VEHICLE
             } else {
-                // 如果是其他伤害，则渲染对应图标
-                val item = record.attacker.mainHandItem
-                if (record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION ||
-                    record.damageType === ModDamageTypes.PROJECTILE_EXPLOSION || record.damageType === DamageTypes.FIREWORKS ||
-                    record.damageType === ModDamageTypes.CUSTOM_EXPLOSION
-                ) {
-                    // Blockfield: the explosion alone does not say what blew up, the attacker's hand does.
-                    // Drone bombs are flown from the monitor; a vanilla explosion is a thrown grenade (LR Tactical).
-                    // Launcher rockets never get here: gun damage out of a gun shows the weapon silhouette instead.
-                    icon =
-                        when {
-                            item.item is MonitorItem -> DRONE
-                            record.damageType === DamageTypes.EXPLOSION || record.damageType === DamageTypes.PLAYER_EXPLOSION -> GRENADE
-                            else -> EXPLOSION
-                        }
-                } else if (record.attacker is Player &&
-                    (record.damageType === DamageTypes.IN_FIRE || record.damageType === DamageTypes.ON_FIRE)
-                ) {
-                    // Blockfield: world fire has no killer, so an attributed fire kill is a molotov.
-                    icon = MOLOTOV
-                } else if (DamageTypeTool.isKnifeDamage(record.damageType)) {
-                    icon = KNIFE
-                } else if (record.damageType === ModDamageTypes.BEAST) {
-                    icon = BEAST
-                } else if (record.damageType === ModDamageTypes.MINE) {
-                    icon = CLAYMORE
-                } else if (record.damageType === ModDamageTypes.SHOCK) {
-                    icon = SHOCK
-                } else if (record.damageType === ModDamageTypes.BURN || record.damageType === DamageTypes.IN_FIRE ||
-                    record.damageType === DamageTypes.ON_FIRE ||
-                    record.damageType === DamageTypes.LAVA
-                ) {
-                    icon = BURN
-                } else if (record.damageType === ModDamageTypes.DRONE_HIT) {
-                    icon = DRONE
-                } else if (record.damageType === ModDamageTypes.LASER_STATIC) {
-                    icon = LASER
-                } else if (record.damageType === ModDamageTypes.VEHICLE_STRIKE) {
-                    icon = VEHICLE
-                } else {
-                    icon = GENERIC
-                }
+                icon = GENERIC
             }
         }
         return icon
@@ -450,6 +501,35 @@ object KillMessageOverlay : CommonOverlay("kill_message") {
             }
         }
         return null
+    }
+
+    fun getHeadshotIcon(record: LivingKillRecord): ResourceLocation? = if (record.headshot) HEADSHOT else null
+
+    fun getCompatWeaponStack(record: LivingKillRecord): ItemStack? {
+        val stack = record.stack
+        if (stack.item is GunItem) return null
+        if (!KillFeedLayout.isCompatGunStack(stack.descriptionId, false)) return null
+        // The TaCZ gun item is builtin/entity: its renderer picks the model from
+        // the GunId NBT, which the packet stack never carries (shape is frozen).
+        // Render the attacker's live hand stack when it is the same gun.
+        // shortcut: a weapon switch to another TaCZ gun renders the new gun's
+        // sprite; revisit if TaCZ ever splits per-gun items.
+        val hand = record.attacker.mainHandItem
+        if (hand.item !is GunItem && hand.descriptionId == stack.descriptionId) return hand
+        return stack
+    }
+
+    fun renderCompatWeapon(
+        guiGraphics: GuiGraphics,
+        stack: ItemStack,
+        x: Float,
+        y: Float,
+    ) {
+        guiGraphics.pose().pushPose()
+        guiGraphics.pose().translate(x, y, 0f)
+        guiGraphics.pose().scale(0.75f, 0.75f, 1f)
+        guiGraphics.renderFakeItem(stack, 0, 0)
+        guiGraphics.pose().popPose()
     }
 
     fun shouldRenderDogTagIcon(living: LivingEntity?): Boolean {
